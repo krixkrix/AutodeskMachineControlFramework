@@ -98,6 +98,8 @@ public:
 
 	LibMCDriver_Raylase_uint32 GetAssignedLaserIndex() override;
 
+	void DrawLayerWithCallback(const std::string& sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData) override;
+
 	void DrawLayer(const std::string& sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS) override;
 
 	void SetRotationalCoordinateTransform(const LibMCDriver_Raylase_double dM11, const LibMCDriver_Raylase_double dM12, const LibMCDriver_Raylase_double dM21, const LibMCDriver_Raylase_double dM22) override;

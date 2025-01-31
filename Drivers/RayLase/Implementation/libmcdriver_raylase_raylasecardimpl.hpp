@@ -48,6 +48,10 @@ namespace Impl {
 class CRaylaseCardImpl;
 typedef std::shared_ptr<CRaylaseCardImpl> PRaylaseCardImpl;
 
+typedef struct _ScanningTimeoutData {
+	LibMCEnv::CDriverEnvironment* m_pDriverEnvironment;
+	uint64_t m_nTimeOutInMilliseconds;
+} sScanningTimeoutData;
 
 enum class eNlightDriverBoardIOPins : uint32_t {
 	PRO_START = 1 << 7,

@@ -792,7 +792,6 @@ namespace LibMCDriver_Raylase {
 			rlResult rlConfigurationAbortUpdate (rlHandle handle);
 			rlResult rlConfigurationIsUpdateActive (rlHandle handle, uint32_t* pbIsActive);
 
-			uint32_t rlGpioConfigMemorySize ();
 			rlResult rlGpioInitConfig (rlGpioConfig* pConfig);
 			rlResult rlGpioLoadConfig (rlHandle handle);
 			rlResult rlGpioStoreConfig (rlHandle handle);
@@ -816,7 +815,6 @@ namespace LibMCDriver_Raylase {
 			rlResult rlGpioGetOutput (rlHandle handle, eRLIOPort port, uint32_t& nValue);
 			rlResult rlGpioWrite (rlHandle handle, eRLIOPort port, eRLPinAction action, uint32_t nValue);
 
-			uint32_t rlSystemConfigMemorySize ();
 			rlResult rlSystemInitConfig (rlSystemConfig* pConfig);
 			rlResult rlSystemLoadConfig (rlHandle handle);
 			rlResult rlSystemStoreConfig (rlHandle handle);

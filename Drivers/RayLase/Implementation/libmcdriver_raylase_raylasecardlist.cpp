@@ -369,6 +369,17 @@ bool CRaylaseCardList::waitForExecution(uint32_t nTimeOutInMS)
 
 }
 
+void CRaylaseCardList::abortExecution()
+{
+    bool bInProgress = false;
+    m_pSDK->checkError(m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress));
+
+    if (bInProgress)
+        m_pSDK->checkError(m_pSDK->rlListAbortExecution(m_CardHandle));
+
+}
+
+
 void CRaylaseCardList::setPartIgnoreState(const std::string& sUUID, eRaylasePartIgnoreState ignoreState)
 {
     if (ignoreState == eRaylasePartIgnoreState::pisDoNotIgnore) {

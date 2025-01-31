@@ -1504,14 +1504,98 @@ rlResult CRaylaseSDK::rlScannerStoreConfig(rlHandle handle)
 	return ptrScannerStoreConfig(handle);
 }
 
-uint32_t CRaylaseSDK::rlGpioConfigMemorySize()
-{		
-	return 1024;
+
+rlResult CRaylaseSDK::rlSfioRead(rlHandle handle, eRLSfRegister eRegister, uint32_t& nValue)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioRead (" + std::to_string((uintptr_t)handle) + ", " + std::to_string ((uint32_t) eRegister) + ");");
+	}
+
+	return ptrSfioRead(handle, eRegister, nValue);
 }
 
-
-uint32_t CRaylaseSDK::rlSystemConfigMemorySize()
+rlResult CRaylaseSDK::rlSfioSpiInitConfig(rlSpiConfig* pConfig)
 {
-	return 1024;
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiInitConfig (" + std::to_string((uintptr_t)pConfig) + ");");
+	}
+
+	return ptrSfioSpiInitConfig(pConfig);
+}
+
+rlResult CRaylaseSDK::rlSfioSpiLoadConfig(rlHandle handle)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiLoadConfig (" + std::to_string((uintptr_t)handle) + ");");
+	}
+
+	return ptrSfioSpiLoadConfig(handle);
+}
+
+rlResult CRaylaseSDK::rlSfioSpiStoreConfig(rlHandle handle)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiStoreConfig (" + std::to_string((uintptr_t)handle) + ");");
+	}
+
+	return ptrSfioSpiStoreConfig(handle);
+}
+
+rlResult CRaylaseSDK::rlSfioSpiGetConfig(rlHandle handle, rlSpiConfig* pConfig)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiGetConfig (" + std::to_string((uintptr_t)handle) +", " + std::to_string((uintptr_t)pConfig) + ");");
+	}
+
+	return ptrSfioSpiGetConfig(handle, pConfig);
+}
+
+rlResult CRaylaseSDK::rlSfioSpiSetConfig(rlHandle handle, rlSpiConfig* pConfig)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiSetConfig (" + std::to_string((uintptr_t)handle) + ", " + std::to_string((uintptr_t)pConfig) + ");");
+	}
+
+	return ptrSfioSpiSetConfig(handle, pConfig);
+
+}
+
+rlResult CRaylaseSDK::rlSfioSpiTransmit(rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, uint32_t bAsync)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiTransmit (" + std::to_string((uintptr_t)handle) + ", " + std::to_string(nModule) + ", " + std::to_string ((intptr_t)pTransmitMessage) + ", " + std::to_string (nTransmitMessageLen) + ", " + std::to_string (bAsync) + ");");
+	}
+
+	return ptrSfioSpiTransmit (handle, nModule, pTransmitMessage, nTransmitMessageLen, bAsync);
+
+}
+
+rlResult CRaylaseSDK::rlSfioSpiTransceive(rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiTransceive (" + std::to_string((uintptr_t)handle) + ", " + std::to_string(nModule) + ", " + std::to_string((intptr_t)pTransmitMessage) + ", " + std::to_string(nTransmitMessageLen) + ", " + std::to_string(nTimeoutInMS) + ", " + std::to_string((intptr_t)pBuffer) + ", " + std::to_string(nBufferSize) + ", " + std::to_string(nReceiveLength) + + ");");
+	}
+
+	return ptrSfioSpiTransceive(handle, nModule, pTransmitMessage, nTransmitMessageLen, nTimeoutInMS, pBuffer, nBufferSize, nReceiveLength);
+
+}
+
+rlResult CRaylaseSDK::rlSfioSpiReceive(rlHandle handle, int32_t nModule, uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiReceive (" + std::to_string((uintptr_t)handle) + ", " + std::to_string(nModule) + ", " + std::to_string(nReadCount) + ", " + std::to_string(nTimeoutInMS) + ", " + std::to_string((intptr_t)pBuffer) + ", " + std::to_string(nBufferSize) + ", " + std::to_string(nReceiveLength) + ");");
+	}
+
+	return ptrSfioSpiReceive(handle, nModule, nReadCount, nTimeoutInMS, pBuffer, nBufferSize, nReceiveLength);
+
+}
+
+rlResult CRaylaseSDK::rlSfioSpiWaitForActiveTransfersDone(rlHandle handle, int32_t nModule)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlSfioSpiWaitForActiveTransfersDone (" + std::to_string((uintptr_t)handle) + ", " + std::to_string(nModule) + ");");
+	}
+
+	return ptrSfioSpiWaitForActiveTransfersDone(handle, nModule);
 }
 

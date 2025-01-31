@@ -115,6 +115,8 @@ class CRaylaseCardList
 
 		bool waitForExecution(uint32_t nTimeOutInMS);
 
+		void abortExecution();
+
 		void setPartIgnoreState(const std::string & sUUID, eRaylasePartIgnoreState ignoreState);
 
 		void clearPartIgnoreStates ();

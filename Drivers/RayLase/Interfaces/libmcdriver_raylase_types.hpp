@@ -139,6 +139,8 @@ typedef void * LibMCDriver_Raylase_pvoid;
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDFIELDDATASIZE 1032 /** Invalid field data size */
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTLASERMODE 1033 /** Invalid nLight Laser Mode */
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDVARIABLEINDEX 1034 /** Invalid Variable Index */
+#define LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED 1035 /** Scanning canceled */
+#define LIBMCDRIVER_RAYLASE_ERROR_UNKNOWNENUMVALUE 1036 /** Unknown enum value */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_Raylase
@@ -190,6 +192,8 @@ inline const char * LIBMCDRIVER_RAYLASE_GETERRORSTRING (LibMCDriver_RaylaseResul
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDFIELDDATASIZE: return "Invalid field data size";
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTLASERMODE: return "Invalid nLight Laser Mode";
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDVARIABLEINDEX: return "Invalid Variable Index";
+    case LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED: return "Scanning canceled";
+    case LIBMCDRIVER_RAYLASE_ERROR_UNKNOWNENUMVALUE: return "Unknown enum value";
     default: return "unknown error";
   }
 }
@@ -227,10 +231,24 @@ namespace LibMCDriver_Raylase {
   
   #pragma pack ()
   
+  /*************************************************************************************************************************
+   Declaration of function pointers 
+  **************************************************************************************************************************/
+  
+  /**
+  * ExposureCancellationCallback - A callback function to provide exposure cancellation functionality.
+  *
+  * @param[in] nScanningTimeInMilliseconds - Current scanning time in milliseconds
+  * @param[in] pUserData - Userdata that is passed to the callback function
+  * @param[out] pAbort - Returns whether the exposure should be aborted
+  */
+  typedef void(*ExposureCancellationCallback)(LibMCDriver_Raylase_uint64, LibMCDriver_Raylase_pvoid, bool *);
+  
 } // namespace LibMCDriver_Raylase;
 
 // define legacy C-names for enums, structs and function types
 typedef LibMCDriver_Raylase::sPoint2D sLibMCDriver_RaylasePoint2D;
 typedef LibMCDriver_Raylase::sHatch2D sLibMCDriver_RaylaseHatch2D;
+typedef LibMCDriver_Raylase::ExposureCancellationCallback LibMCDriver_RaylaseExposureCancellationCallback;
 
 #endif // __LIBMCDRIVER_RAYLASE_TYPES_HEADER_CPP

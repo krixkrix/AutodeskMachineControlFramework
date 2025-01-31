@@ -34,7 +34,9 @@ Abstract: This is a stub class definition of CNLightDriverBoard
 #include "libmcdriver_raylase_nlightdriverboard.hpp"
 #include "libmcdriver_raylase_interfaceexception.hpp"
 
-// Include custom headers here.
+#include "libmcdriver_raylase_apifield.hpp"
+
+
 
 
 using namespace LibMCDriver_Raylase::Impl;

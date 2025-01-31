@@ -84,7 +84,8 @@
 		<error name="INVALIDFIELDDATASIZE" code="1032" description="Invalid field data size" />
 		<error name="INVALIDNLIGHTLASERMODE" code="1033" description="Invalid nLight Laser Mode" />
 		<error name="INVALIDVARIABLEINDEX" code="1034" description="Invalid Variable Index" />
-		
+		<error name="SCANNINGCANCELED" code="1035" description="Scanning canceled" />
+		<error name="UNKNOWNENUMVALUE" code="1036" description="Unknown enum value" />
 				
 	</errors>
 
@@ -154,6 +155,11 @@ Custom implementation
 
 -->
 
+	<functiontype name="ExposureCancellationCallback" description="A callback function to provide exposure cancellation functionality.">
+		<param name="ScanningTimeInMilliseconds" type="uint64" pass="in" description="Current scanning time in milliseconds"/>
+		<param name="UserData" type="pointer" pass="in" description="Userdata that is passed to the callback function"/>
+		<param name="Abort" type="bool" pass="return" description="Returns whether the exposure should be aborted"/>
+	</functiontype>
 
 
 
@@ -247,8 +253,15 @@ Custom implementation
 		<method name="GetAssignedLaserIndex" description="Returns the assigned laser index to the card. Default value is 0 (unassigned).">
 			<param name="LaserIndex" type="uint32" pass="return" description="Assigned laser index. This will map to the laser indices given in the build file. 0 means no assignment." />
 		</method>
+
+		<method name="DrawLayerWithCallback" description="Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.">
+			<param name="StreamUUID" type="string" pass="in" description="UUID of the build stream. Must have been loaded in memory by the system." />
+			<param name="LayerIndex" type="uint32" pass="in" description="Layer index of the build file." />
+			<param name="CancellationCallback" type="functiontype" class="ExposureCancellationCallback" pass="in" description="A callback that is repeatedly checked for canceling the exposure." />
+			<param name="UserData" type="pointer" pass="in" description="pointer to arbitrary user data that is passed without modification to the callback."/>
+		</method>
 		
-		<method name="DrawLayer" description="Draws a layer of a build stream. Blocks until the layer is drawn.">
+		<method name="DrawLayer" description="Draws a layer of a build stream with timeout. Blocks until the layer is drawn.">
 			<param name="StreamUUID" type="string" pass="in" description="UUID of the build stream. Must have been loaded in memory by the system." />
 			<param name="LayerIndex" type="uint32" pass="in" description="Layer index of the build file." />
 			<param name="ScanningTimeoutInMS" type="uint32" pass="in" description="Maximum duration of the scanning process in milliseconds." />
@@ -318,6 +331,14 @@ Custom implementation
 		<method name="DisconnectCard" description="Disconnects and unregisters a card. Does nothing if card does not exist.">
 			<param name="CardName" type="string" pass="in" description="Name of scanner card to disconnect. Card will be removed from driver." />
 		</method>		
+
+		<method name="DrawLayerMultiLaserWithCallback" description="Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.">
+			<param name="StreamUUID" type="string" pass="in" description="UUID of the build stream. Must have been loaded in memory by the system." />
+			<param name="LayerIndex" type="uint32" pass="in" description="Layer index of the build file." />
+			<param name="FailIfNonAssignedDataExists" type="bool" pass="in" description="If true, the call will fail in case a layer contains data that is not assigned to any defined scanner card." />
+			<param name="CancellationCallback" type="functiontype" class="ExposureCancellationCallback" pass="in" description="A callback that is repeatedly checked for canceling the exposure." />
+			<param name="UserData" type="pointer" pass="in" description="pointer to arbitrary user data that is passed without modification to the callback."/>
+		</method>
 
 		<method name="DrawLayerMultiLaser" description="Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.">
 			<param name="StreamUUID" type="string" pass="in" description="UUID of the build stream. Must have been loaded in memory by the system." />

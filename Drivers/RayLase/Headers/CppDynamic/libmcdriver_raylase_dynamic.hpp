@@ -221,6 +221,8 @@ public:
 			case LIBMCDRIVER_RAYLASE_ERROR_INVALIDFIELDDATASIZE: return "INVALIDFIELDDATASIZE";
 			case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTLASERMODE: return "INVALIDNLIGHTLASERMODE";
 			case LIBMCDRIVER_RAYLASE_ERROR_INVALIDVARIABLEINDEX: return "INVALIDVARIABLEINDEX";
+			case LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED: return "SCANNINGCANCELED";
+			case LIBMCDRIVER_RAYLASE_ERROR_UNKNOWNENUMVALUE: return "UNKNOWNENUMVALUE";
 		}
 		return "UNKNOWN";
 	}
@@ -272,6 +274,8 @@ public:
 			case LIBMCDRIVER_RAYLASE_ERROR_INVALIDFIELDDATASIZE: return "Invalid field data size";
 			case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTLASERMODE: return "Invalid nLight Laser Mode";
 			case LIBMCDRIVER_RAYLASE_ERROR_INVALIDVARIABLEINDEX: return "Invalid Variable Index";
+			case LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED: return "Scanning canceled";
+			case LIBMCDRIVER_RAYLASE_ERROR_UNKNOWNENUMVALUE: return "Unknown enum value";
 		}
 		return "unknown error";
 	}
@@ -548,6 +552,7 @@ public:
 	inline void GetLaserStatus(bool & bPilotIsEnabled, bool & bLaserIsArmed, bool & bLaserAlarm);
 	inline void AssignLaserIndex(const LibMCDriver_Raylase_uint32 nLaserIndex);
 	inline LibMCDriver_Raylase_uint32 GetAssignedLaserIndex();
+	inline void DrawLayerWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData);
 	inline void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS);
 	inline void SetRotationalCoordinateTransform(const LibMCDriver_Raylase_double dM11, const LibMCDriver_Raylase_double dM12, const LibMCDriver_Raylase_double dM21, const LibMCDriver_Raylase_double dM22);
 	inline void GetRotationalCoordinateTransform(LibMCDriver_Raylase_double & dM11, LibMCDriver_Raylase_double & dM12, LibMCDriver_Raylase_double & dM21, LibMCDriver_Raylase_double & dM22);
@@ -577,6 +582,7 @@ public:
 	inline PRaylaseCard GetConnectedCard(const std::string & sCardName);
 	inline bool CardExists(const std::string & sCardName);
 	inline void DisconnectCard(const std::string & sCardName);
+	inline void DrawLayerMultiLaserWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const bool bFailIfNonAssignedDataExists, const ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData);
 	inline void DrawLayerMultiLaser(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const bool bFailIfNonAssignedDataExists, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS);
 };
 	
@@ -729,6 +735,7 @@ public:
 		pWrapperTable->m_RaylaseCard_GetLaserStatus = nullptr;
 		pWrapperTable->m_RaylaseCard_AssignLaserIndex = nullptr;
 		pWrapperTable->m_RaylaseCard_GetAssignedLaserIndex = nullptr;
+		pWrapperTable->m_RaylaseCard_DrawLayerWithCallback = nullptr;
 		pWrapperTable->m_RaylaseCard_DrawLayer = nullptr;
 		pWrapperTable->m_RaylaseCard_SetRotationalCoordinateTransform = nullptr;
 		pWrapperTable->m_RaylaseCard_GetRotationalCoordinateTransform = nullptr;
@@ -742,6 +749,7 @@ public:
 		pWrapperTable->m_Driver_Raylase_GetConnectedCard = nullptr;
 		pWrapperTable->m_Driver_Raylase_CardExists = nullptr;
 		pWrapperTable->m_Driver_Raylase_DisconnectCard = nullptr;
+		pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaserWithCallback = nullptr;
 		pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaser = nullptr;
 		pWrapperTable->m_GetVersion = nullptr;
 		pWrapperTable->m_GetLastError = nullptr;
@@ -1044,6 +1052,15 @@ public:
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_RaylaseCard_DrawLayerWithCallback = (PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_drawlayerwithcallback");
+		#else // _WIN32
+		pWrapperTable->m_RaylaseCard_DrawLayerWithCallback = (PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_drawlayerwithcallback");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RaylaseCard_DrawLayerWithCallback == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_RaylaseCard_DrawLayer = (PLibMCDriver_RaylaseRaylaseCard_DrawLayerPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_drawlayer");
 		#else // _WIN32
 		pWrapperTable->m_RaylaseCard_DrawLayer = (PLibMCDriver_RaylaseRaylaseCard_DrawLayerPtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_drawlayer");
@@ -1158,6 +1175,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Driver_Raylase_DisconnectCard == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaserWithCallback = (PLibMCDriver_RaylaseDriver_Raylase_DrawLayerMultiLaserWithCallbackPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_driver_raylase_drawlayermultilaserwithcallback");
+		#else // _WIN32
+		pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaserWithCallback = (PLibMCDriver_RaylaseDriver_Raylase_DrawLayerMultiLaserWithCallbackPtr) dlsym(hLibrary, "libmcdriver_raylase_driver_raylase_drawlayermultilaserwithcallback");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaserWithCallback == nullptr)
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -1356,6 +1382,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_GetAssignedLaserIndex == nullptr) )
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_drawlayerwithcallback", (void**)&(pWrapperTable->m_RaylaseCard_DrawLayerWithCallback));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_DrawLayerWithCallback == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_drawlayer", (void**)&(pWrapperTable->m_RaylaseCard_DrawLayer));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_DrawLayer == nullptr) )
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -1406,6 +1436,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_raylase_driver_raylase_disconnectcard", (void**)&(pWrapperTable->m_Driver_Raylase_DisconnectCard));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_Raylase_DisconnectCard == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_driver_raylase_drawlayermultilaserwithcallback", (void**)&(pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaserWithCallback));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaserWithCallback == nullptr) )
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_raylase_driver_raylase_drawlayermultilaser", (void**)&(pWrapperTable->m_Driver_Raylase_DrawLayerMultiLaser));
@@ -1756,7 +1790,19 @@ public:
 	}
 	
 	/**
-	* CRaylaseCard::DrawLayer - Draws a layer of a build stream. Blocks until the layer is drawn.
+	* CRaylaseCard::DrawLayerWithCallback - Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
+	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+	* @param[in] nLayerIndex - Layer index of the build file.
+	* @param[in] pCancellationCallback - A callback that is repeatedly checked for canceling the exposure.
+	* @param[in] pUserData - pointer to arbitrary user data that is passed without modification to the callback.
+	*/
+	void CRaylaseCard::DrawLayerWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RaylaseCard_DrawLayerWithCallback(m_pHandle, sStreamUUID.c_str(), nLayerIndex, pCancellationCallback, pUserData));
+	}
+	
+	/**
+	* CRaylaseCard::DrawLayer - Draws a layer of a build stream with timeout. Blocks until the layer is drawn.
 	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 	* @param[in] nLayerIndex - Layer index of the build file.
 	* @param[in] nScanningTimeoutInMS - Maximum duration of the scanning process in milliseconds.
@@ -1906,6 +1952,19 @@ public:
 	void CDriver_Raylase::DisconnectCard(const std::string & sCardName)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_Driver_Raylase_DisconnectCard(m_pHandle, sCardName.c_str()));
+	}
+	
+	/**
+	* CDriver_Raylase::DrawLayerMultiLaserWithCallback - Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.
+	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+	* @param[in] nLayerIndex - Layer index of the build file.
+	* @param[in] bFailIfNonAssignedDataExists - If true, the call will fail in case a layer contains data that is not assigned to any defined scanner card.
+	* @param[in] pCancellationCallback - A callback that is repeatedly checked for canceling the exposure.
+	* @param[in] pUserData - pointer to arbitrary user data that is passed without modification to the callback.
+	*/
+	void CDriver_Raylase::DrawLayerMultiLaserWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const bool bFailIfNonAssignedDataExists, const ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_Raylase_DrawLayerMultiLaserWithCallback(m_pHandle, sStreamUUID.c_str(), nLayerIndex, bFailIfNonAssignedDataExists, pCancellationCallback, pUserData));
 	}
 	
 	/**

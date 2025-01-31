@@ -460,7 +460,16 @@ public:
 	virtual LibMCDriver_Raylase_uint32 GetAssignedLaserIndex() = 0;
 
 	/**
-	* IRaylaseCard::DrawLayer - Draws a layer of a build stream. Blocks until the layer is drawn.
+	* IRaylaseCard::DrawLayerWithCallback - Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
+	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+	* @param[in] nLayerIndex - Layer index of the build file.
+	* @param[in] pCancellationCallback - callback function
+	* @param[in] nUserData - pointer to arbitrary user data that is passed without modification to the callback.
+	*/
+	virtual void DrawLayerWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData) = 0;
+
+	/**
+	* IRaylaseCard::DrawLayer - Draws a layer of a build stream with timeout. Blocks until the layer is drawn.
 	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 	* @param[in] nLayerIndex - Layer index of the build file.
 	* @param[in] nScanningTimeoutInMS - Maximum duration of the scanning process in milliseconds.
@@ -561,6 +570,16 @@ public:
 	* @param[in] sCardName - Name of scanner card to disconnect. Card will be removed from driver.
 	*/
 	virtual void DisconnectCard(const std::string & sCardName) = 0;
+
+	/**
+	* IDriver_Raylase::DrawLayerMultiLaserWithCallback - Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.
+	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+	* @param[in] nLayerIndex - Layer index of the build file.
+	* @param[in] bFailIfNonAssignedDataExists - If true, the call will fail in case a layer contains data that is not assigned to any defined scanner card.
+	* @param[in] pCancellationCallback - callback function
+	* @param[in] nUserData - pointer to arbitrary user data that is passed without modification to the callback.
+	*/
+	virtual void DrawLayerMultiLaserWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const bool bFailIfNonAssignedDataExists, const LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData) = 0;
 
 	/**
 	* IDriver_Raylase::DrawLayerMultiLaser - Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.

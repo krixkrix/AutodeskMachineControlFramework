@@ -123,7 +123,44 @@ LibMCDriver_Raylase_uint32 CRaylaseCard::GetAssignedLaserIndex()
     return m_pRaylaseCardImpl->getAssignedLaserIndex();
 }
 
-void CRaylaseCard::DrawLayer(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS)
+void onCheckSingleLaserScanningTimeout(uint64_t nMillisecondsPassed, void* pUserData, bool* pbCancel)
+{
+    if (pbCancel) {
+        *pbCancel = false;
+
+        if (pUserData) {
+            sScanningTimeoutData* pTimeOutData = (sScanningTimeoutData*)pUserData;
+            uint64_t nTimeoutInMilliseconds = pTimeOutData->m_nTimeOutInMilliseconds;
+
+            if (nMillisecondsPassed > nTimeoutInMilliseconds) {
+                if (pTimeOutData->m_pDriverEnvironment) {
+                    pTimeOutData->m_pDriverEnvironment->LogMessage("Raylase timeout of " + std::to_string(nTimeoutInMilliseconds) + "ms has passed.");
+                }
+
+                *pbCancel = true;
+
+            }
+        }
+        else {
+            *pbCancel = true;
+
+        }
+    }
+
+}
+
+void CRaylaseCard::DrawLayer(const std::string& sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS)
+{
+    auto pDriverEnvironment = m_pRaylaseCardImpl->getDriverEnvironment();
+
+    sScanningTimeoutData userData;
+    userData.m_nTimeOutInMilliseconds = nScanningTimeoutInMS;
+    userData.m_pDriverEnvironment = pDriverEnvironment.get();
+
+    DrawLayerWithCallback(sStreamUUID, nLayerIndex, onCheckSingleLaserScanningTimeout, (void*)&userData);
+}
+
+void CRaylaseCard::DrawLayerWithCallback(const std::string& sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData)
 {
     bool bVerbose = true;
 
@@ -166,9 +203,14 @@ void CRaylaseCard::DrawLayer(const std::string & sStreamUUID, const LibMCDriver_
             if (nCurrentTime < nStartTime)
                 throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDSYSTEMTIMING);
 
-            uint64_t nMillisecondsPassed = nCurrentTime - nStartTime;
-            if (nMillisecondsPassed > nScanningTimeoutInMS)
-                throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_SCANNINGTIMEOUT);
+            if (pCancellationCallback != nullptr) {
+                uint64_t nMillisecondsPassed = nCurrentTime - nStartTime;
+                bool bCancel = false;
+                pCancellationCallback(nMillisecondsPassed, pUserData, &bCancel);
+                if (bCancel)
+                    throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED);
+
+            }
 
             done = pList->waitForExecution(100);
             if (bVerbose)

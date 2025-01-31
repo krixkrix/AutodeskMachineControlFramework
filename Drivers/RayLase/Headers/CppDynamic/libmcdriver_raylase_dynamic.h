@@ -312,7 +312,19 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_AssignLaserI
 typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_GetAssignedLaserIndexPtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard, LibMCDriver_Raylase_uint32 * pLaserIndex);
 
 /**
-* Draws a layer of a build stream. Blocks until the layer is drawn.
+* Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+* @param[in] nLayerIndex - Layer index of the build file.
+* @param[in] pCancellationCallback - A callback that is repeatedly checked for canceling the exposure.
+* @param[in] pUserData - pointer to arbitrary user data that is passed without modification to the callback.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pStreamUUID, LibMCDriver_Raylase_uint32 nLayerIndex, LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, LibMCDriver_Raylase_pvoid pUserData);
+
+/**
+* Draws a layer of a build stream with timeout. Blocks until the layer is drawn.
 *
 * @param[in] pRaylaseCard - RaylaseCard instance.
 * @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
@@ -453,6 +465,19 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseDriver_Raylase_Disconnec
 * @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 * @param[in] nLayerIndex - Layer index of the build file.
 * @param[in] bFailIfNonAssignedDataExists - If true, the call will fail in case a layer contains data that is not assigned to any defined scanner card.
+* @param[in] pCancellationCallback - A callback that is repeatedly checked for canceling the exposure.
+* @param[in] pUserData - pointer to arbitrary user data that is passed without modification to the callback.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseDriver_Raylase_DrawLayerMultiLaserWithCallbackPtr) (LibMCDriver_Raylase_Driver_Raylase pDriver_Raylase, const char * pStreamUUID, LibMCDriver_Raylase_uint32 nLayerIndex, bool bFailIfNonAssignedDataExists, LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, LibMCDriver_Raylase_pvoid pUserData);
+
+/**
+* Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.
+*
+* @param[in] pDriver_Raylase - Driver_Raylase instance.
+* @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+* @param[in] nLayerIndex - Layer index of the build file.
+* @param[in] bFailIfNonAssignedDataExists - If true, the call will fail in case a layer contains data that is not assigned to any defined scanner card.
 * @param[in] nScanningTimeoutInMS - Maximum duration of the scanning process in milliseconds.
 * @return error code or 0 (success)
 */
@@ -561,6 +586,7 @@ typedef struct {
 	PLibMCDriver_RaylaseRaylaseCard_GetLaserStatusPtr m_RaylaseCard_GetLaserStatus;
 	PLibMCDriver_RaylaseRaylaseCard_AssignLaserIndexPtr m_RaylaseCard_AssignLaserIndex;
 	PLibMCDriver_RaylaseRaylaseCard_GetAssignedLaserIndexPtr m_RaylaseCard_GetAssignedLaserIndex;
+	PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr m_RaylaseCard_DrawLayerWithCallback;
 	PLibMCDriver_RaylaseRaylaseCard_DrawLayerPtr m_RaylaseCard_DrawLayer;
 	PLibMCDriver_RaylaseRaylaseCard_SetRotationalCoordinateTransformPtr m_RaylaseCard_SetRotationalCoordinateTransform;
 	PLibMCDriver_RaylaseRaylaseCard_GetRotationalCoordinateTransformPtr m_RaylaseCard_GetRotationalCoordinateTransform;
@@ -574,6 +600,7 @@ typedef struct {
 	PLibMCDriver_RaylaseDriver_Raylase_GetConnectedCardPtr m_Driver_Raylase_GetConnectedCard;
 	PLibMCDriver_RaylaseDriver_Raylase_CardExistsPtr m_Driver_Raylase_CardExists;
 	PLibMCDriver_RaylaseDriver_Raylase_DisconnectCardPtr m_Driver_Raylase_DisconnectCard;
+	PLibMCDriver_RaylaseDriver_Raylase_DrawLayerMultiLaserWithCallbackPtr m_Driver_Raylase_DrawLayerMultiLaserWithCallback;
 	PLibMCDriver_RaylaseDriver_Raylase_DrawLayerMultiLaserPtr m_Driver_Raylase_DrawLayerMultiLaser;
 	PLibMCDriver_RaylaseGetVersionPtr m_GetVersion;
 	PLibMCDriver_RaylaseGetLastErrorPtr m_GetLastError;

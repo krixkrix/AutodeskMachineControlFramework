@@ -325,7 +325,19 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_rayla
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_getassignedlaserindex(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, LibMCDriver_Raylase_uint32 * pLaserIndex);
 
 /**
-* Draws a layer of a build stream. Blocks until the layer is drawn.
+* Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+* @param[in] nLayerIndex - Layer index of the build file.
+* @param[in] pCancellationCallback - A callback that is repeatedly checked for canceling the exposure.
+* @param[in] pUserData - pointer to arbitrary user data that is passed without modification to the callback.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_drawlayerwithcallback(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pStreamUUID, LibMCDriver_Raylase_uint32 nLayerIndex, LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, LibMCDriver_Raylase_pvoid pUserData);
+
+/**
+* Draws a layer of a build stream with timeout. Blocks until the layer is drawn.
 *
 * @param[in] pRaylaseCard - RaylaseCard instance.
 * @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
@@ -458,6 +470,19 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_drive
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_driver_raylase_disconnectcard(LibMCDriver_Raylase_Driver_Raylase pDriver_Raylase, const char * pCardName);
+
+/**
+* Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.
+*
+* @param[in] pDriver_Raylase - Driver_Raylase instance.
+* @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
+* @param[in] nLayerIndex - Layer index of the build file.
+* @param[in] bFailIfNonAssignedDataExists - If true, the call will fail in case a layer contains data that is not assigned to any defined scanner card.
+* @param[in] pCancellationCallback - A callback that is repeatedly checked for canceling the exposure.
+* @param[in] pUserData - pointer to arbitrary user data that is passed without modification to the callback.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_driver_raylase_drawlayermultilaserwithcallback(LibMCDriver_Raylase_Driver_Raylase pDriver_Raylase, const char * pStreamUUID, LibMCDriver_Raylase_uint32 nLayerIndex, bool bFailIfNonAssignedDataExists, LibMCDriver_Raylase::ExposureCancellationCallback pCancellationCallback, LibMCDriver_Raylase_pvoid pUserData);
 
 /**
 * Draws a layer of a build stream. Blocks until the layer is drawn. The call will fail if the laser assignment of the cards is not unique.
