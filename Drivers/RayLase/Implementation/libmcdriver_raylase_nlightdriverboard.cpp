@@ -77,9 +77,39 @@ void CNLightDriverBoard::ClearError()
     m_pCardImpl->clearNLightError();
 }
 
+LibMCDriver_Raylase_uint32 CNLightDriverBoard::GetRawDeviceState()
+{
+    return 0;
+}
+
 bool CNLightDriverBoard::HasError()
 {
-    return false; // TODO
+    return false;
+}
+
+bool CNLightDriverBoard::IsReady()
+{
+    return false;
+}
+
+bool CNLightDriverBoard::ExternalControlIsReady()
+{
+    return false;
+}
+
+bool CNLightDriverBoard::IsEmission()
+{
+    return false;
+}
+
+bool CNLightDriverBoard::IsFirmwareReady()
+{
+    return false;
+}
+
+bool CNLightDriverBoard::IsWaterFlow()
+{
+    return false;
 }
 
 

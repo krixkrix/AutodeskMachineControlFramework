@@ -74,8 +74,20 @@ public:
 	void ClearError() override;
 
 	void SetLaserMode(const LibMCDriver_Raylase_uint32 nLaserMode) override;
+	
+	LibMCDriver_Raylase_uint32 GetRawDeviceState() override;
 
 	bool HasError() override;
+
+	bool IsReady() override;
+
+	bool ExternalControlIsReady() override;
+
+	bool IsEmission() override;
+
+	bool IsFirmwareReady() override;
+
+	bool IsWaterFlow() override;
 
 };
 

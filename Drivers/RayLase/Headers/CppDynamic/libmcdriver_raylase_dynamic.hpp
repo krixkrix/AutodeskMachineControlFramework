@@ -520,7 +520,13 @@ public:
 	inline void DisableLaser();
 	inline void ClearError();
 	inline void SetLaserMode(const LibMCDriver_Raylase_uint32 nLaserMode);
+	inline LibMCDriver_Raylase_uint32 GetRawDeviceState();
 	inline bool HasError();
+	inline bool IsReady();
+	inline bool ExternalControlIsReady();
+	inline bool IsEmission();
+	inline bool IsFirmwareReady();
+	inline bool IsWaterFlow();
 };
 	
 /*************************************************************************************************************************
@@ -719,7 +725,13 @@ public:
 		pWrapperTable->m_NLightDriverBoard_DisableLaser = nullptr;
 		pWrapperTable->m_NLightDriverBoard_ClearError = nullptr;
 		pWrapperTable->m_NLightDriverBoard_SetLaserMode = nullptr;
+		pWrapperTable->m_NLightDriverBoard_GetRawDeviceState = nullptr;
 		pWrapperTable->m_NLightDriverBoard_HasError = nullptr;
+		pWrapperTable->m_NLightDriverBoard_IsReady = nullptr;
+		pWrapperTable->m_NLightDriverBoard_ExternalControlIsReady = nullptr;
+		pWrapperTable->m_NLightDriverBoard_IsEmission = nullptr;
+		pWrapperTable->m_NLightDriverBoard_IsFirmwareReady = nullptr;
+		pWrapperTable->m_NLightDriverBoard_IsWaterFlow = nullptr;
 		pWrapperTable->m_RaylaseCard_IsConnected = nullptr;
 		pWrapperTable->m_RaylaseCard_ResetToSystemDefaults = nullptr;
 		pWrapperTable->m_RaylaseCard_EnableCommandLogging = nullptr;
@@ -908,12 +920,66 @@ public:
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_NLightDriverBoard_GetRawDeviceState = (PLibMCDriver_RaylaseNLightDriverBoard_GetRawDeviceStatePtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_getrawdevicestate");
+		#else // _WIN32
+		pWrapperTable->m_NLightDriverBoard_GetRawDeviceState = (PLibMCDriver_RaylaseNLightDriverBoard_GetRawDeviceStatePtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_getrawdevicestate");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_NLightDriverBoard_GetRawDeviceState == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_NLightDriverBoard_HasError = (PLibMCDriver_RaylaseNLightDriverBoard_HasErrorPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_haserror");
 		#else // _WIN32
 		pWrapperTable->m_NLightDriverBoard_HasError = (PLibMCDriver_RaylaseNLightDriverBoard_HasErrorPtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_haserror");
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_NLightDriverBoard_HasError == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsReady = (PLibMCDriver_RaylaseNLightDriverBoard_IsReadyPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_isready");
+		#else // _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsReady = (PLibMCDriver_RaylaseNLightDriverBoard_IsReadyPtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_isready");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_NLightDriverBoard_IsReady == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_NLightDriverBoard_ExternalControlIsReady = (PLibMCDriver_RaylaseNLightDriverBoard_ExternalControlIsReadyPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_externalcontrolisready");
+		#else // _WIN32
+		pWrapperTable->m_NLightDriverBoard_ExternalControlIsReady = (PLibMCDriver_RaylaseNLightDriverBoard_ExternalControlIsReadyPtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_externalcontrolisready");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_NLightDriverBoard_ExternalControlIsReady == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsEmission = (PLibMCDriver_RaylaseNLightDriverBoard_IsEmissionPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_isemission");
+		#else // _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsEmission = (PLibMCDriver_RaylaseNLightDriverBoard_IsEmissionPtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_isemission");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_NLightDriverBoard_IsEmission == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsFirmwareReady = (PLibMCDriver_RaylaseNLightDriverBoard_IsFirmwareReadyPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_isfirmwareready");
+		#else // _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsFirmwareReady = (PLibMCDriver_RaylaseNLightDriverBoard_IsFirmwareReadyPtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_isfirmwareready");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_NLightDriverBoard_IsFirmwareReady == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsWaterFlow = (PLibMCDriver_RaylaseNLightDriverBoard_IsWaterFlowPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_nlightdriverboard_iswaterflow");
+		#else // _WIN32
+		pWrapperTable->m_NLightDriverBoard_IsWaterFlow = (PLibMCDriver_RaylaseNLightDriverBoard_IsWaterFlowPtr) dlsym(hLibrary, "libmcdriver_raylase_nlightdriverboard_iswaterflow");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_NLightDriverBoard_IsWaterFlow == nullptr)
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -1318,8 +1384,32 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_SetLaserMode == nullptr) )
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_getrawdevicestate", (void**)&(pWrapperTable->m_NLightDriverBoard_GetRawDeviceState));
+		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_GetRawDeviceState == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_haserror", (void**)&(pWrapperTable->m_NLightDriverBoard_HasError));
 		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_HasError == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_isready", (void**)&(pWrapperTable->m_NLightDriverBoard_IsReady));
+		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_IsReady == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_externalcontrolisready", (void**)&(pWrapperTable->m_NLightDriverBoard_ExternalControlIsReady));
+		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_ExternalControlIsReady == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_isemission", (void**)&(pWrapperTable->m_NLightDriverBoard_IsEmission));
+		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_IsEmission == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_isfirmwareready", (void**)&(pWrapperTable->m_NLightDriverBoard_IsFirmwareReady));
+		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_IsFirmwareReady == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_nlightdriverboard_iswaterflow", (void**)&(pWrapperTable->m_NLightDriverBoard_IsWaterFlow));
+		if ( (eLookupError != 0) || (pWrapperTable->m_NLightDriverBoard_IsWaterFlow == nullptr) )
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_isconnected", (void**)&(pWrapperTable->m_RaylaseCard_IsConnected));
@@ -1618,6 +1708,18 @@ public:
 	}
 	
 	/**
+	* CNLightDriverBoard::GetRawDeviceState - Returns the raw device state as bit field. See nLight extension board documentation for details.
+	* @return Device state bit field.
+	*/
+	LibMCDriver_Raylase_uint32 CNLightDriverBoard::GetRawDeviceState()
+	{
+		LibMCDriver_Raylase_uint32 resultDeviceState = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_GetRawDeviceState(m_pHandle, &resultDeviceState));
+		
+		return resultDeviceState;
+	}
+	
+	/**
 	* CNLightDriverBoard::HasError - Checks, if the laser is in an error state.
 	* @return Returns true if the laser is in an error state.
 	*/
@@ -1627,6 +1729,66 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_HasError(m_pHandle, &resultErrorState));
 		
 		return resultErrorState;
+	}
+	
+	/**
+	* CNLightDriverBoard::IsReady - Checks, if the laser is in a ready state.
+	* @return Returns true if the laser has the ready state flag set.
+	*/
+	bool CNLightDriverBoard::IsReady()
+	{
+		bool resultReadyState = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_IsReady(m_pHandle, &resultReadyState));
+		
+		return resultReadyState;
+	}
+	
+	/**
+	* CNLightDriverBoard::ExternalControlIsReady - Checks, if the laser state can react to external control.
+	* @return Returns true if the laser has the ExtControlReady state flag set.
+	*/
+	bool CNLightDriverBoard::ExternalControlIsReady()
+	{
+		bool resultExtControlReadyState = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_ExternalControlIsReady(m_pHandle, &resultExtControlReadyState));
+		
+		return resultExtControlReadyState;
+	}
+	
+	/**
+	* CNLightDriverBoard::IsEmission - Checks, if the laser is in emission state.
+	* @return Returns true if the laser has the emission on flag set.
+	*/
+	bool CNLightDriverBoard::IsEmission()
+	{
+		bool resultEmissionState = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_IsEmission(m_pHandle, &resultEmissionState));
+		
+		return resultEmissionState;
+	}
+	
+	/**
+	* CNLightDriverBoard::IsFirmwareReady - Checks, if the laser firmware is ready.
+	* @return Returns true if the laser has the firmware ready flag set.
+	*/
+	bool CNLightDriverBoard::IsFirmwareReady()
+	{
+		bool resultFirmwareReadyState = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_IsFirmwareReady(m_pHandle, &resultFirmwareReadyState));
+		
+		return resultFirmwareReadyState;
+	}
+	
+	/**
+	* CNLightDriverBoard::IsWaterFlow - Checks, if the laser water flow is on.
+	* @return Returns true if the laser has the water flow flag set.
+	*/
+	bool CNLightDriverBoard::IsWaterFlow()
+	{
+		bool resultWaterFlowState = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_NLightDriverBoard_IsWaterFlow(m_pHandle, &resultWaterFlowState));
+		
+		return resultWaterFlowState;
 	}
 	
 	/**

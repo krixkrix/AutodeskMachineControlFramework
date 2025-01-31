@@ -465,6 +465,32 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_setlasermode(Lib
 	}
 }
 
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_getrawdevicestate(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 * pDeviceState)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pDeviceState == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pDeviceState = pINLightDriverBoard->GetRawDeviceState();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_haserror(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pErrorState)
 {
 	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
@@ -477,6 +503,136 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_haserror(LibMCDr
 			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
 		
 		*pErrorState = pINLightDriverBoard->HasError();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_isready(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pReadyState)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pReadyState == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pReadyState = pINLightDriverBoard->IsReady();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_externalcontrolisready(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pExtControlReadyState)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pExtControlReadyState == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pExtControlReadyState = pINLightDriverBoard->ExternalControlIsReady();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_isemission(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pEmissionState)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pEmissionState == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pEmissionState = pINLightDriverBoard->IsEmission();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_isfirmwareready(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pFirmwareReadyState)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pFirmwareReadyState == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pFirmwareReadyState = pINLightDriverBoard->IsFirmwareReady();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_iswaterflow(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pWaterFlowState)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pWaterFlowState == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pWaterFlowState = pINLightDriverBoard->IsWaterFlow();
 
 		return LIBMCDRIVER_RAYLASE_SUCCESS;
 	}
@@ -1356,8 +1512,20 @@ LibMCDriver_RaylaseResult LibMCDriver_Raylase::Impl::LibMCDriver_Raylase_GetProc
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_clearerror;
 	if (sProcName == "libmcdriver_raylase_nlightdriverboard_setlasermode") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_setlasermode;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_getrawdevicestate") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_getrawdevicestate;
 	if (sProcName == "libmcdriver_raylase_nlightdriverboard_haserror") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_haserror;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_isready") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_isready;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_externalcontrolisready") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_externalcontrolisready;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_isemission") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_isemission;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_isfirmwareready") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_isfirmwareready;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_iswaterflow") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_iswaterflow;
 	if (sProcName == "libmcdriver_raylase_raylasecard_isconnected") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_isconnected;
 	if (sProcName == "libmcdriver_raylase_raylasecard_resettosystemdefaults") 

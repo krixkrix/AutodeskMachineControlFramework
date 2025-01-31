@@ -167,6 +167,15 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_ClearE
 typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_SetLaserModePtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode);
 
 /**
+* Returns the raw device state as bit field. See nLight extension board documentation for details.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pDeviceState - Device state bit field.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_GetRawDeviceStatePtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 * pDeviceState);
+
+/**
 * Checks, if the laser is in an error state.
 *
 * @param[in] pNLightDriverBoard - NLightDriverBoard instance.
@@ -174,6 +183,51 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_SetLas
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_HasErrorPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pErrorState);
+
+/**
+* Checks, if the laser is in a ready state.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pReadyState - Returns true if the laser has the ready state flag set.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_IsReadyPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pReadyState);
+
+/**
+* Checks, if the laser state can react to external control.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pExtControlReadyState - Returns true if the laser has the ExtControlReady state flag set.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_ExternalControlIsReadyPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pExtControlReadyState);
+
+/**
+* Checks, if the laser is in emission state.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pEmissionState - Returns true if the laser has the emission on flag set.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_IsEmissionPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pEmissionState);
+
+/**
+* Checks, if the laser firmware is ready.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pFirmwareReadyState - Returns true if the laser has the firmware ready flag set.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_IsFirmwareReadyPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pFirmwareReadyState);
+
+/**
+* Checks, if the laser water flow is on.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pWaterFlowState - Returns true if the laser has the water flow flag set.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_IsWaterFlowPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pWaterFlowState);
 
 /*************************************************************************************************************************
  Class definition for RaylaseCard
@@ -570,7 +624,13 @@ typedef struct {
 	PLibMCDriver_RaylaseNLightDriverBoard_DisableLaserPtr m_NLightDriverBoard_DisableLaser;
 	PLibMCDriver_RaylaseNLightDriverBoard_ClearErrorPtr m_NLightDriverBoard_ClearError;
 	PLibMCDriver_RaylaseNLightDriverBoard_SetLaserModePtr m_NLightDriverBoard_SetLaserMode;
+	PLibMCDriver_RaylaseNLightDriverBoard_GetRawDeviceStatePtr m_NLightDriverBoard_GetRawDeviceState;
 	PLibMCDriver_RaylaseNLightDriverBoard_HasErrorPtr m_NLightDriverBoard_HasError;
+	PLibMCDriver_RaylaseNLightDriverBoard_IsReadyPtr m_NLightDriverBoard_IsReady;
+	PLibMCDriver_RaylaseNLightDriverBoard_ExternalControlIsReadyPtr m_NLightDriverBoard_ExternalControlIsReady;
+	PLibMCDriver_RaylaseNLightDriverBoard_IsEmissionPtr m_NLightDriverBoard_IsEmission;
+	PLibMCDriver_RaylaseNLightDriverBoard_IsFirmwareReadyPtr m_NLightDriverBoard_IsFirmwareReady;
+	PLibMCDriver_RaylaseNLightDriverBoard_IsWaterFlowPtr m_NLightDriverBoard_IsWaterFlow;
 	PLibMCDriver_RaylaseRaylaseCard_IsConnectedPtr m_RaylaseCard_IsConnected;
 	PLibMCDriver_RaylaseRaylaseCard_ResetToSystemDefaultsPtr m_RaylaseCard_ResetToSystemDefaults;
 	PLibMCDriver_RaylaseRaylaseCard_EnableCommandLoggingPtr m_RaylaseCard_EnableCommandLogging;

@@ -180,6 +180,15 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nligh
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_setlasermode(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode);
 
 /**
+* Returns the raw device state as bit field. See nLight extension board documentation for details.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pDeviceState - Device state bit field.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_getrawdevicestate(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 * pDeviceState);
+
+/**
 * Checks, if the laser is in an error state.
 *
 * @param[in] pNLightDriverBoard - NLightDriverBoard instance.
@@ -187,6 +196,51 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nligh
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_haserror(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pErrorState);
+
+/**
+* Checks, if the laser is in a ready state.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pReadyState - Returns true if the laser has the ready state flag set.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_isready(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pReadyState);
+
+/**
+* Checks, if the laser state can react to external control.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pExtControlReadyState - Returns true if the laser has the ExtControlReady state flag set.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_externalcontrolisready(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pExtControlReadyState);
+
+/**
+* Checks, if the laser is in emission state.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pEmissionState - Returns true if the laser has the emission on flag set.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_isemission(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pEmissionState);
+
+/**
+* Checks, if the laser firmware is ready.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pFirmwareReadyState - Returns true if the laser has the firmware ready flag set.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_isfirmwareready(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pFirmwareReadyState);
+
+/**
+* Checks, if the laser water flow is on.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pWaterFlowState - Returns true if the laser has the water flow flag set.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_iswaterflow(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pWaterFlowState);
 
 /*************************************************************************************************************************
  Class definition for RaylaseCard

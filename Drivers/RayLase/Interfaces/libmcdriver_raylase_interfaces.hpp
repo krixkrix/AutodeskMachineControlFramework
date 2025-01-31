@@ -356,10 +356,46 @@ public:
 	virtual void SetLaserMode(const LibMCDriver_Raylase_uint32 nLaserMode) = 0;
 
 	/**
+	* INLightDriverBoard::GetRawDeviceState - Returns the raw device state as bit field. See nLight extension board documentation for details.
+	* @return Device state bit field.
+	*/
+	virtual LibMCDriver_Raylase_uint32 GetRawDeviceState() = 0;
+
+	/**
 	* INLightDriverBoard::HasError - Checks, if the laser is in an error state.
 	* @return Returns true if the laser is in an error state.
 	*/
 	virtual bool HasError() = 0;
+
+	/**
+	* INLightDriverBoard::IsReady - Checks, if the laser is in a ready state.
+	* @return Returns true if the laser has the ready state flag set.
+	*/
+	virtual bool IsReady() = 0;
+
+	/**
+	* INLightDriverBoard::ExternalControlIsReady - Checks, if the laser state can react to external control.
+	* @return Returns true if the laser has the ExtControlReady state flag set.
+	*/
+	virtual bool ExternalControlIsReady() = 0;
+
+	/**
+	* INLightDriverBoard::IsEmission - Checks, if the laser is in emission state.
+	* @return Returns true if the laser has the emission on flag set.
+	*/
+	virtual bool IsEmission() = 0;
+
+	/**
+	* INLightDriverBoard::IsFirmwareReady - Checks, if the laser firmware is ready.
+	* @return Returns true if the laser has the firmware ready flag set.
+	*/
+	virtual bool IsFirmwareReady() = 0;
+
+	/**
+	* INLightDriverBoard::IsWaterFlow - Checks, if the laser water flow is on.
+	* @return Returns true if the laser has the water flow flag set.
+	*/
+	virtual bool IsWaterFlow() = 0;
 
 };
 

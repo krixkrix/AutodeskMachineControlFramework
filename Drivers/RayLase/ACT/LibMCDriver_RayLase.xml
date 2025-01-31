@@ -188,8 +188,32 @@ Custom implementation
 			<param name="LaserMode" type="uint32" pass="in" description="Sets the laser mode." />
 		</method>
 
+		<method name="GetRawDeviceState" description="Returns the raw device state as bit field. See nLight extension board documentation for details.">
+			<param name="DeviceState" type="uint32" pass="return" description="Device state bit field." />
+		</method>
+
 		<method name="HasError" description="Checks, if the laser is in an error state.">
 			<param name="ErrorState" type="bool" pass="return" description="Returns true if the laser is in an error state." />
+		</method>
+
+		<method name="IsReady" description="Checks, if the laser is in a ready state.">
+			<param name="ReadyState" type="bool" pass="return" description="Returns true if the laser has the ready state flag set." />
+		</method>
+
+		<method name="ExternalControlIsReady" description="Checks, if the laser state can react to external control.">
+			<param name="ExtControlReadyState" type="bool" pass="return" description="Returns true if the laser has the ExtControlReady state flag set." />
+		</method>
+
+		<method name="IsEmission" description="Checks, if the laser is in emission state.">
+			<param name="EmissionState" type="bool" pass="return" description="Returns true if the laser has the emission on flag set." />
+		</method>
+
+		<method name="IsFirmwareReady" description="Checks, if the laser firmware is ready.">
+			<param name="FirmwareReadyState" type="bool" pass="return" description="Returns true if the laser has the firmware ready flag set." />
+		</method>
+
+		<method name="IsWaterFlow" description="Checks, if the laser water flow is on.">
+			<param name="WaterFlowState" type="bool" pass="return" description="Returns true if the laser has the water flow flag set." />
 		</method>
 
 	</class>
