@@ -323,20 +323,20 @@ void CRaylaseCardImpl::abortListExecution()
 void CRaylaseCardImpl::initializeNLightLaser()
 {
 
-    m_pDriverEnvironment->LogMessage("Initializate nLights SPI mode..");
+    /*m_pDriverEnvironment->LogMessage("Initializate nLights SPI mode..");
     CRaylaseAPIField_rlSpiConfig_v3 spiConfig;
     m_pSDK->checkError(m_pSDK->rlSfioSpiInitConfig((rlScannerConfig*)spiConfig.getData()));    
     m_pSDK->checkError(m_pSDK->rlSfioSpiGetConfig(m_Handle, (rlScannerConfig*)spiConfig.getData()));
     spiConfig.setBool("Module2.Enabled", true);
-    spiConfig.setEnum("Module2.BitOrder", "MsbFirst");
+    spiConfig.setEnumRaw("Module2.BitOrder", 0 );//"MsbFirst" );
     spiConfig.setDouble("Module2.PreDelay", 0.5);
     spiConfig.setDouble("Module2.PostDelay", 0.5);
     spiConfig.setDouble("Module2.FrameDelay", 0.25);
-    spiConfig.setEnum("Module2.SpiSyncMode", "SyncPerFrame");
+    spiConfig.setEnumRaw("Module2.SpiSyncMode", 1); //"SyncPerFrame" 
     spiConfig.setDouble("Module2.ClockPeriod", 0.125);
     spiConfig.setInteger("Module2.BitsPerWord", 32);
 
-    m_pSDK->checkError(m_pSDK->rlScannerSetConfig(m_Handle, (rlScannerConfig*)spiConfig.getData()));
+    m_pSDK->checkError(m_pSDK->rlScannerSetConfig(m_Handle, (rlScannerConfig*)spiConfig.getData())); */
 
     m_pDriverEnvironment->LogMessage("Enabling nLight 24V...");
     m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_24V));
