@@ -61,7 +61,7 @@ class CJSONArray : public virtual IJSONArray, public virtual CBase {
 private:
 
 	std::shared_ptr<rapidjson::Document> m_pDocument;
-	rapidjson::Value* m_pInstance;
+	rapidjson::GenericValue<rapidjson::UTF8<>>* m_pInstance;
 
 public:
 
