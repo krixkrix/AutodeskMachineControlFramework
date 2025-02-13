@@ -4592,10 +4592,12 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getmembercount(LibMCEnv_JSO
 *
 * @param[in] pJSONObject - JSONObject instance.
 * @param[in] nIndex - Index of the member, 0-based. Fails if larger or equal than MemberCount
-* @param[in] pName - Name of the member.
+* @param[in] nNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pNameBuffer -  buffer of Name of the member., may be NULL
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getmembername(LibMCEnv_JSONObject pJSONObject, LibMCEnv_uint64 nIndex, const char * pName);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getmembername(LibMCEnv_JSONObject pJSONObject, LibMCEnv_uint64 nIndex, const LibMCEnv_uint32 nNameBufferSize, LibMCEnv_uint32* pNameNeededChars, char * pNameBuffer);
 
 /**
 * Returns the member type. Returns unknown, if the member does not exist.
@@ -4693,30 +4695,30 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addvalue(LibMCEnv_JSONObjec
 *
 * @param[in] pJSONObject - JSONObject instance.
 * @param[in] pName - Name of the member.
-* @param[out] pValue - Member value.
+* @param[in] nValue - Member value.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addintegervalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_int64 * pValue);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addintegervalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_int64 nValue);
 
 /**
 * Adds a member as double value. Fails if member already exists.
 *
 * @param[in] pJSONObject - JSONObject instance.
 * @param[in] pName - Name of the member.
-* @param[out] pValue - Member value.
+* @param[in] dValue - Member value.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_adddoublevalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_double * pValue);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_adddoublevalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_double dValue);
 
 /**
 * Adds a member as bool value. Fails if member already exists.
 *
 * @param[in] pJSONObject - JSONObject instance.
 * @param[in] pName - Name of the member.
-* @param[out] pValue - Member value.
+* @param[in] bValue - Member value.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addboolvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, bool * pValue);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addboolvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, bool bValue);
 
 /**
 * Returns a member as object value. Returns empty object. Fails if member already exists.
@@ -4737,6 +4739,17 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addobjectvalue(LibMCEnv_JSO
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_addarrayvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_JSONArray * pValue);
+
+/**
+* Serialises the Object to a String.
+*
+* @param[in] pJSONObject - JSONObject instance.
+* @param[in] nStringValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pStringValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pStringValueBuffer -  buffer of Serialised string value., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_serializetostring(LibMCEnv_JSONObject pJSONObject, const LibMCEnv_uint32 nStringValueBufferSize, LibMCEnv_uint32* pStringValueNeededChars, char * pStringValueBuffer);
 
 /*************************************************************************************************************************
  Class definition for JSONArray
@@ -4845,28 +4858,28 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addvalue(LibMCEnv_JSONArray 
 * Adds a member as integer value.
 *
 * @param[in] pJSONArray - JSONArray instance.
-* @param[out] pValue - Member value.
+* @param[in] nValue - Member value.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addintegervalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_int64 * pValue);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addintegervalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_int64 nValue);
 
 /**
 * Adds a member as double value.
 *
 * @param[in] pJSONArray - JSONArray instance.
-* @param[out] pValue - Member value.
+* @param[in] dValue - Member value.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_adddoublevalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_double * pValue);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_adddoublevalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_double dValue);
 
 /**
 * Adds a member as bool value.
 *
 * @param[in] pJSONArray - JSONArray instance.
-* @param[out] pValue - Member value.
+* @param[in] bValue - Member value.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addboolvalue(LibMCEnv_JSONArray pJSONArray, bool * pValue);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addboolvalue(LibMCEnv_JSONArray pJSONArray, bool bValue);
 
 /**
 * Returns a member as object value. Returns empty object.
@@ -4885,6 +4898,17 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addobjectvalue(LibMCEnv_JSON
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_addarrayvalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_JSONArray * pValue);
+
+/**
+* Serialises the Array to a String.
+*
+* @param[in] pJSONArray - JSONArray instance.
+* @param[in] nStringValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pStringValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pStringValueBuffer -  buffer of Serialised string value., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_serializetostring(LibMCEnv_JSONArray pJSONArray, const LibMCEnv_uint32 nStringValueBufferSize, LibMCEnv_uint32* pStringValueNeededChars, char * pStringValueBuffer);
 
 /*************************************************************************************************************************
  Class definition for XMLDocumentNode
@@ -6048,6 +6072,36 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_parsexmlstring(LibMC
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_parsexmldata(LibMCEnv_DriverEnvironment pDriverEnvironment, LibMCEnv_uint64 nXMLDataBufferSize, const LibMCEnv_uint8 * pXMLDataBuffer, LibMCEnv_XMLDocument * pXMLDocument);
+
+/**
+* creates an empty JSON object.
+*
+* @param[in] pDriverEnvironment - DriverEnvironment instance.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_createjsonobject(LibMCEnv_DriverEnvironment pDriverEnvironment, LibMCEnv_JSONObject * pJSONObject);
+
+/**
+* parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+*
+* @param[in] pDriverEnvironment - DriverEnvironment instance.
+* @param[in] pJSONString - XML String.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_parsejsonstring(LibMCEnv_DriverEnvironment pDriverEnvironment, const char * pJSONString, LibMCEnv_JSONObject * pJSONObject);
+
+/**
+* parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+*
+* @param[in] pDriverEnvironment - DriverEnvironment instance.
+* @param[in] nJSONDataBufferSize - Number of elements in buffer
+* @param[in] pJSONDataBuffer - uint8 buffer of JSON Binary data.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_parsejsondata(LibMCEnv_DriverEnvironment pDriverEnvironment, LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer, LibMCEnv_JSONObject * pJSONObject);
 
 /**
 * creates an empty data table.
@@ -7790,6 +7844,15 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_waitforsignal(LibMCEn
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_getunhandledsignal(LibMCEnv_StateEnvironment pStateEnvironment, const char * pSignalTypeName, LibMCEnv_SignalHandler * pHandlerInstance);
 
 /**
+* Clears all unhandled signals of a certain type and marks them invalid.
+*
+* @param[in] pStateEnvironment - StateEnvironment instance.
+* @param[in] pSignalTypeName - Name Of Signal to be cleared.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_clearunhandledsignalsoftype(LibMCEnv_StateEnvironment pStateEnvironment, const char * pSignalTypeName);
+
+/**
 * Clears all unhandled signals and marks them invalid.
 *
 * @param[in] pStateEnvironment - StateEnvironment instance.
@@ -8309,6 +8372,36 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_parsexmlstring(LibMCE
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_parsexmldata(LibMCEnv_StateEnvironment pStateEnvironment, LibMCEnv_uint64 nXMLDataBufferSize, const LibMCEnv_uint8 * pXMLDataBuffer, LibMCEnv_XMLDocument * pXMLDocument);
+
+/**
+* creates an empty JSON object.
+*
+* @param[in] pStateEnvironment - StateEnvironment instance.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_createjsonobject(LibMCEnv_StateEnvironment pStateEnvironment, LibMCEnv_JSONObject * pJSONObject);
+
+/**
+* parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+*
+* @param[in] pStateEnvironment - StateEnvironment instance.
+* @param[in] pJSONString - XML String.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_parsejsonstring(LibMCEnv_StateEnvironment pStateEnvironment, const char * pJSONString, LibMCEnv_JSONObject * pJSONObject);
+
+/**
+* parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+*
+* @param[in] pStateEnvironment - StateEnvironment instance.
+* @param[in] nJSONDataBufferSize - Number of elements in buffer
+* @param[in] pJSONDataBuffer - uint8 buffer of JSON Binary data.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_parsejsondata(LibMCEnv_StateEnvironment pStateEnvironment, LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer, LibMCEnv_JSONObject * pJSONObject);
 
 /**
 * creates an empty data table.
@@ -9011,6 +9104,36 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_parsexmlstring(LibMCEnv_
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_parsexmldata(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_uint64 nXMLDataBufferSize, const LibMCEnv_uint8 * pXMLDataBuffer, LibMCEnv_XMLDocument * pXMLDocument);
 
 /**
+* creates an empty JSON object.
+*
+* @param[in] pUIEnvironment - UIEnvironment instance.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_createjsonobject(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_JSONObject * pJSONObject);
+
+/**
+* parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+*
+* @param[in] pUIEnvironment - UIEnvironment instance.
+* @param[in] pJSONString - XML String.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_parsejsonstring(LibMCEnv_UIEnvironment pUIEnvironment, const char * pJSONString, LibMCEnv_JSONObject * pJSONObject);
+
+/**
+* parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+*
+* @param[in] pUIEnvironment - UIEnvironment instance.
+* @param[in] nJSONDataBufferSize - Number of elements in buffer
+* @param[in] pJSONDataBuffer - uint8 buffer of JSON Binary data.
+* @param[out] pJSONObject - JSON Object Instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_parsejsondata(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer, LibMCEnv_JSONObject * pJSONObject);
+
+/**
 * creates an empty data table.
 *
 * @param[in] pUIEnvironment - UIEnvironment instance.
@@ -9411,7 +9534,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_addexternaleventresultva
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_uienvironment_getexternaleventparameters(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_JSONObject * pParameterValue);
 
 /**
-* Returns the external event results. This JSON Object will be passed on to an ext
+* Returns the external event results. This JSON Object will be passed on to the external API as result.
 *
 * @param[in] pUIEnvironment - UIEnvironment instance.
 * @param[out] pParameterValue - Parameter value.

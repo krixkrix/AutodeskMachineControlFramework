@@ -307,6 +307,23 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_NOYAXISCOLUMNGIVEN 10210 /** No Y Axis Column given */
 #define LIBMCENV_ERROR_INVALIDSCATTERPLOTPOINTINDEX 10211 /** Invalid scatter plot index. */
 #define LIBMCENV_ERROR_SCATTERPLOTNOTFOUND 10212 /** Scatter plot not found */
+#define LIBMCENV_ERROR_COULDNOTPARSEJSONSTRING 10213 /** Could not parse JSON string */
+#define LIBMCENV_ERROR_COULDNOTPARSEJSONDATA 10214 /** Could not parse JSON data */
+#define LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX 10215 /** Invalid JSON Member Index */
+#define LIBMCENV_ERROR_JSONMEMBERNOTFOUND 10216 /** JSON Member not found */
+#define LIBMCENV_ERROR_JSONMEMBERISNOTINTEGER 10217 /** JSON Member is not integer */
+#define LIBMCENV_ERROR_JSONMEMBERISNOTDOUBLE 10218 /** JSON Member is not double */
+#define LIBMCENV_ERROR_JSONMEMBERISNOTBOOL 10219 /** JSON Member is not bool */
+#define LIBMCENV_ERROR_JSONMEMBERISNOTOBJECT 10220 /** JSON Member is not object */
+#define LIBMCENV_ERROR_JSONMEMBERISNOTARRAY 10221 /** JSON Member is not array */
+#define LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTOBJECT 10222 /** Referenced JSON value is not object */
+#define LIBMCENV_ERROR_JSONMEMBERHASINVALIDTYPE 10223 /** JSON Member has invalid type */
+#define LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTARRAY 10224 /** Referenced JSON value is not array */
+#define LIBMCENV_ERROR_COULDNOTPARSEEVENTPARAMETERJSON 10225 /** Could not parse event parameter JSON */
+#define LIBMCENV_ERROR_DUPLICATEEXTERNALEVENTRETURNKEY 10226 /** Duplicate external event return key */
+#define LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING 10227 /** External event parameter is not of type string. */
+#define LIBMCENV_ERROR_JSONSTRINGISNOTOFTYPEOBJECT 10228 /** JSON String is not of type object. */
+#define LIBMCENV_ERROR_JSONDATAISNOTOFTYPEOBJECT 10229 /** JSON Data is not of type object. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -526,6 +543,23 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_NOYAXISCOLUMNGIVEN: return "No Y Axis Column given";
     case LIBMCENV_ERROR_INVALIDSCATTERPLOTPOINTINDEX: return "Invalid scatter plot index.";
     case LIBMCENV_ERROR_SCATTERPLOTNOTFOUND: return "Scatter plot not found";
+    case LIBMCENV_ERROR_COULDNOTPARSEJSONSTRING: return "Could not parse JSON string";
+    case LIBMCENV_ERROR_COULDNOTPARSEJSONDATA: return "Could not parse JSON data";
+    case LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX: return "Invalid JSON Member Index";
+    case LIBMCENV_ERROR_JSONMEMBERNOTFOUND: return "JSON Member not found";
+    case LIBMCENV_ERROR_JSONMEMBERISNOTINTEGER: return "JSON Member is not integer";
+    case LIBMCENV_ERROR_JSONMEMBERISNOTDOUBLE: return "JSON Member is not double";
+    case LIBMCENV_ERROR_JSONMEMBERISNOTBOOL: return "JSON Member is not bool";
+    case LIBMCENV_ERROR_JSONMEMBERISNOTOBJECT: return "JSON Member is not object";
+    case LIBMCENV_ERROR_JSONMEMBERISNOTARRAY: return "JSON Member is not array";
+    case LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTOBJECT: return "Referenced JSON value is not object";
+    case LIBMCENV_ERROR_JSONMEMBERHASINVALIDTYPE: return "JSON Member has invalid type";
+    case LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTARRAY: return "Referenced JSON value is not array";
+    case LIBMCENV_ERROR_COULDNOTPARSEEVENTPARAMETERJSON: return "Could not parse event parameter JSON";
+    case LIBMCENV_ERROR_DUPLICATEEXTERNALEVENTRETURNKEY: return "Duplicate external event return key";
+    case LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING: return "External event parameter is not of type string.";
+    case LIBMCENV_ERROR_JSONSTRINGISNOTOFTYPEOBJECT: return "JSON String is not of type object.";
+    case LIBMCENV_ERROR_JSONDATAISNOTOFTYPEOBJECT: return "JSON Data is not of type object.";
     default: return "unknown error";
   }
 }
@@ -629,11 +663,12 @@ namespace LibMCEnv {
   
   enum class eJSONObjectType : LibMCEnv_int32 {
     Unknown = 0,
-    String = 1,
-    Integer = 2,
-    Double = 3,
-    Object = 4,
-    Array = 5
+    StringType = 1,
+    IntegerType = 2,
+    DoubleType = 3,
+    ObjectType = 4,
+    ArrayType = 5,
+    BoolType = 6
   };
   
   enum class eImagePixelFormat : LibMCEnv_int32 {

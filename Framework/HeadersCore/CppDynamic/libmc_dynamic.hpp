@@ -727,6 +727,7 @@ public:
 			case LIBMC_ERROR_INVALIDCONTENTSTATEID: return "INVALIDCONTENTSTATEID";
 			case LIBMC_ERROR_INVALIDWIDGETREQUEST: return "INVALIDWIDGETREQUEST";
 			case LIBMC_ERROR_SOURCEVARIABLENOTFOUND: return "SOURCEVARIABLENOTFOUND";
+			case LIBMC_ERROR_INVALIDEVENTRETURNVALUES: return "INVALIDEVENTRETURNVALUES";
 		}
 		return "UNKNOWN";
 	}
@@ -1288,6 +1289,7 @@ public:
 			case LIBMC_ERROR_INVALIDCONTENTSTATEID: return "Invalid content state ID";
 			case LIBMC_ERROR_INVALIDWIDGETREQUEST: return "Invalid widget request";
 			case LIBMC_ERROR_SOURCEVARIABLENOTFOUND: return "Source variable not found";
+			case LIBMC_ERROR_INVALIDEVENTRETURNVALUES: return "Invalid event return values";
 		}
 		return "unknown error";
 	}

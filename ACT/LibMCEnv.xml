@@ -250,6 +250,24 @@
 		<error name="NOYAXISCOLUMNGIVEN" code="10210" description="No Y Axis Column given" />		
 		<error name="INVALIDSCATTERPLOTPOINTINDEX" code="10211" description="Invalid scatter plot index." />		
 		<error name="SCATTERPLOTNOTFOUND" code="10212" description="Scatter plot not found" />		
+		<error name="COULDNOTPARSEJSONSTRING" code="10213" description="Could not parse JSON string" />		
+		<error name="COULDNOTPARSEJSONDATA" code="10214" description="Could not parse JSON data" />		
+		<error name="INVALIDJSONMEMBERINDEX" code="10215" description="Invalid JSON Member Index" />		
+		<error name="JSONMEMBERNOTFOUND" code="10216" description="JSON Member not found" />		
+		<error name="JSONMEMBERISNOTINTEGER" code="10217" description="JSON Member is not integer" />		
+		<error name="JSONMEMBERISNOTDOUBLE" code="10218" description="JSON Member is not double" />		
+		<error name="JSONMEMBERISNOTBOOL" code="10219" description="JSON Member is not bool" />		
+		<error name="JSONMEMBERISNOTOBJECT" code="10220" description="JSON Member is not object" />		
+		<error name="JSONMEMBERISNOTARRAY" code="10221" description="JSON Member is not array" />		
+		<error name="REFERENCEDJSONVALUEISNOTOBJECT" code="10222" description="Referenced JSON value is not object" />		
+		<error name="JSONMEMBERHASINVALIDTYPE" code="10223" description="JSON Member has invalid type" />		
+		<error name="REFERENCEDJSONVALUEISNOTARRAY" code="10224" description="Referenced JSON value is not array" />		
+		<error name="COULDNOTPARSEEVENTPARAMETERJSON" code="10225" description="Could not parse event parameter JSON" />		
+		<error name="DUPLICATEEXTERNALEVENTRETURNKEY" code="10226" description="Duplicate external event return key" />		
+		<error name="EXTERNALEVENTPARAMETERISNOTSTRING" code="10227" description="External event parameter is not of type string." />		
+		<error name="JSONSTRINGISNOTOFTYPEOBJECT" code="10228" description="JSON String is not of type object." />		
+		<error name="JSONDATAISNOTOFTYPEOBJECT" code="10229" description="JSON Data is not of type object." />		
+		
 		
 	</errors>
 
@@ -274,11 +292,12 @@
 	
 	<enum name="JSONObjectType">
 		<option name="Unknown" value="0"/>
-		<option name="String" value="1"/>
-		<option name="Integer" value="2"/>
-		<option name="Double" value="3"/>
-		<option name="Object" value="4"/>
-		<option name="Array" value="5"/>
+		<option name="StringType" value="1"/>
+		<option name="IntegerType" value="2"/>
+		<option name="DoubleType" value="3"/>
+		<option name="ObjectType" value="4"/>
+		<option name="ArrayType" value="5"/>
+		<option name="BoolType" value="6"/>
 	</enum>	
 	
 		
@@ -2696,7 +2715,7 @@
 
 		<method name="GetMemberName" description="Returns the name of a member by index.">
 			<param name="Index" type="uint64" pass="in" description="Index of the member, 0-based. Fails if larger or equal than MemberCount" />
-			<param name="Name" type="string" pass="in" description="Name of the member." />
+			<param name="Name" type="string" pass="return" description="Name of the member." />
 		</method>
 
 		<method name="GetMemberType" description="Returns the member type. Returns unknown, if the member does not exist.">
@@ -2745,17 +2764,17 @@
 
 		<method name="AddIntegerValue" description="Adds a member as integer value. Fails if member already exists.">
 			<param name="Name" type="string" pass="in" description="Name of the member." />
-			<param name="Value" type="int64" pass="return" description="Member value." />
+			<param name="Value" type="int64" pass="in" description="Member value." />
 		</method>
 
 		<method name="AddDoubleValue" description="Adds a member as double value. Fails if member already exists.">
 			<param name="Name" type="string" pass="in" description="Name of the member." />
-			<param name="Value" type="double" pass="return" description="Member value." />
+			<param name="Value" type="double" pass="in" description="Member value." />
 		</method>
 
 		<method name="AddBoolValue" description="Adds a member as bool value. Fails if member already exists.">
 			<param name="Name" type="string" pass="in" description="Name of the member." />
-			<param name="Value" type="bool" pass="return" description="Member value." />
+			<param name="Value" type="bool" pass="in" description="Member value." />
 		</method>
 	
 		<method name="AddObjectValue" description="Returns a member as object value. Returns empty object. Fails if member already exists.">
@@ -2766,6 +2785,10 @@
 		<method name="AddArrayValue" description="Returns a member as object value. Returns empty array. Fails if member already exists.">
 			<param name="Name" type="string" pass="in" description="Name of the member." />
 			<param name="Value" type="class" class="JSONArray" pass="return" description="Member value." />
+		</method>
+
+		<method name="SerializeToString" description="Serialises the Object to a String.">
+			<param name="StringValue" type="string" pass="return" description="Serialised string value." />
 		</method>
 
 	</class>
@@ -2821,15 +2844,15 @@
 		</method>
 
 		<method name="AddIntegerValue" description="Adds a member as integer value.">
-			<param name="Value" type="int64" pass="return" description="Member value." />
+			<param name="Value" type="int64" pass="in" description="Member value." />
 		</method>
 
 		<method name="AddDoubleValue" description="Adds a member as double value.">
-			<param name="Value" type="double" pass="return" description="Member value." />
+			<param name="Value" type="double" pass="in" description="Member value." />
 		</method>
 
 		<method name="AddBoolValue" description="Adds a member as bool value.">
-			<param name="Value" type="bool" pass="return" description="Member value." />
+			<param name="Value" type="bool" pass="in" description="Member value." />
 		</method>
 	
 		<method name="AddObjectValue" description="Returns a member as object value. Returns empty object.">
@@ -2838,6 +2861,10 @@
 
 		<method name="AddArrayValue" description="Returns a member as object value. Returns empty array.">
 			<param name="Value" type="class" class="JSONArray" pass="return" description="Member value." />
+		</method>
+
+		<method name="SerializeToString" description="Serialises the Array to a String.">
+			<param name="StringValue" type="string" pass="return" description="Serialised string value." />
 		</method>
 
 	</class>
@@ -3432,6 +3459,20 @@
 		<method name="ParseXMLData" description = "parses a XML stored in a byte array and returns an XML Document instance. . Throws an error if XML is malformatted.">
 			<param name="XMLData" type="basicarray" class="uint8" pass="in" description="XML Binary data." />
 			<param name="XMLDocument" type="class" class="XMLDocument" pass="return" description="XML Document Instance." />
+		</method>
+
+		<method name="CreateJSONObject" description = "creates an empty JSON object.">
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
+		<method name="ParseJSONString" description = "parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.">
+			<param name="JSONString" type="string" pass="in" description="XML String." />
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
+		<method name="ParseJSONData" description = "parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.">
+			<param name="JSONData" type="basicarray" class="uint8" pass="in" description="JSON Binary data." />
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
 		</method>
 
 		<method name="CreateDataTable" description = "creates an empty data table.">
@@ -4275,6 +4316,10 @@
 			<param name="HandlerInstance" type="optionalclass" class="SignalHandler" pass="return" description="Signal object. If no signal has been found the signal handler object will be null." />
 		</method>		
 		
+		<method name="ClearUnhandledSignalsOfType" description="Clears all unhandled signals of a certain type and marks them invalid.">
+			<param name="SignalTypeName" type="string" pass="in" description="Name Of Signal to be cleared." />
+		</method>		
+
 		<method name="ClearAllUnhandledSignals" description="Clears all unhandled signals and marks them invalid.">
 		</method>		
 
@@ -4538,6 +4583,21 @@
 			<param name="XMLData" type="basicarray" class="uint8" pass="in" description="XML Binary data." />
 			<param name="XMLDocument" type="class" class="XMLDocument" pass="return" description="XML Document Instance." />
 		</method>
+		
+		<method name="CreateJSONObject" description = "creates an empty JSON object.">
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
+		<method name="ParseJSONString" description = "parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.">
+			<param name="JSONString" type="string" pass="in" description="XML String." />
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
+		<method name="ParseJSONData" description = "parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.">
+			<param name="JSONData" type="basicarray" class="uint8" pass="in" description="JSON Binary data." />
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+		
 		
 		<method name="CreateDataTable" description = "creates an empty data table.">
 			<param name="DataTableInstance" type="class" class="DataTable" pass="return" description="Data Table Instance." />
@@ -4892,6 +4952,20 @@
 			<param name="XMLDocument" type="class" class="XMLDocument" pass="return" description="XML Document Instance." />
 		</method>
 
+		<method name="CreateJSONObject" description = "creates an empty JSON object.">
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
+		<method name="ParseJSONString" description = "parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.">
+			<param name="JSONString" type="string" pass="in" description="XML String." />
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
+		<method name="ParseJSONData" description = "parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.">
+			<param name="JSONData" type="basicarray" class="uint8" pass="in" description="JSON Binary data." />
+			<param name="JSONObject" type="class" class="JSONObject" pass="return" description="JSON Object Instance." />
+		</method>
+
 		<method name="CreateDataTable" description = "creates an empty data table.">
 			<param name="DataTableInstance" type="class" class="DataTable" pass="return" description="Data Table Instance." />
 		</method>
@@ -5091,7 +5165,7 @@
 			<param name="ParameterValue" type="class" class="JSONObject" pass="return" description="Parameter value." />
 		</method>
 
-		<method name="GetExternalEventResults" description="Returns the external event results. This JSON Object will be passed on to an ext">
+		<method name="GetExternalEventResults" description="Returns the external event results. This JSON Object will be passed on to the external API as result.">
 			<param name="ParameterValue" type="class" class="JSONObject" pass="return" description="Parameter value." />
 		</method>
 

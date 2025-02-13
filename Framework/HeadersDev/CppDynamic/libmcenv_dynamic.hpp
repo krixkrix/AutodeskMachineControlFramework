@@ -636,6 +636,23 @@ public:
 			case LIBMCENV_ERROR_NOYAXISCOLUMNGIVEN: return "NOYAXISCOLUMNGIVEN";
 			case LIBMCENV_ERROR_INVALIDSCATTERPLOTPOINTINDEX: return "INVALIDSCATTERPLOTPOINTINDEX";
 			case LIBMCENV_ERROR_SCATTERPLOTNOTFOUND: return "SCATTERPLOTNOTFOUND";
+			case LIBMCENV_ERROR_COULDNOTPARSEJSONSTRING: return "COULDNOTPARSEJSONSTRING";
+			case LIBMCENV_ERROR_COULDNOTPARSEJSONDATA: return "COULDNOTPARSEJSONDATA";
+			case LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX: return "INVALIDJSONMEMBERINDEX";
+			case LIBMCENV_ERROR_JSONMEMBERNOTFOUND: return "JSONMEMBERNOTFOUND";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTINTEGER: return "JSONMEMBERISNOTINTEGER";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTDOUBLE: return "JSONMEMBERISNOTDOUBLE";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTBOOL: return "JSONMEMBERISNOTBOOL";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTOBJECT: return "JSONMEMBERISNOTOBJECT";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTARRAY: return "JSONMEMBERISNOTARRAY";
+			case LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTOBJECT: return "REFERENCEDJSONVALUEISNOTOBJECT";
+			case LIBMCENV_ERROR_JSONMEMBERHASINVALIDTYPE: return "JSONMEMBERHASINVALIDTYPE";
+			case LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTARRAY: return "REFERENCEDJSONVALUEISNOTARRAY";
+			case LIBMCENV_ERROR_COULDNOTPARSEEVENTPARAMETERJSON: return "COULDNOTPARSEEVENTPARAMETERJSON";
+			case LIBMCENV_ERROR_DUPLICATEEXTERNALEVENTRETURNKEY: return "DUPLICATEEXTERNALEVENTRETURNKEY";
+			case LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING: return "EXTERNALEVENTPARAMETERISNOTSTRING";
+			case LIBMCENV_ERROR_JSONSTRINGISNOTOFTYPEOBJECT: return "JSONSTRINGISNOTOFTYPEOBJECT";
+			case LIBMCENV_ERROR_JSONDATAISNOTOFTYPEOBJECT: return "JSONDATAISNOTOFTYPEOBJECT";
 		}
 		return "UNKNOWN";
 	}
@@ -855,6 +872,23 @@ public:
 			case LIBMCENV_ERROR_NOYAXISCOLUMNGIVEN: return "No Y Axis Column given";
 			case LIBMCENV_ERROR_INVALIDSCATTERPLOTPOINTINDEX: return "Invalid scatter plot index.";
 			case LIBMCENV_ERROR_SCATTERPLOTNOTFOUND: return "Scatter plot not found";
+			case LIBMCENV_ERROR_COULDNOTPARSEJSONSTRING: return "Could not parse JSON string";
+			case LIBMCENV_ERROR_COULDNOTPARSEJSONDATA: return "Could not parse JSON data";
+			case LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX: return "Invalid JSON Member Index";
+			case LIBMCENV_ERROR_JSONMEMBERNOTFOUND: return "JSON Member not found";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTINTEGER: return "JSON Member is not integer";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTDOUBLE: return "JSON Member is not double";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTBOOL: return "JSON Member is not bool";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTOBJECT: return "JSON Member is not object";
+			case LIBMCENV_ERROR_JSONMEMBERISNOTARRAY: return "JSON Member is not array";
+			case LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTOBJECT: return "Referenced JSON value is not object";
+			case LIBMCENV_ERROR_JSONMEMBERHASINVALIDTYPE: return "JSON Member has invalid type";
+			case LIBMCENV_ERROR_REFERENCEDJSONVALUEISNOTARRAY: return "Referenced JSON value is not array";
+			case LIBMCENV_ERROR_COULDNOTPARSEEVENTPARAMETERJSON: return "Could not parse event parameter JSON";
+			case LIBMCENV_ERROR_DUPLICATEEXTERNALEVENTRETURNKEY: return "Duplicate external event return key";
+			case LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING: return "External event parameter is not of type string.";
+			case LIBMCENV_ERROR_JSONSTRINGISNOTOFTYPEOBJECT: return "JSON String is not of type object.";
+			case LIBMCENV_ERROR_JSONDATAISNOTOFTYPEOBJECT: return "JSON Data is not of type object.";
 		}
 		return "unknown error";
 	}
@@ -2143,7 +2177,7 @@ public:
 	
 	inline bool HasMember(const std::string & sName);
 	inline LibMCEnv_uint64 GetMemberCount();
-	inline void GetMemberName(const LibMCEnv_uint64 nIndex, const std::string & sName);
+	inline std::string GetMemberName(const LibMCEnv_uint64 nIndex);
 	inline eJSONObjectType GetMemberType(const std::string & sName);
 	inline std::string GetValue(const std::string & sName);
 	inline LibMCEnv_int64 GetIntegerValue(const std::string & sName);
@@ -2153,11 +2187,12 @@ public:
 	inline PJSONArray GetArrayValue(const std::string & sName);
 	inline void RemoveMember(const std::string & sName);
 	inline void AddValue(const std::string & sName, const std::string & sValue);
-	inline LibMCEnv_int64 AddIntegerValue(const std::string & sName);
-	inline LibMCEnv_double AddDoubleValue(const std::string & sName);
-	inline bool AddBoolValue(const std::string & sName);
+	inline void AddIntegerValue(const std::string & sName, const LibMCEnv_int64 nValue);
+	inline void AddDoubleValue(const std::string & sName, const LibMCEnv_double dValue);
+	inline void AddBoolValue(const std::string & sName, const bool bValue);
 	inline PJSONObject AddObjectValue(const std::string & sName);
 	inline PJSONArray AddArrayValue(const std::string & sName);
+	inline std::string SerializeToString();
 };
 	
 /*************************************************************************************************************************
@@ -2184,11 +2219,12 @@ public:
 	inline PJSONArray GetArrayValue(const LibMCEnv_uint64 nIndex);
 	inline void RemoveElement(const LibMCEnv_uint64 nIndex);
 	inline void AddValue(const std::string & sValue);
-	inline LibMCEnv_int64 AddIntegerValue();
-	inline LibMCEnv_double AddDoubleValue();
-	inline bool AddBoolValue();
+	inline void AddIntegerValue(const LibMCEnv_int64 nValue);
+	inline void AddDoubleValue(const LibMCEnv_double dValue);
+	inline void AddBoolValue(const bool bValue);
 	inline PJSONObject AddObjectValue();
 	inline PJSONArray AddArrayValue();
+	inline std::string SerializeToString();
 };
 	
 /*************************************************************************************************************************
@@ -2456,6 +2492,9 @@ public:
 	inline PXMLDocument CreateXMLDocument(const std::string & sRootNodeName, const std::string & sDefaultNamespace);
 	inline PXMLDocument ParseXMLString(const std::string & sXMLString);
 	inline PXMLDocument ParseXMLData(const CInputVector<LibMCEnv_uint8> & XMLDataBuffer);
+	inline PJSONObject CreateJSONObject();
+	inline PJSONObject ParseJSONString(const std::string & sJSONString);
+	inline PJSONObject ParseJSONData(const CInputVector<LibMCEnv_uint8> & JSONDataBuffer);
 	inline PDataTable CreateDataTable();
 	inline bool DriverHasResourceData(const std::string & sIdentifier);
 	inline bool MachineHasResourceData(const std::string & sIdentifier);
@@ -2853,6 +2892,7 @@ public:
 	inline PSignalTrigger PrepareSignal(const std::string & sMachineInstance, const std::string & sSignalName);
 	inline bool WaitForSignal(const std::string & sSignalName, const LibMCEnv_uint32 nTimeOut, PSignalHandler & pHandlerInstance);
 	inline PSignalHandler GetUnhandledSignal(const std::string & sSignalTypeName);
+	inline void ClearUnhandledSignalsOfType(const std::string & sSignalTypeName);
 	inline void ClearAllUnhandledSignals();
 	inline PSignalHandler GetUnhandledSignalByUUID(const std::string & sUUID, const bool bMustExist);
 	inline void GetDriverLibrary(const std::string & sDriverName, std::string & sDriverType, LibMCEnv_pvoid & pDriverLookup);
@@ -2903,6 +2943,9 @@ public:
 	inline PXMLDocument CreateXMLDocument(const std::string & sRootNodeName, const std::string & sDefaultNamespace);
 	inline PXMLDocument ParseXMLString(const std::string & sXMLString);
 	inline PXMLDocument ParseXMLData(const CInputVector<LibMCEnv_uint8> & XMLDataBuffer);
+	inline PJSONObject CreateJSONObject();
+	inline PJSONObject ParseJSONString(const std::string & sJSONString);
+	inline PJSONObject ParseJSONData(const CInputVector<LibMCEnv_uint8> & JSONDataBuffer);
 	inline PDataTable CreateDataTable();
 	inline bool CheckUserPermission(const std::string & sUserLogin, const std::string & sPermissionIdentifier);
 	inline PUserManagementHandler CreateUserManagement();
@@ -3000,6 +3043,9 @@ public:
 	inline PXMLDocument CreateXMLDocument(const std::string & sRootNodeName, const std::string & sDefaultNamespace);
 	inline PXMLDocument ParseXMLString(const std::string & sXMLString);
 	inline PXMLDocument ParseXMLData(const CInputVector<LibMCEnv_uint8> & XMLDataBuffer);
+	inline PJSONObject CreateJSONObject();
+	inline PJSONObject ParseJSONString(const std::string & sJSONString);
+	inline PJSONObject ParseJSONData(const CInputVector<LibMCEnv_uint8> & JSONDataBuffer);
 	inline PDataTable CreateDataTable();
 	inline bool HasBuildJob(const std::string & sBuildUUID);
 	inline PBuild GetBuildJob(const std::string & sBuildUUID);
@@ -3559,6 +3605,7 @@ public:
 		pWrapperTable->m_JSONObject_AddBoolValue = nullptr;
 		pWrapperTable->m_JSONObject_AddObjectValue = nullptr;
 		pWrapperTable->m_JSONObject_AddArrayValue = nullptr;
+		pWrapperTable->m_JSONObject_SerializeToString = nullptr;
 		pWrapperTable->m_JSONArray_GetElementCount = nullptr;
 		pWrapperTable->m_JSONArray_GetElementType = nullptr;
 		pWrapperTable->m_JSONArray_GetValue = nullptr;
@@ -3574,6 +3621,7 @@ public:
 		pWrapperTable->m_JSONArray_AddBoolValue = nullptr;
 		pWrapperTable->m_JSONArray_AddObjectValue = nullptr;
 		pWrapperTable->m_JSONArray_AddArrayValue = nullptr;
+		pWrapperTable->m_JSONArray_SerializeToString = nullptr;
 		pWrapperTable->m_XMLDocumentNode_GetName = nullptr;
 		pWrapperTable->m_XMLDocumentNode_GetNameSpace = nullptr;
 		pWrapperTable->m_XMLDocumentNode_GetTextContent = nullptr;
@@ -3681,6 +3729,9 @@ public:
 		pWrapperTable->m_DriverEnvironment_CreateXMLDocument = nullptr;
 		pWrapperTable->m_DriverEnvironment_ParseXMLString = nullptr;
 		pWrapperTable->m_DriverEnvironment_ParseXMLData = nullptr;
+		pWrapperTable->m_DriverEnvironment_CreateJSONObject = nullptr;
+		pWrapperTable->m_DriverEnvironment_ParseJSONString = nullptr;
+		pWrapperTable->m_DriverEnvironment_ParseJSONData = nullptr;
 		pWrapperTable->m_DriverEnvironment_CreateDataTable = nullptr;
 		pWrapperTable->m_DriverEnvironment_DriverHasResourceData = nullptr;
 		pWrapperTable->m_DriverEnvironment_MachineHasResourceData = nullptr;
@@ -3838,6 +3889,7 @@ public:
 		pWrapperTable->m_StateEnvironment_PrepareSignal = nullptr;
 		pWrapperTable->m_StateEnvironment_WaitForSignal = nullptr;
 		pWrapperTable->m_StateEnvironment_GetUnhandledSignal = nullptr;
+		pWrapperTable->m_StateEnvironment_ClearUnhandledSignalsOfType = nullptr;
 		pWrapperTable->m_StateEnvironment_ClearAllUnhandledSignals = nullptr;
 		pWrapperTable->m_StateEnvironment_GetUnhandledSignalByUUID = nullptr;
 		pWrapperTable->m_StateEnvironment_GetDriverLibrary = nullptr;
@@ -3888,6 +3940,9 @@ public:
 		pWrapperTable->m_StateEnvironment_CreateXMLDocument = nullptr;
 		pWrapperTable->m_StateEnvironment_ParseXMLString = nullptr;
 		pWrapperTable->m_StateEnvironment_ParseXMLData = nullptr;
+		pWrapperTable->m_StateEnvironment_CreateJSONObject = nullptr;
+		pWrapperTable->m_StateEnvironment_ParseJSONString = nullptr;
+		pWrapperTable->m_StateEnvironment_ParseJSONData = nullptr;
 		pWrapperTable->m_StateEnvironment_CreateDataTable = nullptr;
 		pWrapperTable->m_StateEnvironment_CheckUserPermission = nullptr;
 		pWrapperTable->m_StateEnvironment_CreateUserManagement = nullptr;
@@ -3953,6 +4008,9 @@ public:
 		pWrapperTable->m_UIEnvironment_CreateXMLDocument = nullptr;
 		pWrapperTable->m_UIEnvironment_ParseXMLString = nullptr;
 		pWrapperTable->m_UIEnvironment_ParseXMLData = nullptr;
+		pWrapperTable->m_UIEnvironment_CreateJSONObject = nullptr;
+		pWrapperTable->m_UIEnvironment_ParseJSONString = nullptr;
+		pWrapperTable->m_UIEnvironment_ParseJSONData = nullptr;
 		pWrapperTable->m_UIEnvironment_CreateDataTable = nullptr;
 		pWrapperTable->m_UIEnvironment_HasBuildJob = nullptr;
 		pWrapperTable->m_UIEnvironment_GetBuildJob = nullptr;
@@ -7981,6 +8039,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_JSONObject_SerializeToString = (PLibMCEnvJSONObject_SerializeToStringPtr) GetProcAddress(hLibrary, "libmcenv_jsonobject_serializetostring");
+		#else // _WIN32
+		pWrapperTable->m_JSONObject_SerializeToString = (PLibMCEnvJSONObject_SerializeToStringPtr) dlsym(hLibrary, "libmcenv_jsonobject_serializetostring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_JSONObject_SerializeToString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_JSONArray_GetElementCount = (PLibMCEnvJSONArray_GetElementCountPtr) GetProcAddress(hLibrary, "libmcenv_jsonarray_getelementcount");
 		#else // _WIN32
 		pWrapperTable->m_JSONArray_GetElementCount = (PLibMCEnvJSONArray_GetElementCountPtr) dlsym(hLibrary, "libmcenv_jsonarray_getelementcount");
@@ -8113,6 +8180,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_JSONArray_AddArrayValue == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_JSONArray_SerializeToString = (PLibMCEnvJSONArray_SerializeToStringPtr) GetProcAddress(hLibrary, "libmcenv_jsonarray_serializetostring");
+		#else // _WIN32
+		pWrapperTable->m_JSONArray_SerializeToString = (PLibMCEnvJSONArray_SerializeToStringPtr) dlsym(hLibrary, "libmcenv_jsonarray_serializetostring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_JSONArray_SerializeToString == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -9076,6 +9152,33 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_DriverEnvironment_ParseXMLData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_DriverEnvironment_CreateJSONObject = (PLibMCEnvDriverEnvironment_CreateJSONObjectPtr) GetProcAddress(hLibrary, "libmcenv_driverenvironment_createjsonobject");
+		#else // _WIN32
+		pWrapperTable->m_DriverEnvironment_CreateJSONObject = (PLibMCEnvDriverEnvironment_CreateJSONObjectPtr) dlsym(hLibrary, "libmcenv_driverenvironment_createjsonobject");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_DriverEnvironment_CreateJSONObject == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_DriverEnvironment_ParseJSONString = (PLibMCEnvDriverEnvironment_ParseJSONStringPtr) GetProcAddress(hLibrary, "libmcenv_driverenvironment_parsejsonstring");
+		#else // _WIN32
+		pWrapperTable->m_DriverEnvironment_ParseJSONString = (PLibMCEnvDriverEnvironment_ParseJSONStringPtr) dlsym(hLibrary, "libmcenv_driverenvironment_parsejsonstring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_DriverEnvironment_ParseJSONString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_DriverEnvironment_ParseJSONData = (PLibMCEnvDriverEnvironment_ParseJSONDataPtr) GetProcAddress(hLibrary, "libmcenv_driverenvironment_parsejsondata");
+		#else // _WIN32
+		pWrapperTable->m_DriverEnvironment_ParseJSONData = (PLibMCEnvDriverEnvironment_ParseJSONDataPtr) dlsym(hLibrary, "libmcenv_driverenvironment_parsejsondata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_DriverEnvironment_ParseJSONData == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -10492,6 +10595,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_StateEnvironment_ClearUnhandledSignalsOfType = (PLibMCEnvStateEnvironment_ClearUnhandledSignalsOfTypePtr) GetProcAddress(hLibrary, "libmcenv_stateenvironment_clearunhandledsignalsoftype");
+		#else // _WIN32
+		pWrapperTable->m_StateEnvironment_ClearUnhandledSignalsOfType = (PLibMCEnvStateEnvironment_ClearUnhandledSignalsOfTypePtr) dlsym(hLibrary, "libmcenv_stateenvironment_clearunhandledsignalsoftype");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StateEnvironment_ClearUnhandledSignalsOfType == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_StateEnvironment_ClearAllUnhandledSignals = (PLibMCEnvStateEnvironment_ClearAllUnhandledSignalsPtr) GetProcAddress(hLibrary, "libmcenv_stateenvironment_clearallunhandledsignals");
 		#else // _WIN32
 		pWrapperTable->m_StateEnvironment_ClearAllUnhandledSignals = (PLibMCEnvStateEnvironment_ClearAllUnhandledSignalsPtr) dlsym(hLibrary, "libmcenv_stateenvironment_clearallunhandledsignals");
@@ -10939,6 +11051,33 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_StateEnvironment_ParseXMLData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StateEnvironment_CreateJSONObject = (PLibMCEnvStateEnvironment_CreateJSONObjectPtr) GetProcAddress(hLibrary, "libmcenv_stateenvironment_createjsonobject");
+		#else // _WIN32
+		pWrapperTable->m_StateEnvironment_CreateJSONObject = (PLibMCEnvStateEnvironment_CreateJSONObjectPtr) dlsym(hLibrary, "libmcenv_stateenvironment_createjsonobject");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StateEnvironment_CreateJSONObject == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StateEnvironment_ParseJSONString = (PLibMCEnvStateEnvironment_ParseJSONStringPtr) GetProcAddress(hLibrary, "libmcenv_stateenvironment_parsejsonstring");
+		#else // _WIN32
+		pWrapperTable->m_StateEnvironment_ParseJSONString = (PLibMCEnvStateEnvironment_ParseJSONStringPtr) dlsym(hLibrary, "libmcenv_stateenvironment_parsejsonstring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StateEnvironment_ParseJSONString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StateEnvironment_ParseJSONData = (PLibMCEnvStateEnvironment_ParseJSONDataPtr) GetProcAddress(hLibrary, "libmcenv_stateenvironment_parsejsondata");
+		#else // _WIN32
+		pWrapperTable->m_StateEnvironment_ParseJSONData = (PLibMCEnvStateEnvironment_ParseJSONDataPtr) dlsym(hLibrary, "libmcenv_stateenvironment_parsejsondata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StateEnvironment_ParseJSONData == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -11524,6 +11663,33 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_UIEnvironment_ParseXMLData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_UIEnvironment_CreateJSONObject = (PLibMCEnvUIEnvironment_CreateJSONObjectPtr) GetProcAddress(hLibrary, "libmcenv_uienvironment_createjsonobject");
+		#else // _WIN32
+		pWrapperTable->m_UIEnvironment_CreateJSONObject = (PLibMCEnvUIEnvironment_CreateJSONObjectPtr) dlsym(hLibrary, "libmcenv_uienvironment_createjsonobject");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_UIEnvironment_CreateJSONObject == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_UIEnvironment_ParseJSONString = (PLibMCEnvUIEnvironment_ParseJSONStringPtr) GetProcAddress(hLibrary, "libmcenv_uienvironment_parsejsonstring");
+		#else // _WIN32
+		pWrapperTable->m_UIEnvironment_ParseJSONString = (PLibMCEnvUIEnvironment_ParseJSONStringPtr) dlsym(hLibrary, "libmcenv_uienvironment_parsejsonstring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_UIEnvironment_ParseJSONString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_UIEnvironment_ParseJSONData = (PLibMCEnvUIEnvironment_ParseJSONDataPtr) GetProcAddress(hLibrary, "libmcenv_uienvironment_parsejsondata");
+		#else // _WIN32
+		pWrapperTable->m_UIEnvironment_ParseJSONData = (PLibMCEnvUIEnvironment_ParseJSONDataPtr) dlsym(hLibrary, "libmcenv_uienvironment_parsejsondata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_UIEnvironment_ParseJSONData == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13686,6 +13852,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_JSONObject_AddArrayValue == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_jsonobject_serializetostring", (void**)&(pWrapperTable->m_JSONObject_SerializeToString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_JSONObject_SerializeToString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_jsonarray_getelementcount", (void**)&(pWrapperTable->m_JSONArray_GetElementCount));
 		if ( (eLookupError != 0) || (pWrapperTable->m_JSONArray_GetElementCount == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13744,6 +13914,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_jsonarray_addarrayvalue", (void**)&(pWrapperTable->m_JSONArray_AddArrayValue));
 		if ( (eLookupError != 0) || (pWrapperTable->m_JSONArray_AddArrayValue == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_jsonarray_serializetostring", (void**)&(pWrapperTable->m_JSONArray_SerializeToString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_JSONArray_SerializeToString == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_xmldocumentnode_getname", (void**)&(pWrapperTable->m_XMLDocumentNode_GetName));
@@ -14172,6 +14346,18 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_driverenvironment_parsexmldata", (void**)&(pWrapperTable->m_DriverEnvironment_ParseXMLData));
 		if ( (eLookupError != 0) || (pWrapperTable->m_DriverEnvironment_ParseXMLData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_driverenvironment_createjsonobject", (void**)&(pWrapperTable->m_DriverEnvironment_CreateJSONObject));
+		if ( (eLookupError != 0) || (pWrapperTable->m_DriverEnvironment_CreateJSONObject == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_driverenvironment_parsejsonstring", (void**)&(pWrapperTable->m_DriverEnvironment_ParseJSONString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_DriverEnvironment_ParseJSONString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_driverenvironment_parsejsondata", (void**)&(pWrapperTable->m_DriverEnvironment_ParseJSONData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_DriverEnvironment_ParseJSONData == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_driverenvironment_createdatatable", (void**)&(pWrapperTable->m_DriverEnvironment_CreateDataTable));
@@ -14802,6 +14988,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_GetUnhandledSignal == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_stateenvironment_clearunhandledsignalsoftype", (void**)&(pWrapperTable->m_StateEnvironment_ClearUnhandledSignalsOfType));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_ClearUnhandledSignalsOfType == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_stateenvironment_clearallunhandledsignals", (void**)&(pWrapperTable->m_StateEnvironment_ClearAllUnhandledSignals));
 		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_ClearAllUnhandledSignals == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -15000,6 +15190,18 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_stateenvironment_parsexmldata", (void**)&(pWrapperTable->m_StateEnvironment_ParseXMLData));
 		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_ParseXMLData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_stateenvironment_createjsonobject", (void**)&(pWrapperTable->m_StateEnvironment_CreateJSONObject));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_CreateJSONObject == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_stateenvironment_parsejsonstring", (void**)&(pWrapperTable->m_StateEnvironment_ParseJSONString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_ParseJSONString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_stateenvironment_parsejsondata", (void**)&(pWrapperTable->m_StateEnvironment_ParseJSONData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StateEnvironment_ParseJSONData == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_stateenvironment_createdatatable", (void**)&(pWrapperTable->m_StateEnvironment_CreateDataTable));
@@ -15260,6 +15462,18 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_uienvironment_parsexmldata", (void**)&(pWrapperTable->m_UIEnvironment_ParseXMLData));
 		if ( (eLookupError != 0) || (pWrapperTable->m_UIEnvironment_ParseXMLData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_uienvironment_createjsonobject", (void**)&(pWrapperTable->m_UIEnvironment_CreateJSONObject));
+		if ( (eLookupError != 0) || (pWrapperTable->m_UIEnvironment_CreateJSONObject == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_uienvironment_parsejsonstring", (void**)&(pWrapperTable->m_UIEnvironment_ParseJSONString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_UIEnvironment_ParseJSONString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_uienvironment_parsejsondata", (void**)&(pWrapperTable->m_UIEnvironment_ParseJSONData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_UIEnvironment_ParseJSONData == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_uienvironment_createdatatable", (void**)&(pWrapperTable->m_UIEnvironment_CreateDataTable));
@@ -21190,11 +21404,17 @@ public:
 	/**
 	* CJSONObject::GetMemberName - Returns the name of a member by index.
 	* @param[in] nIndex - Index of the member, 0-based. Fails if larger or equal than MemberCount
-	* @param[in] sName - Name of the member.
+	* @return Name of the member.
 	*/
-	void CJSONObject::GetMemberName(const LibMCEnv_uint64 nIndex, const std::string & sName)
+	std::string CJSONObject::GetMemberName(const LibMCEnv_uint64 nIndex)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetMemberName(m_pHandle, nIndex, sName.c_str()));
+		LibMCEnv_uint32 bytesNeededName = 0;
+		LibMCEnv_uint32 bytesWrittenName = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetMemberName(m_pHandle, nIndex, 0, &bytesNeededName, nullptr));
+		std::vector<char> bufferName(bytesNeededName);
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetMemberName(m_pHandle, nIndex, bytesNeededName, &bytesWrittenName, &bufferName[0]));
+		
+		return std::string(&bufferName[0]);
 	}
 	
 	/**
@@ -21319,40 +21539,31 @@ public:
 	/**
 	* CJSONObject::AddIntegerValue - Adds a member as integer value. Fails if member already exists.
 	* @param[in] sName - Name of the member.
-	* @return Member value.
+	* @param[in] nValue - Member value.
 	*/
-	LibMCEnv_int64 CJSONObject::AddIntegerValue(const std::string & sName)
+	void CJSONObject::AddIntegerValue(const std::string & sName, const LibMCEnv_int64 nValue)
 	{
-		LibMCEnv_int64 resultValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_AddIntegerValue(m_pHandle, sName.c_str(), &resultValue));
-		
-		return resultValue;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_AddIntegerValue(m_pHandle, sName.c_str(), nValue));
 	}
 	
 	/**
 	* CJSONObject::AddDoubleValue - Adds a member as double value. Fails if member already exists.
 	* @param[in] sName - Name of the member.
-	* @return Member value.
+	* @param[in] dValue - Member value.
 	*/
-	LibMCEnv_double CJSONObject::AddDoubleValue(const std::string & sName)
+	void CJSONObject::AddDoubleValue(const std::string & sName, const LibMCEnv_double dValue)
 	{
-		LibMCEnv_double resultValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_AddDoubleValue(m_pHandle, sName.c_str(), &resultValue));
-		
-		return resultValue;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_AddDoubleValue(m_pHandle, sName.c_str(), dValue));
 	}
 	
 	/**
 	* CJSONObject::AddBoolValue - Adds a member as bool value. Fails if member already exists.
 	* @param[in] sName - Name of the member.
-	* @return Member value.
+	* @param[in] bValue - Member value.
 	*/
-	bool CJSONObject::AddBoolValue(const std::string & sName)
+	void CJSONObject::AddBoolValue(const std::string & sName, const bool bValue)
 	{
-		bool resultValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_AddBoolValue(m_pHandle, sName.c_str(), &resultValue));
-		
-		return resultValue;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_AddBoolValue(m_pHandle, sName.c_str(), bValue));
 	}
 	
 	/**
@@ -21385,6 +21596,21 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CJSONArray>(m_pWrapper, hValue);
+	}
+	
+	/**
+	* CJSONObject::SerializeToString - Serialises the Object to a String.
+	* @return Serialised string value.
+	*/
+	std::string CJSONObject::SerializeToString()
+	{
+		LibMCEnv_uint32 bytesNeededStringValue = 0;
+		LibMCEnv_uint32 bytesWrittenStringValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_SerializeToString(m_pHandle, 0, &bytesNeededStringValue, nullptr));
+		std::vector<char> bufferStringValue(bytesNeededStringValue);
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_SerializeToString(m_pHandle, bytesNeededStringValue, &bytesWrittenStringValue, &bufferStringValue[0]));
+		
+		return std::string(&bufferStringValue[0]);
 	}
 	
 	/**
@@ -21523,38 +21749,29 @@ public:
 	
 	/**
 	* CJSONArray::AddIntegerValue - Adds a member as integer value.
-	* @return Member value.
+	* @param[in] nValue - Member value.
 	*/
-	LibMCEnv_int64 CJSONArray::AddIntegerValue()
+	void CJSONArray::AddIntegerValue(const LibMCEnv_int64 nValue)
 	{
-		LibMCEnv_int64 resultValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_AddIntegerValue(m_pHandle, &resultValue));
-		
-		return resultValue;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_AddIntegerValue(m_pHandle, nValue));
 	}
 	
 	/**
 	* CJSONArray::AddDoubleValue - Adds a member as double value.
-	* @return Member value.
+	* @param[in] dValue - Member value.
 	*/
-	LibMCEnv_double CJSONArray::AddDoubleValue()
+	void CJSONArray::AddDoubleValue(const LibMCEnv_double dValue)
 	{
-		LibMCEnv_double resultValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_AddDoubleValue(m_pHandle, &resultValue));
-		
-		return resultValue;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_AddDoubleValue(m_pHandle, dValue));
 	}
 	
 	/**
 	* CJSONArray::AddBoolValue - Adds a member as bool value.
-	* @return Member value.
+	* @param[in] bValue - Member value.
 	*/
-	bool CJSONArray::AddBoolValue()
+	void CJSONArray::AddBoolValue(const bool bValue)
 	{
-		bool resultValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_AddBoolValue(m_pHandle, &resultValue));
-		
-		return resultValue;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_AddBoolValue(m_pHandle, bValue));
 	}
 	
 	/**
@@ -21585,6 +21802,21 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CJSONArray>(m_pWrapper, hValue);
+	}
+	
+	/**
+	* CJSONArray::SerializeToString - Serialises the Array to a String.
+	* @return Serialised string value.
+	*/
+	std::string CJSONArray::SerializeToString()
+	{
+		LibMCEnv_uint32 bytesNeededStringValue = 0;
+		LibMCEnv_uint32 bytesWrittenStringValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_SerializeToString(m_pHandle, 0, &bytesNeededStringValue, nullptr));
+		std::vector<char> bufferStringValue(bytesNeededStringValue);
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_SerializeToString(m_pHandle, bytesNeededStringValue, &bytesWrittenStringValue, &bufferStringValue[0]));
+		
+		return std::string(&bufferStringValue[0]);
 	}
 	
 	/**
@@ -23068,6 +23300,53 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CXMLDocument>(m_pWrapper, hXMLDocument);
+	}
+	
+	/**
+	* CDriverEnvironment::CreateJSONObject - creates an empty JSON object.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CDriverEnvironment::CreateJSONObject()
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_DriverEnvironment_CreateJSONObject(m_pHandle, &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
+	* CDriverEnvironment::ParseJSONString - parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] sJSONString - XML String.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CDriverEnvironment::ParseJSONString(const std::string & sJSONString)
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_DriverEnvironment_ParseJSONString(m_pHandle, sJSONString.c_str(), &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
+	* CDriverEnvironment::ParseJSONData - parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] JSONDataBuffer - JSON Binary data.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CDriverEnvironment::ParseJSONData(const CInputVector<LibMCEnv_uint8> & JSONDataBuffer)
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_DriverEnvironment_ParseJSONData(m_pHandle, (LibMCEnv_uint64)JSONDataBuffer.size(), JSONDataBuffer.data(), &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
 	}
 	
 	/**
@@ -25288,6 +25567,15 @@ public:
 	}
 	
 	/**
+	* CStateEnvironment::ClearUnhandledSignalsOfType - Clears all unhandled signals of a certain type and marks them invalid.
+	* @param[in] sSignalTypeName - Name Of Signal to be cleared.
+	*/
+	void CStateEnvironment::ClearUnhandledSignalsOfType(const std::string & sSignalTypeName)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_StateEnvironment_ClearUnhandledSignalsOfType(m_pHandle, sSignalTypeName.c_str()));
+	}
+	
+	/**
 	* CStateEnvironment::ClearAllUnhandledSignals - Clears all unhandled signals and marks them invalid.
 	*/
 	void CStateEnvironment::ClearAllUnhandledSignals()
@@ -25960,6 +26248,53 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CXMLDocument>(m_pWrapper, hXMLDocument);
+	}
+	
+	/**
+	* CStateEnvironment::CreateJSONObject - creates an empty JSON object.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CStateEnvironment::CreateJSONObject()
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_StateEnvironment_CreateJSONObject(m_pHandle, &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
+	* CStateEnvironment::ParseJSONString - parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] sJSONString - XML String.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CStateEnvironment::ParseJSONString(const std::string & sJSONString)
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_StateEnvironment_ParseJSONString(m_pHandle, sJSONString.c_str(), &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
+	* CStateEnvironment::ParseJSONData - parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] JSONDataBuffer - JSON Binary data.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CStateEnvironment::ParseJSONData(const CInputVector<LibMCEnv_uint8> & JSONDataBuffer)
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_StateEnvironment_ParseJSONData(m_pHandle, (LibMCEnv_uint64)JSONDataBuffer.size(), JSONDataBuffer.data(), &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
 	}
 	
 	/**
@@ -26882,6 +27217,53 @@ public:
 	}
 	
 	/**
+	* CUIEnvironment::CreateJSONObject - creates an empty JSON object.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CUIEnvironment::CreateJSONObject()
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_UIEnvironment_CreateJSONObject(m_pHandle, &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
+	* CUIEnvironment::ParseJSONString - parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] sJSONString - XML String.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CUIEnvironment::ParseJSONString(const std::string & sJSONString)
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_UIEnvironment_ParseJSONString(m_pHandle, sJSONString.c_str(), &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
+	* CUIEnvironment::ParseJSONData - parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] JSONDataBuffer - JSON Binary data.
+	* @return JSON Object Instance.
+	*/
+	PJSONObject CUIEnvironment::ParseJSONData(const CInputVector<LibMCEnv_uint8> & JSONDataBuffer)
+	{
+		LibMCEnvHandle hJSONObject = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_UIEnvironment_ParseJSONData(m_pHandle, (LibMCEnv_uint64)JSONDataBuffer.size(), JSONDataBuffer.data(), &hJSONObject));
+		
+		if (!hJSONObject) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CJSONObject>(m_pWrapper, hJSONObject);
+	}
+	
+	/**
 	* CUIEnvironment::CreateDataTable - creates an empty data table.
 	* @return Data Table Instance.
 	*/
@@ -27461,7 +27843,7 @@ public:
 	}
 	
 	/**
-	* CUIEnvironment::GetExternalEventResults - Returns the external event results. This JSON Object will be passed on to an ext
+	* CUIEnvironment::GetExternalEventResults - Returns the external event results. This JSON Object will be passed on to the external API as result.
 	* @return Parameter value.
 	*/
 	PJSONObject CUIEnvironment::GetExternalEventResults()

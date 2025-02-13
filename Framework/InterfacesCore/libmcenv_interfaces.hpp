@@ -3740,9 +3740,9 @@ public:
 	/**
 	* IJSONObject::GetMemberName - Returns the name of a member by index.
 	* @param[in] nIndex - Index of the member, 0-based. Fails if larger or equal than MemberCount
-	* @param[in] sName - Name of the member.
+	* @return Name of the member.
 	*/
-	virtual void GetMemberName(const LibMCEnv_uint64 nIndex, const std::string & sName) = 0;
+	virtual std::string GetMemberName(const LibMCEnv_uint64 nIndex) = 0;
 
 	/**
 	* IJSONObject::GetMemberType - Returns the member type. Returns unknown, if the member does not exist.
@@ -3809,23 +3809,23 @@ public:
 	/**
 	* IJSONObject::AddIntegerValue - Adds a member as integer value. Fails if member already exists.
 	* @param[in] sName - Name of the member.
-	* @return Member value.
+	* @param[in] nValue - Member value.
 	*/
-	virtual LibMCEnv_int64 AddIntegerValue(const std::string & sName) = 0;
+	virtual void AddIntegerValue(const std::string & sName, const LibMCEnv_int64 nValue) = 0;
 
 	/**
 	* IJSONObject::AddDoubleValue - Adds a member as double value. Fails if member already exists.
 	* @param[in] sName - Name of the member.
-	* @return Member value.
+	* @param[in] dValue - Member value.
 	*/
-	virtual LibMCEnv_double AddDoubleValue(const std::string & sName) = 0;
+	virtual void AddDoubleValue(const std::string & sName, const LibMCEnv_double dValue) = 0;
 
 	/**
 	* IJSONObject::AddBoolValue - Adds a member as bool value. Fails if member already exists.
 	* @param[in] sName - Name of the member.
-	* @return Member value.
+	* @param[in] bValue - Member value.
 	*/
-	virtual bool AddBoolValue(const std::string & sName) = 0;
+	virtual void AddBoolValue(const std::string & sName, const bool bValue) = 0;
 
 	/**
 	* IJSONObject::AddObjectValue - Returns a member as object value. Returns empty object. Fails if member already exists.
@@ -3840,6 +3840,12 @@ public:
 	* @return Member value.
 	*/
 	virtual IJSONArray * AddArrayValue(const std::string & sName) = 0;
+
+	/**
+	* IJSONObject::SerializeToString - Serialises the Object to a String.
+	* @return Serialised string value.
+	*/
+	virtual std::string SerializeToString() = 0;
 
 };
 
@@ -3921,21 +3927,21 @@ public:
 
 	/**
 	* IJSONArray::AddIntegerValue - Adds a member as integer value.
-	* @return Member value.
+	* @param[in] nValue - Member value.
 	*/
-	virtual LibMCEnv_int64 AddIntegerValue() = 0;
+	virtual void AddIntegerValue(const LibMCEnv_int64 nValue) = 0;
 
 	/**
 	* IJSONArray::AddDoubleValue - Adds a member as double value.
-	* @return Member value.
+	* @param[in] dValue - Member value.
 	*/
-	virtual LibMCEnv_double AddDoubleValue() = 0;
+	virtual void AddDoubleValue(const LibMCEnv_double dValue) = 0;
 
 	/**
 	* IJSONArray::AddBoolValue - Adds a member as bool value.
-	* @return Member value.
+	* @param[in] bValue - Member value.
 	*/
-	virtual bool AddBoolValue() = 0;
+	virtual void AddBoolValue(const bool bValue) = 0;
 
 	/**
 	* IJSONArray::AddObjectValue - Returns a member as object value. Returns empty object.
@@ -3948,6 +3954,12 @@ public:
 	* @return Member value.
 	*/
 	virtual IJSONArray * AddArrayValue() = 0;
+
+	/**
+	* IJSONArray::SerializeToString - Serialises the Array to a String.
+	* @return Serialised string value.
+	*/
+	virtual std::string SerializeToString() = 0;
 
 };
 
@@ -4828,6 +4840,27 @@ public:
 	* @return XML Document Instance.
 	*/
 	virtual IXMLDocument * ParseXMLData(const LibMCEnv_uint64 nXMLDataBufferSize, const LibMCEnv_uint8 * pXMLDataBuffer) = 0;
+
+	/**
+	* IDriverEnvironment::CreateJSONObject - creates an empty JSON object.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * CreateJSONObject() = 0;
+
+	/**
+	* IDriverEnvironment::ParseJSONString - parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] sJSONString - XML String.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * ParseJSONString(const std::string & sJSONString) = 0;
+
+	/**
+	* IDriverEnvironment::ParseJSONData - parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] nJSONDataBufferSize - Number of elements in buffer
+	* @param[in] pJSONDataBuffer - JSON Binary data.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer) = 0;
 
 	/**
 	* IDriverEnvironment::CreateDataTable - creates an empty data table.
@@ -6094,6 +6127,12 @@ public:
 	virtual ISignalHandler * GetUnhandledSignal(const std::string & sSignalTypeName) = 0;
 
 	/**
+	* IStateEnvironment::ClearUnhandledSignalsOfType - Clears all unhandled signals of a certain type and marks them invalid.
+	* @param[in] sSignalTypeName - Name Of Signal to be cleared.
+	*/
+	virtual void ClearUnhandledSignalsOfType(const std::string & sSignalTypeName) = 0;
+
+	/**
 	* IStateEnvironment::ClearAllUnhandledSignals - Clears all unhandled signals and marks them invalid.
 	*/
 	virtual void ClearAllUnhandledSignals() = 0;
@@ -6455,6 +6494,27 @@ public:
 	* @return XML Document Instance.
 	*/
 	virtual IXMLDocument * ParseXMLData(const LibMCEnv_uint64 nXMLDataBufferSize, const LibMCEnv_uint8 * pXMLDataBuffer) = 0;
+
+	/**
+	* IStateEnvironment::CreateJSONObject - creates an empty JSON object.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * CreateJSONObject() = 0;
+
+	/**
+	* IStateEnvironment::ParseJSONString - parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] sJSONString - XML String.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * ParseJSONString(const std::string & sJSONString) = 0;
+
+	/**
+	* IStateEnvironment::ParseJSONData - parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] nJSONDataBufferSize - Number of elements in buffer
+	* @param[in] pJSONDataBuffer - JSON Binary data.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer) = 0;
 
 	/**
 	* IStateEnvironment::CreateDataTable - creates an empty data table.
@@ -6950,6 +7010,27 @@ public:
 	virtual IXMLDocument * ParseXMLData(const LibMCEnv_uint64 nXMLDataBufferSize, const LibMCEnv_uint8 * pXMLDataBuffer) = 0;
 
 	/**
+	* IUIEnvironment::CreateJSONObject - creates an empty JSON object.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * CreateJSONObject() = 0;
+
+	/**
+	* IUIEnvironment::ParseJSONString - parses a JSON String and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] sJSONString - XML String.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * ParseJSONString(const std::string & sJSONString) = 0;
+
+	/**
+	* IUIEnvironment::ParseJSONData - parses a JSON Data and returns a JSON Object instance. Throws an error if JSON is malformatted.
+	* @param[in] nJSONDataBufferSize - Number of elements in buffer
+	* @param[in] pJSONDataBuffer - JSON Binary data.
+	* @return JSON Object Instance.
+	*/
+	virtual IJSONObject * ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer) = 0;
+
+	/**
 	* IUIEnvironment::CreateDataTable - creates an empty data table.
 	* @return Data Table Instance.
 	*/
@@ -7224,7 +7305,7 @@ public:
 	virtual IJSONObject * GetExternalEventParameters() = 0;
 
 	/**
-	* IUIEnvironment::GetExternalEventResults - Returns the external event results. This JSON Object will be passed on to an ext
+	* IUIEnvironment::GetExternalEventResults - Returns the external event results. This JSON Object will be passed on to the external API as result.
 	* @return Parameter value.
 	*/
 	virtual IJSONObject * GetExternalEventResults() = 0;

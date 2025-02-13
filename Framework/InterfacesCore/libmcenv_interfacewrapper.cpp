@@ -13386,20 +13386,41 @@ LibMCEnvResult libmcenv_jsonobject_getmembercount(LibMCEnv_JSONObject pJSONObjec
 	}
 }
 
-LibMCEnvResult libmcenv_jsonobject_getmembername(LibMCEnv_JSONObject pJSONObject, LibMCEnv_uint64 nIndex, const char * pName)
+LibMCEnvResult libmcenv_jsonobject_getmembername(LibMCEnv_JSONObject pJSONObject, LibMCEnv_uint64 nIndex, const LibMCEnv_uint32 nNameBufferSize, LibMCEnv_uint32* pNameNeededChars, char * pNameBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pJSONObject;
 
 	try {
-		if (pName == nullptr)
+		if ( (!pNameBuffer) && !(pNameNeededChars) )
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		std::string sName(pName);
+		std::string sName("");
 		IJSONObject* pIJSONObject = dynamic_cast<IJSONObject*>(pIBaseClass);
 		if (!pIJSONObject)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIJSONObject->GetMemberName(nIndex, sName);
+		bool isCacheCall = (pNameBuffer == nullptr);
+		if (isCacheCall) {
+			sName = pIJSONObject->GetMemberName(nIndex);
 
+			pIJSONObject->_setCache (new ParameterCache_1<std::string> (sName));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIJSONObject->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sName);
+			pIJSONObject->_setCache (nullptr);
+		}
+		
+		if (pNameNeededChars)
+			*pNameNeededChars = (LibMCEnv_uint32) (sName.size()+1);
+		if (pNameBuffer) {
+			if (sName.size() >= nNameBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iName = 0; iName < sName.size(); iName++)
+				pNameBuffer[iName] = sName[iName];
+			pNameBuffer[sName.size()] = 0;
+		}
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -13699,21 +13720,19 @@ LibMCEnvResult libmcenv_jsonobject_addvalue(LibMCEnv_JSONObject pJSONObject, con
 	}
 }
 
-LibMCEnvResult libmcenv_jsonobject_addintegervalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_int64 * pValue)
+LibMCEnvResult libmcenv_jsonobject_addintegervalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_int64 nValue)
 {
 	IBase* pIBaseClass = (IBase *)pJSONObject;
 
 	try {
 		if (pName == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (pValue == nullptr)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		std::string sName(pName);
 		IJSONObject* pIJSONObject = dynamic_cast<IJSONObject*>(pIBaseClass);
 		if (!pIJSONObject)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pValue = pIJSONObject->AddIntegerValue(sName);
+		pIJSONObject->AddIntegerValue(sName, nValue);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -13728,21 +13747,19 @@ LibMCEnvResult libmcenv_jsonobject_addintegervalue(LibMCEnv_JSONObject pJSONObje
 	}
 }
 
-LibMCEnvResult libmcenv_jsonobject_adddoublevalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_double * pValue)
+LibMCEnvResult libmcenv_jsonobject_adddoublevalue(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv_double dValue)
 {
 	IBase* pIBaseClass = (IBase *)pJSONObject;
 
 	try {
 		if (pName == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (pValue == nullptr)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		std::string sName(pName);
 		IJSONObject* pIJSONObject = dynamic_cast<IJSONObject*>(pIBaseClass);
 		if (!pIJSONObject)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pValue = pIJSONObject->AddDoubleValue(sName);
+		pIJSONObject->AddDoubleValue(sName, dValue);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -13757,21 +13774,19 @@ LibMCEnvResult libmcenv_jsonobject_adddoublevalue(LibMCEnv_JSONObject pJSONObjec
 	}
 }
 
-LibMCEnvResult libmcenv_jsonobject_addboolvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, bool * pValue)
+LibMCEnvResult libmcenv_jsonobject_addboolvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, bool bValue)
 {
 	IBase* pIBaseClass = (IBase *)pJSONObject;
 
 	try {
 		if (pName == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (pValue == nullptr)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		std::string sName(pName);
 		IJSONObject* pIJSONObject = dynamic_cast<IJSONObject*>(pIBaseClass);
 		if (!pIJSONObject)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pValue = pIJSONObject->AddBoolValue(sName);
+		pIJSONObject->AddBoolValue(sName, bValue);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -13835,6 +13850,54 @@ LibMCEnvResult libmcenv_jsonobject_addarrayvalue(LibMCEnv_JSONObject pJSONObject
 		pBaseValue = pIJSONObject->AddArrayValue(sName);
 
 		*pValue = (IBase*)(pBaseValue);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_jsonobject_serializetostring(LibMCEnv_JSONObject pJSONObject, const LibMCEnv_uint32 nStringValueBufferSize, LibMCEnv_uint32* pStringValueNeededChars, char * pStringValueBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pJSONObject;
+
+	try {
+		if ( (!pStringValueBuffer) && !(pStringValueNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sStringValue("");
+		IJSONObject* pIJSONObject = dynamic_cast<IJSONObject*>(pIBaseClass);
+		if (!pIJSONObject)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pStringValueBuffer == nullptr);
+		if (isCacheCall) {
+			sStringValue = pIJSONObject->SerializeToString();
+
+			pIJSONObject->_setCache (new ParameterCache_1<std::string> (sStringValue));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIJSONObject->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sStringValue);
+			pIJSONObject->_setCache (nullptr);
+		}
+		
+		if (pStringValueNeededChars)
+			*pStringValueNeededChars = (LibMCEnv_uint32) (sStringValue.size()+1);
+		if (pStringValueBuffer) {
+			if (sStringValue.size() >= nStringValueBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iStringValue = 0; iStringValue < sStringValue.size(); iStringValue++)
+				pStringValueBuffer[iStringValue] = sStringValue[iStringValue];
+			pStringValueBuffer[sStringValue.size()] = 0;
+		}
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -14137,18 +14200,16 @@ LibMCEnvResult libmcenv_jsonarray_addvalue(LibMCEnv_JSONArray pJSONArray, const 
 	}
 }
 
-LibMCEnvResult libmcenv_jsonarray_addintegervalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_int64 * pValue)
+LibMCEnvResult libmcenv_jsonarray_addintegervalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_int64 nValue)
 {
 	IBase* pIBaseClass = (IBase *)pJSONArray;
 
 	try {
-		if (pValue == nullptr)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IJSONArray* pIJSONArray = dynamic_cast<IJSONArray*>(pIBaseClass);
 		if (!pIJSONArray)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pValue = pIJSONArray->AddIntegerValue();
+		pIJSONArray->AddIntegerValue(nValue);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -14163,18 +14224,16 @@ LibMCEnvResult libmcenv_jsonarray_addintegervalue(LibMCEnv_JSONArray pJSONArray,
 	}
 }
 
-LibMCEnvResult libmcenv_jsonarray_adddoublevalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_double * pValue)
+LibMCEnvResult libmcenv_jsonarray_adddoublevalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_double dValue)
 {
 	IBase* pIBaseClass = (IBase *)pJSONArray;
 
 	try {
-		if (pValue == nullptr)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IJSONArray* pIJSONArray = dynamic_cast<IJSONArray*>(pIBaseClass);
 		if (!pIJSONArray)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pValue = pIJSONArray->AddDoubleValue();
+		pIJSONArray->AddDoubleValue(dValue);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -14189,18 +14248,16 @@ LibMCEnvResult libmcenv_jsonarray_adddoublevalue(LibMCEnv_JSONArray pJSONArray, 
 	}
 }
 
-LibMCEnvResult libmcenv_jsonarray_addboolvalue(LibMCEnv_JSONArray pJSONArray, bool * pValue)
+LibMCEnvResult libmcenv_jsonarray_addboolvalue(LibMCEnv_JSONArray pJSONArray, bool bValue)
 {
 	IBase* pIBaseClass = (IBase *)pJSONArray;
 
 	try {
-		if (pValue == nullptr)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IJSONArray* pIJSONArray = dynamic_cast<IJSONArray*>(pIBaseClass);
 		if (!pIJSONArray)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pValue = pIJSONArray->AddBoolValue();
+		pIJSONArray->AddBoolValue(bValue);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -14258,6 +14315,54 @@ LibMCEnvResult libmcenv_jsonarray_addarrayvalue(LibMCEnv_JSONArray pJSONArray, L
 		pBaseValue = pIJSONArray->AddArrayValue();
 
 		*pValue = (IBase*)(pBaseValue);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_jsonarray_serializetostring(LibMCEnv_JSONArray pJSONArray, const LibMCEnv_uint32 nStringValueBufferSize, LibMCEnv_uint32* pStringValueNeededChars, char * pStringValueBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pJSONArray;
+
+	try {
+		if ( (!pStringValueBuffer) && !(pStringValueNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sStringValue("");
+		IJSONArray* pIJSONArray = dynamic_cast<IJSONArray*>(pIBaseClass);
+		if (!pIJSONArray)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pStringValueBuffer == nullptr);
+		if (isCacheCall) {
+			sStringValue = pIJSONArray->SerializeToString();
+
+			pIJSONArray->_setCache (new ParameterCache_1<std::string> (sStringValue));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIJSONArray->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sStringValue);
+			pIJSONArray->_setCache (nullptr);
+		}
+		
+		if (pStringValueNeededChars)
+			*pStringValueNeededChars = (LibMCEnv_uint32) (sStringValue.size()+1);
+		if (pStringValueBuffer) {
+			if (sStringValue.size() >= nStringValueBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iStringValue = 0; iStringValue < sStringValue.size(); iStringValue++)
+				pStringValueBuffer[iStringValue] = sStringValue[iStringValue];
+			pStringValueBuffer[sStringValue.size()] = 0;
+		}
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -17703,6 +17808,95 @@ LibMCEnvResult libmcenv_driverenvironment_parsexmldata(LibMCEnv_DriverEnvironmen
 		pBaseXMLDocument = pIDriverEnvironment->ParseXMLData(nXMLDataBufferSize, pXMLDataBuffer);
 
 		*pXMLDocument = (IBase*)(pBaseXMLDocument);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_driverenvironment_createjsonobject(LibMCEnv_DriverEnvironment pDriverEnvironment, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pDriverEnvironment;
+
+	try {
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseJSONObject(nullptr);
+		IDriverEnvironment* pIDriverEnvironment = dynamic_cast<IDriverEnvironment*>(pIBaseClass);
+		if (!pIDriverEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIDriverEnvironment->CreateJSONObject();
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_driverenvironment_parsejsonstring(LibMCEnv_DriverEnvironment pDriverEnvironment, const char * pJSONString, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pDriverEnvironment;
+
+	try {
+		if (pJSONString == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sJSONString(pJSONString);
+		IBase* pBaseJSONObject(nullptr);
+		IDriverEnvironment* pIDriverEnvironment = dynamic_cast<IDriverEnvironment*>(pIBaseClass);
+		if (!pIDriverEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIDriverEnvironment->ParseJSONString(sJSONString);
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_driverenvironment_parsejsondata(LibMCEnv_DriverEnvironment pDriverEnvironment, LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pDriverEnvironment;
+
+	try {
+		if ( (!pJSONDataBuffer) && (nJSONDataBufferSize>0))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseJSONObject(nullptr);
+		IDriverEnvironment* pIDriverEnvironment = dynamic_cast<IDriverEnvironment*>(pIBaseClass);
+		if (!pIDriverEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIDriverEnvironment->ParseJSONData(nJSONDataBufferSize, pJSONDataBuffer);
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -23252,6 +23446,33 @@ LibMCEnvResult libmcenv_stateenvironment_getunhandledsignal(LibMCEnv_StateEnviro
 	}
 }
 
+LibMCEnvResult libmcenv_stateenvironment_clearunhandledsignalsoftype(LibMCEnv_StateEnvironment pStateEnvironment, const char * pSignalTypeName)
+{
+	IBase* pIBaseClass = (IBase *)pStateEnvironment;
+
+	try {
+		if (pSignalTypeName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sSignalTypeName(pSignalTypeName);
+		IStateEnvironment* pIStateEnvironment = dynamic_cast<IStateEnvironment*>(pIBaseClass);
+		if (!pIStateEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIStateEnvironment->ClearUnhandledSignalsOfType(sSignalTypeName);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_stateenvironment_clearallunhandledsignals(LibMCEnv_StateEnvironment pStateEnvironment)
 {
 	IBase* pIBaseClass = (IBase *)pStateEnvironment;
@@ -24769,6 +24990,95 @@ LibMCEnvResult libmcenv_stateenvironment_parsexmldata(LibMCEnv_StateEnvironment 
 		pBaseXMLDocument = pIStateEnvironment->ParseXMLData(nXMLDataBufferSize, pXMLDataBuffer);
 
 		*pXMLDocument = (IBase*)(pBaseXMLDocument);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_stateenvironment_createjsonobject(LibMCEnv_StateEnvironment pStateEnvironment, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pStateEnvironment;
+
+	try {
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseJSONObject(nullptr);
+		IStateEnvironment* pIStateEnvironment = dynamic_cast<IStateEnvironment*>(pIBaseClass);
+		if (!pIStateEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIStateEnvironment->CreateJSONObject();
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_stateenvironment_parsejsonstring(LibMCEnv_StateEnvironment pStateEnvironment, const char * pJSONString, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pStateEnvironment;
+
+	try {
+		if (pJSONString == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sJSONString(pJSONString);
+		IBase* pBaseJSONObject(nullptr);
+		IStateEnvironment* pIStateEnvironment = dynamic_cast<IStateEnvironment*>(pIBaseClass);
+		if (!pIStateEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIStateEnvironment->ParseJSONString(sJSONString);
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_stateenvironment_parsejsondata(LibMCEnv_StateEnvironment pStateEnvironment, LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pStateEnvironment;
+
+	try {
+		if ( (!pJSONDataBuffer) && (nJSONDataBufferSize>0))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseJSONObject(nullptr);
+		IStateEnvironment* pIStateEnvironment = dynamic_cast<IStateEnvironment*>(pIBaseClass);
+		if (!pIStateEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIStateEnvironment->ParseJSONData(nJSONDataBufferSize, pJSONDataBuffer);
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -27004,6 +27314,95 @@ LibMCEnvResult libmcenv_uienvironment_parsexmldata(LibMCEnv_UIEnvironment pUIEnv
 	}
 }
 
+LibMCEnvResult libmcenv_uienvironment_createjsonobject(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pUIEnvironment;
+
+	try {
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseJSONObject(nullptr);
+		IUIEnvironment* pIUIEnvironment = dynamic_cast<IUIEnvironment*>(pIBaseClass);
+		if (!pIUIEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIUIEnvironment->CreateJSONObject();
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_uienvironment_parsejsonstring(LibMCEnv_UIEnvironment pUIEnvironment, const char * pJSONString, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pUIEnvironment;
+
+	try {
+		if (pJSONString == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sJSONString(pJSONString);
+		IBase* pBaseJSONObject(nullptr);
+		IUIEnvironment* pIUIEnvironment = dynamic_cast<IUIEnvironment*>(pIBaseClass);
+		if (!pIUIEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIUIEnvironment->ParseJSONString(sJSONString);
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_uienvironment_parsejsondata(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8 * pJSONDataBuffer, LibMCEnv_JSONObject * pJSONObject)
+{
+	IBase* pIBaseClass = (IBase *)pUIEnvironment;
+
+	try {
+		if ( (!pJSONDataBuffer) && (nJSONDataBufferSize>0))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pJSONObject == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseJSONObject(nullptr);
+		IUIEnvironment* pIUIEnvironment = dynamic_cast<IUIEnvironment*>(pIBaseClass);
+		if (!pIUIEnvironment)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseJSONObject = pIUIEnvironment->ParseJSONData(nJSONDataBufferSize, pJSONDataBuffer);
+
+		*pJSONObject = (IBase*)(pBaseJSONObject);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_uienvironment_createdatatable(LibMCEnv_UIEnvironment pUIEnvironment, LibMCEnv_DataTable * pDataTableInstance)
 {
 	IBase* pIBaseClass = (IBase *)pUIEnvironment;
@@ -29153,6 +29552,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_jsonobject_addobjectvalue;
 	if (sProcName == "libmcenv_jsonobject_addarrayvalue") 
 		*ppProcAddress = (void*) &libmcenv_jsonobject_addarrayvalue;
+	if (sProcName == "libmcenv_jsonobject_serializetostring") 
+		*ppProcAddress = (void*) &libmcenv_jsonobject_serializetostring;
 	if (sProcName == "libmcenv_jsonarray_getelementcount") 
 		*ppProcAddress = (void*) &libmcenv_jsonarray_getelementcount;
 	if (sProcName == "libmcenv_jsonarray_getelementtype") 
@@ -29183,6 +29584,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_jsonarray_addobjectvalue;
 	if (sProcName == "libmcenv_jsonarray_addarrayvalue") 
 		*ppProcAddress = (void*) &libmcenv_jsonarray_addarrayvalue;
+	if (sProcName == "libmcenv_jsonarray_serializetostring") 
+		*ppProcAddress = (void*) &libmcenv_jsonarray_serializetostring;
 	if (sProcName == "libmcenv_xmldocumentnode_getname") 
 		*ppProcAddress = (void*) &libmcenv_xmldocumentnode_getname;
 	if (sProcName == "libmcenv_xmldocumentnode_getnamespace") 
@@ -29397,6 +29800,12 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_driverenvironment_parsexmlstring;
 	if (sProcName == "libmcenv_driverenvironment_parsexmldata") 
 		*ppProcAddress = (void*) &libmcenv_driverenvironment_parsexmldata;
+	if (sProcName == "libmcenv_driverenvironment_createjsonobject") 
+		*ppProcAddress = (void*) &libmcenv_driverenvironment_createjsonobject;
+	if (sProcName == "libmcenv_driverenvironment_parsejsonstring") 
+		*ppProcAddress = (void*) &libmcenv_driverenvironment_parsejsonstring;
+	if (sProcName == "libmcenv_driverenvironment_parsejsondata") 
+		*ppProcAddress = (void*) &libmcenv_driverenvironment_parsejsondata;
 	if (sProcName == "libmcenv_driverenvironment_createdatatable") 
 		*ppProcAddress = (void*) &libmcenv_driverenvironment_createdatatable;
 	if (sProcName == "libmcenv_driverenvironment_driverhasresourcedata") 
@@ -29711,6 +30120,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_stateenvironment_waitforsignal;
 	if (sProcName == "libmcenv_stateenvironment_getunhandledsignal") 
 		*ppProcAddress = (void*) &libmcenv_stateenvironment_getunhandledsignal;
+	if (sProcName == "libmcenv_stateenvironment_clearunhandledsignalsoftype") 
+		*ppProcAddress = (void*) &libmcenv_stateenvironment_clearunhandledsignalsoftype;
 	if (sProcName == "libmcenv_stateenvironment_clearallunhandledsignals") 
 		*ppProcAddress = (void*) &libmcenv_stateenvironment_clearallunhandledsignals;
 	if (sProcName == "libmcenv_stateenvironment_getunhandledsignalbyuuid") 
@@ -29811,6 +30222,12 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_stateenvironment_parsexmlstring;
 	if (sProcName == "libmcenv_stateenvironment_parsexmldata") 
 		*ppProcAddress = (void*) &libmcenv_stateenvironment_parsexmldata;
+	if (sProcName == "libmcenv_stateenvironment_createjsonobject") 
+		*ppProcAddress = (void*) &libmcenv_stateenvironment_createjsonobject;
+	if (sProcName == "libmcenv_stateenvironment_parsejsonstring") 
+		*ppProcAddress = (void*) &libmcenv_stateenvironment_parsejsonstring;
+	if (sProcName == "libmcenv_stateenvironment_parsejsondata") 
+		*ppProcAddress = (void*) &libmcenv_stateenvironment_parsejsondata;
 	if (sProcName == "libmcenv_stateenvironment_createdatatable") 
 		*ppProcAddress = (void*) &libmcenv_stateenvironment_createdatatable;
 	if (sProcName == "libmcenv_stateenvironment_checkuserpermission") 
@@ -29941,6 +30358,12 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_uienvironment_parsexmlstring;
 	if (sProcName == "libmcenv_uienvironment_parsexmldata") 
 		*ppProcAddress = (void*) &libmcenv_uienvironment_parsexmldata;
+	if (sProcName == "libmcenv_uienvironment_createjsonobject") 
+		*ppProcAddress = (void*) &libmcenv_uienvironment_createjsonobject;
+	if (sProcName == "libmcenv_uienvironment_parsejsonstring") 
+		*ppProcAddress = (void*) &libmcenv_uienvironment_parsejsonstring;
+	if (sProcName == "libmcenv_uienvironment_parsejsondata") 
+		*ppProcAddress = (void*) &libmcenv_uienvironment_parsejsondata;
 	if (sProcName == "libmcenv_uienvironment_createdatatable") 
 		*ppProcAddress = (void*) &libmcenv_uienvironment_createdatatable;
 	if (sProcName == "libmcenv_uienvironment_hasbuildjob") 
