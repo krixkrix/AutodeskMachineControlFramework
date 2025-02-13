@@ -130,9 +130,9 @@ bool CSMCContext::GetLaserField(LibMCDriver_ScanLabSMC_double& dMinX, LibMCDrive
 	return false;
 }
 
-ISMCJob* CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode)
+ISMCJob* CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY)
 {
-	auto pJobInstance = m_pContextInstance->BeginJob(dStartPositionX, dStartPositionY, eBlendMode);
+	auto pJobInstance = m_pContextInstance->BeginJob(dStartPositionX, dStartPositionY);
 	return new CSMCJob (pJobInstance);
 }
 
@@ -149,7 +149,7 @@ void CSMCContext::DrawLayer(const std::string& sStreamUUID, const LibMCDriver_Sc
 
 	auto pLayer = pToolpathAccessor->LoadLayer(nLayerIndex);	
 
-	auto pJob = m_pContextInstance->BeginJob(0.0, 0.0, eBlendMode::MaxAccuracy);
+	auto pJob = m_pContextInstance->BeginJob(0.0, 0.0);
 	pJob->AddLayerToList(pLayer);
 	pJob->Finalize();
 	pJob->Execute(true);

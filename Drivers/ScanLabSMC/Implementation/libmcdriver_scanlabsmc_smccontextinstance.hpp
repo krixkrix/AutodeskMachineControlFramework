@@ -86,7 +86,7 @@ public:
 
 	std::string GetSimulationSubDirectory();
 
-	PSMCJobInstance BeginJob(const double dStartPositionX, const double dStartPositionY, const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode);
+	PSMCJobInstance BeginJob(const double dStartPositionX, const double dStartPositionY);
 
 	PSMCJobInstance GetUnfinishedJob();
 

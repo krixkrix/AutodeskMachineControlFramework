@@ -94,8 +94,9 @@
 		<error name="COULDNOTGETJOBCHARACTERISTIC" code="1040" description="Could not get job characteristic." />		
 		<error name="JOBDURATIONHASNOTBEENPARSED" code="1041" description="Job duration has not been parsed." />		
 		<error name="COULDNOTSTOPJOBEXECUTION" code="1042" description="Could not stop job execution." />		
-		
-		
+		<error name="COULDNOTSETBLENDMODE" code="1043" description="Could not set blend mode." />		
+		<error name="INVALIDBLENDMODE" code="1044" description="Invalid blend mode." />		
+		<error name="INVALIDWARNINGLEVEL" code="1045" description="Invalid warning level." />		
 											
 	</errors>
 
@@ -113,8 +114,8 @@
 
 	<enum name="BlendMode">
 	   <option name="Deactivated" value="0" />
-	   <option name="MaxAccuracy" value="1" />
-	   <option name="Fast" value="2" />
+	   <option name="SwiftBlending" value="1" />
+	   <option name="MaxAccuracy" value="2" />
 	</enum>
 	
 	<enum name="DynamicViolationReaction">
@@ -349,6 +350,15 @@ Custom implementation
 		<method name="GetWarnLevel" description="Returns the log warning level.">
 			<param name="Value" type="enum" class="WarnLevel" pass="return" description="Current Value." />
 		</method>		
+
+		<method name="SetBlendMode" description="Sets the blend mode.">
+			<param name="BlendMode" type="enum" class="BlendMode" pass="in" description="Blend Mode that the job shall be drawn in." />			
+		</method>	
+
+		<method name="GetBlendMode" description="Returns the blend mode.">
+			<param name="BlendMode" type="enum" class="BlendMode" pass="return" description="Blend Mode that the job shall be drawn in." />			
+		</method>		
+
 	
 		<method name="SetSerialNumber" description="Sets the RTC Serial number. MUST be larger than 0.">
 			<param name="Value" type="uint32" class="WarnLevel" pass="in" description="Value to set." />
@@ -472,7 +482,6 @@ Custom implementation
 		<method name="BeginJob" description="Starts a new job definition. Fails if another job is not finalized yet.">
 			<param name="StartPositionX" type="double" pass="in" description="Start position in X." />
 			<param name="StartPositionY" type="double" pass="in" description="Start position in Y." />
-			<param name="BlendMode" type="enum" class="BlendMode" pass="in" description="Blend Mode that the job shall be drawn in." />			
 			<param name="JobInstance" type="class" class="SMCJob" pass="return" description="SMC Job Instance." />
 		</method>
 		

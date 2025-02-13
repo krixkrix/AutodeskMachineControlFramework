@@ -70,6 +70,13 @@ namespace LibMCDriver_ScanLabSMC {
 									
 		};
 
+		enum class slsc_BlendModes : uint32_t
+		{
+			slsc_BlendModes_Deactivated = 0,
+			slsc_BlendModes_SwiftBlending = 1,
+			slsc_BlendModes_MaxAccuracy = 2
+		};
+
 		struct _slsc_PolylineOptions
 		{
 			slsc_PolylineGeometry Geometry;
@@ -160,6 +167,7 @@ namespace LibMCDriver_ScanLabSMC {
 
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION *PScanLabSMCPtr_slsc_cfg_initialize_from_file) (slscHandle * Handle, const char* XmlConfigFileName);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_cfg_delete) (size_t Handle);
+
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_begin) (size_t Handle, size_t* JobID);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_end) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_jump) (size_t Handle, const double* Target);
@@ -181,7 +189,10 @@ namespace LibMCDriver_ScanLabSMC {
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_set_corner_tolerance) (size_t Handle, const double* Target, double dCornerTolerance);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_get_simulation_filename) (size_t Handle, size_t nJobID, char * pszBuffer, size_t nBufferSize);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_get_job_characteristic) (size_t Handle, size_t nJobID, slsc_JobCharacteristic eKey, double * pdValue);
-		
+
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_cfg_get_blend_mode) (size_t Handle, slsc_BlendModes* BlendMode);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_cfg_set_blend_mode) (size_t Handle, slsc_BlendModes BlendMode);
+
 		class CScanLabSMCSDK_DLLDirectoryCache {
 		private:
 #ifdef _WIN32
@@ -231,6 +242,8 @@ namespace LibMCDriver_ScanLabSMC {
 			PScanLabSMCPtr_slsc_ctrl_get_error_count slsc_ctrl_get_error_count = nullptr;
 			PScanLabSMCPtr_slsc_ctrl_get_simulation_filename slsc_ctrl_get_simulation_filename = nullptr;
 			PScanLabSMCPtr_slsc_ctrl_get_job_characteristic slsc_ctrl_get_job_characteristic = nullptr;
+			PScanLabSMCPtr_slsc_cfg_get_blend_mode slsc_cfg_get_blend_mode = nullptr;
+			PScanLabSMCPtr_slsc_cfg_set_blend_mode slsc_cfg_set_blend_mode = nullptr;
 
 			CScanLabSMCSDK(const std::string & sDLLNameUTF8, const std::string& sDLLDirectoryUTF8);
 			~CScanLabSMCSDK();

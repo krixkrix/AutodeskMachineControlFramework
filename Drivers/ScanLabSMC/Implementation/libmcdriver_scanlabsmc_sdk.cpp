@@ -157,6 +157,8 @@ CScanLabSMCSDK::CScanLabSMCSDK(const std::string& sDLLNameUTF8, const std::strin
 	this->slsc_ctrl_get_error_count = (PScanLabSMCPtr_slsc_ctrl_get_error_count)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_get_error_count");
 	this->slsc_ctrl_get_simulation_filename = (PScanLabSMCPtr_slsc_ctrl_get_simulation_filename)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_get_simulation_filename");
 	this->slsc_ctrl_get_job_characteristic = (PScanLabSMCPtr_slsc_ctrl_get_job_characteristic)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_get_job_characteristic");
+	this->slsc_cfg_get_blend_mode = (PScanLabSMCPtr_slsc_cfg_get_blend_mode)_loadScanLabSMCAddress(hLibrary, "slsc_cfg_get_blend_mode");
+	this->slsc_cfg_set_blend_mode = (PScanLabSMCPtr_slsc_cfg_set_blend_mode)_loadScanLabSMCAddress(hLibrary, "slsc_cfg_set_blend_mode");
 
 	m_LibraryHandle = (void*) hLibrary;
 }
@@ -265,6 +267,8 @@ void CScanLabSMCSDK::resetFunctionPtrs()
 	slsc_ctrl_get_error_count = nullptr;
 	slsc_ctrl_get_simulation_filename = nullptr;
 	slsc_ctrl_get_job_characteristic = nullptr;
+	slsc_cfg_get_blend_mode = nullptr;
+	slsc_cfg_set_blend_mode = nullptr;
 
 
 }

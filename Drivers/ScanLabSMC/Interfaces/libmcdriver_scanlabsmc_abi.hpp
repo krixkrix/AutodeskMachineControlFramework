@@ -325,6 +325,24 @@ LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlab
 LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_getwarnlevel(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eWarnLevel * pValue);
 
 /**
+* Sets the blend mode.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_setblendmode(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eBlendMode eBlendMode);
+
+/**
+* Returns the blend mode.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[out] pBlendMode - Blend Mode that the job shall be drawn in.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_getblendmode(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eBlendMode * pBlendMode);
+
+/**
 * Sets the RTC Serial number. MUST be larger than 0.
 *
 * @param[in] pSMCConfiguration - SMCConfiguration instance.
@@ -594,11 +612,10 @@ LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlab
 * @param[in] pSMCContext - SMCContext instance.
 * @param[in] dStartPositionX - Start position in X.
 * @param[in] dStartPositionY - Start position in Y.
-* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
 * @param[out] pJobInstance - SMC Job Instance.
 * @return error code or 0 (success)
 */
-LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC::eBlendMode eBlendMode, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance);
+LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance);
 
 /**
 * Returns the job that is not finalized yet. Returns null if no job is active.

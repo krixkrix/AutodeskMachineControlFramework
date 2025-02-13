@@ -230,6 +230,9 @@ public:
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTGETJOBCHARACTERISTIC: return "COULDNOTGETJOBCHARACTERISTIC";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_JOBDURATIONHASNOTBEENPARSED: return "JOBDURATIONHASNOTBEENPARSED";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSTOPJOBEXECUTION: return "COULDNOTSTOPJOBEXECUTION";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE: return "COULDNOTSETBLENDMODE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE: return "INVALIDBLENDMODE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL: return "INVALIDWARNINGLEVEL";
 		}
 		return "UNKNOWN";
 	}
@@ -290,6 +293,9 @@ public:
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTGETJOBCHARACTERISTIC: return "Could not get job characteristic.";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_JOBDURATIONHASNOTBEENPARSED: return "Job duration has not been parsed.";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSTOPJOBEXECUTION: return "Could not stop job execution.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE: return "Could not set blend mode.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE: return "Invalid blend mode.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL: return "Invalid warning level.";
 		}
 		return "unknown error";
 	}
@@ -548,6 +554,8 @@ public:
 	inline eDynamicViolationReaction GetDynamicViolationReaction();
 	inline void SetWarnLevel(const eWarnLevel eValue);
 	inline eWarnLevel GetWarnLevel();
+	inline void SetBlendMode(const eBlendMode eBlendMode);
+	inline eBlendMode GetBlendMode();
 	inline void SetSerialNumber(const LibMCDriver_ScanLabSMC_uint32 nValue);
 	inline LibMCDriver_ScanLabSMC_uint32 GetSerialNumber();
 	inline void SetIPAddress(const std::string & sValue);
@@ -590,7 +598,7 @@ public:
 	inline void SetLaserField(const LibMCDriver_ScanLabSMC_double dMinX, const LibMCDriver_ScanLabSMC_double dMinY, const LibMCDriver_ScanLabSMC_double dMaxX, const LibMCDriver_ScanLabSMC_double dMaxY);
 	inline void ResetLaserField();
 	inline bool GetLaserField(LibMCDriver_ScanLabSMC_double & dMinX, LibMCDriver_ScanLabSMC_double & dMinY, LibMCDriver_ScanLabSMC_double & dMaxX, LibMCDriver_ScanLabSMC_double & dMaxY);
-	inline PSMCJob BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const eBlendMode eBlendMode);
+	inline PSMCJob BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY);
 	inline PSMCJob GetUnfinishedJob();
 	inline void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex);
 };
@@ -769,6 +777,8 @@ public:
 		pWrapperTable->m_SMCConfiguration_GetDynamicViolationReaction = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetWarnLevel = nullptr;
 		pWrapperTable->m_SMCConfiguration_GetWarnLevel = nullptr;
+		pWrapperTable->m_SMCConfiguration_SetBlendMode = nullptr;
+		pWrapperTable->m_SMCConfiguration_GetBlendMode = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetSerialNumber = nullptr;
 		pWrapperTable->m_SMCConfiguration_GetSerialNumber = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetIPAddress = nullptr;
@@ -1089,6 +1099,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_SMCConfiguration_GetWarnLevel == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_SetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setblendmode");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_SetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setblendmode");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_SetBlendMode == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_GetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getblendmode");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_GetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getblendmode");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_GetBlendMode == nullptr)
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -1630,6 +1658,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetWarnLevel == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setblendmode", (void**)&(pWrapperTable->m_SMCConfiguration_SetBlendMode));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetBlendMode == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_getblendmode", (void**)&(pWrapperTable->m_SMCConfiguration_GetBlendMode));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetBlendMode == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setserialnumber", (void**)&(pWrapperTable->m_SMCConfiguration_SetSerialNumber));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetSerialNumber == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -2126,6 +2162,27 @@ public:
 	}
 	
 	/**
+	* CSMCConfiguration::SetBlendMode - Sets the blend mode.
+	* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
+	*/
+	void CSMCConfiguration::SetBlendMode(const eBlendMode eBlendMode)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_SetBlendMode(m_pHandle, eBlendMode));
+	}
+	
+	/**
+	* CSMCConfiguration::GetBlendMode - Returns the blend mode.
+	* @return Blend Mode that the job shall be drawn in.
+	*/
+	eBlendMode CSMCConfiguration::GetBlendMode()
+	{
+		eBlendMode resultBlendMode = (eBlendMode) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_GetBlendMode(m_pHandle, &resultBlendMode));
+		
+		return resultBlendMode;
+	}
+	
+	/**
 	* CSMCConfiguration::SetSerialNumber - Sets the RTC Serial number. MUST be larger than 0.
 	* @param[in] nValue - Value to set.
 	*/
@@ -2428,13 +2485,12 @@ public:
 	* CSMCContext::BeginJob - Starts a new job definition. Fails if another job is not finalized yet.
 	* @param[in] dStartPositionX - Start position in X.
 	* @param[in] dStartPositionY - Start position in Y.
-	* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
 	* @return SMC Job Instance.
 	*/
-	PSMCJob CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const eBlendMode eBlendMode)
+	PSMCJob CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY)
 	{
 		LibMCDriver_ScanLabSMCHandle hJobInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_BeginJob(m_pHandle, dStartPositionX, dStartPositionY, eBlendMode, &hJobInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_BeginJob(m_pHandle, dStartPositionX, dStartPositionY, &hJobInstance));
 		
 		if (!hJobInstance) {
 			CheckError(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);

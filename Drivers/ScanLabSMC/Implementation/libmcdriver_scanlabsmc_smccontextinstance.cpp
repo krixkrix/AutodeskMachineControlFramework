@@ -153,9 +153,9 @@ std::string CSMCContextInstance::GetSimulationSubDirectory()
 }
 
 
-PSMCJobInstance CSMCContextInstance::BeginJob(const double dStartPositionX, const double dStartPositionY, const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode)
+PSMCJobInstance CSMCContextInstance::BeginJob(const double dStartPositionX, const double dStartPositionY)
 {
-	return std::make_shared<CSMCJobInstance> (m_pContextHandle, dStartPositionX, dStartPositionY, eBlendMode, m_pWorkingDirectory, m_sSimulationSubDirectory);
+	return std::make_shared<CSMCJobInstance> (m_pContextHandle, dStartPositionX, dStartPositionY, m_pWorkingDirectory, m_sSimulationSubDirectory);
 }
 
 PSMCJobInstance CSMCContextInstance::GetUnfinishedJob()

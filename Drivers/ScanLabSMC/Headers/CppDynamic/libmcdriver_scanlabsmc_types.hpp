@@ -148,6 +148,9 @@ typedef void * LibMCDriver_ScanLabSMC_pvoid;
 #define LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTGETJOBCHARACTERISTIC 1040 /** Could not get job characteristic. */
 #define LIBMCDRIVER_SCANLABSMC_ERROR_JOBDURATIONHASNOTBEENPARSED 1041 /** Job duration has not been parsed. */
 #define LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSTOPJOBEXECUTION 1042 /** Could not stop job execution. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE 1043 /** Could not set blend mode. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE 1044 /** Invalid blend mode. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL 1045 /** Invalid warning level. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLabSMC
@@ -208,6 +211,9 @@ inline const char * LIBMCDRIVER_SCANLABSMC_GETERRORSTRING (LibMCDriver_ScanLabSM
     case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTGETJOBCHARACTERISTIC: return "Could not get job characteristic.";
     case LIBMCDRIVER_SCANLABSMC_ERROR_JOBDURATIONHASNOTBEENPARSED: return "Job duration has not been parsed.";
     case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSTOPJOBEXECUTION: return "Could not stop job execution.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE: return "Could not set blend mode.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE: return "Invalid blend mode.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL: return "Invalid warning level.";
     default: return "unknown error";
   }
 }
@@ -231,8 +237,8 @@ namespace LibMCDriver_ScanLabSMC {
   
   enum class eBlendMode : LibMCDriver_ScanLabSMC_int32 {
     Deactivated = 0,
-    MaxAccuracy = 1,
-    Fast = 2
+    SwiftBlending = 1,
+    MaxAccuracy = 2
   };
   
   enum class eDynamicViolationReaction : LibMCDriver_ScanLabSMC_int32 {

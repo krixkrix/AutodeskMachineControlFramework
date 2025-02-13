@@ -49,7 +49,7 @@ using namespace LibMCDriver_ScanLabSMC::Impl;
  Class definition of CSMCJob
 **************************************************************************************************************************/
 
-CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStartPositionX, double dStartPositionY, LibMCDriver_ScanLabSMC::eBlendMode eBlendMode, LibMCEnv::PWorkingDirectory pWorkingDirectory, std::string sSimulationSubDirectory)
+CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStartPositionX, double dStartPositionY, LibMCEnv::PWorkingDirectory pWorkingDirectory, std::string sSimulationSubDirectory)
     : m_pContextHandle(pContextHandle), 
     m_JobID(0), 
     m_bIsFinalized(false), 
@@ -67,7 +67,21 @@ CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStart
     m_pSDK = m_pContextHandle->getSDK();
 
     auto contextHandle = m_pContextHandle->getHandle();
-    //m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, (slsc_BlendModes)eBlendMode));
+   /* switch (eBlendMode) {
+    case LibMCDriver_ScanLabSMC::eBlendMode::Deactivated:
+        m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, slsc_BlendModes::slsc_BlendModes_Deactivated), LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE);
+        break;
+    case LibMCDriver_ScanLabSMC::eBlendMode::SwiftBlending:
+        m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, slsc_BlendModes::slsc_BlendModes_SwiftBlending), LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE);
+        break;
+    case LibMCDriver_ScanLabSMC::eBlendMode::MaxAccuracy:
+        m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, slsc_BlendModes::slsc_BlendModes_MaxAccuracy), LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE);
+        break;
+    default:
+        throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE);
+
+    }
+    // */
     m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_begin(contextHandle, &m_JobID));
 
 }

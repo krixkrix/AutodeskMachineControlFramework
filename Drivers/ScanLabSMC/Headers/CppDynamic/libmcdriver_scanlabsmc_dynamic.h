@@ -312,6 +312,24 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_S
 typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_GetWarnLevelPtr) (LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eWarnLevel * pValue);
 
 /**
+* Sets the blend mode.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr) (LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eBlendMode eBlendMode);
+
+/**
+* Returns the blend mode.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[out] pBlendMode - Blend Mode that the job shall be drawn in.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr) (LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eBlendMode * pBlendMode);
+
+/**
 * Sets the RTC Serial number. MUST be larger than 0.
 *
 * @param[in] pSMCConfiguration - SMCConfiguration instance.
@@ -581,11 +599,10 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_GetLase
 * @param[in] pSMCContext - SMCContext instance.
 * @param[in] dStartPositionX - Start position in X.
 * @param[in] dStartPositionY - Start position in Y.
-* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
 * @param[out] pJobInstance - SMC Job Instance.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_BeginJobPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC::eBlendMode eBlendMode, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance);
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_BeginJobPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance);
 
 /**
 * Returns the job that is not finalized yet. Returns null if no job is active.
@@ -819,6 +836,8 @@ typedef struct {
 	PLibMCDriver_ScanLabSMCSMCConfiguration_GetDynamicViolationReactionPtr m_SMCConfiguration_GetDynamicViolationReaction;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_SetWarnLevelPtr m_SMCConfiguration_SetWarnLevel;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_GetWarnLevelPtr m_SMCConfiguration_GetWarnLevel;
+	PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr m_SMCConfiguration_SetBlendMode;
+	PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr m_SMCConfiguration_GetBlendMode;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_SetSerialNumberPtr m_SMCConfiguration_SetSerialNumber;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_GetSerialNumberPtr m_SMCConfiguration_GetSerialNumber;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_SetIPAddressPtr m_SMCConfiguration_SetIPAddress;

@@ -61,6 +61,8 @@ private:
     LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
     LibMCDriver_ScanLabSMC::eDynamicViolationReaction m_DynamicViolationReaction;
     LibMCDriver_ScanLabSMC::eWarnLevel m_WarnLevel;
+
+    LibMCDriver_ScanLabSMC::eBlendMode m_BlendMode;
     
     uint32_t m_nSerialNumber;
     std::vector<uint8_t> m_CorrectionFileData;
@@ -107,6 +109,9 @@ public:
 
     std::string GetSimulationSubDirectory() override;
 
+    void SetBlendMode(const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode) override;
+
+    LibMCDriver_ScanLabSMC::eBlendMode GetBlendMode() override;
 
     void SetFirmware(const LibMCDriver_ScanLabSMC_uint64 nFirmwareDataBufferSize, const LibMCDriver_ScanLabSMC_uint8* pFirmwareDataBuffer, const LibMCDriver_ScanLabSMC_uint64 nFPGADataBufferSize, const LibMCDriver_ScanLabSMC_uint8* pFPGADataBuffer, const LibMCDriver_ScanLabSMC_uint64 nAuxiliaryDataBufferSize, const LibMCDriver_ScanLabSMC_uint8* pAuxiliaryDataBuffer) override;
 

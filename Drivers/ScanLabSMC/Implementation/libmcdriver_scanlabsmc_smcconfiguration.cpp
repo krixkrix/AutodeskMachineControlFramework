@@ -50,7 +50,8 @@ CSMCConfiguration::CSMCConfiguration(LibMCEnv::PDriverEnvironment pDriverEnviron
     : m_pDriverEnvironment (pDriverEnvironment),
       m_DynamicViolationReaction (LibMCDriver_ScanLabSMC::eDynamicViolationReaction::WarningOnly),
      m_WarnLevel (LibMCDriver_ScanLabSMC::eWarnLevel::Error),
-    m_nSerialNumber (0)
+    m_nSerialNumber (0),
+    m_BlendMode (LibMCDriver_ScanLabSMC::eBlendMode::Deactivated)
 
 {
     if (pDriverEnvironment.get() == nullptr)
@@ -182,6 +183,17 @@ std::string CSMCConfiguration::GetSimulationSubDirectory()
 {
     return m_sSimulationSubDirectory;
 }
+
+void CSMCConfiguration::SetBlendMode(const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode)
+{
+    m_BlendMode = eBlendMode;
+}
+
+LibMCDriver_ScanLabSMC::eBlendMode CSMCConfiguration::GetBlendMode()
+{
+    return m_BlendMode;
+}
+
 
 void CSMCConfiguration::SetFirmware(const LibMCDriver_ScanLabSMC_uint64 nFirmwareDataBufferSize, const LibMCDriver_ScanLabSMC_uint8* pFirmwareDataBuffer, const LibMCDriver_ScanLabSMC_uint64 nFPGADataBufferSize, const LibMCDriver_ScanLabSMC_uint8* pFPGADataBuffer, const LibMCDriver_ScanLabSMC_uint64 nAuxiliaryDataBufferSize, const LibMCDriver_ScanLabSMC_uint8* pAuxiliaryDataBuffer)
 {
@@ -351,7 +363,21 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
     
     auto pLogConfigNode = pGeneralConfigNode->AddChild("", "LogConfig");
     pLogConfigNode->AddChildText("", "LogfilePath", sLogFilePath);
-    pLogConfigNode->AddChildText("", "Loglevel", "Warn");
+    switch (m_WarnLevel) {
+        case eWarnLevel::Error: 
+            pLogConfigNode->AddChildText("", "Loglevel", "Error");
+            break;
+        case eWarnLevel::Warn:
+            pLogConfigNode->AddChildText("", "Loglevel", "Warn");
+            break;
+        case eWarnLevel::Info:
+            pLogConfigNode->AddChildText("", "Loglevel", "Info");
+            break;
+        default:
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL);
+
+    }
+    
     pLogConfigNode->AddChildText("", "EnableConsoleLogging", "false");
     pLogConfigNode->AddChildText("", "EnableFilelogging", "true");
     pLogConfigNode->AddChildText("", "MaxLogfileSize", "26214400");
@@ -414,6 +440,43 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
             }
         }
 
+
+    }
+
+    // Patch Correction file path!
+    auto sCfgNameSpace = pXMLDocument->GetDefaultNamespace();
+    if (configVersion == eSMCConfigVersion::Version_0_8) {
+        auto pScanDeviceConfigNode = pXMLDocument->GetRootNode()->FindChild(sCfgNameSpace, "ScanDeviceConfig", true);
+        auto pScanDeviceListNode = pScanDeviceConfigNode->FindChild(sCfgNameSpace, "ScanDeviceList", true);
+
+        auto pScanDevicesNode = pScanDeviceListNode->GetChildrenByName(sCfgNameSpace, "ScanDevice");
+        uint64_t nDeviceCount = pScanDevicesNode->GetNodeCount();
+        for (uint64_t nDeviceIndex = 0; nDeviceIndex < nDeviceCount; nDeviceIndex++) {
+            auto pScanDeviceNode = pScanDevicesNode->GetNode(nDeviceIndex);
+            auto pCorrectionFileListNode = pScanDeviceNode->FindChild(sCfgNameSpace, "CorrectionFileList", true);
+            pCorrectionFileListNode->RemoveChildrenWithName(sCfgNameSpace, "CorrectionFilePath");
+
+            auto pPatchedCorrectionFileNode = pCorrectionFileListNode->AddChildText(sCfgNameSpace, "CorrectionFilePath", sCorrectionFilePath);
+            pPatchedCorrectionFileNode->AddAttribute("", "CalibrationFactor", "-1");
+        }
+
+        
+    } 
+
+    // Patch Blend Mode!
+    if (configVersion == eSMCConfigVersion::Version_0_8) {
+        auto pTrajectoryConfigNode = pXMLDocument->GetRootNode()->FindChild(sCfgNameSpace, "TrajectoryConfig", true);
+        auto pGeometryConfigNode = pTrajectoryConfigNode->FindChild(sCfgNameSpace, "GeometryConfig", true);
+        auto pBlendModeNode = pGeometryConfigNode->FindChild(sCfgNameSpace, "BlendMode", true);
+        switch (m_BlendMode) {
+            case eBlendMode::SwiftBlending: pBlendModeNode->SetTextContent("SwiftBlending"); break;
+            case eBlendMode::MaxAccuracy: pBlendModeNode->SetTextContent("MaxAccuracy"); break;
+            default: pBlendModeNode->SetTextContent("Deactivated");
+        }
+        
+        
+        
+        
 
     }
 

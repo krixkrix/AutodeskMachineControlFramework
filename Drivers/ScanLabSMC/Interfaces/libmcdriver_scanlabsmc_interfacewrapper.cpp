@@ -809,6 +809,56 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_getwarnleve
 	}
 }
 
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_setblendmode(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, eLibMCDriver_ScanLabSMCBlendMode eBlendMode)
+{
+	IBase* pIBaseClass = (IBase *)pSMCConfiguration;
+
+	try {
+		ISMCConfiguration* pISMCConfiguration = dynamic_cast<ISMCConfiguration*>(pIBaseClass);
+		if (!pISMCConfiguration)
+			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
+		
+		pISMCConfiguration->SetBlendMode(eBlendMode);
+
+		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabSMCInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabSMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_getblendmode(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, eLibMCDriver_ScanLabSMCBlendMode * pBlendMode)
+{
+	IBase* pIBaseClass = (IBase *)pSMCConfiguration;
+
+	try {
+		if (pBlendMode == nullptr)
+			throw ELibMCDriver_ScanLabSMCInterfaceException (LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
+		ISMCConfiguration* pISMCConfiguration = dynamic_cast<ISMCConfiguration*>(pIBaseClass);
+		if (!pISMCConfiguration)
+			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
+		
+		*pBlendMode = pISMCConfiguration->GetBlendMode();
+
+		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabSMCInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabSMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_setserialnumber(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC_uint32 nValue)
 {
 	IBase* pIBaseClass = (IBase *)pSMCConfiguration;
@@ -1635,7 +1685,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getlaserfield(Lib
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, eLibMCDriver_ScanLabSMCBlendMode eBlendMode, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance)
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance)
 {
 	IBase* pIBaseClass = (IBase *)pSMCContext;
 
@@ -1647,7 +1697,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDri
 		if (!pISMCContext)
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
-		pBaseJobInstance = pISMCContext->BeginJob(dStartPositionX, dStartPositionY, eBlendMode);
+		pBaseJobInstance = pISMCContext->BeginJob(dStartPositionX, dStartPositionY);
 
 		*pJobInstance = (IBase*)(pBaseJobInstance);
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
@@ -2104,6 +2154,10 @@ LibMCDriver_ScanLabSMCResult LibMCDriver_ScanLabSMC::Impl::LibMCDriver_ScanLabSM
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smcconfiguration_setwarnlevel;
 	if (sProcName == "libmcdriver_scanlabsmc_smcconfiguration_getwarnlevel") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smcconfiguration_getwarnlevel;
+	if (sProcName == "libmcdriver_scanlabsmc_smcconfiguration_setblendmode") 
+		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smcconfiguration_setblendmode;
+	if (sProcName == "libmcdriver_scanlabsmc_smcconfiguration_getblendmode") 
+		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smcconfiguration_getblendmode;
 	if (sProcName == "libmcdriver_scanlabsmc_smcconfiguration_setserialnumber") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smcconfiguration_setserialnumber;
 	if (sProcName == "libmcdriver_scanlabsmc_smcconfiguration_getserialnumber") 

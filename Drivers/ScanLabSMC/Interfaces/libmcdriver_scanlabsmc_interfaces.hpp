@@ -484,6 +484,18 @@ public:
 	virtual LibMCDriver_ScanLabSMC::eWarnLevel GetWarnLevel() = 0;
 
 	/**
+	* ISMCConfiguration::SetBlendMode - Sets the blend mode.
+	* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
+	*/
+	virtual void SetBlendMode(const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode) = 0;
+
+	/**
+	* ISMCConfiguration::GetBlendMode - Returns the blend mode.
+	* @return Blend Mode that the job shall be drawn in.
+	*/
+	virtual LibMCDriver_ScanLabSMC::eBlendMode GetBlendMode() = 0;
+
+	/**
 	* ISMCConfiguration::SetSerialNumber - Sets the RTC Serial number. MUST be larger than 0.
 	* @param[in] nValue - Value to set.
 	*/
@@ -668,10 +680,9 @@ public:
 	* ISMCContext::BeginJob - Starts a new job definition. Fails if another job is not finalized yet.
 	* @param[in] dStartPositionX - Start position in X.
 	* @param[in] dStartPositionY - Start position in Y.
-	* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
 	* @return SMC Job Instance.
 	*/
-	virtual ISMCJob * BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode) = 0;
+	virtual ISMCJob * BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY) = 0;
 
 	/**
 	* ISMCContext::GetUnfinishedJob - Returns the job that is not finalized yet. Returns null if no job is active.
