@@ -74,6 +74,8 @@ namespace AMC {
 
 		void clearUnhandledSignals(const std::string& sInstanceName);
 
+		void clearUnhandledSignalsOfType(const std::string& sInstanceName, const std::string& sSignalTypeName);
+
 		bool canTrigger(const std::string& sInstanceName, const std::string& sSignalName);
 
 		bool hasSignalDefinition(const std::string& sInstanceName, const std::string& sSignalName);

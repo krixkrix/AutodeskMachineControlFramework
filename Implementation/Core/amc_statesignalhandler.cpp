@@ -128,6 +128,20 @@ namespace AMC {
 		}
 	}
 
+	void CStateSignalHandler::clearUnhandledSignalsOfType(const std::string& sInstanceName, const std::string& sSignalTypeName)
+	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
+
+		for (auto it = m_SignalMap.begin(); it != m_SignalMap.end(); it++) {
+			// Check if the first element of the key matches
+			if (it->first.first == sInstanceName) {
+				if (it->second->getNameInternal() == sSignalTypeName) {
+					it->second->clearSignalInternal();
+				}
+			}
+		}
+
+	}
 
 
 	bool CStateSignalHandler::canTrigger(const std::string& sInstanceName, const std::string& sSignalName)

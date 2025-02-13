@@ -222,3 +222,9 @@ void CJSONWriter::addArray(const std::string& sName, CJSONWriterArray& array)
 
 }
 
+void CJSONWriter::copyFromDocument(const rapidjson::Document& document)
+{
+	m_document.CopyFrom(document, m_document.GetAllocator());
+}
+
+

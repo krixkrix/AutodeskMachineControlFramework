@@ -62,6 +62,7 @@ Abstract: This is a stub class definition of CUIEnvironment
 #include "libmcenv_buildexecution.hpp"
 #include "libmcenv_streamreader.hpp"
 #include "libmcenv_datatable.hpp"
+#include "libmcenv_jsonobject.hpp"
 
 #include "amc_toolpathhandler.hpp"
 #include "amc_logger.hpp"
@@ -128,6 +129,12 @@ CUIEnvironment::CUIEnvironment(AMC::CUIHandler* pUIHandler, const std::string& s
     else {
         m_sSenderUUID = AMCCommon::CUtils::createEmptyUUID();
     }
+
+    m_ExternalEventParameters = std::make_shared<rapidjson::Document>();
+    m_ExternalEventParameters->SetObject();
+
+    m_ExternalEventReturnValues = std::make_shared<rapidjson::Document>();
+    m_ExternalEventReturnValues->SetObject();
 
 }
 
@@ -464,9 +471,26 @@ std::vector<AMC::PUIClientAction>& CUIEnvironment::getClientActions()
     return m_ClientActions;
 }
 
-std::map<std::string, std::string>& CUIEnvironment::getExternalEventReturnValues()
+void CUIEnvironment::setExternalEventParameters(const std::string& sParametersJSON)
 {
-    return m_ExternalEventReturnValues;
+    m_ExternalEventParameters = std::make_shared<rapidjson::Document>();
+    m_ExternalEventParameters->SetObject();
+
+    if (!sParametersJSON.empty()) {
+        m_ExternalEventParameters->Parse(sParametersJSON.c_str());
+
+        if (m_ExternalEventParameters->HasParseError())
+            throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_COULDNOTPARSEEVENTPARAMETERJSON);
+    }
+}
+
+std::string CUIEnvironment::getExternalEventReturnValues() 
+{
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    m_ExternalEventReturnValues->Accept(writer);
+
+    return buffer.GetString();
 }
 
 
@@ -938,24 +962,12 @@ void CUIEnvironment::Sleep(const LibMCEnv_uint32 nDelay)
     chrono.sleepMilliseconds(nDelay);
 }
 
-void CUIEnvironment::addExternalEventParameter(const std::string& sKey, const std::string& sValue)
-{
-    if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sKey))
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDEXTERNALEVENTPARAMETERKEY, sKey);
-
-    if (AMC::CUIHandleEventResponse::externalValueNameIsReserved(sKey))
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_EXTERNALEVENTVALUEKEYISRESERVED, "external return value key is reserved: " + sKey);
-
-    m_ExternalEventParameters.insert(std::make_pair (sKey, sValue));
-}
-
 bool CUIEnvironment::HasExternalEventParameter(const std::string& sParameterName)
 {
     if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sParameterName))
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDEXTERNALEVENTPARAMETERKEY, sParameterName);
 
-    auto iIter = m_ExternalEventParameters.find(sParameterName);
-    return (iIter != m_ExternalEventParameters.end());
+    return m_ExternalEventParameters->HasMember(sParameterName.c_str ());
 
 }
 
@@ -964,11 +976,14 @@ std::string CUIEnvironment::GetExternalEventParameter(const std::string& sParame
     if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sParameterName))
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDEXTERNALEVENTPARAMETERKEY, "invalid external event parameter key: " +  sParameterName);
 
-    auto iIter = m_ExternalEventParameters.find(sParameterName);
-    if (iIter == m_ExternalEventParameters.end())
+    if (!m_ExternalEventParameters->HasMember(sParameterName.c_str()))
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_COULDNOTFINDEXTERNALEVENTPARAMETER, "could not find external event parameter: " + sParameterName);
 
-    return iIter->second;
+    auto& member = m_ExternalEventParameters->FindMember(sParameterName.c_str());
+    if (!member->value.IsString ())
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING, "external event parameter is not of type string: " + sParameterName);
+
+    return member->value.GetString();
 
 }
 
@@ -980,17 +995,25 @@ void CUIEnvironment::AddExternalEventResultValue(const std::string& sReturnValue
     if (AMC::CUIHandleEventResponse::externalValueNameIsReserved (sReturnValueName))
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_EXTERNALEVENTRETURNVALUEKEYISRESERVED, "external return value key is reserved: " + sReturnValueName);
 
-    m_ExternalEventReturnValues.insert(std::make_pair (sReturnValueName, sReturnValue));
+    if (m_ExternalEventReturnValues->HasMember(sReturnValueName.c_str()))
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_DUPLICATEEXTERNALEVENTRETURNKEY, "duplicate external event return key: " + sReturnValueName);
+
+    rapidjson::Value jsonName;
+    rapidjson::Value jsonValue;
+
+    jsonName.SetString(sReturnValueName.c_str(), m_ExternalEventReturnValues->GetAllocator());
+    jsonValue.SetString(sReturnValue.c_str(), m_ExternalEventReturnValues->GetAllocator());
+    m_ExternalEventReturnValues->AddMember(jsonName, jsonValue, m_ExternalEventReturnValues->GetAllocator ());
 }
 
 IJSONObject* CUIEnvironment::GetExternalEventParameters()
 {
-    throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
+    return new CJSONObject(m_ExternalEventParameters, m_ExternalEventParameters.get());
 }
 
 IJSONObject* CUIEnvironment::GetExternalEventResults()
 {
-    throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
+    return new CJSONObject(m_ExternalEventReturnValues, m_ExternalEventReturnValues.get());
 }
 
 bool CUIEnvironment::HasResourceData(const std::string& sIdentifier)
@@ -1046,4 +1069,19 @@ std::string CUIEnvironment::LoadResourceString(const std::string& sResourceName)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INTERNALERROR);
 
     return pResourcePackage->readEntryUTF8String(sResourceName);
+}
+
+IJSONObject* CUIEnvironment::CreateJSONObject()
+{
+    return new CJSONObject();
+}
+
+IJSONObject* CUIEnvironment::ParseJSONString(const std::string& sJSONString)
+{
+    return new CJSONObject(sJSONString);
+}
+
+IJSONObject* CUIEnvironment::ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8* pJSONDataBuffer)
+{
+    return new CJSONObject(pJSONDataBuffer, nJSONDataBufferSize);
 }

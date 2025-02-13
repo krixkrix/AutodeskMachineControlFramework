@@ -128,6 +128,8 @@ namespace AMC {
 
 		void addArray(const std::string& sName, CJSONWriterArray& array);
 
+		void copyFromDocument(const rapidjson::Document & document);
+
 	};
 
 	

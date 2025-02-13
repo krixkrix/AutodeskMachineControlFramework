@@ -120,6 +120,18 @@ uint32_t CAPIHandler_External::handleEventRequest(CJSONWriter& writer, const std
 	}
 	else {
 
+		std::string sReturnValueJSON = pEventResult.getReturnValueJSON();
+		if (!sReturnValueJSON.empty ()) {
+			rapidjson::Document returnValueDocument;
+			returnValueDocument.Parse(sReturnValueJSON.c_str());
+
+			if (returnValueDocument.HasParseError())
+				throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDEVENTRETURNVALUES);
+			
+			writer.copyFromDocument (returnValueDocument);
+		}
+		
+
 		auto& clientActions = pEventResult.getClientActions();
 		if (clientActions.size() > 0) {
 			AMC::CJSONWriterArray actionsArray(writer);
@@ -132,17 +144,7 @@ uint32_t CAPIHandler_External::handleEventRequest(CJSONWriter& writer, const std
 			writer.addArray(AMC_API_KEY_UI_EVENTACTIONS, actionsArray);
 		}
 
-		auto& returnValues = pEventResult.getReturnValues();
-
-		if (returnValues.size() > 0) {
-
-			for (auto& returnValueIter : returnValues) {
-
-				if (returnValueIter.first != AMC_API_KEY_UI_EVENTACTIONS)
-					writer.addString(returnValueIter.first, returnValueIter.second);
-			}
-		}
-
+	
 		
 	}
 

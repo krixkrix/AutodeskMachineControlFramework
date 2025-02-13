@@ -223,6 +223,8 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 		uint32_t nMinorFrameworkVersion = 0;
 		uint32_t nMicroFrameworkVersion = 0;
 
+		log("Framework version: " + m_sVersionString);
+		log("Git hash: " + m_sGitHash);
 		log("Loading server configuration...");
 
 		std::string sConfigurationXML = m_pServerIO->readConfigurationString(sConfigurationFileName);

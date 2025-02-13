@@ -56,6 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcenv_datatable.hpp"
 #include "libmcenv_modeldatacomponentinstance.hpp"
 #include "libmcenv_imageloader.hpp"
+#include "libmcenv_jsonobject.hpp"
 
 #include "amc_logger.hpp"
 #include "amc_driverhandler.hpp"
@@ -160,6 +161,10 @@ void CStateEnvironment::ClearAllUnhandledSignals()
 	m_pSystemState->stateSignalHandler()->clearUnhandledSignals(m_sInstanceName);
 }
 
+void CStateEnvironment::ClearUnhandledSignalsOfType(const std::string& sSignalTypeName)
+{
+	m_pSystemState->stateSignalHandler()->clearUnhandledSignalsOfType(m_sInstanceName, sSignalTypeName);
+}
 
 ISignalHandler* CStateEnvironment::GetUnhandledSignalByUUID(const std::string& sUUID, const bool bMustExist)
 {
@@ -623,6 +628,22 @@ LibMCEnv::Impl::IXMLDocument* CStateEnvironment::ParseXMLData(const LibMCEnv_uin
 	return new CXMLDocument(pDocument);
 
 }
+
+IJSONObject* CStateEnvironment::CreateJSONObject()
+{
+	return new CJSONObject();
+}
+
+IJSONObject* CStateEnvironment::ParseJSONString(const std::string& sJSONString)
+{
+	return new CJSONObject(sJSONString);
+}
+
+IJSONObject* CStateEnvironment::ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8* pJSONDataBuffer)
+{
+	return new CJSONObject(pJSONDataBuffer, nJSONDataBufferSize);
+}
+
 
 IDiscreteFieldData2D* CStateEnvironment::CreateDiscreteField2D(const LibMCEnv_uint32 nPixelSizeX, const LibMCEnv_uint32 nPixelSizeY, const LibMCEnv_double dDPIValueX, const LibMCEnv_double dDPIValueY, const LibMCEnv_double dOriginX, const LibMCEnv_double dOriginY, const LibMCEnv_double dDefaultValue)
 {
