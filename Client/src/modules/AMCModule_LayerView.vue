@@ -338,6 +338,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 							
 									this.loadingScatterplot = true;
 									this.LayerViewerInstance.glInstance.removeElement("layerdata_points");
+									this.LayerViewerInstance.clearPoints ();
 								
 									this.Application.axiosGetArrayBufferRequest("/ui/pointcloud/" + platform.scatterplotuuid)
 									.then(responseData => {
@@ -366,6 +367,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 							
 									this.loadingScatterplot = false;
 									this.LayerViewerInstance.glInstance.removeElement("layerdata_points");
+									this.LayerViewerInstance.clearPoints ();
 								
 							
 							}

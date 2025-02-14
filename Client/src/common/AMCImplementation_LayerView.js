@@ -287,6 +287,7 @@ class LayerViewImpl {
 		} else {
 			this.layerPointsVelocities = null;
 			this.layerPointsMaxVelocity = LAYERVIEW_MINVELOCITYRANGE;
+			this.layerPointsMinVelocity = LAYERVIEW_MINVELOCITYRANGE;
 		}
 	}
 	
@@ -389,6 +390,20 @@ class LayerViewImpl {
 		this.layerPointsColorArray = null;
 		this.layerPointsVelocities = null;
 		this.layerPointsMaxVelocity = LAYERVIEW_MINVELOCITYRANGE;
+		this.layerPointsMinVelocity = LAYERVIEW_MINVELOCITYRANGE;
+		
+		this.computeVelocities ();		
+		this.updateColors ();			
+		this.updateLayerPoints ();		
+	}
+	
+	clearPoints ()
+	{
+		this.layerPointsArray = null;
+		this.layerPointsColorArray = null;
+		this.layerPointsVelocities = null;
+		this.layerPointsMaxVelocity = LAYERVIEW_MINVELOCITYRANGE;
+		this.layerPointsMinVelocity = LAYERVIEW_MINVELOCITYRANGE;
 		
 		this.computeVelocities ();		
 		this.updateColors ();			
