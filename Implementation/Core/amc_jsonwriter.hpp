@@ -68,6 +68,8 @@ namespace AMC {
 
 		void addArray(const std::string& sName, CJSONWriterArray & array);
 
+		void copyFromObject(const rapidjson::Value & objectValue);
+
 		bool isEmpty();
 
 	};

@@ -36,6 +36,7 @@ Abstract: This is a stub class definition of CJSONObject
 #include "libmcenv_jsonarray.hpp"
 
 #include "RapidJSON/writer.h"
+#include "common_utils.hpp"
 
 using namespace LibMCEnv::Impl;
 
@@ -177,10 +178,16 @@ LibMCEnv_int64 CJSONObject::GetIntegerValue(const std::string & sName)
 {
 	if (m_pInstance->HasMember(sName.c_str())) {
 		auto& member = (*m_pInstance)[sName.c_str()];
-		if (!member.IsInt64 ())
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTINTEGER, "JSON member is not integer: " + sName);
+		if (member.IsInt64()) {
+			return member.GetInt64();
+		}
 
-		return member.GetInt64();
+		if (member.IsString()) {
+			return AMCCommon::CUtils::stringToInteger(member.GetString());
+		}
+		
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTINTEGER, "JSON member is not integer: " + sName);
+
 	}
 	else {
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERNOTFOUND, "JSON member not found: " + sName);
@@ -191,10 +198,21 @@ LibMCEnv_double CJSONObject::GetDoubleValue(const std::string & sName)
 {
 	if (m_pInstance->HasMember(sName.c_str())) {
 		auto& member = (*m_pInstance)[sName.c_str()];
-		if (!member.IsDouble())
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTDOUBLE, "JSON member is not double: " + sName);
+		if (member.IsDouble()) {
+			return member.GetDouble();
+		}
 
-		return member.GetDouble();
+		if (member.IsInt64() || member.IsInt ()) {
+			return (double)member.GetInt64();
+		}
+
+		if (member.IsString()) {
+			return AMCCommon::CUtils::stringToDouble(member.GetString());
+		}
+
+
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTDOUBLE, "JSON member is not double: " + sName);
+
 	}
 	else {
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERNOTFOUND, "JSON member not found: " + sName);
@@ -206,9 +224,18 @@ bool CJSONObject::GetBoolValue(const std::string & sName)
 	if (m_pInstance->HasMember(sName.c_str())) {
 		auto& member = (*m_pInstance)[sName.c_str()];
 		if (!member.IsBool())
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTBOOL, "JSON member is not bool: " + sName);
+			return member.GetBool();
 
-		return member.GetBool();
+		if (member.IsInt64() || member.IsInt()) {
+			return (member.GetInt64() != 0);
+		}
+
+		if (member.IsString()) {
+			return AMCCommon::CUtils::stringToBool(member.GetString());
+		}
+
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTBOOL, "JSON member is not bool: " + sName);
+
 	}
 	else {
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERNOTFOUND, "JSON member not found: " + sName);
@@ -233,7 +260,7 @@ IJSONArray * CJSONObject::GetArrayValue(const std::string & sName)
 {
 	if (m_pInstance->HasMember(sName.c_str())) {
 		auto pMember = &(*m_pInstance)[sName.c_str()];
-		if (!pMember->IsObject())
+		if (!pMember->IsArray())
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERISNOTARRAY, "JSON member is not array: " + sName);
 
 		return new CJSONArray(m_pDocument, pMember);
