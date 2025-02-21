@@ -86,13 +86,14 @@ void CRaylaseCoordinateTransform::applyTransform(double& dX, double& dY)
 }
 
 
-CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform)
+CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode>& partSuppressions)
     : m_pSDK(pSDK), 
     m_ListHandle(0), 
     m_CardHandle(cardHandle), 
     m_dMaxLaserPowerInWatts(dMaxLaserPowerInWatts),
     m_nListIDOnCard (RAYLASE_LISTONCARDNOTSET),
-    m_pCoordinateTransform (pCoordinateTransform)
+    m_pCoordinateTransform (pCoordinateTransform),
+    m_PartSuppressions (partSuppressions)
 
 {
     if (pSDK.get() == nullptr)
@@ -380,18 +381,5 @@ void CRaylaseCardList::abortExecution()
 }
 
 
-void CRaylaseCardList::setPartIgnoreState(const std::string& sUUID, eRaylasePartIgnoreState ignoreState)
-{
-    if (ignoreState == eRaylasePartIgnoreState::pisDoNotIgnore) {
-        m_IgnorePartMap.erase(sUUID);
-    } else {
-        m_IgnorePartMap.insert(std::make_pair (sUUID, ignoreState));
-    }
-}
-
-void CRaylaseCardList::clearPartIgnoreStates()
-{
-    m_IgnorePartMap.clear();
-}
 
 

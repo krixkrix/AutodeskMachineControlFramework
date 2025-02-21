@@ -379,6 +379,43 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_rayla
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_getassignedlaserindex(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, LibMCDriver_Raylase_uint32 * pLaserIndex);
 
 /**
+* Adds a part suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pPartUUID - UUID of a part. Fails if not a valid UUID.
+* @param[in] eSuppressionMode - Part suppression mode. If DontSuppress is given, the part is removed from the list.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_addpartsuppression(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID, LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode);
+
+/**
+* Returns the suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pPartUUID - UUID of a part. Fails if not a valid UUID.
+* @param[out] pSuppressionMode - Part suppression mode.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_getpartsuppressionmode(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID, LibMCDriver_Raylase::ePartSuppressionMode * pSuppressionMode);
+
+/**
+* Clears all part suppressions that have been set before.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_clearallpartsuppressions(LibMCDriver_Raylase_RaylaseCard pRaylaseCard);
+
+/**
+* Removes a part suppression that was added before. Does nothing if part suppression does not exist.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pPartUUID - UUID of a part
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_removepartsuppression(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID);
+
+/**
 * Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
 *
 * @param[in] pRaylaseCard - RaylaseCard instance.

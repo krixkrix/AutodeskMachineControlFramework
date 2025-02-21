@@ -496,6 +496,31 @@ public:
 	virtual LibMCDriver_Raylase_uint32 GetAssignedLaserIndex() = 0;
 
 	/**
+	* IRaylaseCard::AddPartSuppression - Adds a part suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+	* @param[in] sPartUUID - UUID of a part. Fails if not a valid UUID.
+	* @param[in] eSuppressionMode - Part suppression mode. If DontSuppress is given, the part is removed from the list.
+	*/
+	virtual void AddPartSuppression(const std::string & sPartUUID, const LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode) = 0;
+
+	/**
+	* IRaylaseCard::GetPartSuppressionMode - Returns the suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+	* @param[in] sPartUUID - UUID of a part. Fails if not a valid UUID.
+	* @return Part suppression mode.
+	*/
+	virtual LibMCDriver_Raylase::ePartSuppressionMode GetPartSuppressionMode(const std::string & sPartUUID) = 0;
+
+	/**
+	* IRaylaseCard::ClearAllPartSuppressions - Clears all part suppressions that have been set before.
+	*/
+	virtual void ClearAllPartSuppressions() = 0;
+
+	/**
+	* IRaylaseCard::RemovePartSuppression - Removes a part suppression that was added before. Does nothing if part suppression does not exist.
+	* @param[in] sPartUUID - UUID of a part
+	*/
+	virtual void RemovePartSuppression(const std::string & sPartUUID) = 0;
+
+	/**
 	* IRaylaseCard::DrawLayerWithCallback - Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
 	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 	* @param[in] nLayerIndex - Layer index of the build file.

@@ -1033,6 +1033,113 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_getassignedlaserindex(
 	}
 }
 
+LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_addpartsuppression(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID, eLibMCDriver_RaylasePartSuppressionMode eSuppressionMode)
+{
+	IBase* pIBaseClass = (IBase *)pRaylaseCard;
+
+	try {
+		if (pPartUUID == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		std::string sPartUUID(pPartUUID);
+		IRaylaseCard* pIRaylaseCard = dynamic_cast<IRaylaseCard*>(pIBaseClass);
+		if (!pIRaylaseCard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pIRaylaseCard->AddPartSuppression(sPartUUID, eSuppressionMode);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_getpartsuppressionmode(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID, eLibMCDriver_RaylasePartSuppressionMode * pSuppressionMode)
+{
+	IBase* pIBaseClass = (IBase *)pRaylaseCard;
+
+	try {
+		if (pPartUUID == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		if (pSuppressionMode == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		std::string sPartUUID(pPartUUID);
+		IRaylaseCard* pIRaylaseCard = dynamic_cast<IRaylaseCard*>(pIBaseClass);
+		if (!pIRaylaseCard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pSuppressionMode = pIRaylaseCard->GetPartSuppressionMode(sPartUUID);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_clearallpartsuppressions(LibMCDriver_Raylase_RaylaseCard pRaylaseCard)
+{
+	IBase* pIBaseClass = (IBase *)pRaylaseCard;
+
+	try {
+		IRaylaseCard* pIRaylaseCard = dynamic_cast<IRaylaseCard*>(pIBaseClass);
+		if (!pIRaylaseCard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pIRaylaseCard->ClearAllPartSuppressions();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_removepartsuppression(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID)
+{
+	IBase* pIBaseClass = (IBase *)pRaylaseCard;
+
+	try {
+		if (pPartUUID == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		std::string sPartUUID(pPartUUID);
+		IRaylaseCard* pIRaylaseCard = dynamic_cast<IRaylaseCard*>(pIBaseClass);
+		if (!pIRaylaseCard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pIRaylaseCard->RemovePartSuppression(sPartUUID);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecard_drawlayerwithcallback(LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pStreamUUID, LibMCDriver_Raylase_uint32 nLayerIndex, LibMCDriver_RaylaseExposureCancellationCallback pCancellationCallback, LibMCDriver_Raylase_pvoid pUserData)
 {
 	IBase* pIBaseClass = (IBase *)pRaylaseCard;
@@ -1556,6 +1663,14 @@ LibMCDriver_RaylaseResult LibMCDriver_Raylase::Impl::LibMCDriver_Raylase_GetProc
 		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_assignlaserindex;
 	if (sProcName == "libmcdriver_raylase_raylasecard_getassignedlaserindex") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_getassignedlaserindex;
+	if (sProcName == "libmcdriver_raylase_raylasecard_addpartsuppression") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_addpartsuppression;
+	if (sProcName == "libmcdriver_raylase_raylasecard_getpartsuppressionmode") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_getpartsuppressionmode;
+	if (sProcName == "libmcdriver_raylase_raylasecard_clearallpartsuppressions") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_clearallpartsuppressions;
+	if (sProcName == "libmcdriver_raylase_raylasecard_removepartsuppression") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_removepartsuppression;
 	if (sProcName == "libmcdriver_raylase_raylasecard_drawlayerwithcallback") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_drawlayerwithcallback;
 	if (sProcName == "libmcdriver_raylase_raylasecard_drawlayer") 

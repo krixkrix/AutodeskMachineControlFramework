@@ -366,6 +366,43 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_AssignLaserI
 typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_GetAssignedLaserIndexPtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard, LibMCDriver_Raylase_uint32 * pLaserIndex);
 
 /**
+* Adds a part suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pPartUUID - UUID of a part. Fails if not a valid UUID.
+* @param[in] eSuppressionMode - Part suppression mode. If DontSuppress is given, the part is removed from the list.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_AddPartSuppressionPtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID, LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode);
+
+/**
+* Returns the suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pPartUUID - UUID of a part. Fails if not a valid UUID.
+* @param[out] pSuppressionMode - Part suppression mode.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_GetPartSuppressionModePtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID, LibMCDriver_Raylase::ePartSuppressionMode * pSuppressionMode);
+
+/**
+* Clears all part suppressions that have been set before.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_ClearAllPartSuppressionsPtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard);
+
+/**
+* Removes a part suppression that was added before. Does nothing if part suppression does not exist.
+*
+* @param[in] pRaylaseCard - RaylaseCard instance.
+* @param[in] pPartUUID - UUID of a part
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCard_RemovePartSuppressionPtr) (LibMCDriver_Raylase_RaylaseCard pRaylaseCard, const char * pPartUUID);
+
+/**
 * Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.
 *
 * @param[in] pRaylaseCard - RaylaseCard instance.
@@ -646,6 +683,10 @@ typedef struct {
 	PLibMCDriver_RaylaseRaylaseCard_GetLaserStatusPtr m_RaylaseCard_GetLaserStatus;
 	PLibMCDriver_RaylaseRaylaseCard_AssignLaserIndexPtr m_RaylaseCard_AssignLaserIndex;
 	PLibMCDriver_RaylaseRaylaseCard_GetAssignedLaserIndexPtr m_RaylaseCard_GetAssignedLaserIndex;
+	PLibMCDriver_RaylaseRaylaseCard_AddPartSuppressionPtr m_RaylaseCard_AddPartSuppression;
+	PLibMCDriver_RaylaseRaylaseCard_GetPartSuppressionModePtr m_RaylaseCard_GetPartSuppressionMode;
+	PLibMCDriver_RaylaseRaylaseCard_ClearAllPartSuppressionsPtr m_RaylaseCard_ClearAllPartSuppressions;
+	PLibMCDriver_RaylaseRaylaseCard_RemovePartSuppressionPtr m_RaylaseCard_RemovePartSuppression;
 	PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr m_RaylaseCard_DrawLayerWithCallback;
 	PLibMCDriver_RaylaseRaylaseCard_DrawLayerPtr m_RaylaseCard_DrawLayer;
 	PLibMCDriver_RaylaseRaylaseCard_SetRotationalCoordinateTransformPtr m_RaylaseCard_SetRotationalCoordinateTransform;

@@ -300,6 +300,45 @@ bool CRaylaseCardImpl::isSimulationMode()
     return m_bSimulationMode;
 }
 
+void CRaylaseCardImpl::addPartSuppression(const std::string& sPartUUID, const LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode)
+{
+    auto pUtils = m_pDriverEnvironment->CreateCryptoContext();
+    std::string sNormalizedUUID = pUtils->NormalizeUUIDString(sPartUUID);
+
+    if ((eSuppressionMode == LibMCDriver_Raylase::ePartSuppressionMode::NoPower) ||
+        (eSuppressionMode == LibMCDriver_Raylase::ePartSuppressionMode::SkipPart)) {
+        m_PartSuppressions.insert(std::make_pair(sNormalizedUUID, eSuppressionMode));
+    }
+    else {
+        m_PartSuppressions.erase(sNormalizedUUID);
+    }
+
+}
+
+void CRaylaseCardImpl::clearAllPartSuppressions()
+{
+    m_PartSuppressions.clear();
+}
+
+void CRaylaseCardImpl::removePartSuppression(const std::string& sPartUUID)
+{
+    auto pUtils = m_pDriverEnvironment->CreateCryptoContext();
+    std::string sNormalizedUUID = pUtils->NormalizeUUIDString(sPartUUID);
+    m_PartSuppressions.erase(sNormalizedUUID);
+}
+
+LibMCDriver_Raylase::ePartSuppressionMode CRaylaseCardImpl::getPartSuppressionMode(const std::string& sPartUUID)
+{
+    auto pUtils = m_pDriverEnvironment->CreateCryptoContext();
+    std::string sNormalizedUUID = pUtils->NormalizeUUIDString(sPartUUID);
+
+    auto iIter = m_PartSuppressions.find(sNormalizedUUID);
+    if (iIter != m_PartSuppressions.end())
+        return iIter->second;
+
+    return LibMCDriver_Raylase::ePartSuppressionMode::DontSuppress;
+}
+
 
 LibMCEnv::PDriverEnvironment CRaylaseCardImpl::getDriverEnvironment()
 {
@@ -308,7 +347,7 @@ LibMCEnv::PDriverEnvironment CRaylaseCardImpl::getDriverEnvironment()
 
 PRaylaseCardList CRaylaseCardImpl::createNewList()
 {
-    return std::make_shared<CRaylaseCardList>(m_pSDK, m_Handle, m_dMaxLaserPowerInWatts, m_pCoordinateTransform);
+    return std::make_shared<CRaylaseCardList>(m_pSDK, m_Handle, m_dMaxLaserPowerInWatts, m_pCoordinateTransform, m_PartSuppressions);
 }
 
 void CRaylaseCardImpl::abortListExecution()

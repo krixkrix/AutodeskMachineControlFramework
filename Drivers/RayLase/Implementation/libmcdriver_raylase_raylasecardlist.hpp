@@ -77,12 +77,6 @@ namespace Impl {
 
 	typedef std::shared_ptr <CRaylaseCoordinateTransform> PRaylaseCoordinateTransform;
 
-	enum class eRaylasePartIgnoreState : uint32_t
-	{
-		pisDoNotIgnore = 0,
-		pisSkipPart = 1,
-		pisNoPower = 2
-	};
 
 class CRaylaseCardList
 {
@@ -94,11 +88,11 @@ class CRaylaseCardList
 		uint32_t m_nListIDOnCard;
 		PRaylaseCoordinateTransform m_pCoordinateTransform;
 
-		std::map<std::string, eRaylasePartIgnoreState> m_IgnorePartMap;
+		std::map<std::string, ePartSuppressionMode> m_PartSuppressions;
 
 	public:
 
-		CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform);
+		CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode> & partSuppressions);
 
 		virtual ~CRaylaseCardList();
 
@@ -116,10 +110,6 @@ class CRaylaseCardList
 		bool waitForExecution(uint32_t nTimeOutInMS);
 
 		void abortExecution();
-
-		void setPartIgnoreState(const std::string & sUUID, eRaylasePartIgnoreState ignoreState);
-
-		void clearPartIgnoreStates ();
 };
 
 typedef std::shared_ptr<CRaylaseCardList> PRaylaseCardList;

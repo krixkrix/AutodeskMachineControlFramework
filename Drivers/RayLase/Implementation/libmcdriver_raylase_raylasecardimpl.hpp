@@ -98,6 +98,8 @@ private:
 
 	PRaylaseCoordinateTransform m_pCoordinateTransform;
 
+	std::map<std::string, ePartSuppressionMode> m_PartSuppressions;
+
 public:
 	
 	static PRaylaseCardImpl connectByIP(PRaylaseSDK pSDK, const std::string& sCardName, const std::string& sCardIP, uint32_t nPort, double dMaxLaserPowerInWatts, bool bSimulationMode, LibMCEnv::PDriverEnvironment pDriverEnvironment, LibMCEnv::PWorkingDirectory pWorkingDirectory);
@@ -131,6 +133,14 @@ public:
 	bool IsConnected();
 
 	void Disconnect();
+
+	void addPartSuppression(const std::string& sPartUUID, const LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode);
+
+	void clearAllPartSuppressions();
+
+	void removePartSuppression(const std::string& sPartUUID);
+
+	LibMCDriver_Raylase::ePartSuppressionMode getPartSuppressionMode(const std::string& sPartUUID);
 
 	void assignLaserIndex(uint32_t nLaserIndex);
 

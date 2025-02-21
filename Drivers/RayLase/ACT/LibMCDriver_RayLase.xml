@@ -102,7 +102,12 @@
 		<member name="Y2" type="single" />
 	</struct>
 
-	
+	<enum name="PartSuppressionMode">
+	   <option name="DontSuppress" value="0" description="Part is exposed with full power." />
+	   <option name="SkipPart" value="1" description="Part is skipped and not exposed at all." />
+	   <option name="NoPower" value="2" description="Part is exposed with a power of 0 Watts." />
+	</enum>
+
 <!--
 
 This base Driver interface MUST be in Sync with LibMCDriver.xml
@@ -276,6 +281,23 @@ Custom implementation
 
 		<method name="GetAssignedLaserIndex" description="Returns the assigned laser index to the card. Default value is 0 (unassigned).">
 			<param name="LaserIndex" type="uint32" pass="return" description="Assigned laser index. This will map to the laser indices given in the build file. 0 means no assignment." />
+		</method>
+
+		<method name="AddPartSuppression" description="Adds a part suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.">
+			<param name="PartUUID" type="string" pass="in" description="UUID of a part. Fails if not a valid UUID." />
+			<param name="SuppressionMode" type="enum" class="PartSuppressionMode" pass="in" description="Part suppression mode. If DontSuppress is given, the part is removed from the list." />
+		</method>
+
+		<method name="GetPartSuppressionMode" description="Returns the suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.">
+			<param name="PartUUID" type="string" pass="in" description="UUID of a part. Fails if not a valid UUID." />
+			<param name="SuppressionMode" type="enum" class="PartSuppressionMode" pass="return" description="Part suppression mode." />
+		</method>
+
+		<method name="ClearAllPartSuppressions" description="Clears all part suppressions that have been set before.">
+		</method>
+		
+		<method name="RemovePartSuppression" description="Removes a part suppression that was added before. Does nothing if part suppression does not exist.">
+			<param name="PartUUID" type="string" pass="in" description="UUID of a part" />
 		</method>
 
 		<method name="DrawLayerWithCallback" description="Draws a layer of a build stream with a progress callback. Blocks until the layer is drawn.">

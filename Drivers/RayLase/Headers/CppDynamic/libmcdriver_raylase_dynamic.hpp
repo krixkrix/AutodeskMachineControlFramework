@@ -558,6 +558,10 @@ public:
 	inline void GetLaserStatus(bool & bPilotIsEnabled, bool & bLaserIsArmed, bool & bLaserAlarm);
 	inline void AssignLaserIndex(const LibMCDriver_Raylase_uint32 nLaserIndex);
 	inline LibMCDriver_Raylase_uint32 GetAssignedLaserIndex();
+	inline void AddPartSuppression(const std::string & sPartUUID, const ePartSuppressionMode eSuppressionMode);
+	inline ePartSuppressionMode GetPartSuppressionMode(const std::string & sPartUUID);
+	inline void ClearAllPartSuppressions();
+	inline void RemovePartSuppression(const std::string & sPartUUID);
 	inline void DrawLayerWithCallback(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const ExposureCancellationCallback pCancellationCallback, const LibMCDriver_Raylase_pvoid pUserData);
 	inline void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS);
 	inline void SetRotationalCoordinateTransform(const LibMCDriver_Raylase_double dM11, const LibMCDriver_Raylase_double dM12, const LibMCDriver_Raylase_double dM21, const LibMCDriver_Raylase_double dM22);
@@ -747,6 +751,10 @@ public:
 		pWrapperTable->m_RaylaseCard_GetLaserStatus = nullptr;
 		pWrapperTable->m_RaylaseCard_AssignLaserIndex = nullptr;
 		pWrapperTable->m_RaylaseCard_GetAssignedLaserIndex = nullptr;
+		pWrapperTable->m_RaylaseCard_AddPartSuppression = nullptr;
+		pWrapperTable->m_RaylaseCard_GetPartSuppressionMode = nullptr;
+		pWrapperTable->m_RaylaseCard_ClearAllPartSuppressions = nullptr;
+		pWrapperTable->m_RaylaseCard_RemovePartSuppression = nullptr;
 		pWrapperTable->m_RaylaseCard_DrawLayerWithCallback = nullptr;
 		pWrapperTable->m_RaylaseCard_DrawLayer = nullptr;
 		pWrapperTable->m_RaylaseCard_SetRotationalCoordinateTransform = nullptr;
@@ -1118,6 +1126,42 @@ public:
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_RaylaseCard_AddPartSuppression = (PLibMCDriver_RaylaseRaylaseCard_AddPartSuppressionPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_addpartsuppression");
+		#else // _WIN32
+		pWrapperTable->m_RaylaseCard_AddPartSuppression = (PLibMCDriver_RaylaseRaylaseCard_AddPartSuppressionPtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_addpartsuppression");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RaylaseCard_AddPartSuppression == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RaylaseCard_GetPartSuppressionMode = (PLibMCDriver_RaylaseRaylaseCard_GetPartSuppressionModePtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_getpartsuppressionmode");
+		#else // _WIN32
+		pWrapperTable->m_RaylaseCard_GetPartSuppressionMode = (PLibMCDriver_RaylaseRaylaseCard_GetPartSuppressionModePtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_getpartsuppressionmode");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RaylaseCard_GetPartSuppressionMode == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RaylaseCard_ClearAllPartSuppressions = (PLibMCDriver_RaylaseRaylaseCard_ClearAllPartSuppressionsPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_clearallpartsuppressions");
+		#else // _WIN32
+		pWrapperTable->m_RaylaseCard_ClearAllPartSuppressions = (PLibMCDriver_RaylaseRaylaseCard_ClearAllPartSuppressionsPtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_clearallpartsuppressions");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RaylaseCard_ClearAllPartSuppressions == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RaylaseCard_RemovePartSuppression = (PLibMCDriver_RaylaseRaylaseCard_RemovePartSuppressionPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_removepartsuppression");
+		#else // _WIN32
+		pWrapperTable->m_RaylaseCard_RemovePartSuppression = (PLibMCDriver_RaylaseRaylaseCard_RemovePartSuppressionPtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_removepartsuppression");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RaylaseCard_RemovePartSuppression == nullptr)
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_RaylaseCard_DrawLayerWithCallback = (PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr) GetProcAddress(hLibrary, "libmcdriver_raylase_raylasecard_drawlayerwithcallback");
 		#else // _WIN32
 		pWrapperTable->m_RaylaseCard_DrawLayerWithCallback = (PLibMCDriver_RaylaseRaylaseCard_DrawLayerWithCallbackPtr) dlsym(hLibrary, "libmcdriver_raylase_raylasecard_drawlayerwithcallback");
@@ -1470,6 +1514,22 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_getassignedlaserindex", (void**)&(pWrapperTable->m_RaylaseCard_GetAssignedLaserIndex));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_GetAssignedLaserIndex == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_addpartsuppression", (void**)&(pWrapperTable->m_RaylaseCard_AddPartSuppression));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_AddPartSuppression == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_getpartsuppressionmode", (void**)&(pWrapperTable->m_RaylaseCard_GetPartSuppressionMode));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_GetPartSuppressionMode == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_clearallpartsuppressions", (void**)&(pWrapperTable->m_RaylaseCard_ClearAllPartSuppressions));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_ClearAllPartSuppressions == nullptr) )
+			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_removepartsuppression", (void**)&(pWrapperTable->m_RaylaseCard_RemovePartSuppression));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RaylaseCard_RemovePartSuppression == nullptr) )
 			return LIBMCDRIVER_RAYLASE_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_raylase_raylasecard_drawlayerwithcallback", (void**)&(pWrapperTable->m_RaylaseCard_DrawLayerWithCallback));
@@ -1949,6 +2009,46 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_RaylaseCard_GetAssignedLaserIndex(m_pHandle, &resultLaserIndex));
 		
 		return resultLaserIndex;
+	}
+	
+	/**
+	* CRaylaseCard::AddPartSuppression - Adds a part suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+	* @param[in] sPartUUID - UUID of a part. Fails if not a valid UUID.
+	* @param[in] eSuppressionMode - Part suppression mode. If DontSuppress is given, the part is removed from the list.
+	*/
+	void CRaylaseCard::AddPartSuppression(const std::string & sPartUUID, const ePartSuppressionMode eSuppressionMode)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RaylaseCard_AddPartSuppression(m_pHandle, sPartUUID.c_str(), eSuppressionMode));
+	}
+	
+	/**
+	* CRaylaseCard::GetPartSuppressionMode - Returns the suppression. If Drawlayer encounters a part of a specific ID, it will suppress it depending on the suppression mode.
+	* @param[in] sPartUUID - UUID of a part. Fails if not a valid UUID.
+	* @return Part suppression mode.
+	*/
+	ePartSuppressionMode CRaylaseCard::GetPartSuppressionMode(const std::string & sPartUUID)
+	{
+		ePartSuppressionMode resultSuppressionMode = (ePartSuppressionMode) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_RaylaseCard_GetPartSuppressionMode(m_pHandle, sPartUUID.c_str(), &resultSuppressionMode));
+		
+		return resultSuppressionMode;
+	}
+	
+	/**
+	* CRaylaseCard::ClearAllPartSuppressions - Clears all part suppressions that have been set before.
+	*/
+	void CRaylaseCard::ClearAllPartSuppressions()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RaylaseCard_ClearAllPartSuppressions(m_pHandle));
+	}
+	
+	/**
+	* CRaylaseCard::RemovePartSuppression - Removes a part suppression that was added before. Does nothing if part suppression does not exist.
+	* @param[in] sPartUUID - UUID of a part
+	*/
+	void CRaylaseCard::RemovePartSuppression(const std::string & sPartUUID)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RaylaseCard_RemovePartSuppression(m_pHandle, sPartUUID.c_str()));
 	}
 	
 	/**

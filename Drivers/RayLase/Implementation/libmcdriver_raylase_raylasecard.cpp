@@ -149,6 +149,27 @@ void onCheckSingleLaserScanningTimeout(uint64_t nMillisecondsPassed, void* pUser
 
 }
 
+void CRaylaseCard::AddPartSuppression(const std::string& sPartUUID, const LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode)
+{
+    m_pRaylaseCardImpl->addPartSuppression(sPartUUID, eSuppressionMode);
+}
+
+void CRaylaseCard::ClearAllPartSuppressions()
+{
+    m_pRaylaseCardImpl->clearAllPartSuppressions();
+
+}
+
+void CRaylaseCard::RemovePartSuppression(const std::string& sPartUUID)
+{
+    m_pRaylaseCardImpl->removePartSuppression(sPartUUID);
+}
+
+LibMCDriver_Raylase::ePartSuppressionMode CRaylaseCard::GetPartSuppressionMode(const std::string& sPartUUID)
+{   
+    return m_pRaylaseCardImpl->getPartSuppressionMode(sPartUUID);
+}
+
 void CRaylaseCard::DrawLayer(const std::string& sStreamUUID, const LibMCDriver_Raylase_uint32 nLayerIndex, const LibMCDriver_Raylase_uint32 nScanningTimeoutInMS)
 {
     auto pDriverEnvironment = m_pRaylaseCardImpl->getDriverEnvironment();
