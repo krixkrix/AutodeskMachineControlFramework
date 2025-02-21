@@ -36,7 +36,7 @@ Abstract: This is a stub class definition of CRaylaseCard
 #include "libmcdriver_raylase_nlightdriverboard.hpp"
 
 using namespace LibMCDriver_Raylase::Impl;
-
+//#include <iostream>
 
 /*************************************************************************************************************************
  Class definition of CRaylaseCard 
@@ -226,8 +226,10 @@ void CRaylaseCard::DrawLayerWithCallback(const std::string& sStreamUUID, const L
 
             if (pCancellationCallback != nullptr) {
                 uint64_t nMillisecondsPassed = nCurrentTime - nStartTime;
-                bool bCancel = false;
-                pCancellationCallback(nMillisecondsPassed, pUserData, &bCancel);
+                uint32_t bCancel = 0;
+                //std::cout << "asking for cancellation: " << nMillisecondsPassed << std::endl;
+                pCancellationCallback(nMillisecondsPassed, pUserData, (bool*)&bCancel);
+                //std::cout << "returns: " << bCancel << std::endl;
                 if (bCancel)
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED);
 

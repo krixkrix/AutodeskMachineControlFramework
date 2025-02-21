@@ -110,6 +110,9 @@ class CRaylaseCardList
 		bool waitForExecution(uint32_t nTimeOutInMS);
 
 		void abortExecution();
+
+		LibMCDriver_Raylase::ePartSuppressionMode getPartSuppressionMode(const std::string& sPartUUID);
+
 };
 
 typedef std::shared_ptr<CRaylaseCardList> PRaylaseCardList;

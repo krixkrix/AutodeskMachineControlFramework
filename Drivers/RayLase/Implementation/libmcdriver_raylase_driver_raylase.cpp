@@ -42,6 +42,7 @@ Abstract: This is a stub class definition of CDriver_Raylase
 using namespace LibMCDriver_Raylase::Impl;
 
 #include <set>
+//#include <iostream>
 
 /*************************************************************************************************************************
  Class definition of CDriver_Raylase 
@@ -295,8 +296,10 @@ void CDriver_Raylase::DrawLayerMultiLaserWithCallback(const std::string& sStream
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDSYSTEMTIMING);
 
                 uint64_t nMillisecondsPassed = nCurrentTime - nStartTime;
-                bool bCancel = false;
-                pCancellationCallback(nMillisecondsPassed, pUserData, &bCancel);
+                uint32_t bCancel = 0;
+                //std::cout << "asking for cancellation: " << nMillisecondsPassed << std::endl;
+                pCancellationCallback(nMillisecondsPassed, pUserData, (bool*)&bCancel);
+                //std::cout << "returns: " << bCancel << std::endl;
 
                 if (bCancel) {
 

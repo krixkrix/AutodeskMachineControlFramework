@@ -180,15 +180,12 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 
         // Check if part is not to be ignored
         std::string sSegmentPartUUID = pLayer->GetSegmentPartUUID(nSegmentIndex);
-        //eRaylasePartIgnoreState ignoreState = eRaylasePartIgnoreState::pisDoNotIgnore;        
-
-        /*auto iIgnoreIter = m_IgnorePartMap.find(sSegmentPartUUID);
-        if (iIgnoreIter != m_IgnorePartMap.end())
-            ignoreState = iIgnoreIter->second;
+        ePartSuppressionMode suppressionMode = getPartSuppressionMode(sSegmentPartUUID);
 
         // If part should be completely ignored, do not draw it.
-        if (ignoreState == eRaylasePartIgnoreState::pisSkipPart)
-            bDrawSegment = false; */
+        if (suppressionMode == ePartSuppressionMode::SkipPart) {
+            bDrawSegment = false;
+        }
 
         if ((nPointCount >= 2) && bDrawSegment) {
 
@@ -204,10 +201,10 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             m_pSDK->checkError(m_pSDK->rlListAppendMarkSpeed(m_ListHandle, dMarkSpeedInMeterPerSecond), "rlListAppendMarkSpeed");
 
             double dBasePowerInWatts = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
-            /*if (ignoreState == eRaylasePartIgnoreState::pisNoPower) {
+            if (suppressionMode == ePartSuppressionMode::NoPower) {
                 dBasePowerInWatts = 0.0;
                 bSegmentHasPowerPerVector = false;
-            } */
+            } 
 
             if (!bSegmentHasPowerPerVector) {
                 appendPowerInWatts(dBasePowerInWatts);
@@ -380,6 +377,13 @@ void CRaylaseCardList::abortExecution()
 
 }
 
+LibMCDriver_Raylase::ePartSuppressionMode CRaylaseCardList::getPartSuppressionMode(const std::string& sPartUUID)
+{
+    auto iIter = m_PartSuppressions.find(sPartUUID);
+    if (iIter != m_PartSuppressions.end())
+        return iIter->second;
 
+    return LibMCDriver_Raylase::ePartSuppressionMode::DontSuppress;
+}
 
 
