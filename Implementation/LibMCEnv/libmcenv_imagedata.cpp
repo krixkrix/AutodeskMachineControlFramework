@@ -495,7 +495,7 @@ IPNGImageData* CImageData::CreatePNGImage(IPNGImageStoreOptions* pPNGStorageOpti
 
 			case LibMCEnv::ePNGStorageFormat::RGB24bit:
 				convertedPixelData.resize(nTotalPixelCount * 3);
-				writeToRawMemoryEx_RGBA32bit(0, 0, m_nPixelCountX, m_nPixelCountY, convertedPixelData.data(), m_nPixelCountX * 3);
+				writeToRawMemoryEx_RGB24bit(0, 0, m_nPixelCountX, m_nPixelCountY, convertedPixelData.data(), m_nPixelCountX * 3);
 				errorCode = lodepng::encode(pResult->getPNGStreamBuffer(), convertedPixelData, m_nPixelCountX, m_nPixelCountY, LCT_RGB, 8);
 				break;
 
