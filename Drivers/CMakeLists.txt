@@ -37,6 +37,4 @@ add_subdirectory(ScanLabOIE)
 add_subdirectory(ScanLabSMC)
 add_subdirectory(TCPIP)
 add_subdirectory(Ximc)
-add_subdirectory(TML)
-add_subdirectory(ASL)
 
