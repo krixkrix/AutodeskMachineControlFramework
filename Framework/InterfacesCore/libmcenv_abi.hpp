@@ -4610,7 +4610,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getmembername(LibMCEnv_JSON
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getmembertype(LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv::eJSONObjectType * pMemberType);
 
 /**
-* Returns a member as string value. Fails if member is of type Array or Object. Returns true or false in terms of Boolean value.
+* Returns a member as string value. Fails if member is of type Array or Object. 
 *
 * @param[in] pJSONObject - JSONObject instance.
 * @param[in] pName - Name of the member.
@@ -4620,6 +4620,18 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getmembertype(LibMCEnv_JSON
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Returns a member as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+*
+* @param[in] pJSONObject - JSONObject instance.
+* @param[in] pName - Name of the member.
+* @param[in] nValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pValueBuffer -  buffer of Member value., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonobject_getuuidvalue(LibMCEnv_JSONObject pJSONObject, const char * pName, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
 /**
 * Returns a member as integer value. Fails if member is of type Array or Object, or a non-double string.
@@ -4785,6 +4797,18 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_getelementtype(LibMCEnv_JSON
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_getvalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_uint64 nIndex, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Returns a element as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+*
+* @param[in] pJSONArray - JSONArray instance.
+* @param[in] nIndex - Index of the element, 0-based. Fails if larger or equal than ElementCount
+* @param[in] nValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pValueBuffer -  buffer of Member value., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_jsonarray_getuuidvalue(LibMCEnv_JSONArray pJSONArray, LibMCEnv_uint64 nIndex, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
 /**
 * Returns a element as integer value. Fails if element is of type Array or Object, or a non-double string.

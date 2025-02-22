@@ -4597,7 +4597,7 @@ typedef LibMCEnvResult (*PLibMCEnvJSONObject_GetMemberNamePtr) (LibMCEnv_JSONObj
 typedef LibMCEnvResult (*PLibMCEnvJSONObject_GetMemberTypePtr) (LibMCEnv_JSONObject pJSONObject, const char * pName, LibMCEnv::eJSONObjectType * pMemberType);
 
 /**
-* Returns a member as string value. Fails if member is of type Array or Object. Returns true or false in terms of Boolean value.
+* Returns a member as string value. Fails if member is of type Array or Object. 
 *
 * @param[in] pJSONObject - JSONObject instance.
 * @param[in] pName - Name of the member.
@@ -4607,6 +4607,18 @@ typedef LibMCEnvResult (*PLibMCEnvJSONObject_GetMemberTypePtr) (LibMCEnv_JSONObj
 * @return error code or 0 (success)
 */
 typedef LibMCEnvResult (*PLibMCEnvJSONObject_GetValuePtr) (LibMCEnv_JSONObject pJSONObject, const char * pName, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Returns a member as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+*
+* @param[in] pJSONObject - JSONObject instance.
+* @param[in] pName - Name of the member.
+* @param[in] nValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pValueBuffer -  buffer of Member value., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvJSONObject_GetUUIDValuePtr) (LibMCEnv_JSONObject pJSONObject, const char * pName, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
 /**
 * Returns a member as integer value. Fails if member is of type Array or Object, or a non-double string.
@@ -4772,6 +4784,18 @@ typedef LibMCEnvResult (*PLibMCEnvJSONArray_GetElementTypePtr) (LibMCEnv_JSONArr
 * @return error code or 0 (success)
 */
 typedef LibMCEnvResult (*PLibMCEnvJSONArray_GetValuePtr) (LibMCEnv_JSONArray pJSONArray, LibMCEnv_uint64 nIndex, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Returns a element as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+*
+* @param[in] pJSONArray - JSONArray instance.
+* @param[in] nIndex - Index of the element, 0-based. Fails if larger or equal than ElementCount
+* @param[in] nValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pValueBuffer -  buffer of Member value., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvJSONArray_GetUUIDValuePtr) (LibMCEnv_JSONArray pJSONArray, LibMCEnv_uint64 nIndex, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
 /**
 * Returns a element as integer value. Fails if element is of type Array or Object, or a non-double string.
@@ -10010,6 +10034,7 @@ typedef struct {
 	PLibMCEnvJSONObject_GetMemberNamePtr m_JSONObject_GetMemberName;
 	PLibMCEnvJSONObject_GetMemberTypePtr m_JSONObject_GetMemberType;
 	PLibMCEnvJSONObject_GetValuePtr m_JSONObject_GetValue;
+	PLibMCEnvJSONObject_GetUUIDValuePtr m_JSONObject_GetUUIDValue;
 	PLibMCEnvJSONObject_GetIntegerValuePtr m_JSONObject_GetIntegerValue;
 	PLibMCEnvJSONObject_GetDoubleValuePtr m_JSONObject_GetDoubleValue;
 	PLibMCEnvJSONObject_GetBoolValuePtr m_JSONObject_GetBoolValue;
@@ -10026,6 +10051,7 @@ typedef struct {
 	PLibMCEnvJSONArray_GetElementCountPtr m_JSONArray_GetElementCount;
 	PLibMCEnvJSONArray_GetElementTypePtr m_JSONArray_GetElementType;
 	PLibMCEnvJSONArray_GetValuePtr m_JSONArray_GetValue;
+	PLibMCEnvJSONArray_GetUUIDValuePtr m_JSONArray_GetUUIDValue;
 	PLibMCEnvJSONArray_GetIntegerValuePtr m_JSONArray_GetIntegerValue;
 	PLibMCEnvJSONArray_GetDoubleValuePtr m_JSONArray_GetDoubleValue;
 	PLibMCEnvJSONArray_GetBoolValuePtr m_JSONArray_GetBoolValue;

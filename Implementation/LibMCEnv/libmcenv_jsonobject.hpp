@@ -83,6 +83,8 @@ public:
 
 	std::string GetValue(const std::string & sName) override;
 
+	std::string GetUUIDValue(const std::string& sName) override;
+
 	LibMCEnv_int64 GetIntegerValue(const std::string & sName) override;
 
 	LibMCEnv_double GetDoubleValue(const std::string & sName) override;

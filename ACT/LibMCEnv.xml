@@ -2723,7 +2723,12 @@
 			<param name="MemberType" type="enum" class="JSONObjectType" pass="return" description="The type of the member.." />
 		</method>
 
-		<method name="GetValue" description="Returns a member as string value. Fails if member is of type Array or Object. Returns true or false in terms of Boolean value.">
+		<method name="GetValue" description="Returns a member as string value. Fails if member is of type Array or Object. ">
+			<param name="Name" type="string" pass="in" description="Name of the member." />
+			<param name="Value" type="string" pass="return" description="Member value." />
+		</method>
+
+		<method name="GetUUIDValue" description="Returns a member as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu">
 			<param name="Name" type="string" pass="in" description="Name of the member." />
 			<param name="Value" type="string" pass="return" description="Member value." />
 		</method>
@@ -2808,6 +2813,11 @@
 		<method name="GetValue" description="Returns a element as string value. Fails if element is of type Array or Object. Returns true or false in terms of Boolean value.">
 			<param name="Index" type="uint64" pass="in" description="Index of the element, 0-based. Fails if larger or equal than ElementCount" />
 			<param name="Value" type="string" pass="return" description="Element value." />
+		</method>
+
+		<method name="GetUUIDValue" description="Returns a element as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu">
+			<param name="Index" type="uint64" pass="in" description="Index of the element, 0-based. Fails if larger or equal than ElementCount" />
+			<param name="Value" type="string" pass="return" description="Member value." />
 		</method>
 
 		<method name="GetIntegerValue" description="Returns a element as integer value. Fails if element is of type Array or Object, or a non-double string.">

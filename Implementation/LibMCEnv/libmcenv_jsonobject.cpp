@@ -174,6 +174,21 @@ std::string CJSONObject::GetValue(const std::string & sName)
 
 }
 
+std::string CJSONObject::GetUUIDValue(const std::string& sName)
+{
+	if (m_pInstance->HasMember(sName.c_str())) {
+		auto& member = (*m_pInstance)[sName.c_str()];
+		std::string sUUIDValue (member.GetString());
+
+		return AMCCommon::CUtils::normalizeUUIDString(sUUIDValue);
+	}
+	else {
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_JSONMEMBERNOTFOUND, "JSON member not found: " + sName);
+	}
+
+}
+
+
 LibMCEnv_int64 CJSONObject::GetIntegerValue(const std::string & sName)
 {
 	if (m_pInstance->HasMember(sName.c_str())) {

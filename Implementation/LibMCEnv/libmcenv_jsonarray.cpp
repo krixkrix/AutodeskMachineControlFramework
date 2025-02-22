@@ -105,6 +105,19 @@ std::string CJSONArray::GetValue(const LibMCEnv_uint64 nIndex)
 	return member.GetString();
 }
 
+std::string CJSONArray::GetUUIDValue(const LibMCEnv_uint64 nIndex)
+{
+	if (nIndex >= m_pInstance->MemberCount())
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX, "invalid JSON member index: #" + std::to_string(nIndex));
+
+	auto& member = (*m_pInstance)[(rapidjson::SizeType)nIndex];
+	std::string sUUIDValue(member.GetString());
+
+	return AMCCommon::CUtils::normalizeUUIDString(sUUIDValue);
+
+}
+
+
 LibMCEnv_int64 CJSONArray::GetIntegerValue(const LibMCEnv_uint64 nIndex)
 {
 	if (nIndex >= m_pInstance->MemberCount())

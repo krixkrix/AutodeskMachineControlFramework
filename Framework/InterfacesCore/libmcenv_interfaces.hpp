@@ -3752,11 +3752,18 @@ public:
 	virtual LibMCEnv::eJSONObjectType GetMemberType(const std::string & sName) = 0;
 
 	/**
-	* IJSONObject::GetValue - Returns a member as string value. Fails if member is of type Array or Object. Returns true or false in terms of Boolean value.
+	* IJSONObject::GetValue - Returns a member as string value. Fails if member is of type Array or Object. 
 	* @param[in] sName - Name of the member.
 	* @return Member value.
 	*/
 	virtual std::string GetValue(const std::string & sName) = 0;
+
+	/**
+	* IJSONObject::GetUUIDValue - Returns a member as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+	* @param[in] sName - Name of the member.
+	* @return Member value.
+	*/
+	virtual std::string GetUUIDValue(const std::string & sName) = 0;
 
 	/**
 	* IJSONObject::GetIntegerValue - Returns a member as integer value. Fails if member is of type Array or Object, or a non-double string.
@@ -3877,6 +3884,13 @@ public:
 	* @return Element value.
 	*/
 	virtual std::string GetValue(const LibMCEnv_uint64 nIndex) = 0;
+
+	/**
+	* IJSONArray::GetUUIDValue - Returns a element as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+	* @param[in] nIndex - Index of the element, 0-based. Fails if larger or equal than ElementCount
+	* @return Member value.
+	*/
+	virtual std::string GetUUIDValue(const LibMCEnv_uint64 nIndex) = 0;
 
 	/**
 	* IJSONArray::GetIntegerValue - Returns a element as integer value. Fails if element is of type Array or Object, or a non-double string.

@@ -2180,6 +2180,7 @@ public:
 	inline std::string GetMemberName(const LibMCEnv_uint64 nIndex);
 	inline eJSONObjectType GetMemberType(const std::string & sName);
 	inline std::string GetValue(const std::string & sName);
+	inline std::string GetUUIDValue(const std::string & sName);
 	inline LibMCEnv_int64 GetIntegerValue(const std::string & sName);
 	inline LibMCEnv_double GetDoubleValue(const std::string & sName);
 	inline bool GetBoolValue(const std::string & sName);
@@ -2212,6 +2213,7 @@ public:
 	inline LibMCEnv_uint64 GetElementCount();
 	inline eJSONObjectType GetElementType(const LibMCEnv_uint64 nIndex);
 	inline std::string GetValue(const LibMCEnv_uint64 nIndex);
+	inline std::string GetUUIDValue(const LibMCEnv_uint64 nIndex);
 	inline LibMCEnv_int64 GetIntegerValue(const LibMCEnv_uint64 nIndex);
 	inline LibMCEnv_double GetDoubleValue(const LibMCEnv_uint64 nIndex);
 	inline bool GetBoolValue(const LibMCEnv_uint64 nIndex);
@@ -3593,6 +3595,7 @@ public:
 		pWrapperTable->m_JSONObject_GetMemberName = nullptr;
 		pWrapperTable->m_JSONObject_GetMemberType = nullptr;
 		pWrapperTable->m_JSONObject_GetValue = nullptr;
+		pWrapperTable->m_JSONObject_GetUUIDValue = nullptr;
 		pWrapperTable->m_JSONObject_GetIntegerValue = nullptr;
 		pWrapperTable->m_JSONObject_GetDoubleValue = nullptr;
 		pWrapperTable->m_JSONObject_GetBoolValue = nullptr;
@@ -3609,6 +3612,7 @@ public:
 		pWrapperTable->m_JSONArray_GetElementCount = nullptr;
 		pWrapperTable->m_JSONArray_GetElementType = nullptr;
 		pWrapperTable->m_JSONArray_GetValue = nullptr;
+		pWrapperTable->m_JSONArray_GetUUIDValue = nullptr;
 		pWrapperTable->m_JSONArray_GetIntegerValue = nullptr;
 		pWrapperTable->m_JSONArray_GetDoubleValue = nullptr;
 		pWrapperTable->m_JSONArray_GetBoolValue = nullptr;
@@ -7931,6 +7935,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_JSONObject_GetUUIDValue = (PLibMCEnvJSONObject_GetUUIDValuePtr) GetProcAddress(hLibrary, "libmcenv_jsonobject_getuuidvalue");
+		#else // _WIN32
+		pWrapperTable->m_JSONObject_GetUUIDValue = (PLibMCEnvJSONObject_GetUUIDValuePtr) dlsym(hLibrary, "libmcenv_jsonobject_getuuidvalue");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_JSONObject_GetUUIDValue == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_JSONObject_GetIntegerValue = (PLibMCEnvJSONObject_GetIntegerValuePtr) GetProcAddress(hLibrary, "libmcenv_jsonobject_getintegervalue");
 		#else // _WIN32
 		pWrapperTable->m_JSONObject_GetIntegerValue = (PLibMCEnvJSONObject_GetIntegerValuePtr) dlsym(hLibrary, "libmcenv_jsonobject_getintegervalue");
@@ -8072,6 +8085,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_JSONArray_GetValue == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_JSONArray_GetUUIDValue = (PLibMCEnvJSONArray_GetUUIDValuePtr) GetProcAddress(hLibrary, "libmcenv_jsonarray_getuuidvalue");
+		#else // _WIN32
+		pWrapperTable->m_JSONArray_GetUUIDValue = (PLibMCEnvJSONArray_GetUUIDValuePtr) dlsym(hLibrary, "libmcenv_jsonarray_getuuidvalue");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_JSONArray_GetUUIDValue == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13804,6 +13826,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_JSONObject_GetValue == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_jsonobject_getuuidvalue", (void**)&(pWrapperTable->m_JSONObject_GetUUIDValue));
+		if ( (eLookupError != 0) || (pWrapperTable->m_JSONObject_GetUUIDValue == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_jsonobject_getintegervalue", (void**)&(pWrapperTable->m_JSONObject_GetIntegerValue));
 		if ( (eLookupError != 0) || (pWrapperTable->m_JSONObject_GetIntegerValue == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13866,6 +13892,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_jsonarray_getvalue", (void**)&(pWrapperTable->m_JSONArray_GetValue));
 		if ( (eLookupError != 0) || (pWrapperTable->m_JSONArray_GetValue == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_jsonarray_getuuidvalue", (void**)&(pWrapperTable->m_JSONArray_GetUUIDValue));
+		if ( (eLookupError != 0) || (pWrapperTable->m_JSONArray_GetUUIDValue == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_jsonarray_getintegervalue", (void**)&(pWrapperTable->m_JSONArray_GetIntegerValue));
@@ -21431,7 +21461,7 @@ public:
 	}
 	
 	/**
-	* CJSONObject::GetValue - Returns a member as string value. Fails if member is of type Array or Object. Returns true or false in terms of Boolean value.
+	* CJSONObject::GetValue - Returns a member as string value. Fails if member is of type Array or Object. 
 	* @param[in] sName - Name of the member.
 	* @return Member value.
 	*/
@@ -21442,6 +21472,22 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetValue(m_pHandle, sName.c_str(), 0, &bytesNeededValue, nullptr));
 		std::vector<char> bufferValue(bytesNeededValue);
 		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetValue(m_pHandle, sName.c_str(), bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
+		
+		return std::string(&bufferValue[0]);
+	}
+	
+	/**
+	* CJSONObject::GetUUIDValue - Returns a member as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+	* @param[in] sName - Name of the member.
+	* @return Member value.
+	*/
+	std::string CJSONObject::GetUUIDValue(const std::string & sName)
+	{
+		LibMCEnv_uint32 bytesNeededValue = 0;
+		LibMCEnv_uint32 bytesWrittenValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetUUIDValue(m_pHandle, sName.c_str(), 0, &bytesNeededValue, nullptr));
+		std::vector<char> bufferValue(bytesNeededValue);
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONObject_GetUUIDValue(m_pHandle, sName.c_str(), bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
 		
 		return std::string(&bufferValue[0]);
 	}
@@ -21654,6 +21700,22 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_GetValue(m_pHandle, nIndex, 0, &bytesNeededValue, nullptr));
 		std::vector<char> bufferValue(bytesNeededValue);
 		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_GetValue(m_pHandle, nIndex, bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
+		
+		return std::string(&bufferValue[0]);
+	}
+	
+	/**
+	* CJSONArray::GetUUIDValue - Returns a element as string value. Fails if member is of type Array or Object. Fails if the value is not a proper UUID valu
+	* @param[in] nIndex - Index of the element, 0-based. Fails if larger or equal than ElementCount
+	* @return Member value.
+	*/
+	std::string CJSONArray::GetUUIDValue(const LibMCEnv_uint64 nIndex)
+	{
+		LibMCEnv_uint32 bytesNeededValue = 0;
+		LibMCEnv_uint32 bytesWrittenValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_GetUUIDValue(m_pHandle, nIndex, 0, &bytesNeededValue, nullptr));
+		std::vector<char> bufferValue(bytesNeededValue);
+		CheckError(m_pWrapper->m_WrapperTable.m_JSONArray_GetUUIDValue(m_pHandle, nIndex, bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
 		
 		return std::string(&bufferValue[0]);
 	}

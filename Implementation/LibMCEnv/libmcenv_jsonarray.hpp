@@ -75,6 +75,8 @@ public:
 
 	std::string GetValue(const LibMCEnv_uint64 nIndex) override;
 
+	std::string GetUUIDValue(const LibMCEnv_uint64 nIndex) override;
+
 	LibMCEnv_int64 GetIntegerValue(const LibMCEnv_uint64 nIndex) override;
 
 	LibMCEnv_double GetDoubleValue(const LibMCEnv_uint64 nIndex) override;
