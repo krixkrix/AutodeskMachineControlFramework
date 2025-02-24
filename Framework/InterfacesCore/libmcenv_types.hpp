@@ -324,6 +324,9 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING 10227 /** External event parameter is not of type string. */
 #define LIBMCENV_ERROR_JSONSTRINGISNOTOFTYPEOBJECT 10228 /** JSON String is not of type object. */
 #define LIBMCENV_ERROR_JSONDATAISNOTOFTYPEOBJECT 10229 /** JSON Data is not of type object. */
+#define LIBMCENV_ERROR_INVALIDJPEGSTREAMSIZE 10230 /** Invalid JPEG Stream size. */
+#define LIBMCENV_ERROR_INVALIDJPEGCOLORCHANNELS 10231 /** Invalid JPEG Color channels. */
+#define LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE 10232 /** Could not load JPEG Image. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -560,6 +563,9 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING: return "External event parameter is not of type string.";
     case LIBMCENV_ERROR_JSONSTRINGISNOTOFTYPEOBJECT: return "JSON String is not of type object.";
     case LIBMCENV_ERROR_JSONDATAISNOTOFTYPEOBJECT: return "JSON Data is not of type object.";
+    case LIBMCENV_ERROR_INVALIDJPEGSTREAMSIZE: return "Invalid JPEG Stream size.";
+    case LIBMCENV_ERROR_INVALIDJPEGCOLORCHANNELS: return "Invalid JPEG Color channels.";
+    case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "Could not load JPEG Image.";
     default: return "unknown error";
   }
 }

@@ -267,6 +267,10 @@
 		<error name="EXTERNALEVENTPARAMETERISNOTSTRING" code="10227" description="External event parameter is not of type string." />		
 		<error name="JSONSTRINGISNOTOFTYPEOBJECT" code="10228" description="JSON String is not of type object." />		
 		<error name="JSONDATAISNOTOFTYPEOBJECT" code="10229" description="JSON Data is not of type object." />		
+		<error name="INVALIDJPEGSTREAMSIZE" code="10230" description="Invalid JPEG Stream size." />		
+		<error name="INVALIDJPEGCOLORCHANNELS" code="10231" description="Invalid JPEG Color channels." />		
+		<error name="COULDNOTLOADJPEGIMAGE" code="10232" description="Could not load JPEG Image." />		
+		
 		
 		
 	</errors>
