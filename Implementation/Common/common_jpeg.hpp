@@ -74,7 +74,7 @@ namespace AMCCommon {
 	private:
 		uint32_t m_nWidth;
 		uint32_t m_nHeight;
-		std::vector<uint8_t> m_JPEGData;
+		std::vector<uint8_t> & m_JPEGData;
 		eJPEGChannelCount m_ChannelCount;
 
 	public:

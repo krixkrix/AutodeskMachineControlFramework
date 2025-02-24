@@ -604,18 +604,18 @@ IJPEGImageData* CImageData::CreateJPEGImage(IJPEGImageStoreOptions* pJPEGStorage
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDIMAGEBUFFER);
 
 	std::unique_ptr<CJPEGImageData> pResult(new CJPEGImageData(m_nPixelCountX, m_nPixelCountY));
-
+	auto & jpegStream = pResult->getJPEGStreamBuffer();
 	switch (m_PixelFormat) {
 	case eImagePixelFormat::GreyScale8bit: {
-		AMCCommon::CJPEGImageEncoder encoder(m_nPixelCountX, m_nPixelCountY, AMCCommon::eJPEGChannelCount::ccGray, m_PixelData->data(), pResult->getJPEGStreamBuffer(), false);
+		AMCCommon::CJPEGImageEncoder encoder(m_nPixelCountX, m_nPixelCountY, AMCCommon::eJPEGChannelCount::ccGray, m_PixelData->data(), jpegStream, false);
 		break;
 	}
 	case eImagePixelFormat::RGB24bit: {
-		AMCCommon::CJPEGImageEncoder encoder(m_nPixelCountX, m_nPixelCountY, AMCCommon::eJPEGChannelCount::ccRGB, m_PixelData->data(), pResult->getJPEGStreamBuffer(), false);
+		AMCCommon::CJPEGImageEncoder encoder(m_nPixelCountX, m_nPixelCountY, AMCCommon::eJPEGChannelCount::ccRGB, m_PixelData->data(), jpegStream, false);
 		break;
 	}
 	case eImagePixelFormat::RGBA32bit: {
-		AMCCommon::CJPEGImageEncoder encoder(m_nPixelCountX, m_nPixelCountY, AMCCommon::eJPEGChannelCount::ccRGBAlpha, m_PixelData->data(), pResult->getJPEGStreamBuffer(), false);
+		AMCCommon::CJPEGImageEncoder encoder(m_nPixelCountX, m_nPixelCountY, AMCCommon::eJPEGChannelCount::ccRGBAlpha, m_PixelData->data(), jpegStream, false);
 		break;
 	}
 
@@ -624,7 +624,7 @@ IJPEGImageData* CImageData::CreateJPEGImage(IJPEGImageStoreOptions* pJPEGStorage
 
 	}	
 
-	if (pResult->getJPEGStreamBuffer().empty())
+	if (jpegStream.empty())
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_COULDNOTSTOREJPEGIMAGE);
 
 	return pResult.release();

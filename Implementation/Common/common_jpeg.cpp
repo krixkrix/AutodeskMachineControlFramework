@@ -68,6 +68,9 @@ namespace AMCCommon {
 			throw std::runtime_error("invalid JPEG image size: " + std::to_string(nSizeX) + "/" + std::to_string(nSizeY));
 		}
 
+		m_nWidth = (uint32_t)nSizeX;
+		m_nHeight = (uint32_t)nSizeY;
+
 		switch (nChannels) {
 			case 1:
 				m_ChannelCount = eJPEGChannelCount::ccGray;
@@ -356,7 +359,7 @@ namespace AMCCommon {
 
 		int quality = 2;
 
-		if (!tje_encode_with_func(jpeg_write_callback, &m_JPEGData, quality, (int)nWidth, (int)nHeight, (int)channelCount, pImageData)) {
+		if (!tje_encode_with_func(jpeg_write_callback, (void*) &m_JPEGData, quality, (int)nWidth, (int)nHeight, (int)channelCount, pImageData)) {
 	
 			if (bThrowError) 
 				throw std::runtime_error("could not encode JPEG data");
