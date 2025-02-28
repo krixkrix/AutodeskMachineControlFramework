@@ -272,6 +272,9 @@ void CVideoDeviceInstance_Win32::getCurrentResolution(uint32_t& nWidth, uint32_t
     nHeight = 0;
     nFramerate = 0;
 }
+
+#ifdef _WIN32
+
 std::wstring GUIDToString(const GUID& guid) {
     wchar_t guidString[39] = { 0 };  // GUID string format is 38 characters long plus null terminator
     StringFromGUID2(guid, guidString, 39);
@@ -345,6 +348,8 @@ ComPtr<IMFTransform> CVideoDeviceInstance_Win32::createMJPEGEncoder(IMFMediaType
 
     return pResultTransform;
 }
+
+#endif //_WIN32
 
 
 void CVideoDeviceInstance_Win32::setResolution(uint32_t nWidth, uint32_t nHeight, uint32_t nFramerate)
@@ -467,6 +472,8 @@ void ConvertYUY2ToRGB24 (uint8_t* yuy2Data, uint8_t* rgbData, uint32_t nWidth, u
 
 void CVideoDeviceInstance_Win32::captureRawImage(LibMCEnv::PImageData pImageData)
 {
+
+#ifdef _WIN32
     std::vector<uint8_t> rgbBuffer;
 
     if (pImageData.get() == nullptr)
@@ -521,5 +528,7 @@ void CVideoDeviceInstance_Win32::captureRawImage(LibMCEnv::PImageData pImageData
 
         }
     }
+
+#endif // _WIN32
 
 }
