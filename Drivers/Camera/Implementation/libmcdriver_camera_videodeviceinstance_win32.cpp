@@ -440,14 +440,14 @@ void ConvertYUY2ToRGB24 (uint8_t* yuy2Data, uint8_t* rgbData, uint32_t nWidth, u
     uint64_t pixelCount = nWidth * nHeight * 2;
     for (uint64_t i = 0; i < pixelCount; i += 4) {
         // Read the YUY2 data (2 pixels per 4 bytes)
-        BYTE Y1 = yuy2Data[i];
-        BYTE U = yuy2Data[i + 1];
-        BYTE Y2 = yuy2Data[i + 2];
-        BYTE V = yuy2Data[i + 3];
+        uint8_t Y1 = yuy2Data[i];
+        uint8_t U = yuy2Data[i + 1];
+        uint8_t Y2 = yuy2Data[i + 2];
+        uint8_t V = yuy2Data[i + 3];
 
         // Convert YUV to RGB for two pixels
         for (int j = 0; j < 2; j++) {
-            BYTE Y = (j == 0) ? Y1 : Y2;
+            uint8_t Y = (j == 0) ? Y1 : Y2;
 
             // YUV to RGB conversion formulas
             int C = Y - 16;
@@ -464,9 +464,9 @@ void ConvertYUY2ToRGB24 (uint8_t* yuy2Data, uint8_t* rgbData, uint32_t nWidth, u
             B = std::min(255, std::max(0, B));
 
             // Write the RGB values (RGB24 format)
-            rgbData[pixelIndex++] = (BYTE)R;
-            rgbData[pixelIndex++] = (BYTE)G;
-            rgbData[pixelIndex++] = (BYTE)B;
+            rgbData[pixelIndex++] = (uint8_t)R;
+            rgbData[pixelIndex++] = (uint8_t)G;
+            rgbData[pixelIndex++] = (uint8_t)B;
         }
     }
 }
