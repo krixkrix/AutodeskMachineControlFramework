@@ -979,7 +979,7 @@ std::string CUIEnvironment::GetExternalEventParameter(const std::string& sParame
     if (!m_ExternalEventParameters->HasMember(sParameterName.c_str()))
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_COULDNOTFINDEXTERNALEVENTPARAMETER, "could not find external event parameter: " + sParameterName);
 
-    auto& member = m_ExternalEventParameters->FindMember(sParameterName.c_str());
+    auto member = m_ExternalEventParameters->FindMember(sParameterName.c_str());
     if (!member->value.IsString ())
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_EXTERNALEVENTPARAMETERISNOTSTRING, "external event parameter is not of type string: " + sParameterName);
 

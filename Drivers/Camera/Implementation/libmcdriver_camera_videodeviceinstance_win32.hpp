@@ -39,6 +39,7 @@ Abstract: This is the class declaration of CVideoDevice
 #include "libmcdriver_camera_videoresolution.hpp"
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #include <mfapi.h>
 #include <mfplay.h>

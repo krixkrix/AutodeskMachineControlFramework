@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Abstract: This is a stub class definition of CVideoDevice
 
 */
+#define NOMINMAX
 
 #include "libmcdriver_camera_videodeviceinstance_win32.hpp"
 #include "libmcdriver_camera_interfaceexception.hpp"
@@ -458,9 +459,9 @@ void ConvertYUY2ToRGB24 (uint8_t* yuy2Data, uint8_t* rgbData, uint32_t nWidth, u
             int B = (298 * C + 516 * D + 128) >> 8;
 
             // Clamp RGB values to [0, 255]
-            R = min(255, max(0, R));
-            G = min(255, max(0, G));
-            B = min(255, max(0, B));
+            R = std::min(255, std::max(0, R));
+            G = std::min(255, std::max(0, G));
+            B = std::min(255, std::max(0, B));
 
             // Write the RGB values (RGB24 format)
             rgbData[pixelIndex++] = (BYTE)R;
@@ -530,5 +531,5 @@ void CVideoDeviceInstance_Win32::captureRawImage(LibMCEnv::PImageData pImageData
     }
 
 #endif // _WIN32
-
+    
 }
