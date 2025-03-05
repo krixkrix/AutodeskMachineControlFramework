@@ -58,23 +58,27 @@ CNLightDriverBoard::~CNLightDriverBoard()
 
 void CNLightDriverBoard::InitializeLaser()
 {
-    m_pCardImpl->initializeNLightLaser();
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->initializeNLightLaser(m_pCardImpl->getHandle ());
 }
 
 void CNLightDriverBoard::DisableLaser()
 {
-    m_pCardImpl->disableNLightLaser();
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->disableNLightLaser(m_pCardImpl->getHandle());
 }
 
 void CNLightDriverBoard::SetLaserMode(const LibMCDriver_Raylase_uint32 nLaserMode)
 {
-    m_pCardImpl->setNLightLaserMode (nLaserMode);
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->setNLightLaserMode (m_pCardImpl->getHandle(), nLaserMode);
 }
 
 
 void CNLightDriverBoard::ClearError()
 {
-    m_pCardImpl->clearNLightError();
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->clearNLightError(m_pCardImpl->getHandle());
 }
 
 LibMCDriver_Raylase_uint32 CNLightDriverBoard::GetRawDeviceState()

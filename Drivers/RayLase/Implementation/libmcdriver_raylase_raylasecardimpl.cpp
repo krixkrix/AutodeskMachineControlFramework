@@ -42,7 +42,6 @@ Abstract: This is a stub class definition of CRaylaseCard
 using namespace LibMCDriver_Raylase::Impl;
 
 #define MINLASERPOWER 0.1
-#define RAYLASE_NLIGHT_MAXLASERMODE 15
 
 PRaylaseCardImpl CRaylaseCardImpl::connectByIP(PRaylaseSDK pSDK, const std::string& sCardName, const std::string& sCardIP, uint32_t nPort, double dMaxLaserPowerInWatts, bool bSimulationMode, LibMCEnv::PDriverEnvironment pDriverEnvironment, LibMCEnv::PWorkingDirectory pWorkingDirectory)
 {
@@ -65,10 +64,13 @@ CRaylaseCardImpl::CRaylaseCardImpl(PRaylaseSDK pSDK, const std::string& sCardNam
         m_nAssignedLaserIndex (0)
 
 {
+
     if (pDriverEnvironment.get () == nullptr)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
     if (pWorkingDirectory.get () == nullptr)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+
+    m_pNLightDriverImpl = std::make_shared<CNLightDriverImpl>(m_pSDK, m_pDriverEnvironment);
 
     if (dMaxLaserPowerInWatts < MINLASERPOWER)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDLASERPOWER);
@@ -359,130 +361,20 @@ void CRaylaseCardImpl::abortListExecution()
         m_pSDK->checkError(m_pSDK->rlListAbortExecution(m_Handle));
 }
 
-void CRaylaseCardImpl::initializeNLightLaser()
-{
-
-    /*m_pDriverEnvironment->LogMessage("Initializate nLights SPI mode..");
-    CRaylaseAPIField_rlSpiConfig_v3 spiConfig;
-    m_pSDK->checkError(m_pSDK->rlSfioSpiInitConfig((rlScannerConfig*)spiConfig.getData()));    
-    m_pSDK->checkError(m_pSDK->rlSfioSpiGetConfig(m_Handle, (rlScannerConfig*)spiConfig.getData()));
-    spiConfig.setBool("Module2.Enabled", true);
-    spiConfig.setEnumRaw("Module2.BitOrder", 0 );//"MsbFirst" );
-    spiConfig.setDouble("Module2.PreDelay", 0.5);
-    spiConfig.setDouble("Module2.PostDelay", 0.5);
-    spiConfig.setDouble("Module2.FrameDelay", 0.25);
-    spiConfig.setEnumRaw("Module2.SpiSyncMode", 1); //"SyncPerFrame" 
-    spiConfig.setDouble("Module2.ClockPeriod", 0.125);
-    spiConfig.setInteger("Module2.BitsPerWord", 32);
-
-    m_pSDK->checkError(m_pSDK->rlScannerSetConfig(m_Handle, (rlScannerConfig*)spiConfig.getData())); */
-
-    m_pDriverEnvironment->LogMessage("Enabling nLight 24V...");
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_24V));
-
-    m_pDriverEnvironment->LogMessage("Clearing nLight laser flags...");
-    uint32_t nClearFlags = (uint32_t)eNlightDriverBoardIOPins::ARM_LASER | (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER | (uint32_t) eNlightDriverBoardIOPins::GATE_IN;
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, nClearFlags));
-    m_pDriverEnvironment->Sleep(1000);
-
-    m_pDriverEnvironment->LogMessage("Enabling nLight external control");
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_EXTERNAL_CONTROL));
-    m_pDriverEnvironment->Sleep(3000);
-    //m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::ENABLE_EXTERNAL_CONTROL));
-
-    m_pDriverEnvironment->LogMessage("Setting nLight system on..");
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::SYSTEM_ON));
-    m_pDriverEnvironment->Sleep(3000);
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::SYSTEM_ON));
-    m_pDriverEnvironment->Sleep(2000);
-
-    m_pDriverEnvironment->LogMessage("Resetting beam profile");
-    setNLightLaserMode(0);
-
-    //m_pDriverEnvironment->LogMessage("Setting aiming laser");
-    //m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER));
-    //m_pDriverEnvironment->Sleep(1000);
-    //m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER));
-
-    m_pDriverEnvironment->LogMessage("nLight Initialization done..");
-}
-
-void CRaylaseCardImpl::disableNLightLaser()
-{
-    m_pDriverEnvironment->LogMessage("Resetting beam profile");
-    setNLightLaserMode(0);
-
-    m_pDriverEnvironment->LogMessage("Clearing nLight laser flags...");
-    uint32_t nClearFlags = (uint32_t)eNlightDriverBoardIOPins::ARM_LASER | (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER | (uint32_t)eNlightDriverBoardIOPins::GATE_IN;
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, nClearFlags));
-    m_pDriverEnvironment->Sleep(1000);
-
-    m_pDriverEnvironment->LogMessage("Disabling nLight external control");
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_EXTERNAL_CONTROL));
-    m_pDriverEnvironment->Sleep(1000);
-
-    m_pDriverEnvironment->LogMessage("Disabling nLight 24V...");
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::ENABLE_24V));
-
-    m_pDriverEnvironment->LogMessage("nLight Laser deinitialized..");
-
-}
 
 
-void CRaylaseCardImpl::clearNLightError()
-{
-    m_pDriverEnvironment->LogMessage("Clearing nLight Error");
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::CLEAR_ERROR));
-    m_pDriverEnvironment->Sleep(10);
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::CLEAR_ERROR));
-    m_pDriverEnvironment->Sleep(1000);
-
-}
-
-void CRaylaseCardImpl::setNLightLaserMode(uint32_t nLaserMode)
-{
-    uint32_t nWriteDelay = 10;
-
-    if (nLaserMode > RAYLASE_NLIGHT_MAXLASERMODE)
-        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTLASERMODE, "Invalid nLight laser mode: " + std::to_string (nLaserMode));
-
-    uint32_t nSetMask = (uint32_t)eNlightDriverBoardIOPins::PRO_B7;
-    uint32_t nClearMask = (uint32_t)eNlightDriverBoardIOPins::ENABLE_PROFILE;
-
-    if ((nLaserMode & 1) != 0)
-        nSetMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B1;
-    else
-        nClearMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B1;
-
-    if ((nLaserMode & 2) != 0)
-        nSetMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B2;
-    else
-        nClearMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B2;
-
-    if ((nLaserMode & 4) != 0)
-        nSetMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B3;
-    else
-        nClearMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B3;
-
-    if ((nLaserMode & 8) != 0)
-        nSetMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B4;
-    else
-        nClearMask |= (uint32_t)eNlightDriverBoardIOPins::PRO_B4;
-
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, nSetMask));
-    m_pDriverEnvironment->Sleep(nWriteDelay);
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, nClearMask));
-    m_pDriverEnvironment->Sleep(nWriteDelay);
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::PRO_START));
-    m_pDriverEnvironment->Sleep(nWriteDelay);
-    m_pSDK->checkError(m_pSDK->rlGpioWrite(m_Handle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::PRO_START));
-    m_pDriverEnvironment->Sleep(nWriteDelay);
-
-}
 
 PRaylaseCoordinateTransform CRaylaseCardImpl::getCoordinateTransform()
 {
     return m_pCoordinateTransform;
 }
 
+rlHandle CRaylaseCardImpl::getHandle()
+{
+    return m_Handle;
+}
 
+PNLightDriverImpl CRaylaseCardImpl::getNlightImplementation()
+{
+    return m_pNLightDriverImpl;
+}

@@ -246,6 +246,9 @@ namespace LibMCDriver_Raylase {
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListAppendLaserOffDelay) (rlListHandle handle, double laserOffDelay);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListAppendJumpAbs2D) (rlListHandle handle, double x, double y);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListAppendMarkAbs2D) (rlListHandle handle, double x, double y);
+		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListAppendGpioValue) (rlListHandle handle, eRLIOPort port, eRLPinAction action, uint32_t nValue);
+		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListAppendSleep) (rlListHandle handle, double dDelay);
+		
 
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListSet) (rlHandle handle, int32_t listID, rlListHandle listHandle, bool append, int32_t executionLimit);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListExecute) (rlHandle handle, int32_t listID);
@@ -519,6 +522,8 @@ namespace LibMCDriver_Raylase {
 			PrlListResetExecution ptrListResetExecution = nullptr;
 			PrlListAbortExecution ptrListAbortExecution = nullptr;
 			PrlListIsExecutionInProgress ptrListIsExecutionInProgress = nullptr;
+			PrlListAppendGpioValue ptrListAppendGpioValue = nullptr;
+			PrlListAppendSleep ptrListAppendSleep = nullptr;
 
 			PrlGetLastError ptrGetLastError = nullptr;
 			PrlGetLastErrorLen ptrGetLastErrorLen = nullptr;
@@ -771,6 +776,8 @@ namespace LibMCDriver_Raylase {
 			rlResult rlListAppendLaserOffDelay (rlListHandle handle, double laserOffDelay);
 			rlResult rlListAppendJumpAbs2D (rlListHandle handle, double x, double y);
 			rlResult rlListAppendMarkAbs2D (rlListHandle handle, double x, double y);
+			rlResult rlListAppendGpioValue (rlListHandle, eRLIOPort port, eRLPinAction action, uint32_t nValue);
+			rlResult rlListAppendSleep (rlListHandle handle, double dDelay);
 
 			rlResult rlListSet (rlHandle handle, int32_t listID, rlListHandle listHandle, bool append, int32_t executionLimit);
 			rlResult rlListExecute (rlHandle handle, int32_t listID);

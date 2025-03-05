@@ -124,6 +124,9 @@ CRaylaseSDK::CRaylaseSDK(const std::string& sDLLNameUTF8)
 	this->ptrListAppendLaserOffDelay = (PrlListAppendLaserOffDelay)_loadRaylaseAddress(hLibrary, "rlListAppendLaserOffDelay");
 	this->ptrListAppendJumpAbs2D = (PrlListAppendJumpAbs2D)_loadRaylaseAddress(hLibrary, "rlListAppendJumpAbs2D");
 	this->ptrListAppendMarkAbs2D = (PrlListAppendMarkAbs2D)_loadRaylaseAddress(hLibrary, "rlListAppendMarkAbs2D");
+	this->ptrListAppendGpioValue = (PrlListAppendGpioValue)_loadRaylaseAddress(hLibrary, "rlListAppendGpioValue");
+	this->ptrListAppendSleep = (PrlListAppendSleep)_loadRaylaseAddress(hLibrary, "rlListAppendSleep");
+
 	this->ptrListSet = (PrlListSet)_loadRaylaseAddress(hLibrary, "rlListSet");
 	this->ptrListExecute = (PrlListExecute)_loadRaylaseAddress(hLibrary, "rlListExecute");
 	this->ptrListWaitForListIdle = (PrlListWaitForListIdle)_loadRaylaseAddress(hLibrary, "rlListWaitForListIdle");
@@ -422,6 +425,9 @@ void CRaylaseSDK::resetFunctionPtrs()
 	ptrListAppendLaserOffDelay = nullptr;
 	ptrListAppendJumpAbs2D = nullptr;
 	ptrListAppendMarkAbs2D = nullptr;
+	ptrListAppendGpioValue = nullptr;
+	ptrListAppendSleep = nullptr;
+
 	ptrListSet = nullptr;
 	ptrListExecute = nullptr;
 	ptrListWaitForListIdle = nullptr;
@@ -891,6 +897,26 @@ rlResult CRaylaseSDK::rlListAppendMarkAbs2D(rlListHandle handle, double x, doubl
 	}
 
 	return ptrListAppendMarkAbs2D(handle, x, y);
+
+}
+
+rlResult CRaylaseSDK::rlListAppendGpioValue(rlListHandle handle, eRLIOPort port, eRLPinAction action, uint32_t nValue)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlListAppendGpioValue (" + std::to_string(handle) + ", " + std::to_string((uint32_t)port) + ", " + std::to_string((uint32_t)action) + ", " + std::to_string (nValue) + "); ");
+	}
+
+	return ptrListAppendGpioValue(handle, port, action, nValue);
+
+}
+
+rlResult CRaylaseSDK::rlListAppendSleep(rlListHandle handle, double dDelay)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlListAppendSleep (" + std::to_string(handle) + ", " + std::to_string(dDelay) + "); ");
+	}
+
+	return ptrListAppendSleep(handle, dDelay);
 
 }
 
