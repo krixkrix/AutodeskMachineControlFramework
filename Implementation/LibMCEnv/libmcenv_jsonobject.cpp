@@ -132,7 +132,7 @@ std::string CJSONObject::GetMemberName(const LibMCEnv_uint64 nIndex)
 	if (nIndex >= m_pInstance->MemberCount())
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX);
 
-	auto & member = m_pInstance->MemberBegin() + nIndex;
+	auto member = m_pInstance->MemberBegin() + nIndex;
 	return member->name.GetString ();
 }
 

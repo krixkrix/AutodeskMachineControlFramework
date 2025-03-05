@@ -33,6 +33,7 @@ Abstract: This is a stub class definition of CRaylaseCard
 
 #include "libmcdriver_raylase_raylasecard.hpp"
 #include "libmcdriver_raylase_interfaceexception.hpp"
+#include <cmath>
 
 using namespace LibMCDriver_Raylase::Impl;
 

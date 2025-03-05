@@ -211,7 +211,7 @@ void CJSONArray::RemoveElement(const LibMCEnv_uint64 nIndex)
 	if (nIndex >= m_pInstance->MemberCount())
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDJSONMEMBERINDEX, "invalid JSON member index: #" + std::to_string(nIndex));
 
-	auto& iter = m_pInstance->MemberBegin() + nIndex;
+	auto iter = m_pInstance->MemberBegin() + nIndex;
 
 	m_pInstance->RemoveMember(iter);
 
