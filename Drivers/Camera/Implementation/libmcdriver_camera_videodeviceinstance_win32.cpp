@@ -292,7 +292,6 @@ LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDTo
     if (hResult != S_OK)
         throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDMEDIASUBTYPE, "Invalid media video source type: " + sUUID);
 
-
     if (IsEqualGUID(typeUUID, MFVideoFormat_RGB32))
         return LibMCDriver_Camera::eVideoSourceFormat::RGB32;
     if (IsEqualGUID(typeUUID, MFVideoFormat_ARGB32))
@@ -319,8 +318,6 @@ LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDTo
         return LibMCDriver_Camera::eVideoSourceFormat::NV11;
     if (IsEqualGUID(typeUUID, MFVideoFormat_NV12))
         return LibMCDriver_Camera::eVideoSourceFormat::NV12;
-    if (IsEqualGUID(typeUUID, MFVideoFormat_NV21))
-        return LibMCDriver_Camera::eVideoSourceFormat::NV21;
     if (IsEqualGUID(typeUUID, MFVideoFormat_UYVY))
         return LibMCDriver_Camera::eVideoSourceFormat::UYVY;
     if (IsEqualGUID(typeUUID, MFVideoFormat_Y41P))
@@ -337,6 +334,8 @@ LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDTo
         return LibMCDriver_Camera::eVideoSourceFormat::YV12;
     if (IsEqualGUID(typeUUID, MFVideoFormat_YVYU))
         return LibMCDriver_Camera::eVideoSourceFormat::YVYU;
+
+    throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDMEDIASUBTYPE, "Invalid media video source type: " + sUUID);
 
 #else 
     throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_PLATFORMERROR);
@@ -361,7 +360,6 @@ std::string CVideoDeviceInstance_Win32::convertVideoSourceFormatToUUID(LibMCDriv
         case LibMCDriver_Camera::eVideoSourceFormat::IYUV: return GUIDToString(MFVideoFormat_IYUV);
         case LibMCDriver_Camera::eVideoSourceFormat::NV11: return GUIDToString(MFVideoFormat_NV11);
         case LibMCDriver_Camera::eVideoSourceFormat::NV12: return GUIDToString(MFVideoFormat_NV12);
-        case LibMCDriver_Camera::eVideoSourceFormat::NV21: return GUIDToString(MFVideoFormat_NV21);
         case LibMCDriver_Camera::eVideoSourceFormat::UYVY: return GUIDToString(MFVideoFormat_UYVY);
         case LibMCDriver_Camera::eVideoSourceFormat::Y41P: return GUIDToString(MFVideoFormat_Y41P);
         case LibMCDriver_Camera::eVideoSourceFormat::Y41T: return GUIDToString(MFVideoFormat_Y41T);
@@ -794,7 +792,14 @@ bool CVideoDeviceInstance_Win32::captureRawImage(LibMCEnv::PImageData pImageData
             return false;
         }
     }
+    else {
+        pImageData->Clear(0);
 
-#endif // _WIN32
-    
+        return false;
+    }
+
+#else 
+throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_PLATFORMERROR);
+#endif //_WIN32
+
 }
