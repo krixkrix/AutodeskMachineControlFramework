@@ -178,7 +178,7 @@ void CNLightDriverImpl::setNLightLaserMode(rlHandle cardHandle, uint32_t nLaserM
 
 void CNLightDriverImpl::addNLightLaserModeToList(rlListHandle listHandle, uint32_t nLaserMode)
 {
-    double dWriteDelay = 0.001;
+    double dWriteDelay = 10.0;
 
     if (nLaserMode > RAYLASE_NLIGHT_MAXLASERMODE)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTLASERMODE, "Invalid nLight laser mode: " + std::to_string(nLaserMode));
