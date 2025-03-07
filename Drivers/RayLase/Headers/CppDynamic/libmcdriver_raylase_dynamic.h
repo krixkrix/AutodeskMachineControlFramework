@@ -137,9 +137,10 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseRaylaseCommandLog_Retrie
 * Initializes the NLight laser via the driver board.
 *
 * @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] bEnableAutomaticLaserModeSwitching - If true, laser modes will be used from the corresponding build file.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_InitializeLaserPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_InitializeLaserPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool bEnableAutomaticLaserModeSwitching);
 
 /**
 * Disables the NLight laser via the driver board.
@@ -148,6 +149,68 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_Initia
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_DisableLaserPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+
+/**
+* Returns if the automatic laser mode switching is enabled.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pEnableAutomaticLaserModeSwitching - If true, laser modes will be used from the corresponding build file.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_AutomaticLaserModeSwitchingIsEnabledPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pEnableAutomaticLaserModeSwitching);
+
+/**
+* Enables the Automatic laser mode switching.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_EnableAutomaticLaserModeSwitchingPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+
+/**
+* Disables the Automatic laser mode switching.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_DisableAutomaticLaserModeSwitchingPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+
+/**
+* Sets an override for the maximum available laser power used for a specific laser mode. Can not be changed for laser mode 0.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nLaserMode - The laser mode that shall be changed. MUST be between 1 and 7.
+* @param[in] dMaxPowerInWatts - Maximum laser power in Watts. MUST be larger than 1.0.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_SetLaserModeMaxPowerOverridePtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode, LibMCDriver_Raylase_double dMaxPowerInWatts);
+
+/**
+* Gets an override for the maximum available laser power used for a specific laser mode. Returns default max laser power for laser mode 0 or if no laser mode override has been set.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nLaserMode - The laser mode that shall be queried. MUST be between 0 and 7.
+* @param[out] pMaxPowerInWatts - Maximum laser power in Watts for this Laser Mode.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_GetLaserModeMaxPowerOverridePtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode, LibMCDriver_Raylase_double * pMaxPowerInWatts);
+
+/**
+* Clears a power override for a specific laser mode.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nLaserMode - The laser mode that shall be changed. MUST be between 1 and 7.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_ClearLaserModeMaxPowerOverridePtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode);
+
+/**
+* Clears all max power overrides for the different laser modes.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_ClearAllLaserModeMaxPowerOverridesPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
 
 /**
 * Clears any error state in the NLight laser via the driver board.
@@ -228,6 +291,26 @@ typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_IsFirm
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_IsWaterFlowPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pWaterFlowState);
+
+/**
+* Sets the mode change delays.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nModeChangeSignalDelayInMicroseconds - New mode change signal delay in microseconds. This is the length of the signal peak to the AFX laser. Default value is 10 microseconds.
+* @param[in] nModeChangeApplyDelayInMicroseconds - New mode change apply delay in microseconds. This is the wait delay after the new mode has sent. Default value is 30000 microseconds.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_SetModeChangeDelaysPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 nModeChangeApplyDelayInMicroseconds);
+
+/**
+* Returns the mode change delays.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pModeChangeSignalDelayInMicroseconds - Current mode change signal delay in microseconds. This is the length of the signal peak to the AFX laser. Default value is 10 microseconds.
+* @param[out] pModeChangeApplyDelayInMicroseconds - Current mode change apply delay in microseconds. This is the wait delay after the new mode has sent. Default value is 30000 microseconds.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_RaylaseResult (*PLibMCDriver_RaylaseNLightDriverBoard_GetModeChangeDelaysPtr) (LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 * pModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 * pModeChangeApplyDelayInMicroseconds);
 
 /*************************************************************************************************************************
  Class definition for RaylaseCard
@@ -659,6 +742,13 @@ typedef struct {
 	PLibMCDriver_RaylaseRaylaseCommandLog_RetrieveAsStringPtr m_RaylaseCommandLog_RetrieveAsString;
 	PLibMCDriver_RaylaseNLightDriverBoard_InitializeLaserPtr m_NLightDriverBoard_InitializeLaser;
 	PLibMCDriver_RaylaseNLightDriverBoard_DisableLaserPtr m_NLightDriverBoard_DisableLaser;
+	PLibMCDriver_RaylaseNLightDriverBoard_AutomaticLaserModeSwitchingIsEnabledPtr m_NLightDriverBoard_AutomaticLaserModeSwitchingIsEnabled;
+	PLibMCDriver_RaylaseNLightDriverBoard_EnableAutomaticLaserModeSwitchingPtr m_NLightDriverBoard_EnableAutomaticLaserModeSwitching;
+	PLibMCDriver_RaylaseNLightDriverBoard_DisableAutomaticLaserModeSwitchingPtr m_NLightDriverBoard_DisableAutomaticLaserModeSwitching;
+	PLibMCDriver_RaylaseNLightDriverBoard_SetLaserModeMaxPowerOverridePtr m_NLightDriverBoard_SetLaserModeMaxPowerOverride;
+	PLibMCDriver_RaylaseNLightDriverBoard_GetLaserModeMaxPowerOverridePtr m_NLightDriverBoard_GetLaserModeMaxPowerOverride;
+	PLibMCDriver_RaylaseNLightDriverBoard_ClearLaserModeMaxPowerOverridePtr m_NLightDriverBoard_ClearLaserModeMaxPowerOverride;
+	PLibMCDriver_RaylaseNLightDriverBoard_ClearAllLaserModeMaxPowerOverridesPtr m_NLightDriverBoard_ClearAllLaserModeMaxPowerOverrides;
 	PLibMCDriver_RaylaseNLightDriverBoard_ClearErrorPtr m_NLightDriverBoard_ClearError;
 	PLibMCDriver_RaylaseNLightDriverBoard_SetLaserModePtr m_NLightDriverBoard_SetLaserMode;
 	PLibMCDriver_RaylaseNLightDriverBoard_GetRawDeviceStatePtr m_NLightDriverBoard_GetRawDeviceState;
@@ -668,6 +758,8 @@ typedef struct {
 	PLibMCDriver_RaylaseNLightDriverBoard_IsEmissionPtr m_NLightDriverBoard_IsEmission;
 	PLibMCDriver_RaylaseNLightDriverBoard_IsFirmwareReadyPtr m_NLightDriverBoard_IsFirmwareReady;
 	PLibMCDriver_RaylaseNLightDriverBoard_IsWaterFlowPtr m_NLightDriverBoard_IsWaterFlow;
+	PLibMCDriver_RaylaseNLightDriverBoard_SetModeChangeDelaysPtr m_NLightDriverBoard_SetModeChangeDelays;
+	PLibMCDriver_RaylaseNLightDriverBoard_GetModeChangeDelaysPtr m_NLightDriverBoard_GetModeChangeDelays;
 	PLibMCDriver_RaylaseRaylaseCard_IsConnectedPtr m_RaylaseCard_IsConnected;
 	PLibMCDriver_RaylaseRaylaseCard_ResetToSystemDefaultsPtr m_RaylaseCard_ResetToSystemDefaults;
 	PLibMCDriver_RaylaseRaylaseCard_EnableCommandLoggingPtr m_RaylaseCard_EnableCommandLogging;

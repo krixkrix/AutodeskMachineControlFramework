@@ -37,6 +37,7 @@ Abstract: This is the class declaration of CRaylaseCard
 
 #include "libmcdriver_raylase_interfaces.hpp"
 #include "libmcdriver_raylase_sdk.hpp"
+#include "libmcdriver_raylase_nlightdriverimpl.hpp"
 
 #include <map>
 
@@ -89,10 +90,11 @@ class CRaylaseCardList
 		PRaylaseCoordinateTransform m_pCoordinateTransform;
 
 		std::map<std::string, ePartSuppressionMode> m_PartSuppressions;
+		PNLightDriverImpl m_pNLightBoardImpl;
 
 	public:
 
-		CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode> & partSuppressions);
+		CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode> & partSuppressions, PNLightDriverImpl pNLightBoardImpl);
 
 		virtual ~CRaylaseCardList();
 

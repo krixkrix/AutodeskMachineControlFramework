@@ -141,6 +141,9 @@ typedef void * LibMCDriver_Raylase_pvoid;
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDVARIABLEINDEX 1034 /** Invalid Variable Index */
 #define LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED 1035 /** Scanning canceled */
 #define LIBMCDRIVER_RAYLASE_ERROR_UNKNOWNENUMVALUE 1036 /** Unknown enum value */
+#define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE 1038 /** Invalid nLight afx mode */
+#define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGESIGNALDELAY 1039 /** Invalid nLight mode change signal delay */
+#define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGEAPPLYDELAY 1040 /** Invalid nLight mode change apply delay */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_Raylase
@@ -194,6 +197,9 @@ inline const char * LIBMCDRIVER_RAYLASE_GETERRORSTRING (LibMCDriver_RaylaseResul
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDVARIABLEINDEX: return "Invalid Variable Index";
     case LIBMCDRIVER_RAYLASE_ERROR_SCANNINGCANCELED: return "Scanning canceled";
     case LIBMCDRIVER_RAYLASE_ERROR_UNKNOWNENUMVALUE: return "Unknown enum value";
+    case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE: return "Invalid nLight afx mode";
+    case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGESIGNALDELAY: return "Invalid nLight mode change signal delay";
+    case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGEAPPLYDELAY: return "Invalid nLight mode change apply delay";
     default: return "unknown error";
   }
 }

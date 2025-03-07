@@ -39,6 +39,7 @@ Abstract: This is the class declaration of CNLightDriverBoard
 #include "libmcdriver_raylase_sdk.hpp"
 
 #define RAYLASE_NLIGHT_MAXLASERMODE 15
+#define RAYLASE_NLIGHT_MAXCHANGEMODEDELAY 1000000
 
 namespace LibMCDriver_Raylase {
 namespace Impl {
@@ -71,6 +72,11 @@ private:
 	PRaylaseSDK m_pSDK;
 	LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
 
+	bool m_AutomaticLaserModesEnabled;
+
+	uint32_t m_nModeChangeSignalDelayInMicroseconds;
+	uint32_t m_nModeChangeApplyDelayInMicroseconds;
+
 public:
 
     CNLightDriverImpl (PRaylaseSDK pSDK, LibMCEnv::PDriverEnvironment pDriverEnvironment);
@@ -86,6 +92,18 @@ public:
 	void setNLightLaserMode(rlHandle cardHandle, uint32_t nLaserMode);
 
 	void addNLightLaserModeToList(rlListHandle listHandle, uint32_t nLaserMode);
+
+	bool automaticLaserModesAreEnabled();
+
+	void setAutomaticLaserModesEnable(bool bValue);
+
+	void setModeChangeDelays(uint32_t nModeChangeSignalDelayInMicroseconds, uint32_t nModeChangeApplyDelayInMicroseconds);
+
+	uint32_t getModeChangeSignalDelay();
+
+	uint32_t getModeChangeApplyDelay();
+
+	uint32_t getMaxAFXMode();
 
 };
 

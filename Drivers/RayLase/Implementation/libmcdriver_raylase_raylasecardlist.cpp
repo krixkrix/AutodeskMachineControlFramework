@@ -87,14 +87,15 @@ void CRaylaseCoordinateTransform::applyTransform(double& dX, double& dY)
 }
 
 
-CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode>& partSuppressions)
+CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode>& partSuppressions, PNLightDriverImpl pNLightBoardImpl)
     : m_pSDK(pSDK), 
     m_ListHandle(0), 
     m_CardHandle(cardHandle), 
     m_dMaxLaserPowerInWatts(dMaxLaserPowerInWatts),
     m_nListIDOnCard (RAYLASE_LISTONCARDNOTSET),
     m_pCoordinateTransform (pCoordinateTransform),
-    m_PartSuppressions (partSuppressions)
+    m_PartSuppressions (partSuppressions),
+    m_pNLightBoardImpl (pNLightBoardImpl)
 
 {
     if (pSDK.get() == nullptr)
@@ -146,6 +147,14 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
     if (pLayer.get() == nullptr)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
 
+    if (m_pNLightBoardImpl.get() != nullptr) {
+
+        if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
+            m_pNLightBoardImpl->addNLightLaserModeToList(m_ListHandle, 0);
+        }
+
+    }
+
     double dUnits = pLayer->GetUnits();
 
     m_pSDK->checkError(m_pSDK->rlListAppendLaserOff(m_ListHandle), "rlListAppendLaserOff");
@@ -194,6 +203,23 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 
             double dJumpSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::JumpSpeed);
             double dMarkSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::Speed);
+
+            if (m_pNLightBoardImpl.get() != nullptr) {
+
+                if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
+                    int64_t nLightAFXMode = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.nlight.com/afx/2024/09", "afxmode", 0);
+                    if (nLightAFXMode < 0)
+                        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE, "Invalid nLightAFXMode: " + std::to_string(nLightAFXMode));
+                    if (nLightAFXMode > (int64_t) m_pNLightBoardImpl->getMaxAFXMode())
+                        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE, "Invalid nLightAFXMode: " + std::to_string(nLightAFXMode));
+
+                    //std::cout << "adding nLight Laser mode to list: " << nLightAFXMode << std::endl;
+                    m_pNLightBoardImpl->addNLightLaserModeToList(m_ListHandle, (uint32_t)nLightAFXMode);
+
+                }
+
+            }
+            
 
             double dJumpSpeedInMeterPerSecond = dJumpSpeedInMMPerSecond * 0.001;
             double dMarkSpeedInMeterPerSecond = dMarkSpeedInMMPerSecond * 0.001;

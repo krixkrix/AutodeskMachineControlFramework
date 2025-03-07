@@ -56,10 +56,12 @@ CNLightDriverBoard::~CNLightDriverBoard()
 }
 
 
-void CNLightDriverBoard::InitializeLaser()
+void CNLightDriverBoard::InitializeLaser(const bool bEnableAutomaticLaserModeSwitching)
 {
     auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
     pNLightDriverImpl->initializeNLightLaser(m_pCardImpl->getHandle ());
+    pNLightDriverImpl->setAutomaticLaserModesEnable(bEnableAutomaticLaserModeSwitching);
+    
 }
 
 void CNLightDriverBoard::DisableLaser()
@@ -67,6 +69,46 @@ void CNLightDriverBoard::DisableLaser()
     auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
     pNLightDriverImpl->disableNLightLaser(m_pCardImpl->getHandle());
 }
+
+bool CNLightDriverBoard::AutomaticLaserModeSwitchingIsEnabled()
+{
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->automaticLaserModesAreEnabled();
+}
+
+void CNLightDriverBoard::EnableAutomaticLaserModeSwitching()
+{
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->setAutomaticLaserModesEnable(true);
+}
+
+void CNLightDriverBoard::DisableAutomaticLaserModeSwitching()
+{
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->setAutomaticLaserModesEnable(false);
+
+}
+
+void CNLightDriverBoard::SetLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode, const LibMCDriver_Raylase_double dMaxPowerInWatts)
+{
+
+}
+
+LibMCDriver_Raylase_double CNLightDriverBoard::GetLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode)
+{
+    return m_pCardImpl->getMaxLaserPowerInWatts();
+}
+
+void CNLightDriverBoard::ClearLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode)
+{
+
+}
+
+void CNLightDriverBoard::ClearAllLaserModeMaxPowerOverrides()
+{
+
+}
+
 
 void CNLightDriverBoard::SetLaserMode(const LibMCDriver_Raylase_uint32 nLaserMode)
 {
@@ -114,6 +156,20 @@ bool CNLightDriverBoard::IsFirmwareReady()
 bool CNLightDriverBoard::IsWaterFlow()
 {
     return false;
+}
+
+void CNLightDriverBoard::SetModeChangeDelays(const LibMCDriver_Raylase_uint32 nModeChangeSignalDelayInMicroseconds, const LibMCDriver_Raylase_uint32 nModeChangeApplyDelayInMicroseconds)
+{
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->setModeChangeDelays(nModeChangeSignalDelayInMicroseconds, nModeChangeApplyDelayInMicroseconds);
+}
+
+void CNLightDriverBoard::GetModeChangeDelays(LibMCDriver_Raylase_uint32& nModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32& nModeChangeApplyDelayInMicroseconds)
+{
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    nModeChangeSignalDelayInMicroseconds = pNLightDriverImpl->getModeChangeSignalDelay();
+    nModeChangeApplyDelayInMicroseconds = pNLightDriverImpl->getModeChangeApplyDelay();
+
 }
 
 

@@ -349,7 +349,7 @@ LibMCEnv::PDriverEnvironment CRaylaseCardImpl::getDriverEnvironment()
 
 PRaylaseCardList CRaylaseCardImpl::createNewList()
 {
-    return std::make_shared<CRaylaseCardList>(m_pSDK, m_Handle, m_dMaxLaserPowerInWatts, m_pCoordinateTransform, m_PartSuppressions);
+    return std::make_shared<CRaylaseCardList>(m_pSDK, m_Handle, m_dMaxLaserPowerInWatts, m_pCoordinateTransform, m_PartSuppressions, m_pNLightDriverImpl);
 }
 
 void CRaylaseCardImpl::abortListExecution()
@@ -377,4 +377,9 @@ rlHandle CRaylaseCardImpl::getHandle()
 PNLightDriverImpl CRaylaseCardImpl::getNlightImplementation()
 {
     return m_pNLightDriverImpl;
+}
+
+double CRaylaseCardImpl::getMaxLaserPowerInWatts()
+{
+    return m_dMaxLaserPowerInWatts;
 }

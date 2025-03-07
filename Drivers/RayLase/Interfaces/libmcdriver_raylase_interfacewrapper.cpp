@@ -369,7 +369,7 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_raylasecommandlog_retrieveasstring
 /*************************************************************************************************************************
  Class implementation for NLightDriverBoard
 **************************************************************************************************************************/
-LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_initializelaser(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard)
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_initializelaser(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool bEnableAutomaticLaserModeSwitching)
 {
 	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
 
@@ -378,7 +378,7 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_initializelaser(
 		if (!pINLightDriverBoard)
 			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
 		
-		pINLightDriverBoard->InitializeLaser();
+		pINLightDriverBoard->InitializeLaser(bEnableAutomaticLaserModeSwitching);
 
 		return LIBMCDRIVER_RAYLASE_SUCCESS;
 	}
@@ -403,6 +403,178 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_disablelaser(Lib
 			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
 		
 		pINLightDriverBoard->DisableLaser();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_automaticlasermodeswitchingisenabled(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pEnableAutomaticLaserModeSwitching)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pEnableAutomaticLaserModeSwitching == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pEnableAutomaticLaserModeSwitching = pINLightDriverBoard->AutomaticLaserModeSwitchingIsEnabled();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_enableautomaticlasermodeswitching(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->EnableAutomaticLaserModeSwitching();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_disableautomaticlasermodeswitching(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->DisableAutomaticLaserModeSwitching();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_setlasermodemaxpoweroverride(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode, LibMCDriver_Raylase_double dMaxPowerInWatts)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->SetLaserModeMaxPowerOverride(nLaserMode, dMaxPowerInWatts);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_getlasermodemaxpoweroverride(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode, LibMCDriver_Raylase_double * pMaxPowerInWatts)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (pMaxPowerInWatts == nullptr)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		*pMaxPowerInWatts = pINLightDriverBoard->GetLaserModeMaxPowerOverride(nLaserMode);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_clearlasermodemaxpoweroverride(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->ClearLaserModeMaxPowerOverride(nLaserMode);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_clearalllasermodemaxpoweroverrides(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->ClearAllLaserModeMaxPowerOverrides();
 
 		return LIBMCDRIVER_RAYLASE_SUCCESS;
 	}
@@ -633,6 +805,58 @@ LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_iswaterflow(LibM
 			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
 		
 		*pWaterFlowState = pINLightDriverBoard->IsWaterFlow();
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_setmodechangedelays(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 nModeChangeApplyDelayInMicroseconds)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->SetModeChangeDelays(nModeChangeSignalDelayInMicroseconds, nModeChangeApplyDelayInMicroseconds);
+
+		return LIBMCDRIVER_RAYLASE_SUCCESS;
+	}
+	catch (ELibMCDriver_RaylaseInterfaceException & Exception) {
+		return handleLibMCDriver_RaylaseException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_getmodechangedelays(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 * pModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 * pModeChangeApplyDelayInMicroseconds)
+{
+	IBase* pIBaseClass = (IBase *)pNLightDriverBoard;
+
+	try {
+		if (!pModeChangeSignalDelayInMicroseconds)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		if (!pModeChangeApplyDelayInMicroseconds)
+			throw ELibMCDriver_RaylaseInterfaceException (LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+		INLightDriverBoard* pINLightDriverBoard = dynamic_cast<INLightDriverBoard*>(pIBaseClass);
+		if (!pINLightDriverBoard)
+			throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDCAST);
+		
+		pINLightDriverBoard->GetModeChangeDelays(*pModeChangeSignalDelayInMicroseconds, *pModeChangeApplyDelayInMicroseconds);
 
 		return LIBMCDRIVER_RAYLASE_SUCCESS;
 	}
@@ -1615,6 +1839,20 @@ LibMCDriver_RaylaseResult LibMCDriver_Raylase::Impl::LibMCDriver_Raylase_GetProc
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_initializelaser;
 	if (sProcName == "libmcdriver_raylase_nlightdriverboard_disablelaser") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_disablelaser;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_automaticlasermodeswitchingisenabled") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_automaticlasermodeswitchingisenabled;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_enableautomaticlasermodeswitching") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_enableautomaticlasermodeswitching;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_disableautomaticlasermodeswitching") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_disableautomaticlasermodeswitching;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_setlasermodemaxpoweroverride") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_setlasermodemaxpoweroverride;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_getlasermodemaxpoweroverride") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_getlasermodemaxpoweroverride;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_clearlasermodemaxpoweroverride") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_clearlasermodemaxpoweroverride;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_clearalllasermodemaxpoweroverrides") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_clearalllasermodemaxpoweroverrides;
 	if (sProcName == "libmcdriver_raylase_nlightdriverboard_clearerror") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_clearerror;
 	if (sProcName == "libmcdriver_raylase_nlightdriverboard_setlasermode") 
@@ -1633,6 +1871,10 @@ LibMCDriver_RaylaseResult LibMCDriver_Raylase::Impl::LibMCDriver_Raylase_GetProc
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_isfirmwareready;
 	if (sProcName == "libmcdriver_raylase_nlightdriverboard_iswaterflow") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_iswaterflow;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_setmodechangedelays") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_setmodechangedelays;
+	if (sProcName == "libmcdriver_raylase_nlightdriverboard_getmodechangedelays") 
+		*ppProcAddress = (void*) &libmcdriver_raylase_nlightdriverboard_getmodechangedelays;
 	if (sProcName == "libmcdriver_raylase_raylasecard_isconnected") 
 		*ppProcAddress = (void*) &libmcdriver_raylase_raylasecard_isconnected;
 	if (sProcName == "libmcdriver_raylase_raylasecard_resettosystemdefaults") 

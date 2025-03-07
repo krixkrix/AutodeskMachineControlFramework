@@ -147,6 +147,8 @@ public:
 
 	PNLightDriverImpl getNlightImplementation ();
 
+	double getMaxLaserPowerInWatts ();
+
 };
 
 } // namespace Impl
