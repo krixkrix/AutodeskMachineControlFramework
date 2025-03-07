@@ -257,7 +257,7 @@ namespace LibMCDriver_Raylase {
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListDelete) (rlHandle handle, int32_t listID, bool bFromDisk);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListResetExecution) (rlHandle handle);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListAbortExecution) (rlHandle handle);
-		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListIsExecutionInProgress) (rlHandle handle, bool * pbInProgress);
+		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlListIsExecutionInProgress) (rlHandle handle, uint32_t * pbInProgress);
 
 		typedef void(RAYLASE_CALLINGCONVENTION* PrlGetLastError) (char * pBuffer, int32_t nBufferSize);
 		typedef int32_t(RAYLASE_CALLINGCONVENTION* PrlGetLastErrorLen) ();
@@ -425,8 +425,8 @@ namespace LibMCDriver_Raylase {
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiGetConfig) (rlHandle handle, rlSpiConfig* pConfig);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiSetConfig) (rlHandle handle, rlSpiConfig* pConfig);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiTransmit) (rlHandle handle, int32_t nModule, uint32_t * pTransmitMessage, uint32_t nTransmitMessageLen, uint32_t bAsync);
-		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiTransceive) (rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t * pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength);
-		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiReceive) (rlHandle handle, int32_t nModule,uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength);
+		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiTransceive) (rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t * pBuffer, uint32_t nBufferSize, uint32_t & nReceiveLength);
+		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiReceive) (rlHandle handle, int32_t nModule,uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t & nReceiveLength);
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlSfioSpiWaitForActiveTransfersDone) (rlHandle handle, int32_t nModule);
 
 		typedef rlResult(RAYLASE_CALLINGCONVENTION* PrlPowerCorrectionCreate) (rlHandle handle, rlOpticalParameters * parameters);
@@ -787,7 +787,7 @@ namespace LibMCDriver_Raylase {
 
 			rlResult rlListResetExecution(rlHandle handle);
 			rlResult rlListAbortExecution(rlHandle handle);
-			rlResult rlListIsExecutionInProgress(rlHandle handle, bool & bInProgress);
+			rlResult rlListIsExecutionInProgress(rlHandle handle, uint32_t & bInProgress);
 
 			rlResult rlEnableCommandLogging (rlHandle handle, const char* pszPath, int32_t truncateArguments);
 			rlResult rlDisableCommandLogging (rlHandle handle);
@@ -952,8 +952,8 @@ namespace LibMCDriver_Raylase {
 			rlResult rlSfioSpiGetConfig (rlHandle handle, rlSpiConfig* pConfig);
 			rlResult rlSfioSpiSetConfig (rlHandle handle, rlSpiConfig* pConfig);
 			rlResult rlSfioSpiTransmit (rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, uint32_t bAsync);
-			rlResult rlSfioSpiTransceive (rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength);
-			rlResult rlSfioSpiReceive (rlHandle handle, int32_t nModule, uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength);
+			rlResult rlSfioSpiTransceive (rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t & nReceiveLength);
+			rlResult rlSfioSpiReceive (rlHandle handle, int32_t nModule, uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t & nReceiveLength);
 			rlResult rlSfioSpiWaitForActiveTransfersDone (rlHandle handle, int32_t nModule);
 
 			rlResult rlPowerCorrectionCreate (rlHandle handle, rlOpticalParameters* parameters);

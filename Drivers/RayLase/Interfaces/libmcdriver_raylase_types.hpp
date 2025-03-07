@@ -144,6 +144,12 @@ typedef void * LibMCDriver_Raylase_pvoid;
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE 1038 /** Invalid nLight afx mode */
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGESIGNALDELAY 1039 /** Invalid nLight mode change signal delay */
 #define LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGEAPPLYDELAY 1040 /** Invalid nLight mode change apply delay */
+#define LIBMCDRIVER_RAYLASE_ERROR_NLIGHTFIRMWAREISNOTREADY 1041 /** nLight Firmware is not ready */
+#define LIBMCDRIVER_RAYLASE_ERROR_NLIGHTEXTERNALCONTROLNOTREADY 1042 /** nLight External control is not ready */
+#define LIBMCDRIVER_RAYLASE_ERROR_NLIGHTLASERNOTREADYAFTERSYSTEMON 1043 /** nLight Laser is not ready after SYSTEMON */
+#define LIBMCDRIVER_RAYLASE_ERROR_COULDNOTRECEIVESPIPACKET 1044 /** Could not receive SPI Packet */
+#define LIBMCDRIVER_RAYLASE_ERROR_INVALIDLASERMODE 1045 /** Invalid laser mode */
+#define LIBMCDRIVER_RAYLASE_ERROR_NLIGHTLASERMODEHASNOPOWEROVERRIDE 1046 /** nLight laser mode has no power override */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_Raylase
@@ -200,6 +206,12 @@ inline const char * LIBMCDRIVER_RAYLASE_GETERRORSTRING (LibMCDriver_RaylaseResul
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE: return "Invalid nLight afx mode";
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGESIGNALDELAY: return "Invalid nLight mode change signal delay";
     case LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTMODECHANGEAPPLYDELAY: return "Invalid nLight mode change apply delay";
+    case LIBMCDRIVER_RAYLASE_ERROR_NLIGHTFIRMWAREISNOTREADY: return "nLight Firmware is not ready";
+    case LIBMCDRIVER_RAYLASE_ERROR_NLIGHTEXTERNALCONTROLNOTREADY: return "nLight External control is not ready";
+    case LIBMCDRIVER_RAYLASE_ERROR_NLIGHTLASERNOTREADYAFTERSYSTEMON: return "nLight Laser is not ready after SYSTEMON";
+    case LIBMCDRIVER_RAYLASE_ERROR_COULDNOTRECEIVESPIPACKET: return "Could not receive SPI Packet";
+    case LIBMCDRIVER_RAYLASE_ERROR_INVALIDLASERMODE: return "Invalid laser mode";
+    case LIBMCDRIVER_RAYLASE_ERROR_NLIGHTLASERMODEHASNOPOWEROVERRIDE: return "nLight laser mode has no power override";
     default: return "unknown error";
   }
 }

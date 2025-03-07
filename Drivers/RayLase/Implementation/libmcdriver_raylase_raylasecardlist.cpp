@@ -31,7 +31,7 @@ Abstract: This is a stub class definition of CRaylaseCard
 
 */
 
-#include "libmcdriver_raylase_raylasecard.hpp"
+#include "libmcdriver_raylase_raylasecardlist.hpp"
 #include "libmcdriver_raylase_interfaceexception.hpp"
 #include <cmath>
 
@@ -91,7 +91,7 @@ CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double
     : m_pSDK(pSDK), 
     m_ListHandle(0), 
     m_CardHandle(cardHandle), 
-    m_dMaxLaserPowerInWatts(dMaxLaserPowerInWatts),
+    m_dMaxLaserPowerInWatts_Mode0(dMaxLaserPowerInWatts),
     m_nListIDOnCard (RAYLASE_LISTONCARDNOTSET),
     m_pCoordinateTransform (pCoordinateTransform),
     m_PartSuppressions (partSuppressions),
@@ -110,9 +110,9 @@ CRaylaseCardList::~CRaylaseCardList()
 {
     if ((m_pSDK.get() != nullptr) && (m_ListHandle != 0)) {
         if (m_nListIDOnCard != RAYLASE_LISTONCARDNOTSET) {
-            bool bInProgress = false;
+            uint32_t bInProgress = 0;
             m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress);
-            if (!bInProgress) {
+            if (bInProgress == 0) {
                 // Deleting the list is not possible if it is in progress...
                 m_pSDK->checkError(m_pSDK->rlListDelete(m_CardHandle, m_nListIDOnCard, true), "rlListDelete");
             }
@@ -125,10 +125,18 @@ CRaylaseCardList::~CRaylaseCardList()
     m_ListHandle = 0;
 }
 
-void CRaylaseCardList::appendPowerInWatts(double dPowerInWatts)
+void CRaylaseCardList::appendPowerInWatts(double dPowerInWatts, uint32_t nLaserMode)
 {
 
-    double dPowerFactor = (dPowerInWatts / m_dMaxLaserPowerInWatts);
+    double dMaxPower = m_dMaxLaserPowerInWatts_Mode0;
+    if (m_pNLightBoardImpl.get() != nullptr) {
+        if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
+            if (m_pNLightBoardImpl->hasLaserModeMaxPowerOverride(nLaserMode))
+                dMaxPower = m_pNLightBoardImpl->getLaserModeMaxPowerOverride(nLaserMode);
+        }
+    }
+
+    double dPowerFactor = (dPowerInWatts / dMaxPower);
     //std::cout << "appending power: " << dPowerFactor << std::endl;
 
     int32_t nPowerInUnits = (int32_t)(dPowerFactor * 65535.0);
@@ -204,10 +212,12 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             double dJumpSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::JumpSpeed);
             double dMarkSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::Speed);
 
+            int64_t nLightAFXMode = 0;
+
             if (m_pNLightBoardImpl.get() != nullptr) {
 
                 if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
-                    int64_t nLightAFXMode = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.nlight.com/afx/2024/09", "afxmode", 0);
+                    nLightAFXMode = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.nlight.com/afx/2024/09", "afxmode", 0);
                     if (nLightAFXMode < 0)
                         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE, "Invalid nLightAFXMode: " + std::to_string(nLightAFXMode));
                     if (nLightAFXMode > (int64_t) m_pNLightBoardImpl->getMaxAFXMode())
@@ -234,7 +244,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             } 
 
             if (!bSegmentHasPowerPerVector) {
-                appendPowerInWatts(dBasePowerInWatts);
+                appendPowerInWatts(dBasePowerInWatts, nLightAFXMode);
                 //std::cout << "segment power: " << dBasePowerInWatts << std::endl;
             }
             else {
@@ -365,9 +375,9 @@ void CRaylaseCardList::deleteListListOnCard ()
 {
     if (m_nListIDOnCard != RAYLASE_LISTONCARDNOTSET) {
 
-        bool bInProgress = false;
+        uint32_t bInProgress = 0;
         m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress);
-        if (bInProgress)
+        if (bInProgress != 0)
             throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_CANNOTDELETELISTLISTINPROGRESS);
 
         m_pSDK->checkError(m_pSDK->rlListDelete(m_CardHandle, m_nListIDOnCard, true), "rlListDelete");
@@ -394,15 +404,26 @@ bool CRaylaseCardList::waitForExecution(uint32_t nTimeOutInMS)
 
 }
 
+
+
 void CRaylaseCardList::abortExecution()
 {
-    bool bInProgress = false;
+    uint32_t bInProgress = 0;
     m_pSDK->checkError(m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress));
 
-    if (bInProgress)
+    if (bInProgress != 0)
         m_pSDK->checkError(m_pSDK->rlListAbortExecution(m_CardHandle));
 
 }
+
+bool CRaylaseCardList::executionIsInProgress()
+{
+    uint32_t bInProgress = 0;
+    m_pSDK->checkError(m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress));
+
+    return (bInProgress != 0);
+}
+
 
 LibMCDriver_Raylase::ePartSuppressionMode CRaylaseCardList::getPartSuppressionMode(const std::string& sPartUUID)
 {

@@ -252,6 +252,9 @@ void CDriver_Raylase::DrawLayerMultiLaserWithCallback(const std::string& sStream
 
     std::vector<PRaylaseCardList> executionLists;
 
+    uint32_t nAbortRetryMilliseconds = 100;
+    uint32_t nAbortRetryCount = 10;
+
     try {
 
         uint64_t nStartTime = m_pDriverEnvironment->GetGlobalTimerInMilliseconds();
@@ -316,20 +319,43 @@ void CDriver_Raylase::DrawLayerMultiLaserWithCallback(const std::string& sStream
 
         }
 
+       
+
         auto deletionLists = executionLists;
         executionLists.clear();
         for (auto pList : deletionLists) {
+
+            for (uint32_t nRetryIndex = 0; nRetryIndex < nAbortRetryCount; nRetryIndex++) {
+                if (!pList->executionIsInProgress ())
+                    break;
+
+                m_pDriverEnvironment->Sleep(nAbortRetryMilliseconds);
+            }
+            
             pList->deleteListListOnCard();
         }
     }
 
-    catch (...) {
-        m_pDriverEnvironment->LogMessage("Raylase Exposure canceled via callback.");
+    catch (std::exception & E) {
+        m_pDriverEnvironment->LogMessage("Raylase Exposure exception: " + std::string (E.what ()));
 
         auto deletionLists = executionLists;
         executionLists.clear();
         for (auto pList : deletionLists) {
-            pList->deleteListListOnCard();
+
+            for (uint32_t nRetryIndex = 0; nRetryIndex < nAbortRetryCount; nRetryIndex++) {
+                if (!pList->executionIsInProgress())
+                    break;
+
+                m_pDriverEnvironment->Sleep(nAbortRetryMilliseconds);
+            }
+
+            if (!pList->executionIsInProgress()) {
+                pList->deleteListListOnCard();
+            }
+            else {
+                m_pDriverEnvironment->LogMessage("Could not delete list that was in progress!");
+            }
         }
         throw;
     }

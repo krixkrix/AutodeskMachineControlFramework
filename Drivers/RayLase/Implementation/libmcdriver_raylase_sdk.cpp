@@ -987,13 +987,13 @@ rlResult CRaylaseSDK::rlListAbortExecution(rlHandle handle)
 	return ptrListAbortExecution(handle);
 }
 
-rlResult CRaylaseSDK::rlListIsExecutionInProgress(rlHandle handle, bool & bInProgress)
+rlResult CRaylaseSDK::rlListIsExecutionInProgress(rlHandle handle, uint32_t & bInProgress)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlListIsExecutionInProgress (" + std::to_string(handle) + ", bIsInProgress); ");
 	}
 
-	bInProgress = false;
+	bInProgress = 0;
 
 	return ptrListIsExecutionInProgress(handle, &bInProgress);
 }
@@ -1596,7 +1596,7 @@ rlResult CRaylaseSDK::rlSfioSpiTransmit(rlHandle handle, int32_t nModule, uint32
 
 }
 
-rlResult CRaylaseSDK::rlSfioSpiTransceive(rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength)
+rlResult CRaylaseSDK::rlSfioSpiTransceive(rlHandle handle, int32_t nModule, uint32_t* pTransmitMessage, uint32_t nTransmitMessageLen, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t & nReceiveLength)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlSfioSpiTransceive (" + std::to_string((uintptr_t)handle) + ", " + std::to_string(nModule) + ", " + std::to_string((intptr_t)pTransmitMessage) + ", " + std::to_string(nTransmitMessageLen) + ", " + std::to_string(nTimeoutInMS) + ", " + std::to_string((intptr_t)pBuffer) + ", " + std::to_string(nBufferSize) + ", " + std::to_string(nReceiveLength) + + ");");
@@ -1606,7 +1606,7 @@ rlResult CRaylaseSDK::rlSfioSpiTransceive(rlHandle handle, int32_t nModule, uint
 
 }
 
-rlResult CRaylaseSDK::rlSfioSpiReceive(rlHandle handle, int32_t nModule, uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t nReceiveLength)
+rlResult CRaylaseSDK::rlSfioSpiReceive(rlHandle handle, int32_t nModule, uint32_t nReadCount, int32_t nTimeoutInMS, uint32_t* pBuffer, uint32_t nBufferSize, uint32_t & nReceiveLength)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlSfioSpiReceive (" + std::to_string((uintptr_t)handle) + ", " + std::to_string(nModule) + ", " + std::to_string(nReadCount) + ", " + std::to_string(nTimeoutInMS) + ", " + std::to_string((intptr_t)pBuffer) + ", " + std::to_string(nBufferSize) + ", " + std::to_string(nReceiveLength) + ");");

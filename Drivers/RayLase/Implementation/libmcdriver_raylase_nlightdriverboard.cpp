@@ -91,22 +91,30 @@ void CNLightDriverBoard::DisableAutomaticLaserModeSwitching()
 
 void CNLightDriverBoard::SetLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode, const LibMCDriver_Raylase_double dMaxPowerInWatts)
 {
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->setLaserModeMaxPowerOverride(nLaserMode, dMaxPowerInWatts);
 
 }
 
 LibMCDriver_Raylase_double CNLightDriverBoard::GetLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode)
 {
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    if (pNLightDriverImpl->hasLaserModeMaxPowerOverride (nLaserMode))
+        return pNLightDriverImpl->getLaserModeMaxPowerOverride(nLaserMode);
+
     return m_pCardImpl->getMaxLaserPowerInWatts();
 }
 
 void CNLightDriverBoard::ClearLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode)
 {
-
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->clearLaserModeMaxPowerOverride(nLaserMode);
 }
 
 void CNLightDriverBoard::ClearAllLaserModeMaxPowerOverrides()
 {
-
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    pNLightDriverImpl->clearAllLaserModeMaxPowerOverrides();
 }
 
 
@@ -130,32 +138,38 @@ LibMCDriver_Raylase_uint32 CNLightDriverBoard::GetRawDeviceState()
 
 bool CNLightDriverBoard::HasError()
 {
-    return false;
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->laserHasError(m_pCardImpl->getHandle());
 }
 
 bool CNLightDriverBoard::IsReady()
 {
-    return false;
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->laserIsReady(m_pCardImpl->getHandle());
 }
 
 bool CNLightDriverBoard::ExternalControlIsReady()
 {
-    return false;
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->laserExternalControlIsReady(m_pCardImpl->getHandle());
 }
 
 bool CNLightDriverBoard::IsEmission()
 {
-    return false;
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->laserIsEmission(m_pCardImpl->getHandle());
 }
 
 bool CNLightDriverBoard::IsFirmwareReady()
 {
-    return false;
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->laserIsFirmwareReady(m_pCardImpl->getHandle());
 }
 
 bool CNLightDriverBoard::IsWaterFlow()
 {
-    return false;
+    auto pNLightDriverImpl = m_pCardImpl->getNlightImplementation();
+    return pNLightDriverImpl->laserIsWaterFlow(m_pCardImpl->getHandle());
 }
 
 void CNLightDriverBoard::SetModeChangeDelays(const LibMCDriver_Raylase_uint32 nModeChangeSignalDelayInMicroseconds, const LibMCDriver_Raylase_uint32 nModeChangeApplyDelayInMicroseconds)

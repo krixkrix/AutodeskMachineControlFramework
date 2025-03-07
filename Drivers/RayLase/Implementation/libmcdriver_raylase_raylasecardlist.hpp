@@ -85,7 +85,7 @@ class CRaylaseCardList
 		PRaylaseSDK m_pSDK;
 		rlHandle m_CardHandle;
 		rlListHandle m_ListHandle;
-		double m_dMaxLaserPowerInWatts;
+		double m_dMaxLaserPowerInWatts_Mode0;
 		uint32_t m_nListIDOnCard;
 		PRaylaseCoordinateTransform m_pCoordinateTransform;
 
@@ -101,7 +101,7 @@ class CRaylaseCardList
 		// Laser Index Filter of 0 means no filter.
 		void addLayerToList (LibMCEnv::PToolpathLayer pLayer, uint32_t nLaserIndexFilter, bool bFailIfNonAssignedDataExists);
 
-		void appendPowerInWatts(double dPowerInWatts);
+		void appendPowerInWatts(double dPowerInWatts, uint32_t nLaserMode);
 
 		void setListOnCard(uint32_t nListIDOnCard);
 
@@ -112,6 +112,8 @@ class CRaylaseCardList
 		bool waitForExecution(uint32_t nTimeOutInMS);
 
 		void abortExecution();
+
+		bool executionIsInProgress();
 
 		LibMCDriver_Raylase::ePartSuppressionMode getPartSuppressionMode(const std::string& sPartUUID);
 

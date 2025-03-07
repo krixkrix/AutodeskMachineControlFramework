@@ -41,7 +41,6 @@ Abstract: This is a stub class definition of CRaylaseCard
 
 using namespace LibMCDriver_Raylase::Impl;
 
-#define MINLASERPOWER 0.1
 
 PRaylaseCardImpl CRaylaseCardImpl::connectByIP(PRaylaseSDK pSDK, const std::string& sCardName, const std::string& sCardIP, uint32_t nPort, double dMaxLaserPowerInWatts, bool bSimulationMode, LibMCEnv::PDriverEnvironment pDriverEnvironment, LibMCEnv::PWorkingDirectory pWorkingDirectory)
 {
@@ -72,8 +71,8 @@ CRaylaseCardImpl::CRaylaseCardImpl(PRaylaseSDK pSDK, const std::string& sCardNam
 
     m_pNLightDriverImpl = std::make_shared<CNLightDriverImpl>(m_pSDK, m_pDriverEnvironment);
 
-    if (dMaxLaserPowerInWatts < MINLASERPOWER)
-        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDLASERPOWER);
+    if ((dMaxLaserPowerInWatts < RAYLASE_MINLASERPOWER) || (dMaxLaserPowerInWatts > RAYLASE_MAXLASERPOWER))
+        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDLASERPOWER, "invalid laser power: " + std::to_string (dMaxLaserPowerInWatts));
 
     m_pCoordinateTransform = std::make_shared<CRaylaseCoordinateTransform>();
 
@@ -274,7 +273,7 @@ void CRaylaseCardImpl::Disconnect()
 
     if (m_pSDK.get() != nullptr) {
         if (m_Handle > 0) {
-            bool bInProgress = false;
+            uint32_t bInProgress = 0;
             m_pSDK->rlListIsExecutionInProgress(m_Handle, bInProgress);
 
             if (bInProgress)
@@ -354,10 +353,10 @@ PRaylaseCardList CRaylaseCardImpl::createNewList()
 
 void CRaylaseCardImpl::abortListExecution()
 {
-    bool bInProgress = false;
+    uint32_t bInProgress = 0;
     m_pSDK->checkError(m_pSDK->rlListIsExecutionInProgress(m_Handle, bInProgress));
 
-    if (bInProgress)
+    if (bInProgress != 0)
         m_pSDK->checkError(m_pSDK->rlListAbortExecution(m_Handle));
 }
 

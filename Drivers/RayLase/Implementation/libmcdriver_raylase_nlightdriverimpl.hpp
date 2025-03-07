@@ -38,8 +38,23 @@ Abstract: This is the class declaration of CNLightDriverBoard
 #include "libmcdriver_raylase_interfaces.hpp"
 #include "libmcdriver_raylase_sdk.hpp"
 
+#include <map>
+
 #define RAYLASE_NLIGHT_MAXLASERMODE 15
 #define RAYLASE_NLIGHT_MAXCHANGEMODEDELAY 1000000
+#define RAYLASE_NLIGHT_SPISTATUSREQUESTCOMMAND 0x03000000UL
+
+#define RAYLASE_NLIGHT_BPPREADYBIT 0
+#define RAYLASE_NLIGHT_EXTCONTROLREADYBIT 1
+#define RAYLASE_NLIGHT_EXTWATERFLOWBIT 2
+#define RAYLASE_NLIGHT_READYBIT 3
+#define RAYLASE_NLIGHT_ERRORBIT 4
+#define RAYLASE_NLIGHT_EMISSIONBIT 5
+#define RAYLASE_NLIGHT_FIRMWAREREADYBIT 6
+
+#define RAYLASE_MINLASERPOWER 0.1
+#define RAYLASE_MAXLASERPOWER 100000.0
+
 
 namespace LibMCDriver_Raylase {
 namespace Impl {
@@ -77,6 +92,16 @@ private:
 	uint32_t m_nModeChangeSignalDelayInMicroseconds;
 	uint32_t m_nModeChangeApplyDelayInMicroseconds;
 
+	uint32_t m_nLaserReactionDelayInMilliseconds;
+	uint32_t m_nLaserReactionRetries;
+
+	uint32_t m_nSPITimeoutInMilliseconds;
+	uint32_t m_nSPIModuleIndex;
+	uint32_t m_nSPIRetryCount;
+
+	// Keeps a list of max power values for specific laser nodes (in Watts)
+	std::map<uint32_t, double> m_LaserModeMaxPowerOverrides;
+
 public:
 
     CNLightDriverImpl (PRaylaseSDK pSDK, LibMCEnv::PDriverEnvironment pDriverEnvironment);
@@ -88,6 +113,8 @@ public:
 	void disableNLightLaser(rlHandle cardHandle);
 
 	void clearNLightError(rlHandle cardHandle);
+
+	uint32_t retrieveSPIStatus(rlHandle cardHandle);
 
 	void setNLightLaserMode(rlHandle cardHandle, uint32_t nLaserMode);
 
@@ -104,6 +131,30 @@ public:
 	uint32_t getModeChangeApplyDelay();
 
 	uint32_t getMaxAFXMode();
+
+	bool laserHasError(rlHandle cardHandle);
+
+	bool laserIsReady(rlHandle cardHandle);
+
+	bool laserExternalControlIsReady(rlHandle cardHandle);
+
+	bool laserIsEmission(rlHandle cardHandle);
+
+	bool laserIsFirmwareReady(rlHandle cardHandle);
+
+	bool laserIsWaterFlow(rlHandle cardHandle);
+
+	bool laserBPPIsReady(rlHandle cardHandle);
+
+	void setLaserModeMaxPowerOverride(const uint32_t nLaserMode, const double dMaxPowerInWatts);
+
+	bool hasLaserModeMaxPowerOverride(const uint32_t nLaserMode);
+
+	double getLaserModeMaxPowerOverride(const uint32_t nLaserMode);
+
+	void clearLaserModeMaxPowerOverride(const uint32_t nLaserMode);
+
+	void clearAllLaserModeMaxPowerOverrides();
 
 };
 
