@@ -339,6 +339,16 @@ void CDriver_Raylase::DrawLayerMultiLaserWithCallback(const std::string& sStream
     catch (std::exception & E) {
         m_pDriverEnvironment->LogMessage("Raylase Exposure exception: " + std::string (E.what ()));
 
+        m_pDriverEnvironment->LogMessage("Aborting executions...");
+        for (auto pList : executionLists) {
+            try {
+                pList->abortExecution();
+            }
+            catch (std::exception& abortE) {
+                m_pDriverEnvironment->LogMessage("Could not abort execution: " + std::string(abortE.what()));
+            }
+        }
+
         auto deletionLists = executionLists;
         executionLists.clear();
         for (auto pList : deletionLists) {

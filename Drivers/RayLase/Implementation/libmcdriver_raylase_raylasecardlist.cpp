@@ -211,6 +211,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 
             double dJumpSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::JumpSpeed);
             double dMarkSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::Speed);
+            double dLaserFocusInMM = pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserFocus, 0.0);
 
             int64_t nLightAFXMode = 0;
 
@@ -233,6 +234,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 
             double dJumpSpeedInMeterPerSecond = dJumpSpeedInMMPerSecond * 0.001;
             double dMarkSpeedInMeterPerSecond = dMarkSpeedInMMPerSecond * 0.001;
+            double dZInMicron = 0.0; // dLaserFocusInMM * 1000.0;
 
             m_pSDK->checkError(m_pSDK->rlListAppendJumpSpeed(m_ListHandle, dJumpSpeedInMeterPerSecond), "rlListAppendJumpSpeed");
             m_pSDK->checkError(m_pSDK->rlListAppendMarkSpeed(m_ListHandle, dMarkSpeedInMeterPerSecond), "rlListAppendMarkSpeed");
@@ -244,7 +246,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             } 
 
             if (!bSegmentHasPowerPerVector) {
-                appendPowerInWatts(dBasePowerInWatts, nLightAFXMode);
+                appendPowerInWatts(dBasePowerInWatts, (uint32_t) nLightAFXMode);
                 //std::cout << "segment power: " << dBasePowerInWatts << std::endl;
             }
             else {
@@ -286,7 +288,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                     double dYinMicron = dYinMM * 1000.0;
 
                     if (nPointIndex == 0) {
-                        m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs2D(m_ListHandle, dXinMicron, dYinMicron), "rlListAppendJumpAbs2D");
+                        m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs3D(m_ListHandle, dXinMicron, dYinMicron, dZInMicron), "rlListAppendJumpAbs3D");
                         m_pSDK->checkError(m_pSDK->rlListAppendLaserOn(m_ListHandle), "rlListAppendLaserOn");
                     }
                     else {
@@ -294,7 +296,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                             appendPowerInWatts(dBasePowerInWatts * FactorOverrides.at(nPointIndex));
                         }*/
 
-                        m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs2D(m_ListHandle, dXinMicron, dYinMicron), "rlListAppendMarkAbs2D");
+                        m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs3D(m_ListHandle, dXinMicron, dYinMicron, dZInMicron), "rlListAppendMarkAbs3D");
                     }
 
                 }
@@ -339,9 +341,9 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                         appendPowerInWatts(dBasePowerInWatts * FactorOverrides.at(nHatchIndex).m_Point1Override);
                     }*/
 
-                    m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs2D(m_ListHandle, dX1inMicron, dY1inMicron), "rlListAppendJumpAbs2D");
+                    m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs3D(m_ListHandle, dX1inMicron, dY1inMicron, dZInMicron), "rlListAppendJumpAbs3D");
                     m_pSDK->checkError(m_pSDK->rlListAppendLaserOn(m_ListHandle), "rlListAppendLaserOn");
-                    m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs2D(m_ListHandle, dX2inMicron, dY2inMicron), "rlListAppendMarkAbs2D");
+                    m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs3D(m_ListHandle, dX2inMicron, dY2inMicron, dZInMicron), "rlListAppendMarkAbs3D");
                     m_pSDK->checkError(m_pSDK->rlListAppendLaserOff(m_ListHandle), "rlListAppendLaserOff");
                 }
 
@@ -396,11 +398,11 @@ void CRaylaseCardList::executeList(uint32_t nListIDOnCard)
 
 bool CRaylaseCardList::waitForExecution(uint32_t nTimeOutInMS)
 {
-    bool done = false;
+    uint32_t done = 0;
     int32_t listID = 0;
     m_pSDK->checkError(m_pSDK->rlListWaitForListDone(m_CardHandle, nTimeOutInMS, done, listID), "rlListWaitForListDone");
 
-    return done;
+    return done != 0;
 
 }
 

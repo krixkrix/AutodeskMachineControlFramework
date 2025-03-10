@@ -124,6 +124,8 @@ CRaylaseSDK::CRaylaseSDK(const std::string& sDLLNameUTF8)
 	this->ptrListAppendLaserOffDelay = (PrlListAppendLaserOffDelay)_loadRaylaseAddress(hLibrary, "rlListAppendLaserOffDelay");
 	this->ptrListAppendJumpAbs2D = (PrlListAppendJumpAbs2D)_loadRaylaseAddress(hLibrary, "rlListAppendJumpAbs2D");
 	this->ptrListAppendMarkAbs2D = (PrlListAppendMarkAbs2D)_loadRaylaseAddress(hLibrary, "rlListAppendMarkAbs2D");
+	this->ptrListAppendJumpAbs3D = (PrlListAppendJumpAbs3D)_loadRaylaseAddress(hLibrary, "rlListAppendJumpAbs3D");
+	this->ptrListAppendMarkAbs3D = (PrlListAppendMarkAbs3D)_loadRaylaseAddress(hLibrary, "rlListAppendMarkAbs3D");
 	this->ptrListAppendGpioValue = (PrlListAppendGpioValue)_loadRaylaseAddress(hLibrary, "rlListAppendGpioValue");
 	this->ptrListAppendSleep = (PrlListAppendSleep)_loadRaylaseAddress(hLibrary, "rlListAppendSleep");
 
@@ -425,6 +427,8 @@ void CRaylaseSDK::resetFunctionPtrs()
 	ptrListAppendLaserOffDelay = nullptr;
 	ptrListAppendJumpAbs2D = nullptr;
 	ptrListAppendMarkAbs2D = nullptr;
+	ptrListAppendJumpAbs3D = nullptr;
+	ptrListAppendMarkAbs3D = nullptr;
 	ptrListAppendGpioValue = nullptr;
 	ptrListAppendSleep = nullptr;
 
@@ -652,7 +656,7 @@ rlHandle CRaylaseSDK::rlConnect(const char* pszAddress, int32_t nPort)
 	
 }
 
-rlResult CRaylaseSDK::rlIsConnected(rlHandle handle, bool* pbIsConnected)
+rlResult CRaylaseSDK::rlIsConnected(rlHandle handle, uint32_t* pbIsConnected)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlIsConnected (" + std::to_string(handle) + ", &bIsConnected);");
@@ -703,7 +707,7 @@ rlResult CRaylaseSDK::rlLaserLaserOff(rlHandle handle)
 
 }
 
-rlResult CRaylaseSDK::rlLaserIsPilotEnabled(rlHandle handle, bool& enabled)
+rlResult CRaylaseSDK::rlLaserIsPilotEnabled(rlHandle handle, uint32_t& enabled)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlLaserIsPilotEnabled (" + std::to_string(handle) + ", bEnabled); ");
@@ -726,14 +730,14 @@ rlResult CRaylaseSDK::rlLaserEnablePilot(rlHandle handle, bool enable)
 
 }
 
-rlResult CRaylaseSDK::rlLaserIsLaserArmed(rlHandle handle, bool& armed)
+rlResult CRaylaseSDK::rlLaserIsLaserArmed(rlHandle handle, uint32_t& armed)
 {
 	if (m_bEnableJournal) {
-		logJournal("rlLaserEnablePilot (" + std::to_string(handle) + ", bArmed); ");
+		logJournal("rlLaserIsLaserArmed (" + std::to_string(handle) + ", bArmed); ");
 	}
 
 
-	return ptrLaserEnablePilot(handle, armed);
+	return ptrLaserIsLaserArmed(handle, armed);
 
 }
 
@@ -900,6 +904,25 @@ rlResult CRaylaseSDK::rlListAppendMarkAbs2D(rlListHandle handle, double x, doubl
 
 }
 
+rlResult CRaylaseSDK::rlListAppendJumpAbs3D(rlListHandle handle, double x, double y, double z)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlListAppendJumpAbs3D (" + std::to_string(handle) + ", " + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + "); ");
+	}
+
+	return ptrListAppendJumpAbs3D(handle, x, y, z);
+}
+
+rlResult CRaylaseSDK::rlListAppendMarkAbs3D(rlListHandle handle, double x, double y, double z)
+{
+	if (m_bEnableJournal) {
+		logJournal("rlListAppendMarkAbs3D (" + std::to_string(handle) + ", " + std::to_string(x) + +", " + std::to_string(y) + ", " + std::to_string(z) + "); ");
+	}
+
+	return ptrListAppendMarkAbs3D(handle, x, y, z);
+
+}
+
 rlResult CRaylaseSDK::rlListAppendGpioValue(rlListHandle handle, eRLIOPort port, eRLPinAction action, uint32_t nValue)
 {
 	if (m_bEnableJournal) {
@@ -939,7 +962,7 @@ rlResult CRaylaseSDK::rlListExecute(rlHandle handle, int32_t listID)
 	return ptrListExecute(handle, listID);
 }
 
-rlResult CRaylaseSDK::rlListWaitForListIdle(rlHandle handle, int32_t timeOutInMilliseconds, bool& successful, int32_t& listID)
+rlResult CRaylaseSDK::rlListWaitForListIdle(rlHandle handle, int32_t timeOutInMilliseconds, uint32_t& successful, int32_t& listID)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlListWaitForListIdle (" + std::to_string(handle) + ", " + std::to_string(timeOutInMilliseconds) + ", bSuccessful, nListID); ");
@@ -949,7 +972,7 @@ rlResult CRaylaseSDK::rlListWaitForListIdle(rlHandle handle, int32_t timeOutInMi
 
 }
 
-rlResult CRaylaseSDK::rlListWaitForListDone(rlHandle handle, int32_t timeOutInMilliseconds, bool& successful, int32_t& listID)
+rlResult CRaylaseSDK::rlListWaitForListDone(rlHandle handle, int32_t timeOutInMilliseconds, uint32_t& successful, int32_t& listID)
 {
 	if (m_bEnableJournal) {
 		logJournal("rlListWaitForListDone (" + std::to_string(handle) + ", " + std::to_string(timeOutInMilliseconds) + ", bSuccessful, nListID); ");

@@ -208,10 +208,10 @@ bool CRaylaseCardImpl::IsLaserArmed()
         return m_bSimulatedPilotIsArmed;
     }
     else {
-        bool bIsArmed = false;
-        m_pSDK->checkError(m_pSDK->rlLaserArmLaser(m_Handle, bIsArmed));
+        uint32_t bIsArmed = 0;
+        m_pSDK->checkError(m_pSDK->rlLaserIsLaserArmed(m_Handle, bIsArmed));
 
-        return bIsArmed;
+        return bIsArmed != 0;
     }
 }
 
@@ -232,10 +232,10 @@ bool CRaylaseCardImpl::PilotIsEnabled()
     if (m_bSimulationMode)
         return m_bSimulatedPilotIsEnabled;
 
-    bool bPilotIsEnabled = false;
+    uint32_t bPilotIsEnabled = 0;
     m_pSDK->checkError(m_pSDK->rlLaserIsPilotEnabled(m_Handle, bPilotIsEnabled));
 
-    return bPilotIsEnabled;
+    return bPilotIsEnabled != 0;
 }
 
 void CRaylaseCardImpl::GetLaserStatus(bool& bPilotIsEnabled, bool& bLaserIsArmed, bool& bLaserAlarm)
