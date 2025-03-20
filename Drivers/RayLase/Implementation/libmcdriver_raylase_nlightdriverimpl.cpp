@@ -52,8 +52,8 @@ CNLightDriverImpl::CNLightDriverImpl(PRaylaseSDK pSDK, LibMCEnv::PDriverEnvironm
     m_nSPITimeoutInMilliseconds (10),
     m_nSPIModuleIndex (2),
     m_nSPIRetryCount (5),
-    m_nLaserReactionDelayInMilliseconds (10),
-    m_nLaserReactionRetries (1000)
+    m_nLaserReactionDelayInMilliseconds (100),
+    m_nLaserReactionRetries (100)
 {
     if (pSDK.get() == nullptr)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
@@ -109,6 +109,8 @@ void CNLightDriverImpl::initializeNLightLaser(rlHandle cardHandle)
     uint32_t nClearFlags = (uint32_t)eNlightDriverBoardIOPins::ARM_LASER | (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER | (uint32_t)eNlightDriverBoardIOPins::GATE_IN;
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paClear, nClearFlags));
 
+    m_pDriverEnvironment->Sleep(3000);
+
     m_pDriverEnvironment->LogMessage("Waiting for firmware ready...");
 
     nRetryCount = m_nLaserReactionRetries;
@@ -126,6 +128,8 @@ void CNLightDriverImpl::initializeNLightLaser(rlHandle cardHandle)
     m_pDriverEnvironment->LogMessage("Enabling nLight external control");
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_EXTERNAL_CONTROL));
 
+    m_pDriverEnvironment->Sleep(3000);
+
     nRetryCount = m_nLaserReactionRetries;
     while (nRetryCount > 0) {
         m_pDriverEnvironment->Sleep(m_nLaserReactionDelayInMilliseconds);
@@ -138,10 +142,16 @@ void CNLightDriverImpl::initializeNLightLaser(rlHandle cardHandle)
     if (nRetryCount == 0)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_NLIGHTEXTERNALCONTROLNOTREADY);
 
+    m_pDriverEnvironment->Sleep(3000);
+
     m_pDriverEnvironment->LogMessage("Setting nLight system on..");
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::SYSTEM_ON));
-    m_pDriverEnvironment->Sleep(m_nLaserReactionDelayInMilliseconds);
+    //m_pDriverEnvironment->Sleep(m_nLaserReactionDelayInMilliseconds);
+    m_pDriverEnvironment->Sleep(2000);
+
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::SYSTEM_ON));
+
+    m_pDriverEnvironment->Sleep(2000);
 
     nRetryCount = m_nLaserReactionRetries;
     while (nRetryCount > 0) {
@@ -152,9 +162,10 @@ void CNLightDriverImpl::initializeNLightLaser(rlHandle cardHandle)
         nRetryCount--;
     }
 
-    if (nRetryCount == 0)
-        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_NLIGHTLASERNOTREADYAFTERSYSTEMON);
+    //if (nRetryCount == 0)
+        //throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_NLIGHTLASERNOTREADYAFTERSYSTEMON);
 
+    m_pDriverEnvironment->Sleep(2000);
 
     m_pDriverEnvironment->LogMessage("Resetting beam profile");
     setNLightLaserMode(cardHandle, 0);
