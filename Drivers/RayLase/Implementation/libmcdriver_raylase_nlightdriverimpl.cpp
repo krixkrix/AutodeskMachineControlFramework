@@ -100,7 +100,6 @@ void CNLightDriverImpl::initializeNLightLaser(rlHandle cardHandle)
     m_pDriverEnvironment->LogMessage("Set SPI config..");
     m_pSDK->checkError(m_pSDK->rlSfioSpiSetConfig(cardHandle, (rlSpiConfig*)spiConfig.getData()));
     m_pDriverEnvironment->LogMessage("Set SPI config done.."); 
- 
 
     m_pDriverEnvironment->LogMessage("Enabling nLight 24V...");
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paSet, (uint32_t)eNlightDriverBoardIOPins::ENABLE_24V));
@@ -108,6 +107,9 @@ void CNLightDriverImpl::initializeNLightLaser(rlHandle cardHandle)
     m_pDriverEnvironment->LogMessage("Clearing nLight laser flags...");
     uint32_t nClearFlags = (uint32_t)eNlightDriverBoardIOPins::ARM_LASER | (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER | (uint32_t)eNlightDriverBoardIOPins::GATE_IN;
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paClear, nClearFlags));
+
+    m_pDriverEnvironment->LogMessage("Disarming laser..");
+    m_pSDK->checkError(m_pSDK->rlLaserArmLaser(cardHandle, false));
 
     m_pDriverEnvironment->Sleep(3000);
 
@@ -178,6 +180,9 @@ void CNLightDriverImpl::disableNLightLaser(rlHandle cardHandle)
     m_pDriverEnvironment->LogMessage("Resetting beam profile");
     setNLightLaserMode(cardHandle, 0);
 
+    m_pDriverEnvironment->LogMessage("Disarming laser..");
+    m_pSDK->checkError(m_pSDK->rlLaserArmLaser(cardHandle, false));
+
     m_pDriverEnvironment->LogMessage("Clearing nLight laser flags...");
     uint32_t nClearFlags = (uint32_t)eNlightDriverBoardIOPins::ARM_LASER | (uint32_t)eNlightDriverBoardIOPins::ENABLE_AIMING_LASER | (uint32_t)eNlightDriverBoardIOPins::GATE_IN;
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paClear, nClearFlags));
@@ -200,6 +205,10 @@ void CNLightDriverImpl::disableNLightLaser(rlHandle cardHandle)
 void CNLightDriverImpl::clearNLightError(rlHandle cardHandle)
 {
     uint32_t nSignalDelayInMS = (m_nModeChangeSignalDelayInMicroseconds + 999) / 1000;
+
+
+    m_pDriverEnvironment->LogMessage("Disarming laser..");
+    m_pSDK->checkError(m_pSDK->rlLaserArmLaser(cardHandle, false));
 
     m_pDriverEnvironment->LogMessage("Clearing nLight Error");
     m_pSDK->checkError(m_pSDK->rlGpioWrite(cardHandle, eRLIOPort::ioPortD, eRLPinAction::paClear, (uint32_t)eNlightDriverBoardIOPins::CLEAR_ERROR));
