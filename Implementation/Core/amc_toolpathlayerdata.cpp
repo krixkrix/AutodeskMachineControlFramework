@@ -271,7 +271,7 @@ namespace AMC {
 							pSegment->m_HasOverrideFactors |= factorFlag;
 
 							std::vector<Lib3MF::sHatch2DOverrides> hatchOverrides;
-							p3MFLayer->GetSegmentHatchOverrideFactors(nSegmentIndex, factorType, hatchOverrides);
+							p3MFLayer->GetLinearSegmentHatchOverrideFactors(nSegmentIndex, factorType, hatchOverrides);
 
 							if ((uint32_t)(hatchOverrides.size() * 2) != pSegment->m_PointCount)
 								throw ELibMCCustomException(LIBMC_ERROR_INVALIDHATCHOVERRIDECOUNT, m_sDebugName);
