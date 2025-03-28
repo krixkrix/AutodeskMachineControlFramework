@@ -125,6 +125,7 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 	m_CardNo (nCardNo), 
 	m_dCorrectionFactor(10000.0), 
 	m_dZCorrectionFactor(10000.0),
+	m_dDefocusFactor (1.0),
 	m_nLaserIndex (0),
 	m_LaserPort(eLaserPort::Port12BitAnalog1), 
 	m_pDriverEnvironment (pDriverEnvironment),
@@ -437,6 +438,17 @@ void CRTCContext::SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition)
 	m_pScanLabSDK->n_auto_change_pos(m_CardNo, nPosition);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
 }
+
+void CRTCContext::SetDefocusFactor(const LibMCDriver_ScanLab_double dValue)
+{
+	m_dDefocusFactor = dValue;
+}
+
+LibMCDriver_ScanLab_double CRTCContext::GetDefocusFactor()
+{
+	return m_dDefocusFactor;
+}
+
 
 void CRTCContext::SetDelays(const LibMCDriver_ScanLab_uint32 nMarkDelay, const LibMCDriver_ScanLab_uint32 nJumpDelay, const LibMCDriver_ScanLab_uint32 nPolygonDelay)
 {
@@ -778,7 +790,7 @@ void CRTCContext::DrawPolylineOIE(const LibMCDriver_ScanLab_uint64 nPointsBuffer
 	writeSpeeds(fMarkSpeed, fJumpSpeed, fPower, bOIEControlFlag);
 
 	// Z Plane
-	double defocusZ = round(fZValue * m_dZCorrectionFactor);
+	double defocusZ = round(fZValue * m_dZCorrectionFactor * m_dDefocusFactor);
 	int intDefocusZ = (int)defocusZ;
 	m_pScanLabSDK->n_set_defocus_list (m_CardNo, intDefocusZ);
 
@@ -813,7 +825,7 @@ void CRTCContext::DrawHatchesOIE(const LibMCDriver_ScanLab_uint64 nHatchesBuffer
 	writeSpeeds(fMarkSpeed, fJumpSpeed, fPower, bOIEControlFlag);
 
 	// Z Plane
-	double defocusZ = round(fZValue * m_dZCorrectionFactor);
+	double defocusZ = round(fZValue * m_dZCorrectionFactor * m_dDefocusFactor);
 	int intDefocusZ = (int)defocusZ;
 	m_pScanLabSDK->n_set_defocus_list(m_CardNo, intDefocusZ);
 

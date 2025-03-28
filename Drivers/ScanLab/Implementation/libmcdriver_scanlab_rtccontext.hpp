@@ -79,6 +79,8 @@ protected:
 	uint32_t m_CardNo;
 	double m_dCorrectionFactor;
 	double m_dZCorrectionFactor;
+	double m_dDefocusFactor;
+
 	eLaserPort m_LaserPort;
 	bool m_bIsNetwork;
 	std::vector<uint32_t> m_MCBSPSignalChannels;
@@ -181,6 +183,7 @@ public:
 
 	void LoadFirmware(const LibMCDriver_ScanLab_uint64 nFirmwareDataBufferSize, const LibMCDriver_ScanLab_uint8* pFirmwareDataBuffer, const LibMCDriver_ScanLab_uint64 nFPGADataBufferSize, const LibMCDriver_ScanLab_uint8* pFPGADataBuffer, const LibMCDriver_ScanLab_uint64 nAuxiliaryDataBufferSize, const LibMCDriver_ScanLab_uint8* pAuxiliaryDataBuffer);
 
+
 	void LoadCorrectionFile(const LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8* pCorrectionFileBuffer, const LibMCDriver_ScanLab_uint32 nTableNumber, const LibMCDriver_ScanLab_uint32 nDimension);
 
 	void SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB) override;
@@ -213,6 +216,10 @@ public:
 	void ExecuteList(const LibMCDriver_ScanLab_uint32 nListIndex, const LibMCDriver_ScanLab_uint32 nPosition) override;
 
 	void SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition) override;
+
+	void SetDefocusFactor(const LibMCDriver_ScanLab_double dValue) override;
+
+	LibMCDriver_ScanLab_double GetDefocusFactor() override;
 
 	void SetDelays(const LibMCDriver_ScanLab_uint32 nMarkDelay, const LibMCDriver_ScanLab_uint32 nJumpDelay, const LibMCDriver_ScanLab_uint32 nPolygonDelay) override;
 

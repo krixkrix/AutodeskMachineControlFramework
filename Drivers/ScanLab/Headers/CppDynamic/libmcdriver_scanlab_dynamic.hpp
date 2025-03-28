@@ -905,6 +905,8 @@ public:
 	inline void SetEndOfList();
 	inline void ExecuteList(const LibMCDriver_ScanLab_uint32 nListIndex, const LibMCDriver_ScanLab_uint32 nPosition);
 	inline void SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition);
+	inline void SetDefocusFactor(const LibMCDriver_ScanLab_double dValue);
+	inline LibMCDriver_ScanLab_double GetDefocusFactor();
 	inline void SetDelays(const LibMCDriver_ScanLab_uint32 nMarkDelay, const LibMCDriver_ScanLab_uint32 nJumpDelay, const LibMCDriver_ScanLab_uint32 nPolygonDelay);
 	inline void SetLaserDelaysInMicroseconds(const LibMCDriver_ScanLab_double dLaserOnDelay, const LibMCDriver_ScanLab_double dLaserOffDelay);
 	inline void SetLaserDelaysInBits(const LibMCDriver_ScanLab_int32 nLaserOnDelay, const LibMCDriver_ScanLab_int32 nLaserOffDelay);
@@ -1355,6 +1357,8 @@ public:
 		pWrapperTable->m_RTCContext_SetEndOfList = nullptr;
 		pWrapperTable->m_RTCContext_ExecuteList = nullptr;
 		pWrapperTable->m_RTCContext_SetAutoChangePos = nullptr;
+		pWrapperTable->m_RTCContext_SetDefocusFactor = nullptr;
+		pWrapperTable->m_RTCContext_GetDefocusFactor = nullptr;
 		pWrapperTable->m_RTCContext_SetDelays = nullptr;
 		pWrapperTable->m_RTCContext_SetLaserDelaysInMicroseconds = nullptr;
 		pWrapperTable->m_RTCContext_SetLaserDelaysInBits = nullptr;
@@ -2424,6 +2428,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_SetAutoChangePos == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_SetDefocusFactor = (PLibMCDriver_ScanLabRTCContext_SetDefocusFactorPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_setdefocusfactor");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_SetDefocusFactor = (PLibMCDriver_ScanLabRTCContext_SetDefocusFactorPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_setdefocusfactor");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_SetDefocusFactor == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_GetDefocusFactor = (PLibMCDriver_ScanLabRTCContext_GetDefocusFactorPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_getdefocusfactor");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_GetDefocusFactor = (PLibMCDriver_ScanLabRTCContext_GetDefocusFactorPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_getdefocusfactor");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_GetDefocusFactor == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4393,6 +4415,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SetAutoChangePos == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_setdefocusfactor", (void**)&(pWrapperTable->m_RTCContext_SetDefocusFactor));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SetDefocusFactor == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getdefocusfactor", (void**)&(pWrapperTable->m_RTCContext_GetDefocusFactor));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_GetDefocusFactor == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_setdelays", (void**)&(pWrapperTable->m_RTCContext_SetDelays));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SetDelays == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -6153,6 +6183,27 @@ public:
 	void CRTCContext::SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetAutoChangePos(m_pHandle, nPosition));
+	}
+	
+	/**
+	* CRTCContext::SetDefocusFactor - Sets a factor for the Z defocus commands.
+	* @param[in] dValue - Z Defocus Factor.
+	*/
+	void CRTCContext::SetDefocusFactor(const LibMCDriver_ScanLab_double dValue)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetDefocusFactor(m_pHandle, dValue));
+	}
+	
+	/**
+	* CRTCContext::GetDefocusFactor - Returns the current factor for the Z defocus commands.
+	* @return Z Defocus Factor.
+	*/
+	LibMCDriver_ScanLab_double CRTCContext::GetDefocusFactor()
+	{
+		LibMCDriver_ScanLab_double resultValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetDefocusFactor(m_pHandle, &resultValue));
+		
+		return resultValue;
 	}
 	
 	/**

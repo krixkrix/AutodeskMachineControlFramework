@@ -1044,6 +1044,24 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcco
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_setautochangepos(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nPosition);
 
 /**
+* Sets a factor for the Z defocus commands.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] dValue - Z Defocus Factor.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_setdefocusfactor(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dValue);
+
+/**
+* Returns the current factor for the Z defocus commands.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[out] pValue - Z Defocus Factor.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getdefocusfactor(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pValue);
+
+/**
 * Sets the laser delays
 *
 * @param[in] pRTCContext - RTCContext instance.

@@ -1134,6 +1134,18 @@ public:
 	virtual void SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition) = 0;
 
 	/**
+	* IRTCContext::SetDefocusFactor - Sets a factor for the Z defocus commands.
+	* @param[in] dValue - Z Defocus Factor.
+	*/
+	virtual void SetDefocusFactor(const LibMCDriver_ScanLab_double dValue) = 0;
+
+	/**
+	* IRTCContext::GetDefocusFactor - Returns the current factor for the Z defocus commands.
+	* @return Z Defocus Factor.
+	*/
+	virtual LibMCDriver_ScanLab_double GetDefocusFactor() = 0;
+
+	/**
 	* IRTCContext::SetDelays - Sets the laser delays
 	* @param[in] nMarkDelay - Mark delay in microseconds (MUST be multiple of 10)
 	* @param[in] nJumpDelay - Jump delay in microseconds (MUST be multiple of 10)

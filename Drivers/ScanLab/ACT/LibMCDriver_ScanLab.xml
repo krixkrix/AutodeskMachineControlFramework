@@ -827,7 +827,13 @@ Custom implementation
 			<param name="Position" type="uint32" pass="in" description="Relative Position in List." />
 		</method>
 		
+		<method name="SetDefocusFactor" description="Sets a factor for the Z defocus commands.">
+			<param name="Value" type="double" pass="in" description="Z Defocus Factor." />
+		</method>
 
+		<method name="GetDefocusFactor" description="Returns the current factor for the Z defocus commands.">
+			<param name="Value" type="double" pass="return" description="Z Defocus Factor." />
+		</method>
 
 		<method name="SetDelays" description="Sets the laser delays">
 			<param name="MarkDelay" type="uint32" pass="in" description="Mark delay in microseconds (MUST be multiple of 10)" />

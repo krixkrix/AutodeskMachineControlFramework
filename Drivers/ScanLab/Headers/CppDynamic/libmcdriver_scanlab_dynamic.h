@@ -1031,6 +1031,24 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_ExecuteListPt
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetAutoChangePosPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nPosition);
 
 /**
+* Sets a factor for the Z defocus commands.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] dValue - Z Defocus Factor.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetDefocusFactorPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dValue);
+
+/**
+* Returns the current factor for the Z defocus commands.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[out] pValue - Z Defocus Factor.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetDefocusFactorPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pValue);
+
+/**
 * Sets the laser delays
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -2937,6 +2955,8 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_SetEndOfListPtr m_RTCContext_SetEndOfList;
 	PLibMCDriver_ScanLabRTCContext_ExecuteListPtr m_RTCContext_ExecuteList;
 	PLibMCDriver_ScanLabRTCContext_SetAutoChangePosPtr m_RTCContext_SetAutoChangePos;
+	PLibMCDriver_ScanLabRTCContext_SetDefocusFactorPtr m_RTCContext_SetDefocusFactor;
+	PLibMCDriver_ScanLabRTCContext_GetDefocusFactorPtr m_RTCContext_GetDefocusFactor;
 	PLibMCDriver_ScanLabRTCContext_SetDelaysPtr m_RTCContext_SetDelays;
 	PLibMCDriver_ScanLabRTCContext_SetLaserDelaysInMicrosecondsPtr m_RTCContext_SetLaserDelaysInMicroseconds;
 	PLibMCDriver_ScanLabRTCContext_SetLaserDelaysInBitsPtr m_RTCContext_SetLaserDelaysInBits;
