@@ -103,6 +103,8 @@ public:
 
 	bool SegmentProfileHasValue(const LibMCEnv_uint32 nIndex, const std::string& sNamespace, const std::string& sValueName) override;
 
+	LibMCEnv::eToolpathProfileModificationType GetSegmentProfileModificationType(const LibMCEnv_uint32 nSegmentIndex, const std::string& sNamespace, const std::string& sValueName) override;
+
 	std::string GetSegmentProfileValue(const LibMCEnv_uint32 nIndex, const std::string& sNamespace, const std::string& sValueName) override;
 
 	std::string GetSegmentProfileValueDef(const LibMCEnv_uint32 nIndex, const std::string& sNamespace, const std::string& sValueName, const std::string& sDefaultValue) override;
@@ -123,6 +125,8 @@ public:
 
 	LibMCEnv_double GetSegmentProfileTypedValueDef(const LibMCEnv_uint32 nIndex, const LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_double dDefaultValue) override;
 
+	LibMCEnv::eToolpathProfileModificationType GetSegmentProfileTypedModificationType(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileValueType eValueType) override;
+
 	void GetSegmentPointData(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer) override;
 
 	void GetSegmentHatchData(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sHatch2D* pHatchDataBuffer) override;
@@ -131,11 +135,9 @@ public:
 
 	void GetSegmentHatchDataInMM(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sFloatHatch2D* pHatchDataBuffer) override;
 
-	bool SegmentHasOverrideFactors(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor) override;
+	void GetSegmentLinearPolylineModifiers(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double* pModificationDataBuffer) override;
 
-	void GetSegmentPointOverrides(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, LibMCEnv_uint64 nOverrideDataBufferSize, LibMCEnv_uint64* pOverrideDataNeededCount, LibMCEnv_double* pOverrideDataBuffer) override;
-	
-	void GetSegmentHatchOverrides(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, LibMCEnv_uint64 nOverrideDataBufferSize, LibMCEnv_uint64* pOverrideDataNeededCount, LibMCEnv::sHatch2DOverrides* pOverrideDataBuffer) override;
+	void GetSegmentLinearHatchOverrides(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv::sHatch2DModificationFactors* pModificationDataBuffer) override;
 
 	LibMCEnv_int32 GetZValue() override;
 

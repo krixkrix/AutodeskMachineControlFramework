@@ -270,6 +270,8 @@
 		<error name="INVALIDJPEGSTREAMSIZE" code="10230" description="Invalid JPEG Stream size." />		
 		<error name="INVALIDJPEGCOLORCHANNELS" code="10231" description="Invalid JPEG Color channels." />		
 		<error name="COULDNOTLOADJPEGIMAGE" code="10232" description="Could not load JPEG Image." />		
+		<error name="SEGMENTISNOTOFTYPEPOLYLINEORLOOP" code="10233" description="Segment is not of type polyline or loop." />		
+		
 		
 		
 		
@@ -363,7 +365,14 @@
 		<option name="LaserFocus" value="13" />
 	</enum>
 	
-	<enum name="ToolpathProfileOverrideFactor">
+	<enum name="ToolpathProfileModificationType">
+		<option name="NoModification" value="0" />
+		<option name="ConstantModification" value="1" />
+		<option name="LinearModification" value="2" />
+		<option name="NonlinearModification" value="3" />
+	</enum>
+
+	<enum name="ToolpathProfileModificationFactor">
 		<option name="Unknown" value="0" />
 		<option name="FactorF" value="1" />
 		<option name="FactorG" value="2" />
@@ -439,9 +448,10 @@
 		<member name="Y2" type="double" />
 	</struct>
 
-	<struct name="Hatch2DOverrides">
-		<member name="Point1Override" type="double" />
-		<member name="Point2Override" type="double" />
+	<struct name="Hatch2DModificationFactors">
+		<member name="Point1Factor" type="double" description="Factor on the first point of the hatch" />
+		<member name="Point2Factor" type="double" description="Factor on the second point of the hatch"  />
+		<member name="NumberOfNonLinearInterpolationBases" type="uint32" description="Number of non-linear interpolation points on the hatch" />
 	</struct>	
 	
 	<struct name="ModelDataTransform">
@@ -1812,6 +1822,14 @@
 			<param name="HasValue" type="bool" pass="return" description="Returns true if value exist." />
 		</method>
 
+
+		<method name="GetSegmentProfileModificationType" description="Retrieves the type of variation that a profile has through its modifiers and modification factors.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
+			<param name="Namespace" type="string" pass="in" description="Namespace to query for." />
+			<param name="ValueName" type="string" pass="in" description="Value Name to query for." />
+			<param name="ModificationType" type="enum" class="ToolpathProfileModificationType" pass="return" description="Returns the profile modification type." />
+		</method>
+
 		<method name="GetSegmentProfileValue" description="Retrieves an assigned profile custom value. Fails if value does not exist.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="Namespace" type="string" pass="in" description="Namespace to query for." />
@@ -1886,6 +1904,12 @@
 			<param name="DefaultValue" type="double" pass="in" description="Default value if value does not exist." />
 			<param name="Value" type="double" pass="return" description="Double Value" />
 		</method>
+
+		<method name="GetSegmentProfileTypedModificationType" description="Retrieves the modification type of assigned profile value of a standard type. Fails if value does not exist or is not a double value.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
+			<param name="ValueType" type="enum" class="ToolpathProfileValueType" pass="in" description="Enum to query for. MUST NOT be custom." />
+			<param name="ModificationType" type="enum" class="ToolpathProfileModificationType" pass="return" description="Returns the profile modification type." />
+		</method>
 		
 		<method name="GetSegmentPartUUID" description="Retrieves the assigned segment part uuid.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
@@ -1916,24 +1940,19 @@
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="HatchData" type="structarray" class="FloatHatch2D" pass="out" description="The hatch data array. Positions are absolute in mm." />
 		</method>
+		
+		<method name="GetSegmentLinearPolylineModifiers" description="Retrieves factor overrides for a specific segment. Fails if segment type is not loop or polyline.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
+			<param name="ModificationFactorType" type="enum" class="ToolpathProfileModificationFactor" pass="in" description="Which override factor to return (F, G or H)." />
+			<param name="ModificationData" type="basicarray" class="double" pass="out" description="The override factor array. Will return as many override factors as points in the segment." />
+		</method>
+		
+		<method name="GetSegmentLinearHatchOverrides" description="Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
+			<param name="ModificationFactorType" type="enum" class="ToolpathProfileModificationFactor" pass="in" description="Which override factor to return (F, G or H)." />
+			<param name="ModificationData" type="structarray" class="Hatch2DModificationFactors" pass="out" description="The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point, as well as how many non-linear interpolation points are given for the hatch." />
+		</method>
 
-		<method name="SegmentHasOverrideFactors" description="Returns if a segment has override factors attached to its points.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
-			<param name="OverrideFactor" type="enum" class="ToolpathProfileOverrideFactor" pass="in" description="Which override factor to return (F, G or H)." />
-			<param name="HasOverrideFactors" type="bool" pass="return" description="Returns true if the Segment given has an override factor of a certain type." />
-		</method>
-		
-		<method name="GetSegmentPointOverrides" description="Retrieves factor overrides for a specific segment. For type hatch, the points are taken pairwise.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
-			<param name="OverrideFactor" type="enum" class="ToolpathProfileOverrideFactor" pass="in" description="Which override factor to return (F, G or H)." />
-			<param name="OverrideData" type="basicarray" class="double" pass="out" description="The override factor array. Will return as many override factors as points in the segment." />
-		</method>
-		
-		<method name="GetSegmentHatchOverrides" description="Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
-			<param name="OverrideFactor" type="enum" class="ToolpathProfileOverrideFactor" pass="in" description="Which override factor to return (F, G or H)." />
-			<param name="OverrideData" type="structarray" class="Hatch2DOverrides" pass="out" description="The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point." />
-		</method>
 
 		<method name="GetZValue" description="Retrieves the layers Z Value in units.">
 			<param name="ZValue" type="int32" pass="return" description="Z Value of the layer in units." />

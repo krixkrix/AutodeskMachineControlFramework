@@ -2754,6 +2754,18 @@ typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentProfileUUIDPtr) (LibMC
 typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_SegmentProfileHasValuePtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const char * pNamespace, const char * pValueName, bool * pHasValue);
 
 /**
+* Retrieves the type of variation that a profile has through its modifiers and modification factors.
+*
+* @param[in] pToolpathLayer - ToolpathLayer instance.
+* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+* @param[in] pNamespace - Namespace to query for.
+* @param[in] pValueName - Value Name to query for.
+* @param[out] pModificationType - Returns the profile modification type.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentProfileModificationTypePtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const char * pNamespace, const char * pValueName, LibMCEnv::eToolpathProfileModificationType * pModificationType);
+
+/**
 * Retrieves an assigned profile custom value. Fails if value does not exist.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
@@ -2881,6 +2893,17 @@ typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentProfileTypedValuePtr) 
 typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentProfileTypedValueDefPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, LibMCEnv_double dDefaultValue, LibMCEnv_double * pValue);
 
 /**
+* Retrieves the modification type of assigned profile value of a standard type. Fails if value does not exist or is not a double value.
+*
+* @param[in] pToolpathLayer - ToolpathLayer instance.
+* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+* @param[in] eValueType - Enum to query for. MUST NOT be custom.
+* @param[out] pModificationType - Returns the profile modification type.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentProfileTypedModificationTypePtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, LibMCEnv::eToolpathProfileModificationType * pModificationType);
+
+/**
 * Retrieves the assigned segment part uuid.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
@@ -2951,41 +2974,30 @@ typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentPointDataInMMPtr) (Lib
 typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentHatchDataInMMPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sFloatHatch2D * pHatchDataBuffer);
 
 /**
-* Returns if a segment has override factors attached to its points.
+* Retrieves factor overrides for a specific segment. Fails if segment type is not loop or polyline.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
 * @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-* @param[in] eOverrideFactor - Which override factor to return (F, G or H).
-* @param[out] pHasOverrideFactors - Returns true if the Segment given has an override factor of a certain type.
+* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
+* @param[in] nModificationDataBufferSize - Number of elements in buffer
+* @param[out] pModificationDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pModificationDataBuffer - double  buffer of The override factor array. Will return as many override factors as points in the segment.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_SegmentHasOverrideFactorsPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, bool * pHasOverrideFactors);
-
-/**
-* Retrieves factor overrides for a specific segment. For type hatch, the points are taken pairwise.
-*
-* @param[in] pToolpathLayer - ToolpathLayer instance.
-* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-* @param[in] eOverrideFactor - Which override factor to return (F, G or H).
-* @param[in] nOverrideDataBufferSize - Number of elements in buffer
-* @param[out] pOverrideDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pOverrideDataBuffer - double  buffer of The override factor array. Will return as many override factors as points in the segment.
-* @return error code or 0 (success)
-*/
-typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentPointOverridesPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, const LibMCEnv_uint64 nOverrideDataBufferSize, LibMCEnv_uint64* pOverrideDataNeededCount, LibMCEnv_double * pOverrideDataBuffer);
+typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentLinearPolylineModifiersPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, const LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double * pModificationDataBuffer);
 
 /**
 * Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
 * @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-* @param[in] eOverrideFactor - Which override factor to return (F, G or H).
-* @param[in] nOverrideDataBufferSize - Number of elements in buffer
-* @param[out] pOverrideDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pOverrideDataBuffer - Hatch2DOverrides  buffer of The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point.
+* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
+* @param[in] nModificationDataBufferSize - Number of elements in buffer
+* @param[out] pModificationDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pModificationDataBuffer - Hatch2DModificationFactors  buffer of The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point, as well as how many non-linear interpolation points are given for the hatch.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentHatchOverridesPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, const LibMCEnv_uint64 nOverrideDataBufferSize, LibMCEnv_uint64* pOverrideDataNeededCount, LibMCEnv::sHatch2DOverrides * pOverrideDataBuffer);
+typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentLinearHatchOverridesPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, const LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv::sHatch2DModificationFactors * pModificationDataBuffer);
 
 /**
 * Retrieves the layers Z Value in units.
@@ -9864,6 +9876,7 @@ typedef struct {
 	PLibMCEnvToolpathLayer_GetSegmentHatchCountPtr m_ToolpathLayer_GetSegmentHatchCount;
 	PLibMCEnvToolpathLayer_GetSegmentProfileUUIDPtr m_ToolpathLayer_GetSegmentProfileUUID;
 	PLibMCEnvToolpathLayer_SegmentProfileHasValuePtr m_ToolpathLayer_SegmentProfileHasValue;
+	PLibMCEnvToolpathLayer_GetSegmentProfileModificationTypePtr m_ToolpathLayer_GetSegmentProfileModificationType;
 	PLibMCEnvToolpathLayer_GetSegmentProfileValuePtr m_ToolpathLayer_GetSegmentProfileValue;
 	PLibMCEnvToolpathLayer_GetSegmentProfileValueDefPtr m_ToolpathLayer_GetSegmentProfileValueDef;
 	PLibMCEnvToolpathLayer_GetSegmentProfileDoubleValuePtr m_ToolpathLayer_GetSegmentProfileDoubleValue;
@@ -9874,15 +9887,15 @@ typedef struct {
 	PLibMCEnvToolpathLayer_GetSegmentProfileBoolValueDefPtr m_ToolpathLayer_GetSegmentProfileBoolValueDef;
 	PLibMCEnvToolpathLayer_GetSegmentProfileTypedValuePtr m_ToolpathLayer_GetSegmentProfileTypedValue;
 	PLibMCEnvToolpathLayer_GetSegmentProfileTypedValueDefPtr m_ToolpathLayer_GetSegmentProfileTypedValueDef;
+	PLibMCEnvToolpathLayer_GetSegmentProfileTypedModificationTypePtr m_ToolpathLayer_GetSegmentProfileTypedModificationType;
 	PLibMCEnvToolpathLayer_GetSegmentPartUUIDPtr m_ToolpathLayer_GetSegmentPartUUID;
 	PLibMCEnvToolpathLayer_GetSegmentLocalPartIDPtr m_ToolpathLayer_GetSegmentLocalPartID;
 	PLibMCEnvToolpathLayer_GetSegmentPointDataPtr m_ToolpathLayer_GetSegmentPointData;
 	PLibMCEnvToolpathLayer_GetSegmentHatchDataPtr m_ToolpathLayer_GetSegmentHatchData;
 	PLibMCEnvToolpathLayer_GetSegmentPointDataInMMPtr m_ToolpathLayer_GetSegmentPointDataInMM;
 	PLibMCEnvToolpathLayer_GetSegmentHatchDataInMMPtr m_ToolpathLayer_GetSegmentHatchDataInMM;
-	PLibMCEnvToolpathLayer_SegmentHasOverrideFactorsPtr m_ToolpathLayer_SegmentHasOverrideFactors;
-	PLibMCEnvToolpathLayer_GetSegmentPointOverridesPtr m_ToolpathLayer_GetSegmentPointOverrides;
-	PLibMCEnvToolpathLayer_GetSegmentHatchOverridesPtr m_ToolpathLayer_GetSegmentHatchOverrides;
+	PLibMCEnvToolpathLayer_GetSegmentLinearPolylineModifiersPtr m_ToolpathLayer_GetSegmentLinearPolylineModifiers;
+	PLibMCEnvToolpathLayer_GetSegmentLinearHatchOverridesPtr m_ToolpathLayer_GetSegmentLinearHatchOverrides;
 	PLibMCEnvToolpathLayer_GetZValuePtr m_ToolpathLayer_GetZValue;
 	PLibMCEnvToolpathLayer_GetZValueInMMPtr m_ToolpathLayer_GetZValueInMM;
 	PLibMCEnvToolpathLayer_GetUnitsPtr m_ToolpathLayer_GetUnits;

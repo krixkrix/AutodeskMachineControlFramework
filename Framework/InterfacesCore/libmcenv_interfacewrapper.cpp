@@ -7735,6 +7735,38 @@ LibMCEnvResult libmcenv_toolpathlayer_segmentprofilehasvalue(LibMCEnv_ToolpathLa
 	}
 }
 
+LibMCEnvResult libmcenv_toolpathlayer_getsegmentprofilemodificationtype(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const char * pNamespace, const char * pValueName, eLibMCEnvToolpathProfileModificationType * pModificationType)
+{
+	IBase* pIBaseClass = (IBase *)pToolpathLayer;
+
+	try {
+		if (pNamespace == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pValueName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pModificationType == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sNamespace(pNamespace);
+		std::string sValueName(pValueName);
+		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
+		if (!pIToolpathLayer)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pModificationType = pIToolpathLayer->GetSegmentProfileModificationType(nSegmentIndex, sNamespace, sValueName);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_toolpathlayer_getsegmentprofilevalue(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const char * pNamespace, const char * pValueName, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathLayer;
@@ -8090,6 +8122,32 @@ LibMCEnvResult libmcenv_toolpathlayer_getsegmentprofiletypedvaluedef(LibMCEnv_To
 	}
 }
 
+LibMCEnvResult libmcenv_toolpathlayer_getsegmentprofiletypedmodificationtype(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileValueType eValueType, eLibMCEnvToolpathProfileModificationType * pModificationType)
+{
+	IBase* pIBaseClass = (IBase *)pToolpathLayer;
+
+	try {
+		if (pModificationType == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
+		if (!pIToolpathLayer)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pModificationType = pIToolpathLayer->GetSegmentProfileTypedModificationType(nSegmentIndex, eValueType);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_toolpathlayer_getsegmentpartuuid(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint32 nPartUUIDBufferSize, LibMCEnv_uint32* pPartUUIDNeededChars, char * pPartUUIDBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathLayer;
@@ -8268,18 +8326,18 @@ LibMCEnvResult libmcenv_toolpathlayer_getsegmenthatchdatainmm(LibMCEnv_ToolpathL
 	}
 }
 
-LibMCEnvResult libmcenv_toolpathlayer_segmenthasoverridefactors(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileOverrideFactor eOverrideFactor, bool * pHasOverrideFactors)
+LibMCEnvResult libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileModificationFactor eModificationFactorType, const LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double * pModificationDataBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathLayer;
 
 	try {
-		if (pHasOverrideFactors == nullptr)
+		if ((!pModificationDataBuffer) && !(pModificationDataNeededCount))
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
 		if (!pIToolpathLayer)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pHasOverrideFactors = pIToolpathLayer->SegmentHasOverrideFactors(nSegmentIndex, eOverrideFactor);
+		pIToolpathLayer->GetSegmentLinearPolylineModifiers(nSegmentIndex, eModificationFactorType, nModificationDataBufferSize, pModificationDataNeededCount, pModificationDataBuffer);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -8294,44 +8352,18 @@ LibMCEnvResult libmcenv_toolpathlayer_segmenthasoverridefactors(LibMCEnv_Toolpat
 	}
 }
 
-LibMCEnvResult libmcenv_toolpathlayer_getsegmentpointoverrides(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileOverrideFactor eOverrideFactor, const LibMCEnv_uint64 nOverrideDataBufferSize, LibMCEnv_uint64* pOverrideDataNeededCount, LibMCEnv_double * pOverrideDataBuffer)
+LibMCEnvResult libmcenv_toolpathlayer_getsegmentlinearhatchoverrides(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileModificationFactor eModificationFactorType, const LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, sLibMCEnvHatch2DModificationFactors * pModificationDataBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathLayer;
 
 	try {
-		if ((!pOverrideDataBuffer) && !(pOverrideDataNeededCount))
+		if ((!pModificationDataBuffer) && !(pModificationDataNeededCount))
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
 		if (!pIToolpathLayer)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIToolpathLayer->GetSegmentPointOverrides(nSegmentIndex, eOverrideFactor, nOverrideDataBufferSize, pOverrideDataNeededCount, pOverrideDataBuffer);
-
-		return LIBMCENV_SUCCESS;
-	}
-	catch (ELibMCEnvInterfaceException & Exception) {
-		return handleLibMCEnvException(pIBaseClass, Exception);
-	}
-	catch (std::exception & StdException) {
-		return handleStdException(pIBaseClass, StdException);
-	}
-	catch (...) {
-		return handleUnhandledException(pIBaseClass);
-	}
-}
-
-LibMCEnvResult libmcenv_toolpathlayer_getsegmenthatchoverrides(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileOverrideFactor eOverrideFactor, const LibMCEnv_uint64 nOverrideDataBufferSize, LibMCEnv_uint64* pOverrideDataNeededCount, sLibMCEnvHatch2DOverrides * pOverrideDataBuffer)
-{
-	IBase* pIBaseClass = (IBase *)pToolpathLayer;
-
-	try {
-		if ((!pOverrideDataBuffer) && !(pOverrideDataNeededCount))
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
-		if (!pIToolpathLayer)
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
-		
-		pIToolpathLayer->GetSegmentHatchOverrides(nSegmentIndex, eOverrideFactor, nOverrideDataBufferSize, pOverrideDataNeededCount, pOverrideDataBuffer);
+		pIToolpathLayer->GetSegmentLinearHatchOverrides(nSegmentIndex, eModificationFactorType, nModificationDataBufferSize, pModificationDataNeededCount, pModificationDataBuffer);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -29287,6 +29319,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentprofileuuid;
 	if (sProcName == "libmcenv_toolpathlayer_segmentprofilehasvalue") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_segmentprofilehasvalue;
+	if (sProcName == "libmcenv_toolpathlayer_getsegmentprofilemodificationtype") 
+		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentprofilemodificationtype;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmentprofilevalue") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentprofilevalue;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmentprofilevaluedef") 
@@ -29307,6 +29341,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentprofiletypedvalue;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmentprofiletypedvaluedef") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentprofiletypedvaluedef;
+	if (sProcName == "libmcenv_toolpathlayer_getsegmentprofiletypedmodificationtype") 
+		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentprofiletypedmodificationtype;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmentpartuuid") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentpartuuid;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmentlocalpartid") 
@@ -29319,12 +29355,10 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentpointdatainmm;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmenthatchdatainmm") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmenthatchdatainmm;
-	if (sProcName == "libmcenv_toolpathlayer_segmenthasoverridefactors") 
-		*ppProcAddress = (void*) &libmcenv_toolpathlayer_segmenthasoverridefactors;
-	if (sProcName == "libmcenv_toolpathlayer_getsegmentpointoverrides") 
-		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentpointoverrides;
-	if (sProcName == "libmcenv_toolpathlayer_getsegmenthatchoverrides") 
-		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmenthatchoverrides;
+	if (sProcName == "libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers") 
+		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers;
+	if (sProcName == "libmcenv_toolpathlayer_getsegmentlinearhatchoverrides") 
+		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmentlinearhatchoverrides;
 	if (sProcName == "libmcenv_toolpathlayer_getzvalue") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getzvalue;
 	if (sProcName == "libmcenv_toolpathlayer_getzvalueinmm") 

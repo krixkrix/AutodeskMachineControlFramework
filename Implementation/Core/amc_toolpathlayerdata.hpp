@@ -63,6 +63,7 @@ namespace AMC {
 	} sToolpathLayerSegment;
 
 	typedef struct _sToolpathLayerOverride {
+		uint32_t m_nSubInterpolationCount;
 		double m_dFactors[3]; // F, G and H
 	} sToolpathLayerOverride;
 
@@ -187,11 +188,11 @@ namespace AMC {
 
 		void calculateExtents(int32_t & nMinX, int32_t & nMinY, int32_t & nMaxX, int32_t & nMaxY);
 
-		bool segmentHasOverrideFactors(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor);
+		bool segmentHasOverrideFactors(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor);
 
-		void storePointOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, double * pOverrideData);
+		void storePointOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, double * pOverrideData);
 
-		void storeHatchOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, LibMCEnv::sHatch2DOverrides* pOverrideData);
+		void storeHatchOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, LibMCEnv::sHatch2DModificationFactors* pOverrideData);
 
 		static std::string getValueNameByType(const LibMCEnv::eToolpathProfileValueType eValueType);
 

@@ -270,8 +270,12 @@ namespace AMC {
 						if (pSegment->m_Type == LibMCEnv::eToolpathSegmentType::Hatch) {
 							pSegment->m_HasOverrideFactors |= factorFlag;
 
+							std::vector<uint32_t> nonLinearCounts;
+							std::vector<Lib3MF::sHatchOverrideInterpolationData> nonLinearValues;
+
 							std::vector<Lib3MF::sHatch2DOverrides> hatchOverrides;
 							p3MFLayer->GetLinearSegmentHatchOverrideFactors(nSegmentIndex, factorType, hatchOverrides);
+							p3MFLayer->GetSegmentAllNonlinearHatchesOverrideInterpolation(nSegmentIndex, factorType, nonLinearCounts, nonLinearValues);
 
 							if ((uint32_t)(hatchOverrides.size() * 2) != pSegment->m_PointCount)
 								throw ELibMCCustomException(LIBMC_ERROR_INVALIDHATCHOVERRIDECOUNT, m_sDebugName);
@@ -280,9 +284,13 @@ namespace AMC {
 							auto pDstOverride = &m_OverrideFactors.at(pSegment->m_PointStartIndex);
 
 							for (uint32_t nHatchIndex = 0; nHatchIndex < hatchOverrides.size(); nHatchIndex++) {
+								uint32_t nSubInterpolationCount = nonLinearCounts.at(nHatchIndex);
+
 								pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point1Override;
+								pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
 								pDstOverride++;
 								pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point2Override;
+								pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
 								pDstOverride++;
 								pSrcOverride++;
 
@@ -684,18 +692,18 @@ namespace AMC {
 
 	}
 
-	bool CToolpathLayerData::segmentHasOverrideFactors(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor)
+	bool CToolpathLayerData::segmentHasOverrideFactors(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor)
 	{
 		if (nSegmentIndex >= m_Segments.size())
 			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSEGMENTINDEX, m_sDebugName);
 
 		auto pSegment = &m_Segments[nSegmentIndex];
 		switch (eOverrideFactor) {
-		case LibMCEnv::eToolpathProfileOverrideFactor::FactorF:
+		case LibMCEnv::eToolpathProfileModificationFactor::FactorF:
 			return (pSegment->m_HasOverrideFactors | TOOLPATHSEGMENTOVERRIDEFACTOR_F) != 0;
-		case LibMCEnv::eToolpathProfileOverrideFactor::FactorG:
+		case LibMCEnv::eToolpathProfileModificationFactor::FactorG:
 			return (pSegment->m_HasOverrideFactors | TOOLPATHSEGMENTOVERRIDEFACTOR_G) != 0;
-		case LibMCEnv::eToolpathProfileOverrideFactor::FactorH:
+		case LibMCEnv::eToolpathProfileModificationFactor::FactorH:
 			return (pSegment->m_HasOverrideFactors | TOOLPATHSEGMENTOVERRIDEFACTOR_H) != 0;
 
 		default:
@@ -703,7 +711,7 @@ namespace AMC {
 		}
 	}
 
-	void CToolpathLayerData::storePointOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, double* pOverrideData)
+	void CToolpathLayerData::storePointOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, double* pOverrideData)
 	{
 		if (nSegmentIndex >= m_Segments.size())
 			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSEGMENTINDEX, m_sDebugName);
@@ -715,15 +723,15 @@ namespace AMC {
 
 			uint32_t nFactorIndex = 0;
 			switch (eOverrideFactor) {
-				case LibMCEnv::eToolpathProfileOverrideFactor::FactorF: {
+				case LibMCEnv::eToolpathProfileModificationFactor::FactorF: {
 					nFactorIndex = 0;
 					break;
 				}
-				case LibMCEnv::eToolpathProfileOverrideFactor::FactorG: {
+				case LibMCEnv::eToolpathProfileModificationFactor::FactorG: {
 					nFactorIndex = 1;
 					break;
 				}
-				case LibMCEnv::eToolpathProfileOverrideFactor::FactorH: {
+				case LibMCEnv::eToolpathProfileModificationFactor::FactorH: {
 					nFactorIndex = 2;
 					break;
 				}
@@ -742,7 +750,7 @@ namespace AMC {
 	}
 
 
-	void CToolpathLayerData::storeHatchOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor eOverrideFactor, LibMCEnv::sHatch2DOverrides* pOverrideData)
+	void CToolpathLayerData::storeHatchOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, LibMCEnv::sHatch2DModificationFactors* pOverrideData)
 	{
 		if (nSegmentIndex >= m_Segments.size())
 			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSEGMENTINDEX, m_sDebugName);
@@ -755,15 +763,15 @@ namespace AMC {
 
 			uint32_t nFactorIndex = 0;
 			switch (eOverrideFactor) {
-			case LibMCEnv::eToolpathProfileOverrideFactor::FactorF: {
+			case LibMCEnv::eToolpathProfileModificationFactor::FactorF: {
 				nFactorIndex = 0;
 				break;
 			}
-			case LibMCEnv::eToolpathProfileOverrideFactor::FactorG: {
+			case LibMCEnv::eToolpathProfileModificationFactor::FactorG: {
 				nFactorIndex = 1;
 				break;
 			}
-			case LibMCEnv::eToolpathProfileOverrideFactor::FactorH: {
+			case LibMCEnv::eToolpathProfileModificationFactor::FactorH: {
 				nFactorIndex = 2;
 				break;
 			}
@@ -776,8 +784,9 @@ namespace AMC {
 			for (uint32_t nHatchIndex = 0; nHatchIndex < nHatchCount; nHatchIndex++) {
 				auto& overrideFactor1 = m_OverrideFactors.at(nStartIndex + nHatchIndex * 2);
 				auto& overrideFactor2 = m_OverrideFactors.at(nStartIndex + nHatchIndex * 2 + 1);
-				pTarget->m_Point1Override = overrideFactor1.m_dFactors[nFactorIndex];
-				pTarget->m_Point2Override = overrideFactor2.m_dFactors[nFactorIndex];
+				pTarget->m_Point1Factor = overrideFactor1.m_dFactors[nFactorIndex];
+				pTarget->m_Point2Factor = overrideFactor2.m_dFactors[nFactorIndex];
+				pTarget->m_NumberOfNonLinearInterpolationBases = overrideFactor1.m_nSubInterpolationCount;
 				pTarget++;
 			}
 
