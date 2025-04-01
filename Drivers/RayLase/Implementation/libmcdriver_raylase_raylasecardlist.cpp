@@ -264,7 +264,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 
                 std::vector<double> FactorOverrides;
                 if (bSegmentHasPowerPerVector) {
-                    pLayer->GetSegmentPointOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor::FactorF, FactorOverrides);
+                    pLayer->GetSegmentLinearPolylineModifiers(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
                 }
 
                 if (nPointCount != PointsInMM.size())
@@ -312,9 +312,9 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPOINTCOUNT);
 
                 std::vector<LibMCEnv::sFloatHatch2D> HatchesInMM;
-                std::vector<LibMCEnv::sHatch2DOverrides> FactorOverrides;
+                std::vector<LibMCEnv::sHatch2DModificationFactors> FactorOverrides;
                 if (bSegmentHasPowerPerVector) {
-                    pLayer->GetSegmentHatchOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor::FactorF, FactorOverrides);
+                    pLayer->GetSegmentLinearHatchOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
                 }
 
                 uint64_t nHatchCount = nPointCount / 2;
