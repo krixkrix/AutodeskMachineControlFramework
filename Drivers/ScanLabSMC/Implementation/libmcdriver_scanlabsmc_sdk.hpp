@@ -90,6 +90,23 @@ namespace LibMCDriver_ScanLabSMC {
 			uint32_t m_nRevision;
 		};
 
+
+		struct _slsc_ParaSection
+		{
+			double m_dS;
+			double m_dParaTargetFactor;
+		};
+
+		typedef struct _slsc_ParaSection slsc_ParaSection;
+
+		struct _slsc_MultiParaTarget
+		{
+			slsc_ParaSection* m_pTargets;
+			size_t m_nNumTargets;
+		};
+
+		typedef struct _slsc_MultiParaTarget slsc_MultiParaTarget;
+
 		enum class slsc_ExecState : int32_t
 		{
 			slsc_ExecState_Idle = 0, 
@@ -175,6 +192,11 @@ namespace LibMCDriver_ScanLabSMC {
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_begin_polyline) (size_t Handle, const slsc_PolylineOptions Options);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_slsc_job_end_polyline) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_line) (size_t Handle, const double* Target);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_para_enable) (size_t Handle, double * dParaTargetDefault);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_para_disable) (size_t Handle);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_para_line) (size_t Handle, const double* Target, const double * ParaTarget);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_multi_para_line) (size_t Handle, const double* Target, const slsc_MultiParaTarget* pParaTarget);
+
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_start_execution) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_stop) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_stop_controlled) (size_t Handle);
@@ -244,6 +266,10 @@ namespace LibMCDriver_ScanLabSMC {
 			PScanLabSMCPtr_slsc_ctrl_get_job_characteristic slsc_ctrl_get_job_characteristic = nullptr;
 			PScanLabSMCPtr_slsc_cfg_get_blend_mode slsc_cfg_get_blend_mode = nullptr;
 			PScanLabSMCPtr_slsc_cfg_set_blend_mode slsc_cfg_set_blend_mode = nullptr;
+			PScanLabSMCPtr_slsc_job_para_enable slsc_job_para_enable = nullptr;
+			PScanLabSMCPtr_slsc_job_para_disable slsc_job_para_disable = nullptr;
+			PScanLabSMCPtr_slsc_job_para_line slsc_job_para_line = nullptr;
+			PScanLabSMCPtr_slsc_job_multi_para_line slsc_job_multi_para_line = nullptr;
 
 			CScanLabSMCSDK(const std::string & sDLLNameUTF8, const std::string& sDLLDirectoryUTF8);
 			~CScanLabSMCSDK();

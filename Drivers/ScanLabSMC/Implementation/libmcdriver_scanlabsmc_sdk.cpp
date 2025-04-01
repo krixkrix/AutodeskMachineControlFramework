@@ -144,6 +144,12 @@ CScanLabSMCSDK::CScanLabSMCSDK(const std::string& sDLLNameUTF8, const std::strin
 	this->slsc_job_begin_polyline = (PScanLabSMCPtr_slsc_job_begin_polyline)_loadScanLabSMCAddress(hLibrary, "slsc_job_begin_polyline");
 	this->slsc_job_end_polyline = (PScanLabSMCPtr_slsc_slsc_job_end_polyline)_loadScanLabSMCAddress(hLibrary, "slsc_job_end_polyline");
 	this->slsc_job_line = (PScanLabSMCPtr_slsc_job_line)_loadScanLabSMCAddress(hLibrary, "slsc_job_line");
+
+	this->slsc_job_para_enable = (PScanLabSMCPtr_slsc_job_para_enable)_loadScanLabSMCAddress(hLibrary, "slsc_job_para_enable");
+	this->slsc_job_para_disable = (PScanLabSMCPtr_slsc_job_para_disable)_loadScanLabSMCAddress(hLibrary, "slsc_job_para_disable");
+	this->slsc_job_para_line = (PScanLabSMCPtr_slsc_job_para_line)_loadScanLabSMCAddress(hLibrary, "slsc_job_para_line");
+	this->slsc_job_multi_para_line = (PScanLabSMCPtr_slsc_job_multi_para_line)_loadScanLabSMCAddress(hLibrary, "slsc_job_multi_para_line");
+
 	this->slsc_ctrl_start_execution = (PScanLabSMCPtr_slsc_ctrl_start_execution)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_start_execution");
 	this->slsc_ctrl_stop = (PScanLabSMCPtr_slsc_ctrl_stop)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_stop");
 	this->slsc_ctrl_stop_controlled = (PScanLabSMCPtr_slsc_ctrl_stop_controlled)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_stop_controlled");
@@ -254,6 +260,11 @@ void CScanLabSMCSDK::resetFunctionPtrs()
 	slsc_job_begin_polyline = nullptr;
 	slsc_job_end_polyline = nullptr;
 	slsc_job_line = nullptr;
+	slsc_job_para_enable = nullptr;
+	slsc_job_para_disable = nullptr;
+	slsc_job_para_line = nullptr;
+	slsc_job_multi_para_line = nullptr;
+
 	slsc_ctrl_start_execution = nullptr;
 	slsc_ctrl_stop = nullptr;
 	slsc_ctrl_stop_controlled = nullptr;
