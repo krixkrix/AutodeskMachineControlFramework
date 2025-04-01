@@ -251,69 +251,75 @@ namespace AMC {
 
 				for (uint32_t nFactorIndex = 0; nFactorIndex < 3; nFactorIndex++) {
 
-					Lib3MF::eToolpathProfileOverrideFactor factorType = Lib3MF::eToolpathProfileOverrideFactor::Unknown;
+					Lib3MF::eToolpathProfileModificationFactor factorType = Lib3MF::eToolpathProfileModificationFactor::Unknown;
 					uint32_t factorFlag = 0;
 					switch (nFactorIndex) {
-						case 0: factorType = Lib3MF::eToolpathProfileOverrideFactor::FactorF;
+						case 0: factorType = Lib3MF::eToolpathProfileModificationFactor::FactorF;
 							factorFlag = TOOLPATHSEGMENTOVERRIDEFACTOR_F;
 							break;
-						case 1: factorType = Lib3MF::eToolpathProfileOverrideFactor::FactorG;
+						case 1: factorType = Lib3MF::eToolpathProfileModificationFactor::FactorG;
 							factorFlag = TOOLPATHSEGMENTOVERRIDEFACTOR_G;
 							break;
-						case 2: factorType = Lib3MF::eToolpathProfileOverrideFactor::FactorH;
+						case 2: factorType = Lib3MF::eToolpathProfileModificationFactor::FactorH;
 							factorFlag = TOOLPATHSEGMENTOVERRIDEFACTOR_H;
 							break;
 					}
 
-					if (p3MFLayer->SegmentHasOverrideFactors(nSegmentIndex, factorType)) {
+					if (p3MFLayer->SegmentHasModificationFactors(nSegmentIndex, factorType)) {
 
 						if (pSegment->m_Type == LibMCEnv::eToolpathSegmentType::Hatch) {
 							pSegment->m_HasOverrideFactors |= factorFlag;
 
 							std::vector<uint32_t> nonLinearCounts;
-							std::vector<Lib3MF::sHatchOverrideInterpolationData> nonLinearValues;
+							std::vector<Lib3MF::sHatchModificationInterpolationData> nonLinearValues;
 
-							std::vector<Lib3MF::sHatch2DOverrides> hatchOverrides;
-							p3MFLayer->GetLinearSegmentHatchOverrideFactors(nSegmentIndex, factorType, hatchOverrides);
-							p3MFLayer->GetSegmentAllNonlinearHatchesOverrideInterpolation(nSegmentIndex, factorType, nonLinearCounts, nonLinearValues);
+							std::vector<Lib3MF::sHatch2DFactors> hatchFactors;
+							p3MFLayer->GetLinearSegmentHatchModificationFactors(nSegmentIndex, factorType, hatchFactors);
+							p3MFLayer->GetSegmentAllNonlinearHatchesModificationInterpolation(nSegmentIndex, factorType, nonLinearCounts, nonLinearValues);
 
-							if ((uint32_t)(hatchOverrides.size() * 2) != pSegment->m_PointCount)
+							if ((uint32_t)(hatchFactors.size() * 2) != pSegment->m_PointCount)
 								throw ELibMCCustomException(LIBMC_ERROR_INVALIDHATCHOVERRIDECOUNT, m_sDebugName);
 
-							auto pSrcOverride = &hatchOverrides[0];
-							auto pDstOverride = &m_OverrideFactors.at(pSegment->m_PointStartIndex);
+							if (hatchFactors.size() > 0) {
 
-							for (uint32_t nHatchIndex = 0; nHatchIndex < hatchOverrides.size(); nHatchIndex++) {
-								uint32_t nSubInterpolationCount = nonLinearCounts.at(nHatchIndex);
+								auto pSrcOverride = &hatchFactors[0];
+								auto pDstOverride = &m_OverrideFactors.at(pSegment->m_PointStartIndex);
 
-								pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point1Override;
-								pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
-								pDstOverride++;
-								pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point2Override;
-								pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
-								pDstOverride++;
-								pSrcOverride++;
+								for (uint32_t nHatchIndex = 0; nHatchIndex < hatchFactors.size(); nHatchIndex++) {
+									uint32_t nSubInterpolationCount = nonLinearCounts.at(nHatchIndex);
 
+									pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point1Factor;
+									pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
+									pDstOverride++;
+									pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point2Factor;
+									pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
+									pDstOverride++;
+									pSrcOverride++;
+
+								}
 							}
 						}
 
 						if ((pSegment->m_Type == LibMCEnv::eToolpathSegmentType::Loop) || (pSegment->m_Type == LibMCEnv::eToolpathSegmentType::Polyline)) {
 							pSegment->m_HasOverrideFactors |= factorFlag;
 
-							std::vector<double> pointOverrides;
-							p3MFLayer->GetSegmentPointOverrideFactors(nSegmentIndex, factorType, pointOverrides);
+							std::vector<double> pointFactors;
+							p3MFLayer->GetSegmentPointModificationFactors(nSegmentIndex, factorType, pointFactors);
 
-							if ((uint32_t)pointOverrides.size() != pSegment->m_PointCount)
+							if ((uint32_t)pointFactors.size() != pSegment->m_PointCount)
 								throw ELibMCCustomException(LIBMC_ERROR_INVALIDPOINTOVERRIDECOUNT, m_sDebugName);
 
-							auto pSrcOverride = &pointOverrides[0];
-							auto pDstOverride = &m_OverrideFactors.at(pSegment->m_PointStartIndex);
+							if (pointFactors.size() > 0) {
 
-							for (uint32_t nPointIndex = 0; nPointIndex < pSegment->m_PointCount; nPointIndex++) {
-								pDstOverride->m_dFactors[nFactorIndex] = *pSrcOverride;
-								pSrcOverride++;
-								pDstOverride++;
+								auto pSrcOverride = &pointFactors[0];
+								auto pDstOverride = &m_OverrideFactors.at(pSegment->m_PointStartIndex);
 
+								for (uint32_t nPointIndex = 0; nPointIndex < pSegment->m_PointCount; nPointIndex++) {
+									pDstOverride->m_dFactors[nFactorIndex] = *pSrcOverride;
+									pSrcOverride++;
+									pDstOverride++;
+
+								}
 							}
 
 						}
