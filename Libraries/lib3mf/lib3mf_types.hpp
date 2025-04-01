@@ -519,11 +519,18 @@ namespace Lib3MF {
     Double = 2
   };
   
-  enum class eToolpathProfileOverrideFactor : Lib3MF_int32 {
+  enum class eToolpathProfileModificationFactor : Lib3MF_int32 {
     Unknown = 0,
     FactorF = 1,
     FactorG = 2,
     FactorH = 3
+  };
+  
+  enum class eToolpathProfileModificationType : Lib3MF_int32 {
+    NoModification = 0,
+    ConstantModification = 1,
+    LinearModification = 2,
+    NonlinearModification = 3
   };
   
   enum class eCompositionMethod : Lib3MF_int32 {
@@ -675,20 +682,15 @@ namespace Lib3MF {
       Lib3MF_int32 m_Tag;
   } sHatch2D;
   
-  typedef struct sHatch2DOverrides {
-      Lib3MF_double m_Point1Override;
-      Lib3MF_double m_Point2Override;
-  } sHatch2DOverrides;
+  typedef struct sHatch2DFactors {
+      Lib3MF_double m_Point1Factor;
+      Lib3MF_double m_Point2Factor;
+  } sHatch2DFactors;
   
-  typedef struct sHatchOverrideInterpolationIndices {
-      Lib3MF_uint32 m_StartIndex;
-      Lib3MF_uint32 m_ValueCount;
-  } sHatchOverrideInterpolationIndices;
-  
-  typedef struct sHatchOverrideInterpolationData {
+  typedef struct sHatchModificationInterpolationData {
       Lib3MF_double m_Parameter;
-      Lib3MF_double m_Override;
-  } sHatchOverrideInterpolationData;
+      Lib3MF_double m_Factor;
+  } sHatchModificationInterpolationData;
   
   typedef struct sDiscreteHatch2D {
       Lib3MF_int32 m_Point1Coordinates[2];
@@ -846,7 +848,8 @@ typedef Lib3MF::eBlendMethod eLib3MFBlendMethod;
 typedef Lib3MF::eToolpathSegmentType eLib3MFToolpathSegmentType;
 typedef Lib3MF::eChannelName eLib3MFChannelName;
 typedef Lib3MF::eToolpathAttributeType eLib3MFToolpathAttributeType;
-typedef Lib3MF::eToolpathProfileOverrideFactor eLib3MFToolpathProfileOverrideFactor;
+typedef Lib3MF::eToolpathProfileModificationFactor eLib3MFToolpathProfileModificationFactor;
+typedef Lib3MF::eToolpathProfileModificationType eLib3MFToolpathProfileModificationType;
 typedef Lib3MF::eCompositionMethod eLib3MFCompositionMethod;
 typedef Lib3MF::eCompositionSpace eLib3MFCompositionSpace;
 typedef Lib3MF::eImplicitNodeType eLib3MFImplicitNodeType;
@@ -863,9 +866,8 @@ typedef Lib3MF::sPosition sLib3MFPosition;
 typedef Lib3MF::sPosition2D sLib3MFPosition2D;
 typedef Lib3MF::sDiscretePosition2D sLib3MFDiscretePosition2D;
 typedef Lib3MF::sHatch2D sLib3MFHatch2D;
-typedef Lib3MF::sHatch2DOverrides sLib3MFHatch2DOverrides;
-typedef Lib3MF::sHatchOverrideInterpolationIndices sLib3MFHatchOverrideInterpolationIndices;
-typedef Lib3MF::sHatchOverrideInterpolationData sLib3MFHatchOverrideInterpolationData;
+typedef Lib3MF::sHatch2DFactors sLib3MFHatch2DFactors;
+typedef Lib3MF::sHatchModificationInterpolationData sLib3MFHatchModificationInterpolationData;
 typedef Lib3MF::sDiscreteHatch2D sLib3MFDiscreteHatch2D;
 typedef Lib3MF::sCompositeConstituent sLib3MFCompositeConstituent;
 typedef Lib3MF::sMultiPropertyLayer sLib3MFMultiPropertyLayer;
