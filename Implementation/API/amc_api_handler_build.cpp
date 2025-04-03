@@ -197,9 +197,6 @@ void CAPIHandler_Build::handleToolpathRequest(CJSONWriter& writer, const uint8_t
 					case LibMCEnv::eToolpathSegmentType::Hatch:
 						segmentObject.addString(AMC_API_KEY_TYPE, AMC_API_KEY_HATCH);
 						break;
-					case LibMCEnv::eToolpathSegmentType::Loop:
-						segmentObject.addString(AMC_API_KEY_TYPE, AMC_API_KEY_LOOP);
-						break;
 					case LibMCEnv::eToolpathSegmentType::Polyline:
 						segmentObject.addString(AMC_API_KEY_TYPE, AMC_API_KEY_POLYLINE);
 						break;

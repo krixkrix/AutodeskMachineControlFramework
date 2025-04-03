@@ -668,7 +668,14 @@ void COIEDeviceInstance::onPacketEvent(oie_device device, const oie_pkt* pkt)
 				// Second uint32 of packet is measurement tag...
 				uint32_t* pMeasurementTag = (pPacketNumber + 1); 
 
+				/*if (*pPacketNumber > 4193900) {
+					std::cout << "Measurement tag" << *pMeasurementTag << " at packet ID " << *pPacketNumber << std::endl;
+				}*/
+
 				m_pCurrentDataRecording->startRecord(*pPacketNumber, *pMeasurementTag, dX, dY);
+				/*if (n_LastReceivedMeasurementTag != *pMeasurementTag) {
+					std::cout << "New Measurement tag" << *pMeasurementTag << " at packet ID " << *pPacketNumber << std::endl;
+				}*/
 				n_LastReceivedMeasurementTag = *pMeasurementTag;
 
 				// Record sensor values first.

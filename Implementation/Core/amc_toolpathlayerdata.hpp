@@ -52,6 +52,7 @@ namespace AMC {
 
 	typedef struct _sToolpathLayerSegment {
 		LibMCEnv::eToolpathSegmentType m_Type;
+		uint32_t m_3MFSegmentIndex;
 		uint32_t m_PointStartIndex;
 		uint32_t m_PointCount;
 		uint32_t m_ProfileUUID;
@@ -91,6 +92,28 @@ namespace AMC {
 	typedef std::shared_ptr<CToolpathCustomSegmentAttribute> PToolpathCustomSegmentAttribute;
 
 
+	class CToolpathLayerProfileModifier {
+	private:
+		LibMCEnv::eToolpathProfileModificationType m_ModificationType;
+		LibMCEnv::eToolpathProfileModificationFactor m_ModificationFactor;
+		double m_dMinValue;
+		double m_dMaxValue;
+
+	public:
+		CToolpathLayerProfileModifier(LibMCEnv::eToolpathProfileModificationType modificationType, LibMCEnv::eToolpathProfileModificationFactor modificationFactor, double dMinValue, double dMaxValue);
+
+		virtual ~CToolpathLayerProfileModifier();
+
+		LibMCEnv::eToolpathProfileModificationType getModificationType ();
+
+		LibMCEnv::eToolpathProfileModificationFactor getModificationFactor ();
+
+		double getMinValue ();
+
+		double getMaxValue ();
+
+	};
+
 
 	class CToolpathLayerProfile {
 		private:
@@ -98,6 +121,7 @@ namespace AMC {
 			std::string m_sUUID;
 			std::string m_sName;
 			std::map<std::pair<std::string, std::string>, std::string> m_ProfileValues;
+			std::map<std::pair<std::string, std::string>, CToolpathLayerProfileModifier> m_ProfileModifiers;
 
 		public:
 
@@ -107,6 +131,7 @@ namespace AMC {
 			std::string getUUID();
 			std::string getName();
 			void addValue(const std::string & sNameSpace, const std::string & sValueName, const std::string & sValue);
+			void addModifier(const std::string& sNameSpace, const std::string& sValueName, LibMCEnv::eToolpathProfileModificationType modificationType, LibMCEnv::eToolpathProfileModificationFactor modificationFactor, double dMinValue, double dMaxValue);
 
 			bool hasValue(const std::string& sNameSpace, const std::string& sValueName);
 			std::string getValue(const std::string& sNameSpace, const std::string& sValueName);
@@ -117,6 +142,9 @@ namespace AMC {
 			int64_t getIntegerValueDef(const std::string& sNameSpace, const std::string& sValueName, int64_t nDefaultValue);
 
 			uint32_t getProfileIndex();
+
+			LibMCEnv::eToolpathProfileModificationType getModificationType(const std::string& sNameSpace, const std::string& sValueName);
+			void getModificationInformation (const std::string& sNameSpace, const std::string& sValueName, LibMCEnv::eToolpathProfileModificationFactor & modificationFactor, double & dMinValue, double & dMaxValue);
 	};
 
 	typedef std::shared_ptr<CToolpathLayerProfile> PToolpathLayerProfile;
@@ -190,9 +218,11 @@ namespace AMC {
 
 		bool segmentHasOverrideFactors(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor);
 
-		void storePointOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, double * pOverrideData);
+		//void storePointOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, double * pOverrideData);
 
-		void storeHatchOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, LibMCEnv::sHatch2DModificationFactors* pOverrideData);
+		//void storeHatchOverrides(uint32_t nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eOverrideFactor, LibMCEnv::sHatch2DModificationFactors* pOverrideData);
+
+		void getHatchModificationFactors (uint32_t nSegmentIndex, uint32_t nHatchIndex, LibMCEnv::eToolpathProfileModificationFactor eModificationFactor, double & dFactor1, double & dFactor2);
 
 		static std::string getValueNameByType(const LibMCEnv::eToolpathProfileValueType eValueType);
 

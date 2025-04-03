@@ -73,10 +73,6 @@ LibMCEnv::eToolpathSegmentType CToolpathLayer::GetSegmentType(const LibMCEnv_uin
 	return m_pToolpathLayerData->getSegmentType(nIndex);
 }
 
-bool CToolpathLayer::SegmentIsLoop(const LibMCEnv_uint32 nIndex)
-{
-	return (m_pToolpathLayerData->getSegmentType(nIndex) == LibMCEnv::eToolpathSegmentType::Loop);
-}
 
 bool CToolpathLayer::SegmentIsPolyline(const LibMCEnv_uint32 nIndex)
 {
@@ -89,7 +85,7 @@ bool CToolpathLayer::SegmentIsHatchSegment(const LibMCEnv_uint32 nIndex)
 }
 
 
-LibMCEnv_uint32 CToolpathLayer::GetSegmentPointCount(const LibMCEnv_uint32 nIndex)
+LibMCEnv_uint32 CToolpathLayer::GetSegmentPolylinePointCount(const LibMCEnv_uint32 nIndex)
 {
 	return m_pToolpathLayerData->getSegmentPointCount(nIndex);
 }
@@ -186,7 +182,8 @@ bool CToolpathLayer::SegmentProfileHasValue(const LibMCEnv_uint32 nIndex, const 
 
 LibMCEnv::eToolpathProfileModificationType CToolpathLayer::GetSegmentProfileModificationType(const LibMCEnv_uint32 nSegmentIndex, const std::string& sNamespace, const std::string& sValueName)
 {
-	return LibMCEnv::eToolpathProfileModificationType::Constant;
+	auto pProfile = m_pToolpathLayerData->getSegmentProfile(nSegmentIndex);
+	return pProfile->getModificationType(sNamespace, sValueName);
 }
 
 std::string CToolpathLayer::GetSegmentProfileValue(const LibMCEnv_uint32 nIndex, const std::string& sNamespace, const std::string& sValueName) 
@@ -292,7 +289,7 @@ LibMCEnv::eToolpathProfileModificationType CToolpathLayer::GetSegmentProfileType
 }
 
 
-void CToolpathLayer::GetSegmentPointData(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer)
+void CToolpathLayer::GetSegmentPolylineData(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer)
 {
 
 	uint64_t nNeededPointCount = m_pToolpathLayerData->getSegmentPointCount(nIndex);
@@ -333,7 +330,7 @@ void CToolpathLayer::GetSegmentHatchData(const LibMCEnv_uint32 nIndex, LibMCEnv_
 
 }
 
-void CToolpathLayer::GetSegmentPointDataInMM(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sFloatPosition2D* pPointDataBuffer)
+void CToolpathLayer::GetSegmentPolylineDataInMM(const LibMCEnv_uint32 nIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sFloatPosition2D* pPointDataBuffer)
 {
 
 	uint64_t nNeededPointCount = m_pToolpathLayerData->getSegmentPointCount(nIndex);
@@ -375,7 +372,91 @@ void CToolpathLayer::GetSegmentHatchDataInMM(const LibMCEnv_uint32 nIndex, LibMC
 
 }
 
-void CToolpathLayer::GetSegmentLinearPolylineModifiers(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double* pModificationDataBuffer) 
+void CToolpathLayer::GetTypedSegmentSubInterpolationIndices(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileValueType eValueType, LibMCEnv_uint64 nIndexDataBufferSize, LibMCEnv_uint64* pIndexDataNeededCount, LibMCEnv::sHatch2DSubinterpolationIndex* pIndexDataBuffer)
+{
+
+}
+
+void CToolpathLayer::EvaluateHatchProfileTypedModifier(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileValueType eValueType, LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double* pEvaluationData1Buffer, LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double* pEvaluationData2Buffer)
+{
+	auto segmentType = m_pToolpathLayerData->getSegmentType(nSegmentIndex);
+	if (segmentType == LibMCEnv::eToolpathSegmentType::Hatch) {
+
+		uint64_t nNeededPointCount = m_pToolpathLayerData->getSegmentPointCount(nSegmentIndex);
+		if (nNeededPointCount % 2 != 0)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDHATCHCOUNT);
+		uint64_t nNeededHatchCount = nNeededPointCount / 2;
+
+		if (pEvaluationData1NeededCount != nullptr)
+			*pEvaluationData1NeededCount = nNeededHatchCount;
+		if (pEvaluationData2NeededCount != nullptr)
+			*pEvaluationData2NeededCount = nNeededHatchCount;
+
+		if ((pEvaluationData1Buffer != nullptr) && (pEvaluationData2Buffer != nullptr)) {
+
+			std::string sValueName = AMC::CToolpathLayerData::getValueNameByType(eValueType);
+
+			auto pProfile = m_pToolpathLayerData->getSegmentProfile(nSegmentIndex);
+			LibMCEnv::eToolpathProfileModificationType modificationType = pProfile->getModificationType("", sValueName);
+
+			switch (modificationType) {
+				case LibMCEnv::eToolpathProfileModificationType::NoModification: {
+					double dBaseValue = pProfile->getDoubleValue("", sValueName);
+					for (uint64_t nHatchIndex = 0; nHatchIndex < nNeededHatchCount; nHatchIndex++) {
+						pEvaluationData1Buffer[nHatchIndex] = dBaseValue;
+						pEvaluationData2Buffer[nHatchIndex] = dBaseValue;
+					}
+					break;
+				}
+
+				case LibMCEnv::eToolpathProfileModificationType::ConstantModification:
+				case LibMCEnv::eToolpathProfileModificationType::LinearModification:
+				case LibMCEnv::eToolpathProfileModificationType::NonlinearModification: {
+					
+					LibMCEnv::eToolpathProfileModificationFactor modificationFactor = LibMCEnv::eToolpathProfileModificationFactor::Unknown;
+					double dMinValue = 0.0;
+					double dMaxValue = 0.0;
+					pProfile->getModificationInformation("", sValueName, modificationFactor, dMinValue, dMaxValue);
+
+					for (uint64_t nHatchIndex = 0; nHatchIndex < nNeededHatchCount; nHatchIndex++) {						
+						double dFactor1 = 0.0;
+						double dFactor2 = 0.0;
+						m_pToolpathLayerData->getHatchModificationFactors(nSegmentIndex, nHatchIndex, modificationFactor, dFactor1, dFactor2);
+			
+						if (dFactor1 < 0.0)
+							dFactor1 = 0.0;
+						if (dFactor1 > 1.0)
+							dFactor1 = 1.0;
+						if (dFactor2 < 0.0)
+							dFactor2 = 0.0;
+						if (dFactor2 > 1.0)
+							dFactor2 = 1.0;
+
+						pEvaluationData1Buffer[nHatchIndex] = (1.0 - dFactor1) * dMinValue + dFactor1 * dMaxValue;
+						pEvaluationData2Buffer[nHatchIndex] = (1.0 - dFactor2) * dMinValue + dFactor2 * dMaxValue;
+
+					}
+					break;
+				}
+
+			}
+		}
+		else {
+			if ((pEvaluationData1Buffer != nullptr) || (pEvaluationData2Buffer != nullptr)) {
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES);
+
+			}
+		}
+
+	}
+
+	else {
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_SEGMENTISNOTOFTYPEHATCH);
+	}
+
+}
+
+/*void CToolpathLayer::GetSegmentLinearPolylineModifiers(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double* pModificationDataBuffer)
 {
 
 	auto segmentType = m_pToolpathLayerData->getSegmentType(nSegmentIndex);
@@ -422,7 +503,7 @@ void CToolpathLayer::GetSegmentLinearHatchOverrides(const LibMCEnv_uint32 nSegme
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_SEGMENTISNOTOFTYPEHATCH);
 	}
 
-}
+} */
 
 LibMCEnv_double CToolpathLayer::GetUnits()
 {

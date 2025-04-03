@@ -590,34 +590,25 @@ void CSMCJobInstance::AddLayerToList(LibMCEnv::PToolpathLayer pLayer)
             double dMinimalMarkSpeed = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/smc/2024/10", "minimummarkspeed", dMarkSpeedInMMPerSecond);
             double dCornerTolerance = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/smc/2024/10", "cornertolerance", 0.0);
 
-                std::vector<LibMCEnv::sPosition2D> Points;
-                pLayer->GetSegmentPointData(nSegmentIndex, Points);
 
-                if (nPointCount != Points.size())
-                    throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPOINTCOUNT);
-
-                switch (eSegmentType) {
-                case LibMCEnv::eToolpathSegmentType::Loop:
+            switch (eSegmentType) {
                 case LibMCEnv::eToolpathSegmentType::Polyline:
                 {
+
+                    std::vector<LibMCEnv::sPosition2D> PointData;
+                    pLayer->GetSegmentPolylineData(nSegmentIndex, PointData);
 
                     std::vector<LibMCDriver_ScanLabSMC::sPoint2D> ContourPoints;
                     ContourPoints.resize(nPointCount);
 
                     for (uint32_t nPointIndex = 0; nPointIndex < nPointCount; nPointIndex++) {
                         auto pContourPoint = &ContourPoints.at(nPointIndex);
-                        pContourPoint->m_X = (float)(((double)Points[nPointIndex].m_Coordinates[0]) * dUnits);
-                        pContourPoint->m_Y = (float)(((double)Points[nPointIndex].m_Coordinates[1]) * dUnits);
+                        pContourPoint->m_X = (float)(((double)PointData.at(nPointIndex).m_Coordinates[0]) * dUnits);
+                        pContourPoint->m_Y = (float)(((double)PointData.at(nPointIndex).m_Coordinates[1]) * dUnits);
                     } 
 
                     if (ContourPoints.size() > 0) {
-                        if (eSegmentType == LibMCEnv::eToolpathSegmentType::Loop) {
-                            this->DrawLoop(ContourPoints.size(), ContourPoints.data(), dMarkSpeedInMMPerSecond, dMinimalMarkSpeed, dJumpSpeedInMMPerSecond, dPowerFactor, dCornerTolerance, dZValue);
-                        }
-                        else {
-                            this->DrawPolyline(ContourPoints.size(), ContourPoints.data(), dMarkSpeedInMMPerSecond, dMinimalMarkSpeed, dJumpSpeedInMMPerSecond, dPowerFactor, dCornerTolerance, dZValue);
-                        }
-                        
+                        this->DrawPolyline(ContourPoints.size(), ContourPoints.data(), dMarkSpeedInMMPerSecond, dMinimalMarkSpeed, dJumpSpeedInMMPerSecond, dPowerFactor, dCornerTolerance, dZValue);                        
                     }
 
                     break;
@@ -628,20 +619,25 @@ void CSMCJobInstance::AddLayerToList(LibMCEnv::PToolpathLayer pLayer)
                     if (nPointCount % 2 == 1)
                         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPOINTCOUNT);
 
-                    uint64_t nHatchCount = nPointCount / 2;
-                    std::vector<LibMCDriver_ScanLabSMC::sHatch2D> Hatches;
-                    Hatches.resize(nHatchCount);
+                    std::vector<LibMCEnv::sHatch2D> HatchData;
+                    pLayer->GetSegmentHatchData(nSegmentIndex, HatchData);
+
+                    size_t nHatchCount = HatchData.size();
+
+                    std::vector<LibMCDriver_ScanLabSMC::sHatch2D> SMCHatches;
+                    SMCHatches.resize(nHatchCount);
 
                     for (uint64_t nHatchIndex = 0; nHatchIndex < nHatchCount; nHatchIndex++) {
-                        auto pHatch = &Hatches.at(nHatchIndex);
-                        pHatch->m_X1 = (float)((double)Points[nHatchIndex * 2].m_Coordinates[0] * dUnits);
-                        pHatch->m_Y1 = (float)((double)Points[nHatchIndex * 2].m_Coordinates[1] * dUnits);
-                        pHatch->m_X2 = (float)((double)Points[nHatchIndex * 2 + 1].m_Coordinates[0] * dUnits);
-                        pHatch->m_Y2 = (float)((double)Points[nHatchIndex * 2 + 1].m_Coordinates[1] * dUnits);
+                        auto& srcHatch = HatchData.at(nHatchIndex);
+                        auto& targetHatch = SMCHatches.at(nHatchIndex);
+                        targetHatch.m_X1 = (float)((double)srcHatch.m_X1 * dUnits);
+                        targetHatch.m_Y1 = (float)((double)srcHatch.m_Y1 * dUnits);
+                        targetHatch.m_X2 = (float)((double)srcHatch.m_X2 * dUnits);
+                        targetHatch.m_Y2 = (float)((double)srcHatch.m_Y2 * dUnits);
                     }
 
-                    if (Hatches.size() > 0) {
-                        this->DrawHatches(Hatches.size(), Hatches.data(), dMarkSpeedInMMPerSecond, dJumpSpeedInMMPerSecond, dPowerFactor, dZValue);
+                    if (SMCHatches.size() > 0) {
+                        this->DrawHatches(SMCHatches.size(), SMCHatches.data(), dMarkSpeedInMMPerSecond, dJumpSpeedInMMPerSecond, dPowerFactor, dZValue);
                     }
 
                     break;

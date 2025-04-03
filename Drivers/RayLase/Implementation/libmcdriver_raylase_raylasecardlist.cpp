@@ -255,26 +255,20 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             }
 
             switch (eSegmentType) {
-            case LibMCEnv::eToolpathSegmentType::Loop:
             case LibMCEnv::eToolpathSegmentType::Polyline:
             {
 
                 std::vector<LibMCEnv::sFloatPosition2D> PointsInMM;
-                pLayer->GetSegmentPointDataInMM(nSegmentIndex, PointsInMM);
+                pLayer->GetSegmentPolylineDataInMM(nSegmentIndex, PointsInMM);
 
-                std::vector<double> FactorOverrides;
                 if (bSegmentHasPowerPerVector) {
-                    pLayer->GetSegmentLinearPolylineModifiers(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
+                    //pLayer->GetSegmentLinearPolylineModifiers(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
                 }
 
                 if (nPointCount != PointsInMM.size())
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPOINTCOUNT);
 
-                uint32_t nPointLoopCount = nPointCount;
-                if (eSegmentType == LibMCEnv::eToolpathSegmentType::Loop)
-                    nPointLoopCount++;
-
-                for (uint32_t nPointLoopIndex = 0; nPointLoopIndex < nPointLoopCount; nPointLoopIndex++) {
+                for (uint32_t nPointLoopIndex = 0; nPointLoopIndex < nPointCount; nPointLoopIndex++) {
 
                     // Loops have one point more to draw
                     uint32_t nPointIndex = nPointLoopIndex % nPointCount;
@@ -312,9 +306,8 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPOINTCOUNT);
 
                 std::vector<LibMCEnv::sFloatHatch2D> HatchesInMM;
-                std::vector<LibMCEnv::sHatch2DModificationFactors> FactorOverrides;
                 if (bSegmentHasPowerPerVector) {
-                    pLayer->GetSegmentLinearHatchOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
+                    //pLayer->GetSegmentLinearHatchOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
                 }
 
                 uint64_t nHatchCount = nPointCount / 2;

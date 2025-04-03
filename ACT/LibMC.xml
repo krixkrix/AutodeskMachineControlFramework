@@ -659,6 +659,10 @@
 		<error name="INVALIDWIDGETREQUEST" code="633" description="Invalid widget request" />		
 		<error name="SOURCEVARIABLENOTFOUND" code="634" description="Source variable not found" />
 		<error name="INVALIDEVENTRETURNVALUES" code="635" description="Invalid event return values" />
+		<error name="INVALIDMODIFIERINTERPOLATIONCOUNT" code="636" description="Invalid modifier interpolation count" />
+		<error name="INVALIDTOOLPATHMODIFIERTYPE" code="10234" description="Invalid toolpath modifier type." />		
+		<error name="INVALIDTOOLPATHMODIFIERFACTOR" code="10235" description="Invalid toolpath modifier factor." />				
+		
 					
 	</errors>
 	

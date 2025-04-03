@@ -2324,13 +2324,6 @@ public:
 	virtual LibMCEnv::eToolpathSegmentType GetSegmentType(const LibMCEnv_uint32 nIndex) = 0;
 
 	/**
-	* IToolpathLayer::SegmentIsLoop - Returns if segment is a loop.
-	* @param[in] nIndex - Index. Must be between 0 and Count - 1.
-	* @return Flag if segment is a loop.
-	*/
-	virtual bool SegmentIsLoop(const LibMCEnv_uint32 nIndex) = 0;
-
-	/**
 	* IToolpathLayer::SegmentIsPolyline - Returns if segment is a polyline.
 	* @param[in] nIndex - Index. Must be between 0 and Count - 1.
 	* @return Flag if segment is a polyline.
@@ -2394,11 +2387,11 @@ public:
 	virtual void FindCustomSegmentAttributeInfo(const std::string & sNamespace, const std::string & sAttributeName, LibMCEnv_uint32 & nAttributeID, LibMCEnv::eToolpathAttributeType & eAttributeType) = 0;
 
 	/**
-	* IToolpathLayer::GetSegmentPointCount - Retrieves the number of points in the segment. For type hatch, the points are taken pairwise.
+	* IToolpathLayer::GetSegmentPolylinePointCount - Retrieves the number of points in the segment. Fails if segment is not of type polyline.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-	* @return Hatch count of segment.
+	* @return Point count of the polyline.
 	*/
-	virtual LibMCEnv_uint32 GetSegmentPointCount(const LibMCEnv_uint32 nSegmentIndex) = 0;
+	virtual LibMCEnv_uint32 GetSegmentPolylinePointCount(const LibMCEnv_uint32 nSegmentIndex) = 0;
 
 	/**
 	* IToolpathLayer::GetSegmentHatchCount - Retrieves the number of hatches in the segment (i.e. PointCount / 2). Returns 0 if segment is not of type hatch.
@@ -2548,13 +2541,22 @@ public:
 	virtual LibMCEnv_uint32 GetSegmentLocalPartID(const LibMCEnv_uint32 nSegmentIndex) = 0;
 
 	/**
-	* IToolpathLayer::GetSegmentPointData - Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.
+	* IToolpathLayer::GetSegmentPolylineData - Retrieves the assigned segment point list. Fails, if type is not polyline.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
 	* @param[in] nPointDataBufferSize - Number of elements in buffer
 	* @param[out] pPointDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
 	* @param[out] pPointDataBuffer - Position2D buffer of The point data array. Positions are absolute in units.
 	*/
-	virtual void GetSegmentPointData(const LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer) = 0;
+	virtual void GetSegmentPolylineData(const LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer) = 0;
+
+	/**
+	* IToolpathLayer::GetSegmentPolylineDataInMM - Retrieves the assigned segment point list. Fails, if type is not polyline.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[in] nPointDataBufferSize - Number of elements in buffer
+	* @param[out] pPointDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pPointDataBuffer - FloatPosition2D buffer of The point data array. Positions are absolute in mm.
+	*/
+	virtual void GetSegmentPolylineDataInMM(const LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sFloatPosition2D * pPointDataBuffer) = 0;
 
 	/**
 	* IToolpathLayer::GetSegmentHatchData - Retrieves the assigned segment hatch list. Fails if segment type is not hatch.
@@ -2566,15 +2568,6 @@ public:
 	virtual void GetSegmentHatchData(const LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sHatch2D * pHatchDataBuffer) = 0;
 
 	/**
-	* IToolpathLayer::GetSegmentPointDataInMM - Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.
-	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-	* @param[in] nPointDataBufferSize - Number of elements in buffer
-	* @param[out] pPointDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
-	* @param[out] pPointDataBuffer - FloatPosition2D buffer of The point data array. Positions are absolute in mm.
-	*/
-	virtual void GetSegmentPointDataInMM(const LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sFloatPosition2D * pPointDataBuffer) = 0;
-
-	/**
 	* IToolpathLayer::GetSegmentHatchDataInMM - Retrieves the assigned segment hatch list. Fails if segment type is not hatch.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
 	* @param[in] nHatchDataBufferSize - Number of elements in buffer
@@ -2584,24 +2577,27 @@ public:
 	virtual void GetSegmentHatchDataInMM(const LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sFloatHatch2D * pHatchDataBuffer) = 0;
 
 	/**
-	* IToolpathLayer::GetSegmentLinearPolylineModifiers - Retrieves factor overrides for a specific segment. Fails if segment type is not loop or polyline.
-	* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-	* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
-	* @param[in] nModificationDataBufferSize - Number of elements in buffer
-	* @param[out] pModificationDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
-	* @param[out] pModificationDataBuffer - double buffer of The override factor array. Will return as many override factors as points in the segment.
+	* IToolpathLayer::GetTypedSegmentSubInterpolationIndices - Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+	* @param[in] nIndexDataBufferSize - Number of elements in buffer
+	* @param[out] pIndexDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pIndexDataBuffer - Hatch2DSubinterpolationIndex buffer of The hatch subinterpolation array. Positions are absolute in units.
 	*/
-	virtual void GetSegmentLinearPolylineModifiers(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double * pModificationDataBuffer) = 0;
+	virtual void GetTypedSegmentSubInterpolationIndices(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileValueType eValueType, LibMCEnv_uint64 nIndexDataBufferSize, LibMCEnv_uint64* pIndexDataNeededCount, LibMCEnv::sHatch2DSubinterpolationIndex * pIndexDataBuffer) = 0;
 
 	/**
-	* IToolpathLayer::GetSegmentLinearHatchOverrides - Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.
-	* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-	* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
-	* @param[in] nModificationDataBufferSize - Number of elements in buffer
-	* @param[out] pModificationDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
-	* @param[out] pModificationDataBuffer - Hatch2DModificationFactors buffer of The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point, as well as how many non-linear interpolation points are given for the hatch.
+	* IToolpathLayer::EvaluateHatchProfileTypedModifier - Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+	* @param[in] nEvaluationData1BufferSize - Number of elements in buffer
+	* @param[out] pEvaluationData1NeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pEvaluationData1Buffer - double buffer of Evaluated data on the first point on each hatch. Will return HatchCount elements.
+	* @param[in] nEvaluationData2BufferSize - Number of elements in buffer
+	* @param[out] pEvaluationData2NeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pEvaluationData2Buffer - double buffer of Evaluated data on the second point on each hatch. Will return HatchCount elements.
 	*/
-	virtual void GetSegmentLinearHatchOverrides(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv::sHatch2DModificationFactors * pModificationDataBuffer) = 0;
+	virtual void EvaluateHatchProfileTypedModifier(const LibMCEnv_uint32 nSegmentIndex, const LibMCEnv::eToolpathProfileValueType eValueType, LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double * pEvaluationData1Buffer, LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double * pEvaluationData2Buffer) = 0;
 
 	/**
 	* IToolpathLayer::GetZValue - Retrieves the layers Z Value in units.

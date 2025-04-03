@@ -2389,16 +2389,15 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 
 				}
 
-				std::vector<LibMCEnv::sPosition2D> Points;
-				pLayer->GetSegmentPointData(nSegmentIndex, Points);
-
-				if (nPointCount != Points.size())
-					throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOINTCOUNT);
-
 				switch (eSegmentType) {
-				case LibMCEnv::eToolpathSegmentType::Loop:
 				case LibMCEnv::eToolpathSegmentType::Polyline:
 				{
+
+					std::vector<LibMCEnv::sPosition2D> Points;
+					pLayer->GetSegmentPolylineData(nSegmentIndex, Points);
+
+					if (nPointCount != Points.size())
+						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOINTCOUNT);
 
 					std::vector<sPoint2D> ContourPoints;
 					ContourPoints.resize(nPointCount);
@@ -2420,18 +2419,23 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOINTCOUNT);
 
 					uint64_t nHatchCount = nPointCount / 2;
-					std::vector<sHatch2D> Hatches;
-					Hatches.resize(nHatchCount);
+
+					std::vector<LibMCEnv::sHatch2D> HatchData;
+					pLayer->GetSegmentHatchData(nSegmentIndex, HatchData);
+
+					std::vector<sHatch2D> RTCHatches;
+					RTCHatches.resize(nHatchCount);
 
 					for (uint64_t nHatchIndex = 0; nHatchIndex < nHatchCount; nHatchIndex++) {
-						auto pHatch = &Hatches.at(nHatchIndex);
-						pHatch->m_X1 = (float)(Points[nHatchIndex * 2].m_Coordinates[0] * dUnits);
-						pHatch->m_Y1 = (float)(Points[nHatchIndex * 2].m_Coordinates[1] * dUnits);
-						pHatch->m_X2 = (float)(Points[nHatchIndex * 2 + 1].m_Coordinates[0] * dUnits);
-						pHatch->m_Y2 = (float)(Points[nHatchIndex * 2 + 1].m_Coordinates[1] * dUnits);
+						auto& srcHatch = HatchData.at(nHatchIndex);
+						auto & targetHatch = RTCHatches.at(nHatchIndex);
+						targetHatch.m_X1 = (float)(srcHatch.m_X1 * dUnits);
+						targetHatch.m_Y1 = (float)(srcHatch.m_Y1 * dUnits);
+						targetHatch.m_X2 = (float)(srcHatch.m_X2 * dUnits);
+						targetHatch.m_Y2 = (float)(srcHatch.m_Y1 * dUnits);
 					}
 
-					DrawHatchesOIE(Hatches.size(), Hatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
+					DrawHatchesOIE(RTCHatches.size(), RTCHatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
 
 					break;
 				}

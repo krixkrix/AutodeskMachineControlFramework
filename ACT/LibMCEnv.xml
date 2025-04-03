@@ -271,9 +271,7 @@
 		<error name="INVALIDJPEGCOLORCHANNELS" code="10231" description="Invalid JPEG Color channels." />		
 		<error name="COULDNOTLOADJPEGIMAGE" code="10232" description="Could not load JPEG Image." />		
 		<error name="SEGMENTISNOTOFTYPEPOLYLINEORLOOP" code="10233" description="Segment is not of type polyline or loop." />		
-		
-		
-		
+		<error name="COULDNOTEVALUATEHATCHPROFILES" code="10234" description="Could not evaluate hatch profiles." />		
 		
 	</errors>
 
@@ -338,7 +336,6 @@
 	<enum name="ToolpathSegmentType">
 		<option name="Unknown" value="0" />
 		<option name="Hatch" value="1" />
-		<option name="Loop" value="2" />
 		<option name="Polyline" value="3" />
 	</enum>
 	
@@ -416,6 +413,12 @@
 		<member name="X2" type="int32" />
 		<member name="Y2" type="int32" />
 	</struct>
+	
+	<struct name="Hatch2DSubinterpolationIndex">
+		<member name="StartIndex" type="uint32" />
+		<member name="SubinterpolationCount" type="uint32" />
+	</struct>
+	
 
 	<struct name="MeshVertex3D">
 		<member name="VertexID" type="uint32" />
@@ -1748,11 +1751,6 @@
 			<param name="Type" type="enum" class="ToolpathSegmentType" pass="return" description="Segment Type" />
 		</method>
 
-		<method name="SegmentIsLoop" description="Returns if segment is a loop.">
-			<param name="Index" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
-			<param name="IsLoop" type="bool" pass="return" description="Flag if segment is a loop." />
-		</method>
-
 		<method name="SegmentIsPolyline" description="Returns if segment is a polyline.">
 			<param name="Index" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="IsPolyline" type="bool" pass="return" description="Flag if segment is a polyline." />
@@ -1800,9 +1798,9 @@
 			<param name="AttributeType" type="enum" class="ToolpathAttributeType" pass="out" description="Type of the attribute." />
 		</method>
 
-		<method name="GetSegmentPointCount" description="Retrieves the number of points in the segment. For type hatch, the points are taken pairwise.">
+		<method name="GetSegmentPolylinePointCount" description="Retrieves the number of points in the segment. Fails if segment is not of type polyline.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
-			<param name="HatchCount" type="uint32" pass="return" description="Hatch count of segment." />
+			<param name="PointCount" type="uint32" pass="return" description="Point count of the polyline." />
 		</method>
 		
 		<method name="GetSegmentHatchCount" description="Retrieves the number of hatches in the segment (i.e. PointCount / 2). Returns 0 if segment is not of type hatch.">
@@ -1921,36 +1919,37 @@
 			<param name="LocalPartID" type="uint32" pass="return" description="Local Part ID of the segment" />
 		</method>
 	
-		<method name="GetSegmentPointData" description="Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.">
+		<method name="GetSegmentPolylineData" description="Retrieves the assigned segment point list. Fails, if type is not polyline.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="PointData" type="structarray" class="Position2D" pass="out" description="The point data array. Positions are absolute in units." />
+		</method>
+
+		<method name="GetSegmentPolylineDataInMM" description="Retrieves the assigned segment point list. Fails, if type is not polyline.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
+			<param name="PointData" type="structarray" class="FloatPosition2D" pass="out" description="The point data array. Positions are absolute in mm." />
 		</method>
 		
 		<method name="GetSegmentHatchData" description="Retrieves the assigned segment hatch list. Fails if segment type is not hatch.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="HatchData" type="structarray" class="Hatch2D" pass="out" description="The hatch data array. Positions are absolute in units." />
 		</method>
-
-		<method name="GetSegmentPointDataInMM" description="Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
-			<param name="PointData" type="structarray" class="FloatPosition2D" pass="out" description="The point data array. Positions are absolute in mm." />
-		</method>
 		
 		<method name="GetSegmentHatchDataInMM" description="Retrieves the assigned segment hatch list. Fails if segment type is not hatch.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="HatchData" type="structarray" class="FloatHatch2D" pass="out" description="The hatch data array. Positions are absolute in mm." />
 		</method>
-		
-		<method name="GetSegmentLinearPolylineModifiers" description="Retrieves factor overrides for a specific segment. Fails if segment type is not loop or polyline.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
-			<param name="ModificationFactorType" type="enum" class="ToolpathProfileModificationFactor" pass="in" description="Which override factor to return (F, G or H)." />
-			<param name="ModificationData" type="basicarray" class="double" pass="out" description="The override factor array. Will return as many override factors as points in the segment." />
+
+		<method name="GetTypedSegmentSubInterpolationIndices" description="Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
+			<param name="ValueType" type="enum" class="ToolpathProfileValueType" pass="in" description="Enum to query for. MUST NOT be custom. Fails if value type does not exist." />
+			<param name="IndexData" type="structarray" class="Hatch2DSubinterpolationIndex" pass="out" description="The hatch subinterpolation array. Positions are absolute in units." />
 		</method>
-		
-		<method name="GetSegmentLinearHatchOverrides" description="Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Segment Index. Must be between 0 and Count - 1." />
-			<param name="ModificationFactorType" type="enum" class="ToolpathProfileModificationFactor" pass="in" description="Which override factor to return (F, G or H)." />
-			<param name="ModificationData" type="structarray" class="Hatch2DModificationFactors" pass="out" description="The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point, as well as how many non-linear interpolation points are given for the hatch." />
+
+		<method name="EvaluateHatchProfileTypedModifier" description="Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
+			<param name="ValueType" type="enum" class="ToolpathProfileValueType" pass="in" description="Enum to query for. MUST NOT be custom. Fails if value type does not exist." />
+			<param name="EvaluationData1" type="basicarray" class="double" pass="out" description="Evaluated data on the first point on each hatch. Will return HatchCount elements." />
+			<param name="EvaluationData2" type="basicarray" class="double" pass="out" description="Evaluated data on the second point on each hatch. Will return HatchCount elements." />
 		</method>
 
 

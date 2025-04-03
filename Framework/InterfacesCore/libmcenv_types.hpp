@@ -328,6 +328,7 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_INVALIDJPEGCOLORCHANNELS 10231 /** Invalid JPEG Color channels. */
 #define LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE 10232 /** Could not load JPEG Image. */
 #define LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP 10233 /** Segment is not of type polyline or loop. */
+#define LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES 10234 /** Could not evaluate hatch profiles. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -568,6 +569,7 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_INVALIDJPEGCOLORCHANNELS: return "Invalid JPEG Color channels.";
     case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "Could not load JPEG Image.";
     case LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP: return "Segment is not of type polyline or loop.";
+    case LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES: return "Could not evaluate hatch profiles.";
     default: return "unknown error";
   }
 }
@@ -709,7 +711,6 @@ namespace LibMCEnv {
   enum class eToolpathSegmentType : LibMCEnv_int32 {
     Unknown = 0,
     Hatch = 1,
-    Loop = 2,
     Polyline = 3
   };
   
@@ -737,9 +738,10 @@ namespace LibMCEnv {
   };
   
   enum class eToolpathProfileModificationType : LibMCEnv_int32 {
-    Constant = 0,
-    Linear = 1,
-    Nonlinear = 2
+    NoModification = 0,
+    ConstantModification = 1,
+    LinearModification = 2,
+    NonlinearModification = 3
   };
   
   enum class eToolpathProfileModificationFactor : LibMCEnv_int32 {
@@ -789,6 +791,11 @@ namespace LibMCEnv {
       LibMCEnv_int32 m_X2;
       LibMCEnv_int32 m_Y2;
   } sHatch2D;
+  
+  typedef struct sHatch2DSubinterpolationIndex {
+      LibMCEnv_uint32 m_StartIndex;
+      LibMCEnv_uint32 m_SubinterpolationCount;
+  } sHatch2DSubinterpolationIndex;
   
   typedef struct sMeshVertex3D {
       LibMCEnv_uint32 m_VertexID;
@@ -864,6 +871,7 @@ typedef LibMCEnv::eBuildExecutionStatus eLibMCEnvBuildExecutionStatus;
 typedef LibMCEnv::eDataTableColumnType eLibMCEnvDataTableColumnType;
 typedef LibMCEnv::sPosition2D sLibMCEnvPosition2D;
 typedef LibMCEnv::sHatch2D sLibMCEnvHatch2D;
+typedef LibMCEnv::sHatch2DSubinterpolationIndex sLibMCEnvHatch2DSubinterpolationIndex;
 typedef LibMCEnv::sMeshVertex3D sLibMCEnvMeshVertex3D;
 typedef LibMCEnv::sMeshTriangle3D sLibMCEnvMeshTriangle3D;
 typedef LibMCEnv::sFloatPosition2D sLibMCEnvFloatPosition2D;

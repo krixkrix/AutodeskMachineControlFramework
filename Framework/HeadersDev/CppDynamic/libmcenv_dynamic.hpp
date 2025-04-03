@@ -657,6 +657,7 @@ public:
 			case LIBMCENV_ERROR_INVALIDJPEGCOLORCHANNELS: return "INVALIDJPEGCOLORCHANNELS";
 			case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "COULDNOTLOADJPEGIMAGE";
 			case LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP: return "SEGMENTISNOTOFTYPEPOLYLINEORLOOP";
+			case LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES: return "COULDNOTEVALUATEHATCHPROFILES";
 		}
 		return "UNKNOWN";
 	}
@@ -897,6 +898,7 @@ public:
 			case LIBMCENV_ERROR_INVALIDJPEGCOLORCHANNELS: return "Invalid JPEG Color channels.";
 			case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "Could not load JPEG Image.";
 			case LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP: return "Segment is not of type polyline or loop.";
+			case LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES: return "Could not evaluate hatch profiles.";
 		}
 		return "unknown error";
 	}
@@ -1845,7 +1847,6 @@ public:
 	inline LibMCEnv_uint32 GetSegmentCount();
 	inline void GetSegmentInfo(const LibMCEnv_uint32 nIndex, eToolpathSegmentType & eType, LibMCEnv_uint32 & nPointCount);
 	inline eToolpathSegmentType GetSegmentType(const LibMCEnv_uint32 nIndex);
-	inline bool SegmentIsLoop(const LibMCEnv_uint32 nIndex);
 	inline bool SegmentIsPolyline(const LibMCEnv_uint32 nIndex);
 	inline bool SegmentIsHatchSegment(const LibMCEnv_uint32 nIndex);
 	inline LibMCEnv_int64 GetSegmentIntegerAttribute(const LibMCEnv_uint32 nIndex, const LibMCEnv_uint32 nAttributeID);
@@ -1854,7 +1855,7 @@ public:
 	inline LibMCEnv_uint32 FindCustomSegmentAttributeID(const std::string & sNamespace, const std::string & sAttributeName);
 	inline eToolpathAttributeType FindCustomSegmentAttributeType(const std::string & sNamespace, const std::string & sAttributeName);
 	inline void FindCustomSegmentAttributeInfo(const std::string & sNamespace, const std::string & sAttributeName, LibMCEnv_uint32 & nAttributeID, eToolpathAttributeType & eAttributeType);
-	inline LibMCEnv_uint32 GetSegmentPointCount(const LibMCEnv_uint32 nSegmentIndex);
+	inline LibMCEnv_uint32 GetSegmentPolylinePointCount(const LibMCEnv_uint32 nSegmentIndex);
 	inline LibMCEnv_uint32 GetSegmentHatchCount(const LibMCEnv_uint32 nSegmentIndex);
 	inline std::string GetSegmentProfileUUID(const LibMCEnv_uint32 nSegmentIndex);
 	inline bool SegmentProfileHasValue(const LibMCEnv_uint32 nSegmentIndex, const std::string & sNamespace, const std::string & sValueName);
@@ -1872,12 +1873,12 @@ public:
 	inline eToolpathProfileModificationType GetSegmentProfileTypedModificationType(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType);
 	inline std::string GetSegmentPartUUID(const LibMCEnv_uint32 nSegmentIndex);
 	inline LibMCEnv_uint32 GetSegmentLocalPartID(const LibMCEnv_uint32 nSegmentIndex);
-	inline void GetSegmentPointData(const LibMCEnv_uint32 nSegmentIndex, std::vector<sPosition2D> & PointDataBuffer);
+	inline void GetSegmentPolylineData(const LibMCEnv_uint32 nSegmentIndex, std::vector<sPosition2D> & PointDataBuffer);
+	inline void GetSegmentPolylineDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatPosition2D> & PointDataBuffer);
 	inline void GetSegmentHatchData(const LibMCEnv_uint32 nSegmentIndex, std::vector<sHatch2D> & HatchDataBuffer);
-	inline void GetSegmentPointDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatPosition2D> & PointDataBuffer);
 	inline void GetSegmentHatchDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatHatch2D> & HatchDataBuffer);
-	inline void GetSegmentLinearPolylineModifiers(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileModificationFactor eModificationFactorType, std::vector<LibMCEnv_double> & ModificationDataBuffer);
-	inline void GetSegmentLinearHatchOverrides(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileModificationFactor eModificationFactorType, std::vector<sHatch2DModificationFactors> & ModificationDataBuffer);
+	inline void GetTypedSegmentSubInterpolationIndices(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<sHatch2DSubinterpolationIndex> & IndexDataBuffer);
+	inline void EvaluateHatchProfileTypedModifier(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_double> & EvaluationData1Buffer, std::vector<LibMCEnv_double> & EvaluationData2Buffer);
 	inline LibMCEnv_int32 GetZValue();
 	inline LibMCEnv_double GetZValueInMM();
 	inline LibMCEnv_double GetUnits();
@@ -3421,7 +3422,6 @@ public:
 		pWrapperTable->m_ToolpathLayer_GetSegmentCount = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentInfo = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentType = nullptr;
-		pWrapperTable->m_ToolpathLayer_SegmentIsLoop = nullptr;
 		pWrapperTable->m_ToolpathLayer_SegmentIsPolyline = nullptr;
 		pWrapperTable->m_ToolpathLayer_SegmentIsHatchSegment = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentIntegerAttribute = nullptr;
@@ -3430,7 +3430,7 @@ public:
 		pWrapperTable->m_ToolpathLayer_FindCustomSegmentAttributeID = nullptr;
 		pWrapperTable->m_ToolpathLayer_FindCustomSegmentAttributeType = nullptr;
 		pWrapperTable->m_ToolpathLayer_FindCustomSegmentAttributeInfo = nullptr;
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointCount = nullptr;
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylinePointCount = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchCount = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentProfileUUID = nullptr;
 		pWrapperTable->m_ToolpathLayer_SegmentProfileHasValue = nullptr;
@@ -3448,12 +3448,12 @@ public:
 		pWrapperTable->m_ToolpathLayer_GetSegmentProfileTypedModificationType = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentPartUUID = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentLocalPartID = nullptr;
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointData = nullptr;
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineData = nullptr;
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchData = nullptr;
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointDataInMM = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM = nullptr;
-		pWrapperTable->m_ToolpathLayer_GetSegmentLinearPolylineModifiers = nullptr;
-		pWrapperTable->m_ToolpathLayer_GetSegmentLinearHatchOverrides = nullptr;
+		pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices = nullptr;
+		pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetZValue = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetZValueInMM = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetUnits = nullptr;
@@ -6298,15 +6298,6 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_SegmentIsLoop = (PLibMCEnvToolpathLayer_SegmentIsLoopPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_segmentisloop");
-		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_SegmentIsLoop = (PLibMCEnvToolpathLayer_SegmentIsLoopPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_segmentisloop");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_SegmentIsLoop == nullptr)
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
 		pWrapperTable->m_ToolpathLayer_SegmentIsPolyline = (PLibMCEnvToolpathLayer_SegmentIsPolylinePtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_segmentispolyline");
 		#else // _WIN32
 		pWrapperTable->m_ToolpathLayer_SegmentIsPolyline = (PLibMCEnvToolpathLayer_SegmentIsPolylinePtr) dlsym(hLibrary, "libmcenv_toolpathlayer_segmentispolyline");
@@ -6379,12 +6370,12 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointCount = (PLibMCEnvToolpathLayer_GetSegmentPointCountPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentpointcount");
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylinePointCount = (PLibMCEnvToolpathLayer_GetSegmentPolylinePointCountPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentpolylinepointcount");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointCount = (PLibMCEnvToolpathLayer_GetSegmentPointCountPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentpointcount");
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylinePointCount = (PLibMCEnvToolpathLayer_GetSegmentPolylinePointCountPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentpolylinepointcount");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_GetSegmentPointCount == nullptr)
+		if (pWrapperTable->m_ToolpathLayer_GetSegmentPolylinePointCount == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6541,12 +6532,21 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointData = (PLibMCEnvToolpathLayer_GetSegmentPointDataPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentpointdata");
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineData = (PLibMCEnvToolpathLayer_GetSegmentPolylineDataPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentpolylinedata");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointData = (PLibMCEnvToolpathLayer_GetSegmentPointDataPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentpointdata");
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineData = (PLibMCEnvToolpathLayer_GetSegmentPolylineDataPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentpolylinedata");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_GetSegmentPointData == nullptr)
+		if (pWrapperTable->m_ToolpathLayer_GetSegmentPolylineData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM = (PLibMCEnvToolpathLayer_GetSegmentPolylineDataInMMPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentpolylinedatainmm");
+		#else // _WIN32
+		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM = (PLibMCEnvToolpathLayer_GetSegmentPolylineDataInMMPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentpolylinedatainmm");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6559,15 +6559,6 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointDataInMM = (PLibMCEnvToolpathLayer_GetSegmentPointDataInMMPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentpointdatainmm");
-		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentPointDataInMM = (PLibMCEnvToolpathLayer_GetSegmentPointDataInMMPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentpointdatainmm");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_GetSegmentPointDataInMM == nullptr)
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM = (PLibMCEnvToolpathLayer_GetSegmentHatchDataInMMPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmenthatchdatainmm");
 		#else // _WIN32
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM = (PLibMCEnvToolpathLayer_GetSegmentHatchDataInMMPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmenthatchdatainmm");
@@ -6577,21 +6568,21 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentLinearPolylineModifiers = (PLibMCEnvToolpathLayer_GetSegmentLinearPolylineModifiersPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers");
+		pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices = (PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationIndicesPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentLinearPolylineModifiers = (PLibMCEnvToolpathLayer_GetSegmentLinearPolylineModifiersPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers");
+		pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices = (PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationIndicesPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_GetSegmentLinearPolylineModifiers == nullptr)
+		if (pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentLinearHatchOverrides = (PLibMCEnvToolpathLayer_GetSegmentLinearHatchOverridesPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_getsegmentlinearhatchoverrides");
+		pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier = (PLibMCEnvToolpathLayer_EvaluateHatchProfileTypedModifierPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_GetSegmentLinearHatchOverrides = (PLibMCEnvToolpathLayer_GetSegmentLinearHatchOverridesPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_getsegmentlinearhatchoverrides");
+		pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier = (PLibMCEnvToolpathLayer_EvaluateHatchProfileTypedModifierPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_GetSegmentLinearHatchOverrides == nullptr)
+		if (pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13113,10 +13104,6 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentType == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_segmentisloop", (void**)&(pWrapperTable->m_ToolpathLayer_SegmentIsLoop));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_SegmentIsLoop == nullptr) )
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
 		eLookupError = (*pLookup)("libmcenv_toolpathlayer_segmentispolyline", (void**)&(pWrapperTable->m_ToolpathLayer_SegmentIsPolyline));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_SegmentIsPolyline == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13149,8 +13136,8 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_FindCustomSegmentAttributeInfo == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentpointcount", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentPointCount));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentPointCount == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentpolylinepointcount", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentPolylinePointCount));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentPolylinePointCount == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmenthatchcount", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentHatchCount));
@@ -13221,28 +13208,28 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentLocalPartID == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentpointdata", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentPointData));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentPointData == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentpolylinedata", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentPolylineData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentPolylineData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentpolylinedatainmm", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmenthatchdata", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentHatchData));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentHatchData == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentpointdatainmm", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentPointDataInMM));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentPointDataInMM == nullptr) )
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
 		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmenthatchdatainmm", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentLinearPolylineModifiers));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentLinearPolylineModifiers == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices", (void**)&(pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getsegmentlinearhatchoverrides", (void**)&(pWrapperTable->m_ToolpathLayer_GetSegmentLinearHatchOverrides));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentLinearHatchOverrides == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier", (void**)&(pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getzvalue", (void**)&(pWrapperTable->m_ToolpathLayer_GetZValue));
@@ -18838,19 +18825,6 @@ public:
 	}
 	
 	/**
-	* CToolpathLayer::SegmentIsLoop - Returns if segment is a loop.
-	* @param[in] nIndex - Index. Must be between 0 and Count - 1.
-	* @return Flag if segment is a loop.
-	*/
-	bool CToolpathLayer::SegmentIsLoop(const LibMCEnv_uint32 nIndex)
-	{
-		bool resultIsLoop = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_SegmentIsLoop(m_pHandle, nIndex, &resultIsLoop));
-		
-		return resultIsLoop;
-	}
-	
-	/**
 	* CToolpathLayer::SegmentIsPolyline - Returns if segment is a polyline.
 	* @param[in] nIndex - Index. Must be between 0 and Count - 1.
 	* @return Flag if segment is a polyline.
@@ -18959,16 +18933,16 @@ public:
 	}
 	
 	/**
-	* CToolpathLayer::GetSegmentPointCount - Retrieves the number of points in the segment. For type hatch, the points are taken pairwise.
+	* CToolpathLayer::GetSegmentPolylinePointCount - Retrieves the number of points in the segment. Fails if segment is not of type polyline.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-	* @return Hatch count of segment.
+	* @return Point count of the polyline.
 	*/
-	LibMCEnv_uint32 CToolpathLayer::GetSegmentPointCount(const LibMCEnv_uint32 nSegmentIndex)
+	LibMCEnv_uint32 CToolpathLayer::GetSegmentPolylinePointCount(const LibMCEnv_uint32 nSegmentIndex)
 	{
-		LibMCEnv_uint32 resultHatchCount = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPointCount(m_pHandle, nSegmentIndex, &resultHatchCount));
+		LibMCEnv_uint32 resultPointCount = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPolylinePointCount(m_pHandle, nSegmentIndex, &resultPointCount));
 		
-		return resultHatchCount;
+		return resultPointCount;
 	}
 	
 	/**
@@ -19233,17 +19207,31 @@ public:
 	}
 	
 	/**
-	* CToolpathLayer::GetSegmentPointData - Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.
+	* CToolpathLayer::GetSegmentPolylineData - Retrieves the assigned segment point list. Fails, if type is not polyline.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
 	* @param[out] PointDataBuffer - The point data array. Positions are absolute in units.
 	*/
-	void CToolpathLayer::GetSegmentPointData(const LibMCEnv_uint32 nSegmentIndex, std::vector<sPosition2D> & PointDataBuffer)
+	void CToolpathLayer::GetSegmentPolylineData(const LibMCEnv_uint32 nSegmentIndex, std::vector<sPosition2D> & PointDataBuffer)
 	{
 		LibMCEnv_uint64 elementsNeededPointData = 0;
 		LibMCEnv_uint64 elementsWrittenPointData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPointData(m_pHandle, nSegmentIndex, 0, &elementsNeededPointData, nullptr));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPolylineData(m_pHandle, nSegmentIndex, 0, &elementsNeededPointData, nullptr));
 		PointDataBuffer.resize((size_t) elementsNeededPointData);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPointData(m_pHandle, nSegmentIndex, elementsNeededPointData, &elementsWrittenPointData, PointDataBuffer.data()));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPolylineData(m_pHandle, nSegmentIndex, elementsNeededPointData, &elementsWrittenPointData, PointDataBuffer.data()));
+	}
+	
+	/**
+	* CToolpathLayer::GetSegmentPolylineDataInMM - Retrieves the assigned segment point list. Fails, if type is not polyline.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[out] PointDataBuffer - The point data array. Positions are absolute in mm.
+	*/
+	void CToolpathLayer::GetSegmentPolylineDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatPosition2D> & PointDataBuffer)
+	{
+		LibMCEnv_uint64 elementsNeededPointData = 0;
+		LibMCEnv_uint64 elementsWrittenPointData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPolylineDataInMM(m_pHandle, nSegmentIndex, 0, &elementsNeededPointData, nullptr));
+		PointDataBuffer.resize((size_t) elementsNeededPointData);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPolylineDataInMM(m_pHandle, nSegmentIndex, elementsNeededPointData, &elementsWrittenPointData, PointDataBuffer.data()));
 	}
 	
 	/**
@@ -19261,20 +19249,6 @@ public:
 	}
 	
 	/**
-	* CToolpathLayer::GetSegmentPointDataInMM - Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.
-	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-	* @param[out] PointDataBuffer - The point data array. Positions are absolute in mm.
-	*/
-	void CToolpathLayer::GetSegmentPointDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatPosition2D> & PointDataBuffer)
-	{
-		LibMCEnv_uint64 elementsNeededPointData = 0;
-		LibMCEnv_uint64 elementsWrittenPointData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPointDataInMM(m_pHandle, nSegmentIndex, 0, &elementsNeededPointData, nullptr));
-		PointDataBuffer.resize((size_t) elementsNeededPointData);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentPointDataInMM(m_pHandle, nSegmentIndex, elementsNeededPointData, &elementsWrittenPointData, PointDataBuffer.data()));
-	}
-	
-	/**
 	* CToolpathLayer::GetSegmentHatchDataInMM - Retrieves the assigned segment hatch list. Fails if segment type is not hatch.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
 	* @param[out] HatchDataBuffer - The hatch data array. Positions are absolute in mm.
@@ -19289,33 +19263,37 @@ public:
 	}
 	
 	/**
-	* CToolpathLayer::GetSegmentLinearPolylineModifiers - Retrieves factor overrides for a specific segment. Fails if segment type is not loop or polyline.
-	* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-	* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
-	* @param[out] ModificationDataBuffer - The override factor array. Will return as many override factors as points in the segment.
+	* CToolpathLayer::GetTypedSegmentSubInterpolationIndices - Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+	* @param[out] IndexDataBuffer - The hatch subinterpolation array. Positions are absolute in units.
 	*/
-	void CToolpathLayer::GetSegmentLinearPolylineModifiers(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileModificationFactor eModificationFactorType, std::vector<LibMCEnv_double> & ModificationDataBuffer)
+	void CToolpathLayer::GetTypedSegmentSubInterpolationIndices(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<sHatch2DSubinterpolationIndex> & IndexDataBuffer)
 	{
-		LibMCEnv_uint64 elementsNeededModificationData = 0;
-		LibMCEnv_uint64 elementsWrittenModificationData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentLinearPolylineModifiers(m_pHandle, nSegmentIndex, eModificationFactorType, 0, &elementsNeededModificationData, nullptr));
-		ModificationDataBuffer.resize((size_t) elementsNeededModificationData);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentLinearPolylineModifiers(m_pHandle, nSegmentIndex, eModificationFactorType, elementsNeededModificationData, &elementsWrittenModificationData, ModificationDataBuffer.data()));
+		LibMCEnv_uint64 elementsNeededIndexData = 0;
+		LibMCEnv_uint64 elementsWrittenIndexData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices(m_pHandle, nSegmentIndex, eValueType, 0, &elementsNeededIndexData, nullptr));
+		IndexDataBuffer.resize((size_t) elementsNeededIndexData);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices(m_pHandle, nSegmentIndex, eValueType, elementsNeededIndexData, &elementsWrittenIndexData, IndexDataBuffer.data()));
 	}
 	
 	/**
-	* CToolpathLayer::GetSegmentLinearHatchOverrides - Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.
-	* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-	* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
-	* @param[out] ModificationDataBuffer - The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point, as well as how many non-linear interpolation points are given for the hatch.
+	* CToolpathLayer::EvaluateHatchProfileTypedModifier - Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+	* @param[out] EvaluationData1Buffer - Evaluated data on the first point on each hatch. Will return HatchCount elements.
+	* @param[out] EvaluationData2Buffer - Evaluated data on the second point on each hatch. Will return HatchCount elements.
 	*/
-	void CToolpathLayer::GetSegmentLinearHatchOverrides(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileModificationFactor eModificationFactorType, std::vector<sHatch2DModificationFactors> & ModificationDataBuffer)
+	void CToolpathLayer::EvaluateHatchProfileTypedModifier(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_double> & EvaluationData1Buffer, std::vector<LibMCEnv_double> & EvaluationData2Buffer)
 	{
-		LibMCEnv_uint64 elementsNeededModificationData = 0;
-		LibMCEnv_uint64 elementsWrittenModificationData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentLinearHatchOverrides(m_pHandle, nSegmentIndex, eModificationFactorType, 0, &elementsNeededModificationData, nullptr));
-		ModificationDataBuffer.resize((size_t) elementsNeededModificationData);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetSegmentLinearHatchOverrides(m_pHandle, nSegmentIndex, eModificationFactorType, elementsNeededModificationData, &elementsWrittenModificationData, ModificationDataBuffer.data()));
+		LibMCEnv_uint64 elementsNeededEvaluationData1 = 0;
+		LibMCEnv_uint64 elementsWrittenEvaluationData1 = 0;
+		LibMCEnv_uint64 elementsNeededEvaluationData2 = 0;
+		LibMCEnv_uint64 elementsWrittenEvaluationData2 = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateHatchProfileTypedModifier(m_pHandle, nSegmentIndex, eValueType, 0, &elementsNeededEvaluationData1, nullptr, 0, &elementsNeededEvaluationData2, nullptr));
+		EvaluationData1Buffer.resize((size_t) elementsNeededEvaluationData1);
+		EvaluationData2Buffer.resize((size_t) elementsNeededEvaluationData2);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateHatchProfileTypedModifier(m_pHandle, nSegmentIndex, eValueType, elementsNeededEvaluationData1, &elementsWrittenEvaluationData1, EvaluationData1Buffer.data(), elementsNeededEvaluationData2, &elementsWrittenEvaluationData2, EvaluationData2Buffer.data()));
 	}
 	
 	/**

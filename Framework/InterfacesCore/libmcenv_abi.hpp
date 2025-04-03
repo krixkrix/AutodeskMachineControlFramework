@@ -2626,16 +2626,6 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentinfo(LibMCEnv_
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmenttype(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nIndex, LibMCEnv::eToolpathSegmentType * pType);
 
 /**
-* Returns if segment is a loop.
-*
-* @param[in] pToolpathLayer - ToolpathLayer instance.
-* @param[in] nIndex - Index. Must be between 0 and Count - 1.
-* @param[out] pIsLoop - Flag if segment is a loop.
-* @return error code or 0 (success)
-*/
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_segmentisloop(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nIndex, bool * pIsLoop);
-
-/**
 * Returns if segment is a polyline.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
@@ -2723,14 +2713,14 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_findcustomsegmentattribu
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_findcustomsegmentattributeinfo(LibMCEnv_ToolpathLayer pToolpathLayer, const char * pNamespace, const char * pAttributeName, LibMCEnv_uint32 * pAttributeID, LibMCEnv::eToolpathAttributeType * pAttributeType);
 
 /**
-* Retrieves the number of points in the segment. For type hatch, the points are taken pairwise.
+* Retrieves the number of points in the segment. Fails if segment is not of type polyline.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
 * @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-* @param[out] pHatchCount - Hatch count of segment.
+* @param[out] pPointCount - Point count of the polyline.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpointcount(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint32 * pHatchCount);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpolylinepointcount(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint32 * pPointCount);
 
 /**
 * Retrieves the number of hatches in the segment (i.e. PointCount / 2). Returns 0 if segment is not of type hatch.
@@ -2939,7 +2929,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpartuuid(LibMC
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentlocalpartid(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv_uint32 * pLocalPartID);
 
 /**
-* Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.
+* Retrieves the assigned segment point list. Fails, if type is not polyline.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
 * @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
@@ -2948,7 +2938,19 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentlocalpartid(Li
 * @param[out] pPointDataBuffer - Position2D  buffer of The point data array. Positions are absolute in units.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpointdata(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpolylinedata(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sPosition2D * pPointDataBuffer);
+
+/**
+* Retrieves the assigned segment point list. Fails, if type is not polyline.
+*
+* @param[in] pToolpathLayer - ToolpathLayer instance.
+* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+* @param[in] nPointDataBufferSize - Number of elements in buffer
+* @param[out] pPointDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pPointDataBuffer - FloatPosition2D  buffer of The point data array. Positions are absolute in mm.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpolylinedatainmm(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sFloatPosition2D * pPointDataBuffer);
 
 /**
 * Retrieves the assigned segment hatch list. Fails if segment type is not hatch.
@@ -2963,18 +2965,6 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpointdata(LibM
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmenthatchdata(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sHatch2D * pHatchDataBuffer);
 
 /**
-* Retrieves the assigned segment point list. For type hatch, the points are taken pairwise.
-*
-* @param[in] pToolpathLayer - ToolpathLayer instance.
-* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-* @param[in] nPointDataBufferSize - Number of elements in buffer
-* @param[out] pPointDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pPointDataBuffer - FloatPosition2D  buffer of The point data array. Positions are absolute in mm.
-* @return error code or 0 (success)
-*/
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpointdatainmm(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nPointDataBufferSize, LibMCEnv_uint64* pPointDataNeededCount, LibMCEnv::sFloatPosition2D * pPointDataBuffer);
-
-/**
 * Retrieves the assigned segment hatch list. Fails if segment type is not hatch.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
@@ -2987,30 +2977,33 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentpointdatainmm(
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmenthatchdatainmm(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sFloatHatch2D * pHatchDataBuffer);
 
 /**
-* Retrieves factor overrides for a specific segment. Fails if segment type is not loop or polyline.
+* Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
-* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
-* @param[in] nModificationDataBufferSize - Number of elements in buffer
-* @param[out] pModificationDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pModificationDataBuffer - double  buffer of The override factor array. Will return as many override factors as points in the segment.
+* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+* @param[in] nIndexDataBufferSize - Number of elements in buffer
+* @param[out] pIndexDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pIndexDataBuffer - Hatch2DSubinterpolationIndex  buffer of The hatch subinterpolation array. Positions are absolute in units.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentlinearpolylinemodifiers(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, const LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv_double * pModificationDataBuffer);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_uint64 nIndexDataBufferSize, LibMCEnv_uint64* pIndexDataNeededCount, LibMCEnv::sHatch2DSubinterpolationIndex * pIndexDataBuffer);
 
 /**
-* Retrieves factor overrides for a specific segment. Fails if segment type is not hatch.
+* Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
-* @param[in] nSegmentIndex - Segment Index. Must be between 0 and Count - 1.
-* @param[in] eModificationFactorType - Which override factor to return (F, G or H).
-* @param[in] nModificationDataBufferSize - Number of elements in buffer
-* @param[out] pModificationDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pModificationDataBuffer - Hatch2DModificationFactors  buffer of The override factor array. Will return as many override factors as hatches in the segment. Each element contains one factor for the first point or the second point, as well as how many non-linear interpolation points are given for the hatch.
+* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+* @param[in] nEvaluationData1BufferSize - Number of elements in buffer
+* @param[out] pEvaluationData1NeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pEvaluationData1Buffer - double  buffer of Evaluated data on the first point on each hatch. Will return HatchCount elements.
+* @param[in] nEvaluationData2BufferSize - Number of elements in buffer
+* @param[out] pEvaluationData2NeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pEvaluationData2Buffer - double  buffer of Evaluated data on the second point on each hatch. Will return HatchCount elements.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_getsegmentlinearhatchoverrides(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor eModificationFactorType, const LibMCEnv_uint64 nModificationDataBufferSize, LibMCEnv_uint64* pModificationDataNeededCount, LibMCEnv::sHatch2DModificationFactors * pModificationDataBuffer);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double * pEvaluationData1Buffer, const LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double * pEvaluationData2Buffer);
 
 /**
 * Retrieves the layers Z Value in units.

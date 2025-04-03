@@ -650,6 +650,9 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_INVALIDWIDGETREQUEST 633 /** Invalid widget request */
 #define LIBMC_ERROR_SOURCEVARIABLENOTFOUND 634 /** Source variable not found */
 #define LIBMC_ERROR_INVALIDEVENTRETURNVALUES 635 /** Invalid event return values */
+#define LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT 636 /** Invalid modifier interpolation count */
+#define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE 10234 /** Invalid toolpath modifier type. */
+#define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR 10235 /** Invalid toolpath modifier factor. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1212,6 +1215,9 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDWIDGETREQUEST: return "Invalid widget request";
     case LIBMC_ERROR_SOURCEVARIABLENOTFOUND: return "Source variable not found";
     case LIBMC_ERROR_INVALIDEVENTRETURNVALUES: return "Invalid event return values";
+    case LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT: return "Invalid modifier interpolation count";
+    case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE: return "Invalid toolpath modifier type.";
+    case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR: return "Invalid toolpath modifier factor.";
     default: return "unknown error";
   }
 }
