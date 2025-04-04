@@ -1475,7 +1475,9 @@ void CRTCContext::callSetTriggerOIE(uint32_t nPeriod)
 				channelArray.at(nIndex) = 0;
 		}
 
-		m_pScanLabSDK->n_set_trigger8(m_CardNo, nPeriod, channelArray[0], channelArray[1], channelArray[2], channelArray[3], channelArray[4], channelArray[5], channelArray[6], channelArray[7]);
+		uint32_t nBufferRoundtripBit = 1UL << 31;
+
+		m_pScanLabSDK->n_set_trigger8(m_CardNo, nPeriod | nBufferRoundtripBit, channelArray[0], channelArray[1], channelArray[2], channelArray[3], channelArray[4], channelArray[5], channelArray[6], channelArray[7]);
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
 	}
 	else {

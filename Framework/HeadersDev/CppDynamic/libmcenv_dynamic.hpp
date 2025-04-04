@@ -658,6 +658,14 @@ public:
 			case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "COULDNOTLOADJPEGIMAGE";
 			case LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP: return "SEGMENTISNOTOFTYPEPOLYLINEORLOOP";
 			case LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES: return "COULDNOTEVALUATEHATCHPROFILES";
+			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONNOMODIFICATION: return "SUBINTERPOLATIONDATAONNOMODIFICATION";
+			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONCONSTANTMODIFICATION: return "SUBINTERPOLATIONDATAONCONSTANTMODIFICATION";
+			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "SUBINTERPOLATIONDATAONLINEARMODIFICATION";
+			case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "INVALIDHATCHSUBINTERPOLATIONDATA";
+			case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "HATCHSUBINTERPOLATIONDATAOVERFLOW";
+			case LIBMCENV_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "LINEARPOWERVALUESAREINCOMPLETE";
+			case LIBMCENV_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "NONLINEARPOWERVALUESAREINCOMPLETE";
+			case LIBMCENV_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "INTERPOLATIONDATAISNOTINCREASING";
 		}
 		return "UNKNOWN";
 	}
@@ -899,6 +907,14 @@ public:
 			case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "Could not load JPEG Image.";
 			case LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP: return "Segment is not of type polyline or loop.";
 			case LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES: return "Could not evaluate hatch profiles.";
+			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONNOMODIFICATION: return "Subinterpolation data on no modification.";
+			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONCONSTANTMODIFICATION: return "Subinterpolation data on constant modification.";
+			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "Subinterpolation data on linear modification.";
+			case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
+			case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
+			case LIBMCENV_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "Linear power values are incomplete.";
+			case LIBMCENV_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "Nonlinear power values are incomplete.";
+			case LIBMCENV_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "Interpolation data is not increasing.";
 		}
 		return "unknown error";
 	}
@@ -1877,8 +1893,8 @@ public:
 	inline void GetSegmentPolylineDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatPosition2D> & PointDataBuffer);
 	inline void GetSegmentHatchData(const LibMCEnv_uint32 nSegmentIndex, std::vector<sHatch2D> & HatchDataBuffer);
 	inline void GetSegmentHatchDataInMM(const LibMCEnv_uint32 nSegmentIndex, std::vector<sFloatHatch2D> & HatchDataBuffer);
-	inline void GetTypedSegmentSubInterpolationIndices(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<sHatch2DSubinterpolationIndex> & IndexDataBuffer);
-	inline void EvaluateHatchProfileTypedModifier(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_double> & EvaluationData1Buffer, std::vector<LibMCEnv_double> & EvaluationData2Buffer);
+	inline void EvaluateTypedHatchProfileModifier(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_double> & EvaluationData1Buffer, std::vector<LibMCEnv_double> & EvaluationData2Buffer);
+	inline void EvaluateTypedHatchProfileInterpolation(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_uint32> & CountArrayBuffer, std::vector<sHatch2DSubInterpolationData> & EvaluationDataBuffer);
 	inline LibMCEnv_int32 GetZValue();
 	inline LibMCEnv_double GetZValueInMM();
 	inline LibMCEnv_double GetUnits();
@@ -3452,8 +3468,8 @@ public:
 		pWrapperTable->m_ToolpathLayer_GetSegmentPolylineDataInMM = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchData = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM = nullptr;
-		pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices = nullptr;
-		pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier = nullptr;
+		pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileModifier = nullptr;
+		pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetZValue = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetZValueInMM = nullptr;
 		pWrapperTable->m_ToolpathLayer_GetUnits = nullptr;
@@ -6568,21 +6584,21 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices = (PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationIndicesPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices");
+		pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileModifier = (PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileModifierPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_evaluatetypedhatchprofilemodifier");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices = (PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationIndicesPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices");
+		pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileModifier = (PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileModifierPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_evaluatetypedhatchprofilemodifier");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices == nullptr)
+		if (pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileModifier == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier = (PLibMCEnvToolpathLayer_EvaluateHatchProfileTypedModifierPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier");
+		pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation = (PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileInterpolationPtr) GetProcAddress(hLibrary, "libmcenv_toolpathlayer_evaluatetypedhatchprofileinterpolation");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier = (PLibMCEnvToolpathLayer_EvaluateHatchProfileTypedModifierPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier");
+		pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation = (PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileInterpolationPtr) dlsym(hLibrary, "libmcenv_toolpathlayer_evaluatetypedhatchprofileinterpolation");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier == nullptr)
+		if (pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13224,12 +13240,12 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetSegmentHatchDataInMM == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices", (void**)&(pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_evaluatetypedhatchprofilemodifier", (void**)&(pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileModifier));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileModifier == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier", (void**)&(pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_EvaluateHatchProfileTypedModifier == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_toolpathlayer_evaluatetypedhatchprofileinterpolation", (void**)&(pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_toolpathlayer_getzvalue", (void**)&(pWrapperTable->m_ToolpathLayer_GetZValue));
@@ -19263,37 +19279,41 @@ public:
 	}
 	
 	/**
-	* CToolpathLayer::GetTypedSegmentSubInterpolationIndices - Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.
-	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
-	* @param[out] IndexDataBuffer - The hatch subinterpolation array. Positions are absolute in units.
-	*/
-	void CToolpathLayer::GetTypedSegmentSubInterpolationIndices(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<sHatch2DSubinterpolationIndex> & IndexDataBuffer)
-	{
-		LibMCEnv_uint64 elementsNeededIndexData = 0;
-		LibMCEnv_uint64 elementsWrittenIndexData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices(m_pHandle, nSegmentIndex, eValueType, 0, &elementsNeededIndexData, nullptr));
-		IndexDataBuffer.resize((size_t) elementsNeededIndexData);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices(m_pHandle, nSegmentIndex, eValueType, elementsNeededIndexData, &elementsWrittenIndexData, IndexDataBuffer.data()));
-	}
-	
-	/**
-	* CToolpathLayer::EvaluateHatchProfileTypedModifier - Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.
+	* CToolpathLayer::EvaluateTypedHatchProfileModifier - Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.
 	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
 	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
 	* @param[out] EvaluationData1Buffer - Evaluated data on the first point on each hatch. Will return HatchCount elements.
 	* @param[out] EvaluationData2Buffer - Evaluated data on the second point on each hatch. Will return HatchCount elements.
 	*/
-	void CToolpathLayer::EvaluateHatchProfileTypedModifier(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_double> & EvaluationData1Buffer, std::vector<LibMCEnv_double> & EvaluationData2Buffer)
+	void CToolpathLayer::EvaluateTypedHatchProfileModifier(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_double> & EvaluationData1Buffer, std::vector<LibMCEnv_double> & EvaluationData2Buffer)
 	{
 		LibMCEnv_uint64 elementsNeededEvaluationData1 = 0;
 		LibMCEnv_uint64 elementsWrittenEvaluationData1 = 0;
 		LibMCEnv_uint64 elementsNeededEvaluationData2 = 0;
 		LibMCEnv_uint64 elementsWrittenEvaluationData2 = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateHatchProfileTypedModifier(m_pHandle, nSegmentIndex, eValueType, 0, &elementsNeededEvaluationData1, nullptr, 0, &elementsNeededEvaluationData2, nullptr));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateTypedHatchProfileModifier(m_pHandle, nSegmentIndex, eValueType, 0, &elementsNeededEvaluationData1, nullptr, 0, &elementsNeededEvaluationData2, nullptr));
 		EvaluationData1Buffer.resize((size_t) elementsNeededEvaluationData1);
 		EvaluationData2Buffer.resize((size_t) elementsNeededEvaluationData2);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateHatchProfileTypedModifier(m_pHandle, nSegmentIndex, eValueType, elementsNeededEvaluationData1, &elementsWrittenEvaluationData1, EvaluationData1Buffer.data(), elementsNeededEvaluationData2, &elementsWrittenEvaluationData2, EvaluationData2Buffer.data()));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateTypedHatchProfileModifier(m_pHandle, nSegmentIndex, eValueType, elementsNeededEvaluationData1, &elementsWrittenEvaluationData1, EvaluationData1Buffer.data(), elementsNeededEvaluationData2, &elementsWrittenEvaluationData2, EvaluationData2Buffer.data()));
+	}
+	
+	/**
+	* CToolpathLayer::EvaluateTypedHatchProfileInterpolation - Evaluates the subinterpolation values of with its modifier factors. Fails if segment type is not hatch.
+	* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+	* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+	* @param[out] CountArrayBuffer - Number of subinterpolation values per hatch. Will contain HatchCount elements.
+	* @param[out] EvaluationDataBuffer - Evaluated data on evaluation points for the full segment, in hatch order. Will contain the sum of CountArray elements.
+	*/
+	void CToolpathLayer::EvaluateTypedHatchProfileInterpolation(const LibMCEnv_uint32 nSegmentIndex, const eToolpathProfileValueType eValueType, std::vector<LibMCEnv_uint32> & CountArrayBuffer, std::vector<sHatch2DSubInterpolationData> & EvaluationDataBuffer)
+	{
+		LibMCEnv_uint64 elementsNeededCountArray = 0;
+		LibMCEnv_uint64 elementsWrittenCountArray = 0;
+		LibMCEnv_uint64 elementsNeededEvaluationData = 0;
+		LibMCEnv_uint64 elementsWrittenEvaluationData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation(m_pHandle, nSegmentIndex, eValueType, 0, &elementsNeededCountArray, nullptr, 0, &elementsNeededEvaluationData, nullptr));
+		CountArrayBuffer.resize((size_t) elementsNeededCountArray);
+		EvaluationDataBuffer.resize((size_t) elementsNeededEvaluationData);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation(m_pHandle, nSegmentIndex, eValueType, elementsNeededCountArray, &elementsWrittenCountArray, CountArrayBuffer.data(), elementsNeededEvaluationData, &elementsWrittenEvaluationData, EvaluationDataBuffer.data()));
 	}
 	
 	/**

@@ -8300,18 +8300,20 @@ LibMCEnvResult libmcenv_toolpathlayer_getsegmenthatchdatainmm(LibMCEnv_ToolpathL
 	}
 }
 
-LibMCEnvResult libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileValueType eValueType, const LibMCEnv_uint64 nIndexDataBufferSize, LibMCEnv_uint64* pIndexDataNeededCount, sLibMCEnvHatch2DSubinterpolationIndex * pIndexDataBuffer)
+LibMCEnvResult libmcenv_toolpathlayer_evaluatetypedhatchprofilemodifier(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileValueType eValueType, const LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double * pEvaluationData1Buffer, const LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double * pEvaluationData2Buffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathLayer;
 
 	try {
-		if ((!pIndexDataBuffer) && !(pIndexDataNeededCount))
+		if ((!pEvaluationData1Buffer) && !(pEvaluationData1NeededCount))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if ((!pEvaluationData2Buffer) && !(pEvaluationData2NeededCount))
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
 		if (!pIToolpathLayer)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIToolpathLayer->GetTypedSegmentSubInterpolationIndices(nSegmentIndex, eValueType, nIndexDataBufferSize, pIndexDataNeededCount, pIndexDataBuffer);
+		pIToolpathLayer->EvaluateTypedHatchProfileModifier(nSegmentIndex, eValueType, nEvaluationData1BufferSize, pEvaluationData1NeededCount, pEvaluationData1Buffer, nEvaluationData2BufferSize, pEvaluationData2NeededCount, pEvaluationData2Buffer);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -8326,20 +8328,20 @@ LibMCEnvResult libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices(Lib
 	}
 }
 
-LibMCEnvResult libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileValueType eValueType, const LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double * pEvaluationData1Buffer, const LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double * pEvaluationData2Buffer)
+LibMCEnvResult libmcenv_toolpathlayer_evaluatetypedhatchprofileinterpolation(LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, eLibMCEnvToolpathProfileValueType eValueType, const LibMCEnv_uint64 nCountArrayBufferSize, LibMCEnv_uint64* pCountArrayNeededCount, LibMCEnv_uint32 * pCountArrayBuffer, const LibMCEnv_uint64 nEvaluationDataBufferSize, LibMCEnv_uint64* pEvaluationDataNeededCount, sLibMCEnvHatch2DSubInterpolationData * pEvaluationDataBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathLayer;
 
 	try {
-		if ((!pEvaluationData1Buffer) && !(pEvaluationData1NeededCount))
+		if ((!pCountArrayBuffer) && !(pCountArrayNeededCount))
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if ((!pEvaluationData2Buffer) && !(pEvaluationData2NeededCount))
+		if ((!pEvaluationDataBuffer) && !(pEvaluationDataNeededCount))
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		IToolpathLayer* pIToolpathLayer = dynamic_cast<IToolpathLayer*>(pIBaseClass);
 		if (!pIToolpathLayer)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIToolpathLayer->EvaluateHatchProfileTypedModifier(nSegmentIndex, eValueType, nEvaluationData1BufferSize, pEvaluationData1NeededCount, pEvaluationData1Buffer, nEvaluationData2BufferSize, pEvaluationData2NeededCount, pEvaluationData2Buffer);
+		pIToolpathLayer->EvaluateTypedHatchProfileInterpolation(nSegmentIndex, eValueType, nCountArrayBufferSize, pCountArrayNeededCount, pCountArrayBuffer, nEvaluationDataBufferSize, pEvaluationDataNeededCount, pEvaluationDataBuffer);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -29329,10 +29331,10 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmenthatchdata;
 	if (sProcName == "libmcenv_toolpathlayer_getsegmenthatchdatainmm") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getsegmenthatchdatainmm;
-	if (sProcName == "libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices") 
-		*ppProcAddress = (void*) &libmcenv_toolpathlayer_gettypedsegmentsubinterpolationindices;
-	if (sProcName == "libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier") 
-		*ppProcAddress = (void*) &libmcenv_toolpathlayer_evaluatehatchprofiletypedmodifier;
+	if (sProcName == "libmcenv_toolpathlayer_evaluatetypedhatchprofilemodifier") 
+		*ppProcAddress = (void*) &libmcenv_toolpathlayer_evaluatetypedhatchprofilemodifier;
+	if (sProcName == "libmcenv_toolpathlayer_evaluatetypedhatchprofileinterpolation") 
+		*ppProcAddress = (void*) &libmcenv_toolpathlayer_evaluatetypedhatchprofileinterpolation;
 	if (sProcName == "libmcenv_toolpathlayer_getzvalue") 
 		*ppProcAddress = (void*) &libmcenv_toolpathlayer_getzvalue;
 	if (sProcName == "libmcenv_toolpathlayer_getzvalueinmm") 

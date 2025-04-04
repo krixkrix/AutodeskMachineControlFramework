@@ -329,6 +329,14 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE 10232 /** Could not load JPEG Image. */
 #define LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP 10233 /** Segment is not of type polyline or loop. */
 #define LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES 10234 /** Could not evaluate hatch profiles. */
+#define LIBMCENV_ERROR_SUBINTERPOLATIONDATAONNOMODIFICATION 10235 /** Subinterpolation data on no modification. */
+#define LIBMCENV_ERROR_SUBINTERPOLATIONDATAONCONSTANTMODIFICATION 10236 /** Subinterpolation data on constant modification. */
+#define LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION 10237 /** Subinterpolation data on linear modification. */
+#define LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA 10238 /** Invalid hatch subinterpolation data. */
+#define LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW 10239 /** Hatch subinterpolation data overflow. */
+#define LIBMCENV_ERROR_LINEARPOWERVALUESAREINCOMPLETE 10240 /** Linear power values are incomplete. */
+#define LIBMCENV_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE 10241 /** Nonlinear power values are incomplete. */
+#define LIBMCENV_ERROR_INTERPOLATIONDATAISNOTINCREASING 10242 /** Interpolation data is not increasing. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -570,6 +578,14 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_COULDNOTLOADJPEGIMAGE: return "Could not load JPEG Image.";
     case LIBMCENV_ERROR_SEGMENTISNOTOFTYPEPOLYLINEORLOOP: return "Segment is not of type polyline or loop.";
     case LIBMCENV_ERROR_COULDNOTEVALUATEHATCHPROFILES: return "Could not evaluate hatch profiles.";
+    case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONNOMODIFICATION: return "Subinterpolation data on no modification.";
+    case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONCONSTANTMODIFICATION: return "Subinterpolation data on constant modification.";
+    case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "Subinterpolation data on linear modification.";
+    case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
+    case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
+    case LIBMCENV_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "Linear power values are incomplete.";
+    case LIBMCENV_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "Nonlinear power values are incomplete.";
+    case LIBMCENV_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "Interpolation data is not increasing.";
     default: return "unknown error";
   }
 }
@@ -792,11 +808,6 @@ namespace LibMCEnv {
       LibMCEnv_int32 m_Y2;
   } sHatch2D;
   
-  typedef struct sHatch2DSubinterpolationIndex {
-      LibMCEnv_uint32 m_StartIndex;
-      LibMCEnv_uint32 m_SubinterpolationCount;
-  } sHatch2DSubinterpolationIndex;
-  
   typedef struct sMeshVertex3D {
       LibMCEnv_uint32 m_VertexID;
       LibMCEnv_double m_Coordinates[3];
@@ -828,11 +839,10 @@ namespace LibMCEnv {
       LibMCEnv_double m_Y2;
   } sFloatHatch2D;
   
-  typedef struct sHatch2DModificationFactors {
-      LibMCEnv_double m_Point1Factor;
-      LibMCEnv_double m_Point2Factor;
-      LibMCEnv_uint32 m_NumberOfNonLinearInterpolationBases;
-  } sHatch2DModificationFactors;
+  typedef struct sHatch2DSubInterpolationData {
+      LibMCEnv_double m_Parameter;
+      LibMCEnv_double m_Value;
+  } sHatch2DSubInterpolationData;
   
   typedef struct sModelDataTransform {
       LibMCEnv_double m_Matrix[3][3];
@@ -871,14 +881,13 @@ typedef LibMCEnv::eBuildExecutionStatus eLibMCEnvBuildExecutionStatus;
 typedef LibMCEnv::eDataTableColumnType eLibMCEnvDataTableColumnType;
 typedef LibMCEnv::sPosition2D sLibMCEnvPosition2D;
 typedef LibMCEnv::sHatch2D sLibMCEnvHatch2D;
-typedef LibMCEnv::sHatch2DSubinterpolationIndex sLibMCEnvHatch2DSubinterpolationIndex;
 typedef LibMCEnv::sMeshVertex3D sLibMCEnvMeshVertex3D;
 typedef LibMCEnv::sMeshTriangle3D sLibMCEnvMeshTriangle3D;
 typedef LibMCEnv::sFloatPosition2D sLibMCEnvFloatPosition2D;
 typedef LibMCEnv::sFieldData2DPoint sLibMCEnvFieldData2DPoint;
 typedef LibMCEnv::sFieldData3DPoint sLibMCEnvFieldData3DPoint;
 typedef LibMCEnv::sFloatHatch2D sLibMCEnvFloatHatch2D;
-typedef LibMCEnv::sHatch2DModificationFactors sLibMCEnvHatch2DModificationFactors;
+typedef LibMCEnv::sHatch2DSubInterpolationData sLibMCEnvHatch2DSubInterpolationData;
 typedef LibMCEnv::sModelDataTransform sLibMCEnvModelDataTransform;
 typedef LibMCEnv::sColorRGB sLibMCEnvColorRGB;
 typedef LibMCEnv::sTimeStreamEntry sLibMCEnvTimeStreamEntry;

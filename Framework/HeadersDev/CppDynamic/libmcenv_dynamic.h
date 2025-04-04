@@ -2964,19 +2964,6 @@ typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentHatchDataPtr) (LibMCEn
 typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetSegmentHatchDataInMMPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, const LibMCEnv_uint64 nHatchDataBufferSize, LibMCEnv_uint64* pHatchDataNeededCount, LibMCEnv::sFloatHatch2D * pHatchDataBuffer);
 
 /**
-* Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.
-*
-* @param[in] pToolpathLayer - ToolpathLayer instance.
-* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
-* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
-* @param[in] nIndexDataBufferSize - Number of elements in buffer
-* @param[out] pIndexDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pIndexDataBuffer - Hatch2DSubinterpolationIndex  buffer of The hatch subinterpolation array. Positions are absolute in units.
-* @return error code or 0 (success)
-*/
-typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationIndicesPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_uint64 nIndexDataBufferSize, LibMCEnv_uint64* pIndexDataNeededCount, LibMCEnv::sHatch2DSubinterpolationIndex * pIndexDataBuffer);
-
-/**
 * Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.
 *
 * @param[in] pToolpathLayer - ToolpathLayer instance.
@@ -2990,7 +2977,23 @@ typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationI
 * @param[out] pEvaluationData2Buffer - double  buffer of Evaluated data on the second point on each hatch. Will return HatchCount elements.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_EvaluateHatchProfileTypedModifierPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double * pEvaluationData1Buffer, const LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double * pEvaluationData2Buffer);
+typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileModifierPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_uint64 nEvaluationData1BufferSize, LibMCEnv_uint64* pEvaluationData1NeededCount, LibMCEnv_double * pEvaluationData1Buffer, const LibMCEnv_uint64 nEvaluationData2BufferSize, LibMCEnv_uint64* pEvaluationData2NeededCount, LibMCEnv_double * pEvaluationData2Buffer);
+
+/**
+* Evaluates the subinterpolation values of with its modifier factors. Fails if segment type is not hatch.
+*
+* @param[in] pToolpathLayer - ToolpathLayer instance.
+* @param[in] nSegmentIndex - Index. Must be between 0 and Count - 1.
+* @param[in] eValueType - Enum to query for. MUST NOT be custom. Fails if value type does not exist.
+* @param[in] nCountArrayBufferSize - Number of elements in buffer
+* @param[out] pCountArrayNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pCountArrayBuffer - uint32  buffer of Number of subinterpolation values per hatch. Will contain HatchCount elements.
+* @param[in] nEvaluationDataBufferSize - Number of elements in buffer
+* @param[out] pEvaluationDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pEvaluationDataBuffer - Hatch2DSubInterpolationData  buffer of Evaluated data on evaluation points for the full segment, in hatch order. Will contain the sum of CountArray elements.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileInterpolationPtr) (LibMCEnv_ToolpathLayer pToolpathLayer, LibMCEnv_uint32 nSegmentIndex, LibMCEnv::eToolpathProfileValueType eValueType, const LibMCEnv_uint64 nCountArrayBufferSize, LibMCEnv_uint64* pCountArrayNeededCount, LibMCEnv_uint32 * pCountArrayBuffer, const LibMCEnv_uint64 nEvaluationDataBufferSize, LibMCEnv_uint64* pEvaluationDataNeededCount, LibMCEnv::sHatch2DSubInterpolationData * pEvaluationDataBuffer);
 
 /**
 * Retrieves the layers Z Value in units.
@@ -9886,8 +9889,8 @@ typedef struct {
 	PLibMCEnvToolpathLayer_GetSegmentPolylineDataInMMPtr m_ToolpathLayer_GetSegmentPolylineDataInMM;
 	PLibMCEnvToolpathLayer_GetSegmentHatchDataPtr m_ToolpathLayer_GetSegmentHatchData;
 	PLibMCEnvToolpathLayer_GetSegmentHatchDataInMMPtr m_ToolpathLayer_GetSegmentHatchDataInMM;
-	PLibMCEnvToolpathLayer_GetTypedSegmentSubInterpolationIndicesPtr m_ToolpathLayer_GetTypedSegmentSubInterpolationIndices;
-	PLibMCEnvToolpathLayer_EvaluateHatchProfileTypedModifierPtr m_ToolpathLayer_EvaluateHatchProfileTypedModifier;
+	PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileModifierPtr m_ToolpathLayer_EvaluateTypedHatchProfileModifier;
+	PLibMCEnvToolpathLayer_EvaluateTypedHatchProfileInterpolationPtr m_ToolpathLayer_EvaluateTypedHatchProfileInterpolation;
 	PLibMCEnvToolpathLayer_GetZValuePtr m_ToolpathLayer_GetZValue;
 	PLibMCEnvToolpathLayer_GetZValueInMMPtr m_ToolpathLayer_GetZValueInMM;
 	PLibMCEnvToolpathLayer_GetUnitsPtr m_ToolpathLayer_GetUnits;
