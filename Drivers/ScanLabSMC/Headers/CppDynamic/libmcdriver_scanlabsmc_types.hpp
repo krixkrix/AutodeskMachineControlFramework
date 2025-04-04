@@ -151,6 +151,9 @@ typedef void * LibMCDriver_ScanLabSMC_pvoid;
 #define LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE 1043 /** Could not set blend mode. */
 #define LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE 1044 /** Invalid blend mode. */
 #define LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL 1045 /** Invalid warning level. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE 1046 /** Linear power values are incomplete. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE 1047 /** Nonlinear power values are incomplete. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_INTERPOLATIONDATAISNOTINCREASING 1048 /** Interpolation data is not increasing. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLabSMC
@@ -214,6 +217,9 @@ inline const char * LIBMCDRIVER_SCANLABSMC_GETERRORSTRING (LibMCDriver_ScanLabSM
     case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE: return "Could not set blend mode.";
     case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE: return "Invalid blend mode.";
     case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL: return "Invalid warning level.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "Linear power values are incomplete.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "Nonlinear power values are incomplete.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "Interpolation data is not increasing.";
     default: return "unknown error";
   }
 }

@@ -96,7 +96,10 @@
 		<error name="COULDNOTSTOPJOBEXECUTION" code="1042" description="Could not stop job execution." />		
 		<error name="COULDNOTSETBLENDMODE" code="1043" description="Could not set blend mode." />		
 		<error name="INVALIDBLENDMODE" code="1044" description="Invalid blend mode." />		
-		<error name="INVALIDWARNINGLEVEL" code="1045" description="Invalid warning level." />		
+		<error name="INVALIDWARNINGLEVEL" code="1045" description="Invalid warning level." />	
+		<error name="LINEARPOWERVALUESAREINCOMPLETE" code="1046" description="Linear power values are incomplete." />
+		<error name="NONLINEARPOWERVALUESAREINCOMPLETE" code="1047" description="Nonlinear power values are incomplete." />
+		<error name="INTERPOLATIONDATAISNOTINCREASING" code="1048" description="Interpolation data is not increasing." />
 											
 	</errors>
 

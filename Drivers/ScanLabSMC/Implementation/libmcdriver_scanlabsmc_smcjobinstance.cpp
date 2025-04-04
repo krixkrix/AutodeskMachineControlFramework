@@ -41,6 +41,7 @@ Abstract: This is a stub class definition of CSMCJob
 
 #include <array>
 #include <thread>
+#include <cmath>
 #include <iostream>
 
 using namespace LibMCDriver_ScanLabSMC::Impl;
@@ -189,6 +190,11 @@ void CSMCJobInstance::DrawLoop(const LibMCDriver_ScanLabSMC_uint64 nPointsBuffer
 
 
 void CSMCJobInstance::DrawHatches(const LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D* pHatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue)
+{    
+    drawHatchesEx(nHatchesBufferSize, pHatchesBuffer, dMarkSpeed, dJumpSpeed, dPower, dZValue);
+}
+
+void CSMCJobInstance::drawHatchesEx(const LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D* pHatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue)
 {
     if (m_bIsFinalized)
         throw std::runtime_error("Job is already finalized!");
@@ -220,6 +226,136 @@ void CSMCJobInstance::DrawHatches(const LibMCDriver_ScanLabSMC_uint64 nHatchesBu
     }
 
 }
+
+void CSMCJobInstance::drawHatchesExLinearPower(const LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D* pHatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue, std::vector<double>& PowerValues1, std::vector<double>& PowerValues2, double dMaxPower)
+{
+    if (m_bIsFinalized)
+        throw std::runtime_error("Job is already finalized!");
+
+    if (nHatchesBufferSize > 0) {
+        if (pHatchesBuffer == nullptr)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
+
+        if (PowerValues1.size () != nHatchesBufferSize)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE);
+        if (PowerValues2.size() != nHatchesBufferSize)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE);
+
+        auto contextHandle = m_pContextHandle->getHandle();
+
+        m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_jump_speed(contextHandle, dJumpSpeed));
+        m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_mark_speed(contextHandle, dMarkSpeed));
+
+        for (uint64_t nHatchIndex = 0; nHatchIndex < nHatchesBufferSize; nHatchIndex++) {
+            auto& hatch = pHatchesBuffer[nHatchIndex];
+            std::array<double, 2> point1;
+            point1[0] = hatch.m_X1;
+            point1[1] = hatch.m_Y1;
+
+            std::array<double, 2> point2;
+            point2[0] = hatch.m_X2;
+            point2[1] = hatch.m_Y2;
+
+            std::array<double, 1> paraPower1;
+            paraPower1[0] = PowerValues1.at (nHatchIndex) / dMaxPower;
+
+            std::array<double, 1> paraPower2;
+            paraPower2[0] = PowerValues2.at(nHatchIndex) / dMaxPower;
+
+
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_jump(contextHandle, point1.data()));
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_enable(contextHandle, paraPower1.data()));
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_line(contextHandle, point2.data(), paraPower2.data()));
+
+        }
+    }
+
+}
+
+void CSMCJobInstance::drawHatchesExNonLinearPower(const LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D* pHatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue, std::vector<double>& PowerValues1, std::vector<double>& PowerValues2, std::vector<uint32_t> SubInterpolationCounts, std::vector<LibMCEnv::sHatch2DSubInterpolationData> SubInterpolationData, double dMaxPower)
+{
+    if (m_bIsFinalized)
+        throw std::runtime_error("Job is already finalized!");
+
+    if (nHatchesBufferSize > 0) {
+        if (pHatchesBuffer == nullptr)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
+
+        if (PowerValues1.size() != nHatchesBufferSize)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE);
+        if (PowerValues2.size() != nHatchesBufferSize)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE);
+        if (SubInterpolationCounts.size() != nHatchesBufferSize)
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE);
+
+        auto contextHandle = m_pContextHandle->getHandle();
+
+        m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_jump_speed(contextHandle, dJumpSpeed));
+        m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_mark_speed(contextHandle, dMarkSpeed));
+
+        uint32_t nTotalInterpolationIndex = 0;
+
+        for (uint64_t nHatchIndex = 0; nHatchIndex < nHatchesBufferSize; nHatchIndex++) {
+            auto& hatch = pHatchesBuffer[nHatchIndex];
+            std::array<double, 2> point1;
+            point1[0] = hatch.m_X1;
+            point1[1] = hatch.m_Y1;
+
+            std::array<double, 2> point2;
+            point2[0] = hatch.m_X2;
+            point2[1] = hatch.m_Y2;
+
+            double dX = point2[0] - point1[0];
+            double dY = point2[1] - point1[1];
+            double dLen = sqrt(dX * dX + dY * dY);
+
+            double dLastSection = 0.0;
+
+            std::array<double, 1> paraPower1;
+            paraPower1[0] = PowerValues1.at(nHatchIndex) / dMaxPower;
+
+            uint32_t nSubinterpolationCount = SubInterpolationCounts.at(nHatchIndex);
+
+            std::vector<slsc_ParaSection> paraSections (nSubinterpolationCount + 1);
+            for (uint32_t nSubinterpolationIndex = 0; nSubinterpolationIndex < nSubinterpolationCount; nSubinterpolationIndex++) {
+
+                auto & interpolationData = SubInterpolationData.at (nTotalInterpolationIndex);
+
+                double dCurrentSection = interpolationData.m_Parameter * dLen;
+                double dSectionDelta = dCurrentSection - dLastSection;
+
+                if (dSectionDelta < 0.0)
+                    throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INTERPOLATIONDATAISNOTINCREASING);
+
+                auto& section = paraSections.at(nSubinterpolationIndex);
+                section.m_dS = dSectionDelta;
+                section.m_dParaTargetFactor = interpolationData.m_Value / dMaxPower;
+
+                dLastSection = dCurrentSection;
+                nTotalInterpolationIndex++;
+            }
+
+            double dSectionDelta = dLen - dLastSection;
+            auto& section = paraSections.at(nSubinterpolationCount);
+            section.m_dS = dSectionDelta;
+            section.m_dParaTargetFactor = PowerValues2.at(nHatchIndex) / dMaxPower;
+
+            //paraSections.push_back({  });
+
+            slsc_MultiParaTarget multiTarget;
+            multiTarget.m_nNumTargets = nSubinterpolationCount + 1;
+            multiTarget.m_pTargets = paraSections.data();
+
+
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_jump(contextHandle, point1.data()));
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_enable(contextHandle, paraPower1.data()));
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_multi_para_line(contextHandle, point2.data(), &multiTarget));
+
+        }
+    }
+
+}
+
 
 bool CSMCJobInstance::IsReady()
 {
@@ -581,10 +717,12 @@ void CSMCJobInstance::AddLayerToList(LibMCEnv::PToolpathLayer pLayer)
         bool bDrawSegment = true;
         if (bDrawSegment && (nPointCount >= 2)) {
 
+            double dMaxPower = 400.0;
+
             double dJumpSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::JumpSpeed);
             double dMarkSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::Speed);
             double dPowerInWatts = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
-            double dPowerFactor = dPowerInWatts / 400.0;
+            double dPowerFactor = dPowerInWatts / dMaxPower;
             //int64_t nLaserIndexToDraw = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "laserindex", 0);
 
             double dMinimalMarkSpeed = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/smc/2024/10", "minimummarkspeed", dMarkSpeedInMMPerSecond);
@@ -636,8 +774,41 @@ void CSMCJobInstance::AddLayerToList(LibMCEnv::PToolpathLayer pLayer)
                         targetHatch.m_Y2 = (float)((double)srcHatch.m_Y2 * dUnits);
                     }
 
+                    std::vector<double> DataBuffer1;
+                    std::vector<double> DataBuffer2;
+
+                    std::vector<uint32_t> SubinterpolationCounts;
+                    std::vector<LibMCEnv::sHatch2DSubInterpolationData> SubinterpolationData;
+                    LibMCEnv::eToolpathProfileModificationType modificationType = pLayer->GetSegmentProfileTypedModificationType(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
+
+                    if ((modificationType == LibMCEnv::eToolpathProfileModificationType::LinearModification) 
+                        || (modificationType == LibMCEnv::eToolpathProfileModificationType::LinearModification)
+                        || (modificationType == LibMCEnv::eToolpathProfileModificationType::NonlinearModification)) {
+
+                        pLayer->EvaluateTypedHatchProfileModifier(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower, DataBuffer1, DataBuffer2);
+
+                    }
+
+                    if (modificationType == LibMCEnv::eToolpathProfileModificationType::NonlinearModification) {
+                        pLayer->EvaluateTypedHatchProfileInterpolation(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower, SubinterpolationCounts, SubinterpolationData);
+                    }
+
+
                     if (SMCHatches.size() > 0) {
-                        this->DrawHatches(SMCHatches.size(), SMCHatches.data(), dMarkSpeedInMMPerSecond, dJumpSpeedInMMPerSecond, dPowerFactor, dZValue);
+
+                        switch (modificationType) {
+                            case LibMCEnv::eToolpathProfileModificationType::NoModification:
+                            case LibMCEnv::eToolpathProfileModificationType::ConstantModification:
+                                this->drawHatchesEx(SMCHatches.size(), SMCHatches.data(), dMarkSpeedInMMPerSecond, dJumpSpeedInMMPerSecond, dPowerFactor, dZValue);
+                                break;
+                            case LibMCEnv::eToolpathProfileModificationType::LinearModification:
+                                this->drawHatchesExLinearPower(SMCHatches.size(), SMCHatches.data(), dMarkSpeedInMMPerSecond, dJumpSpeedInMMPerSecond, dPowerFactor, dZValue, DataBuffer1, DataBuffer2, dMaxPower);
+                                break;
+                            case LibMCEnv::eToolpathProfileModificationType::NonlinearModification:
+                                this->drawHatchesExNonLinearPower(SMCHatches.size(), SMCHatches.data(), dMarkSpeedInMMPerSecond, dJumpSpeedInMMPerSecond, dPowerFactor, dZValue, DataBuffer1, DataBuffer2, SubinterpolationCounts, SubinterpolationData, dMaxPower);
+                                break;
+                        }
+                        
                     }
 
                     break;
