@@ -285,6 +285,7 @@ namespace AMC {
 				segment.m_PartUUID = registerUUID(sBuildItemUUID);
 				segment.m_LocalPartID = nLocalPartID;
 				segment.m_LaserIndex = 0;
+				segment.m_TotalSubinterpolationCount = 0;
 				segment.m_HasOverrideFactors = 0;
 				if (m_CustomSegmentAttributes.size() > 0) {
 					segment.m_AttributeData = &m_SegmentAttributeData.at((size_t)nSegmentIndex * m_CustomSegmentAttributes.size());
@@ -423,6 +424,81 @@ namespace AMC {
 						}
 
 				
+						for (uint32_t nFactorIndex = 0; nFactorIndex < 3; nFactorIndex++) {
+
+							Lib3MF::eToolpathProfileModificationFactor factorType = Lib3MF::eToolpathProfileModificationFactor::Unknown;
+							uint32_t factorFlag = 0;
+							switch (nFactorIndex) {
+							case 0: factorType = Lib3MF::eToolpathProfileModificationFactor::FactorF;
+								factorFlag = TOOLPATHSEGMENTOVERRIDEFACTOR_F;
+								break;
+							case 1: factorType = Lib3MF::eToolpathProfileModificationFactor::FactorG;
+								factorFlag = TOOLPATHSEGMENTOVERRIDEFACTOR_G;
+								break;
+							case 2: factorType = Lib3MF::eToolpathProfileModificationFactor::FactorH;
+								factorFlag = TOOLPATHSEGMENTOVERRIDEFACTOR_H;
+								break;
+							}
+
+							if (p3MFLayer->SegmentHasModificationFactors(segment.m_3MFSegmentIndex, factorType)) {
+
+								segment.m_HasOverrideFactors |= factorFlag;
+
+								std::vector<uint32_t> nonLinearCounts;
+								std::vector<Lib3MF::sHatchModificationInterpolationData> nonLinearValues;
+
+								std::vector<Lib3MF::sHatch2DFactors> hatchFactors;
+								p3MFLayer->GetLinearSegmentHatchModificationFactors(segment.m_3MFSegmentIndex, factorType, hatchFactors);
+								p3MFLayer->GetSegmentAllNonlinearHatchesModificationInterpolation(segment.m_3MFSegmentIndex, factorType, nonLinearCounts, nonLinearValues);
+
+								if ((uint32_t)(hatchFactors.size() * 2) != segment.m_PointCount)
+									throw ELibMCCustomException(LIBMC_ERROR_INVALIDHATCHOVERRIDECOUNT, m_sDebugName);
+
+								size_t nInterpolationDataStartIndex = m_InterpolationData.size();
+								if (nonLinearValues.size() > 0) {
+									for (auto & interpolationData : nonLinearValues)
+										m_InterpolationData.push_back(interpolationData);
+								}
+
+								if (hatchFactors.size() > 0) {
+
+									auto pSrcOverride = &hatchFactors[0];
+									auto pDstOverride = &m_OverrideFactors.at(segment.m_PointStartIndex);
+
+									uint32_t nTotalSubInterpolationCount = 0;
+
+									for (uint32_t nHatchIndex = 0; nHatchIndex < hatchFactors.size(); nHatchIndex++) {
+										uint32_t nSubInterpolationCount = 0;
+										Lib3MF::sHatchModificationInterpolationData* pSubInterpolationData = nullptr;
+										if (nonLinearCounts.size() > 0) {
+											nSubInterpolationCount = nonLinearCounts.at(nHatchIndex);
+											pSubInterpolationData = &m_InterpolationData.at(nInterpolationDataStartIndex + nTotalSubInterpolationCount);
+										}
+
+										pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point1Factor;
+										pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
+										pDstOverride->m_pSubInterpolationData = pSubInterpolationData;
+										pDstOverride++;
+										pDstOverride->m_dFactors[nFactorIndex] = pSrcOverride->m_Point2Factor;
+										pDstOverride->m_nSubInterpolationCount = nSubInterpolationCount;
+										pDstOverride->m_pSubInterpolationData = pSubInterpolationData;
+										pDstOverride++;
+										pSrcOverride++;
+
+										nTotalSubInterpolationCount += nSubInterpolationCount;
+
+									}
+
+									if (nTotalSubInterpolationCount != nonLinearValues.size())
+										throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT, m_sDebugName);
+
+									segment.m_TotalSubinterpolationCount = nTotalSubInterpolationCount;
+								}
+								
+							}
+						}
+
+
 					}
 
 					break;
@@ -573,6 +649,16 @@ namespace AMC {
 
 		return m_Segments[nSegmentIndex].m_Type;
 	}
+
+	uint32_t CToolpathLayerData::getSegmentTotalSubinterpolationCount(const uint32_t nSegmentIndex)
+	{
+		if (nSegmentIndex >= m_Segments.size())
+			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSEGMENTINDEX, m_sDebugName);
+
+		return m_Segments[nSegmentIndex].m_TotalSubinterpolationCount;
+
+	}
+
 
 	void CToolpathLayerData::storePointsToBufferInUnits(const uint32_t nSegmentIndex, LibMCEnv::sPosition2D* pPositionData)
 	{
@@ -964,6 +1050,27 @@ namespace AMC {
 			return false;
 		}
 	}
+
+	void CToolpathLayerData::getHatchSubinterpolationData(const uint32_t nSegmentIndex, const uint32_t nHatchIndex, uint32_t& nSubInterpolationCount, Lib3MF::sHatchModificationInterpolationData*& pSubInterpolationData)
+	{
+		if (nSegmentIndex >= m_Segments.size())
+			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSEGMENTINDEX, m_sDebugName);
+
+		auto pSegment = &m_Segments[nSegmentIndex];
+		uint32_t nPointCount = pSegment->m_PointCount;
+		uint32_t nStartIndex = pSegment->m_PointStartIndex;
+		if (pSegment->m_PointCount > 0) {
+			uint32_t nPointIndex = nStartIndex + nHatchIndex * 2;
+			pSubInterpolationData = m_OverrideFactors.at(nPointIndex).m_pSubInterpolationData;
+			nSubInterpolationCount = m_OverrideFactors.at(nPointIndex).m_nSubInterpolationCount;
+		}
+		else {
+			pSubInterpolationData = nullptr;
+			nSubInterpolationCount = 0;
+		}
+
+	}
+
 
 	void CToolpathLayerData::getHatchModificationFactors(uint32_t nSegmentIndex, uint32_t nHatchIndex, LibMCEnv::eToolpathProfileModificationFactor eModificationFactor, double& dFactor1, double& dFactor2)
 	{

@@ -272,6 +272,13 @@
 		<error name="COULDNOTLOADJPEGIMAGE" code="10232" description="Could not load JPEG Image." />		
 		<error name="SEGMENTISNOTOFTYPEPOLYLINEORLOOP" code="10233" description="Segment is not of type polyline or loop." />		
 		<error name="COULDNOTEVALUATEHATCHPROFILES" code="10234" description="Could not evaluate hatch profiles." />		
+		<error name="SUBINTERPOLATIONDATAONNOMODIFICATION" code="10235" description="Subinterpolation data on no modification." />
+		<error name="SUBINTERPOLATIONDATAONCONSTANTMODIFICATION" code="10236" description="Subinterpolation data on constant modification." />		
+		<error name="SUBINTERPOLATIONDATAONLINEARMODIFICATION" code="10237" description="Subinterpolation data on linear modification." />		
+		<error name="INVALIDHATCHSUBINTERPOLATIONDATA" code="10238" description="Invalid hatch subinterpolation data." />
+		<error name="HATCHSUBINTERPOLATIONDATAOVERFLOW" code="10239" description="Hatch subinterpolation data overflow." />
+
+		
 		
 	</errors>
 
@@ -414,11 +421,6 @@
 		<member name="Y2" type="int32" />
 	</struct>
 	
-	<struct name="Hatch2DSubinterpolationIndex">
-		<member name="StartIndex" type="uint32" />
-		<member name="SubinterpolationCount" type="uint32" />
-	</struct>
-	
 
 	<struct name="MeshVertex3D">
 		<member name="VertexID" type="uint32" />
@@ -450,13 +452,12 @@
 		<member name="X2" type="double" />
 		<member name="Y2" type="double" />
 	</struct>
-
-	<struct name="Hatch2DModificationFactors">
-		<member name="Point1Factor" type="double" description="Factor on the first point of the hatch" />
-		<member name="Point2Factor" type="double" description="Factor on the second point of the hatch"  />
-		<member name="NumberOfNonLinearInterpolationBases" type="uint32" description="Number of non-linear interpolation points on the hatch" />
-	</struct>	
 	
+	<struct name="Hatch2DSubInterpolationData">
+		<member name="Parameter" type="double" description="Parameter value of the hatch. (0.0 - 1.0)" />
+		<member name="Value" type="double" description="Value at the parameter."  />
+	</struct>	
+
 	<struct name="ModelDataTransform">
 		<member name="Matrix" type="double" rows="3" columns="3"/>
 		<member name="Translation" type="double" rows="3"/>
@@ -1939,17 +1940,18 @@
 			<param name="HatchData" type="structarray" class="FloatHatch2D" pass="out" description="The hatch data array. Positions are absolute in mm." />
 		</method>
 
-		<method name="GetTypedSegmentSubInterpolationIndices" description="Retrieves the subinterpolation indices data assigned to a segment's hatch list. Fails if segment type is not hatch or queried value does not exist.">
-			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
-			<param name="ValueType" type="enum" class="ToolpathProfileValueType" pass="in" description="Enum to query for. MUST NOT be custom. Fails if value type does not exist." />
-			<param name="IndexData" type="structarray" class="Hatch2DSubinterpolationIndex" pass="out" description="The hatch subinterpolation array. Positions are absolute in units." />
-		</method>
-
-		<method name="EvaluateHatchProfileTypedModifier" description="Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.">
+		<method name="EvaluateTypedHatchProfileModifier" description="Evaluates a typed profile value with its modifier factors. Fails if segment type is not hatch.">
 			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
 			<param name="ValueType" type="enum" class="ToolpathProfileValueType" pass="in" description="Enum to query for. MUST NOT be custom. Fails if value type does not exist." />
 			<param name="EvaluationData1" type="basicarray" class="double" pass="out" description="Evaluated data on the first point on each hatch. Will return HatchCount elements." />
 			<param name="EvaluationData2" type="basicarray" class="double" pass="out" description="Evaluated data on the second point on each hatch. Will return HatchCount elements." />
+		</method>
+
+		<method name="EvaluateTypedHatchProfileInterpolation" description="Evaluates the subinterpolation values of with its modifier factors. Fails if segment type is not hatch.">
+			<param name="SegmentIndex" type="uint32" pass="in" description="Index. Must be between 0 and Count - 1." />
+			<param name="ValueType" type="enum" class="ToolpathProfileValueType" pass="in" description="Enum to query for. MUST NOT be custom. Fails if value type does not exist." />
+			<param name="CountArray" type="basicarray" class="uint32" pass="out" description="Number of subinterpolation values per hatch. Will contain HatchCount elements." />
+			<param name="EvaluationData" type="structarray" class="Hatch2DSubInterpolationData" pass="out" description="Evaluated data on evaluation points for the full segment, in hatch order. Will contain the sum of CountArray elements." />
 		</method>
 
 

@@ -60,11 +60,13 @@ namespace AMC {
 		uint32_t m_LocalPartID;
 		uint32_t m_LaserIndex;
 		uint32_t m_HasOverrideFactors;
+		uint32_t m_TotalSubinterpolationCount;
 		int64_t* m_AttributeData;
 	} sToolpathLayerSegment;
 
 	typedef struct _sToolpathLayerOverride {
 		uint32_t m_nSubInterpolationCount;
+		Lib3MF::sHatchModificationInterpolationData * m_pSubInterpolationData;
 		double m_dFactors[3]; // F, G and H
 	} sToolpathLayerOverride;
 
@@ -160,6 +162,7 @@ namespace AMC {
 		std::vector<int64_t> m_SegmentAttributeData;
 		std::vector<LibMCEnv::sPosition2D> m_Points;
 		std::vector<sToolpathLayerOverride> m_OverrideFactors;
+		std::vector<Lib3MF::sHatchModificationInterpolationData> m_InterpolationData;
 
 		std::vector<std::string> m_UUIDs;
 		std::map<std::string, uint32_t> m_UUIDMap;
@@ -188,6 +191,8 @@ namespace AMC {
 		uint32_t getSegmentCount();	
 		uint32_t getSegmentPointCount (const uint32_t nSegmentIndex);
 		LibMCEnv::eToolpathSegmentType getSegmentType (const uint32_t nSegmentIndex);
+		uint32_t getSegmentTotalSubinterpolationCount (const uint32_t nSegmentIndex);
+		void getHatchSubinterpolationData(const uint32_t nSegmentIndex, const uint32_t nHatchIndex, uint32_t & nSubInterpolationCount, Lib3MF::sHatchModificationInterpolationData * & pSubInterpolationData);
 
 		void storePointsToBufferInUnits (const uint32_t nSegmentIndex, LibMCEnv::sPosition2D * pPositionData);
 		void storeHatchesToBufferInUnits (const uint32_t nSegmentIndex, LibMCEnv::sHatch2D* pHatchData);
