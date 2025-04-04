@@ -524,7 +524,7 @@ int32_t * CRTCRecordingChannel::reserveDataBuffer(uint32_t nCount, uint32_t& nEn
 
 	if (nCount == 0)
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_DATARECORDINGUNDERFLOW, "data recording interval underflow");
-	if (nCount > m_nChunkSize) {
+	if ((size_t)nCount > m_nChunkSize) {
 		nCount = m_nChunkSize;		
 	}
 
