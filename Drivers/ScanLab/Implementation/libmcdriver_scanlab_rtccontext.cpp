@@ -1009,7 +1009,7 @@ void CRTCContext::DisableLineSubdivision()
 
 double CRTCContext::adjustLaserPowerCalibration(double dLaserPowerInPercent, double dPowerOffsetInPercent, double dPowerOutputScaling)
 {
-	return ((dLaserPowerInPercent + dPowerOffsetInPercent) * dPowerOutputScaling);
+	return (dLaserPowerInPercent * dPowerOutputScaling + dPowerOffsetInPercent);
 }
 
 
