@@ -1267,6 +1267,10 @@ namespace AMC {
 			return "laserondelay";
 		case LibMCEnv::eToolpathProfileValueType::LaserOffDelay:
 			return "laseroffdelay";
+		case LibMCEnv::eToolpathProfileValueType::PreSegmentDelay:
+			return "predelay";
+		case LibMCEnv::eToolpathProfileValueType::PostSegmentDelay:
+			return "postdelay";
 		default:
 			throw ELibMCCustomException(LIBMC_ERROR_INVALIDPROFILEVALUETYPE, std::to_string ((int)eValueType));
 		}

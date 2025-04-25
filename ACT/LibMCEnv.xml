@@ -367,6 +367,8 @@
 		<option name="JumpDelay" value="11" />
 		<option name="MarkDelay" value="12" />
 		<option name="LaserFocus" value="13" />
+		<option name="PreSegmentDelay" value="14" />
+		<option name="PostSegmentDelay" value="15" />
 	</enum>
 	
 	<enum name="ToolpathProfileModificationType">

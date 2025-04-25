@@ -334,9 +334,6 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION 10237 /** Subinterpolation data on linear modification. */
 #define LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA 10238 /** Invalid hatch subinterpolation data. */
 #define LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW 10239 /** Hatch subinterpolation data overflow. */
-#define LIBMCENV_ERROR_LINEARPOWERVALUESAREINCOMPLETE 10240 /** Linear power values are incomplete. */
-#define LIBMCENV_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE 10241 /** Nonlinear power values are incomplete. */
-#define LIBMCENV_ERROR_INTERPOLATIONDATAISNOTINCREASING 10242 /** Interpolation data is not increasing. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -583,9 +580,6 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "Subinterpolation data on linear modification.";
     case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
     case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
-    case LIBMCENV_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "Linear power values are incomplete.";
-    case LIBMCENV_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "Nonlinear power values are incomplete.";
-    case LIBMCENV_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "Interpolation data is not increasing.";
     default: return "unknown error";
   }
 }
@@ -750,7 +744,9 @@ namespace LibMCEnv {
     LaserOffDelay = 10,
     JumpDelay = 11,
     MarkDelay = 12,
-    LaserFocus = 13
+    LaserFocus = 13,
+    PreSegmentDelay = 14,
+    PostSegmentDelay = 15
   };
   
   enum class eToolpathProfileModificationType : LibMCEnv_int32 {
