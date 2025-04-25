@@ -53,9 +53,10 @@ using namespace LibMCDriver_ScanLab::Impl;
 
 #define RTCCONTEXT_LASERPOWERCALIBRATIONUNITS 0.005
 
-
 #define RTCCONTEXT_MIN_LINESUBDIVISIONTHRESHOLD 0.001
 #define RTCCONTEXT_MAX_LINESUBDIVISIONTHRESHOLD 1000000.0
+
+#define RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ 3600UL * 100000UL
 
 CRTCContextOwnerData::CRTCContextOwnerData()
 	: m_nAttributeFilterValue (0), m_OIERecordingMode (LibMCDriver_ScanLab::eOIERecordingMode::OIERecordingDisabled), m_dMaxLaserPowerInWatts (100.0)
@@ -2336,6 +2337,8 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 			float fPowerInWatts = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
 			float fPowerInPercent = (fPowerInWatts * 100.f) / fMaxLaserPowerInWatts;
 			float fLaserFocus = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserFocus);
+			double dPreSegmentDelay = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PreSegmentDelay);
+			double dPostSegmentDelay = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PostSegmentDelay);
 
 			uint32_t nOIEPIDControlIndex = 0;
 			if (m_bEnableOIEPIDControl) {
@@ -2391,6 +2394,26 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 
 				}
 
+				{
+					// Handle pre Segment Delays
+
+					// First take the pre segment delay from the profile
+					uint32_t nPreSegmentDelayInTicks = (uint32_t)round(dPreSegmentDelay * 0.1);
+
+					// Check for a Presegment delay override for each segment
+					int64_t nIndividiualPreSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "predelay", -1);
+					if (nIndividiualPreSegmentDelayInMicroseconds >= 0)
+						nPreSegmentDelayInTicks = (uint32_t)(nIndividiualPreSegmentDelayInMicroseconds / 10);
+
+					if (nPreSegmentDelayInTicks > 0) {
+						if (nPreSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR);
+
+						// Set delay in 10 Microsecond steps, dPreSegmentDelay is in Milliseconds
+						m_pScanLabSDK->n_long_delay(m_CardNo, nPreSegmentDelayInTicks);
+					}
+				}
+
 				switch (eSegmentType) {
 				case LibMCEnv::eToolpathSegmentType::Polyline:
 				{
@@ -2443,6 +2466,27 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 				}
 
 				}
+
+				{
+					// Handle PostSegmentDelay
+
+					// First take the pre segment delay from the profile
+					uint32_t nPostSegmentDelayInTicks = (uint32_t)round(dPostSegmentDelay * 0.1);
+
+					// Check for a Postsegment delay override for each segment
+					int64_t nIndividiualPostSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "postdelay", -1);
+					if (nIndividiualPostSegmentDelayInMicroseconds >= 0)
+						nPostSegmentDelayInTicks = (uint32_t)(nIndividiualPostSegmentDelayInMicroseconds / 10);
+
+					if (nPostSegmentDelayInTicks > 0) {
+						if (nPostSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR);
+
+						// Set delay in 10 Microsecond steps, dPostSegmentDelay is in Milliseconds
+						m_pScanLabSDK->n_long_delay(m_CardNo, nPostSegmentDelayInTicks);
+					}
+				}
+
 			}
 
 		}

@@ -245,6 +245,7 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELYNOTRECORDED 1140 /** RTC Channel Y not recorded. */
 #define LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELZNOTRECORDED 1141 /** RTC Channel Z not recorded. */
 #define LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH 1142 /** RTC X and Y record count mismatch. */
+#define LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR 1143 /** Segment delay exceeds one hour. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -402,6 +403,7 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELYNOTRECORDED: return "RTC Channel Y not recorded.";
     case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELZNOTRECORDED: return "RTC Channel Z not recorded.";
     case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH: return "RTC X and Y record count mismatch.";
+    case LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR: return "Segment delay exceeds one hour.";
     default: return "unknown error";
   }
 }

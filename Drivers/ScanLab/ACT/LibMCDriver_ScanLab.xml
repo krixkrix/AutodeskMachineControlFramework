@@ -192,6 +192,8 @@
 		<error name="RTCCHANNELYNOTRECORDED" code="1140" description="RTC Channel Y not recorded." />
 		<error name="RTCCHANNELZNOTRECORDED" code="1141" description="RTC Channel Z not recorded." />
 		<error name="RTCCHANNELXANDYRECORDCOUNTMISMATCH" code="1142" description="RTC X and Y record count mismatch." />
+		<error name="SEGMENTDELAYEXCEEDSONEHOUR" code="1143" description="Segment delay exceeds one hour." />
+		
 							
 	</errors>
 
