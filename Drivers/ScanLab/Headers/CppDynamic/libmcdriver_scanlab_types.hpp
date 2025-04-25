@@ -555,6 +555,7 @@ namespace LibMCDriver_ScanLab {
       LibMCDriver_ScanLab_double m_Y;
       LibMCDriver_ScanLab_double m_LaserOnDelay;
       LibMCDriver_ScanLab_double m_LaserOffDelay;
+      LibMCDriver_ScanLab_double m_LaserPowerInPercent;
   } sMicroVector;
   
   #pragma pack ()

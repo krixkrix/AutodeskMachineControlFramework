@@ -314,7 +314,7 @@
 		<member name="Y" type="double" description="The Y Position in mm."  />
 		<member name="LaserOnDelay" type="double" description="The Delay to switch the laser on in Microseconds. A negative value will not change the active delay." />
 		<member name="LaserOffDelay" type="double" description="The Delay to switch the laser off in Microseconds. A negative value will not change the active delay."  />
-		<param name="LaserPowerInPercent" type="double" pass="in" description="The nominal laser power to be used in percent."/>
+		<member name="LaserPowerInPercent" type="double" pass="in" description="The nominal laser power to be used in percent."/>
 	</struct>
 
 	<functiontype name="SpatialPowerModulationCallback" description="A callback function to modulate laser power depending on the position of the laser.">
