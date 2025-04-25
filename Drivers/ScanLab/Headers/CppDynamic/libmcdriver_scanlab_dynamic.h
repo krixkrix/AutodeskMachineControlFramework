@@ -343,6 +343,16 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddTimedMarkMovem
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddFreeVariablePtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint32 nVariableNo, LibMCDriver_ScanLab_uint32 nValue);
 
+/**
+* Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+*
+* @param[in] pRTCJob - RTCJob instance.
+* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
+* @param[in] pMicrovectorArrayBuffer - MicroVector buffer of Microvector array to execute.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer);
+
 /*************************************************************************************************************************
  Class definition for RTCRecording
 **************************************************************************************************************************/
@@ -1218,6 +1228,16 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_AddTimedMarkM
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_AddFreeVariablePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nVariableNo, LibMCDriver_ScanLab_uint32 nValue);
+
+/**
+* Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
+* @param[in] pMicrovectorArrayBuffer - MicroVector buffer of Microvector array to execute.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_AddMicrovectorMovementPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer);
 
 /**
 * Returns the currently set free variable.
@@ -2888,6 +2908,7 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCJob_AddMarkMovementPtr m_RTCJob_AddMarkMovement;
 	PLibMCDriver_ScanLabRTCJob_AddTimedMarkMovementPtr m_RTCJob_AddTimedMarkMovement;
 	PLibMCDriver_ScanLabRTCJob_AddFreeVariablePtr m_RTCJob_AddFreeVariable;
+	PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr m_RTCJob_AddMicrovectorMovement;
 	PLibMCDriver_ScanLabRTCRecording_ClearPtr m_RTCRecording_Clear;
 	PLibMCDriver_ScanLabRTCRecording_AddChannelPtr m_RTCRecording_AddChannel;
 	PLibMCDriver_ScanLabRTCRecording_RemoveChannelPtr m_RTCRecording_RemoveChannel;
@@ -2973,6 +2994,7 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_AddMarkMovementPtr m_RTCContext_AddMarkMovement;
 	PLibMCDriver_ScanLabRTCContext_AddTimedMarkMovementPtr m_RTCContext_AddTimedMarkMovement;
 	PLibMCDriver_ScanLabRTCContext_AddFreeVariablePtr m_RTCContext_AddFreeVariable;
+	PLibMCDriver_ScanLabRTCContext_AddMicrovectorMovementPtr m_RTCContext_AddMicrovectorMovement;
 	PLibMCDriver_ScanLabRTCContext_GetCurrentFreeVariablePtr m_RTCContext_GetCurrentFreeVariable;
 	PLibMCDriver_ScanLabRTCContext_GetTimeStampPtr m_RTCContext_GetTimeStamp;
 	PLibMCDriver_ScanLabRTCContext_GetRTCChannelPtr m_RTCContext_GetRTCChannel;

@@ -193,6 +193,8 @@
 		<error name="RTCCHANNELZNOTRECORDED" code="1141" description="RTC Channel Z not recorded." />
 		<error name="RTCCHANNELXANDYRECORDCOUNTMISMATCH" code="1142" description="RTC X and Y record count mismatch." />
 		<error name="SEGMENTDELAYEXCEEDSONEHOUR" code="1143" description="Segment delay exceeds one hour." />
+		<error name="CALLNOTSUPPORTED" code="1144" description="Call is not supported in current SCANLAB RTC SDK." />
+		
 		
 							
 	</errors>
@@ -305,6 +307,14 @@
 		<member name="PowerSetPointInPercent" type="double" description="Set point of the power in Percent." />
 		<member name="PowerOffsetInPercent" type="double" description="Additional offset of the Power value. ." />
 		<member name="PowerOutputScaling" type="double" description="Scaling factor of the laser output. MUST be positive." />
+	</struct>
+		
+	<struct name="MicroVector">
+		<member name="X" type="double" description="The X Position in mm." />
+		<member name="Y" type="double" description="The Y Position in mm."  />
+		<member name="LaserOnDelay" type="double" description="The Delay to switch the laser on in Microseconds. A negative value will not change the active delay." />
+		<member name="LaserOffDelay" type="double" description="The Delay to switch the laser off in Microseconds. A negative value will not change the active delay."  />
+		<param name="LaserPowerInPercent" type="double" pass="in" description="The nominal laser power to be used in percent."/>
 	</struct>
 
 	<functiontype name="SpatialPowerModulationCallback" description="A callback function to modulate laser power depending on the position of the laser.">
@@ -485,6 +495,11 @@ Custom implementation
 			<param name="VariableNo" type="uint32" pass="in" description="Number of the variable (0-7)." />
 			<param name="Value" type="uint32" pass="in" description="Value to set." />
 		</method>	
+
+		<method name="AddMicrovectorMovement" description="Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.">
+			<param name="MicrovectorArray" type="structarray" class="MicroVector" pass="in" description="Microvector array to execute." />
+		</method>		
+
 	
 	</class>
 
@@ -925,6 +940,11 @@ Custom implementation
 			<param name="Value" type="uint32" pass="in" description="Value to set." />
 		</method>	
 		
+		<method name="AddMicrovectorMovement" description="Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.">
+			<param name="MicrovectorArray" type="structarray" class="MicroVector" pass="in" description="Microvector array to execute." />
+		</method>
+				
+		
 		<method name="GetCurrentFreeVariable" description="Returns the currently set free variable.">
 			<param name="VariableNo" type="uint32" pass="in" description="Number of the variable (0-7)." />
 			<param name="Value" type="uint32" pass="return" description="Value to return." />
@@ -1323,6 +1343,7 @@ Custom implementation
 			<param name="EndScale" type="uint32" pass="in" description="Line end sharpness scale in Percent.. 100 percent means straight line ends. Values above 100 will be clipped to 100." />
 			<param name="AccelerationScale" type="uint32" pass="in" description="Fraction of active laser time (not path lenght) during acceleration in Percent.. 100 percent means sharp corners. Values above 100 will be clipped to 100." />
 		</method>
+		
 		
 	</class>
 

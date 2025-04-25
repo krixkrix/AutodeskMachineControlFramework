@@ -874,6 +874,42 @@ void CRTCContext::AddMarkMovement(const LibMCDriver_ScanLab_double dTargetX, con
 	m_nCurrentScanPositionY = intY;
 }
 
+
+void CRTCContext::AddMicrovectorMovement(const LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector* pMicrovectorArrayBuffer)
+{
+	if (nMicrovectorArrayBufferSize > 0) {
+		if (pMicrovectorArrayBuffer == nullptr) 
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
+
+		auto pMicroVector = pMicrovectorArrayBuffer;
+
+		for (uint64_t nIndex = 0; nIndex < nMicrovectorArrayBufferSize; nIndex++) {			
+
+			double dX = round((pMicroVector->m_X - m_dLaserOriginX) * m_dCorrectionFactor);
+			double dY = round((pMicroVector->m_Y - m_dLaserOriginY) * m_dCorrectionFactor);
+
+			int32_t intX = (int32_t)dX;
+			int32_t intY = (int32_t)dY;
+
+			int32_t intDelayLaserOn = -1;
+			int32_t intDelayLaserOff = -1;
+
+			m_pScanLabSDK->n_micro_vector_abs(m_CardNo, intX, intY, intDelayLaserOn, intDelayLaserOff);
+
+			m_nCurrentScanPositionX = intX;
+			m_nCurrentScanPositionY = intY;
+
+			pMicroVector++;
+
+		}
+
+		m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
+
+	}
+}
+
+
 void CRTCContext::AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue)
 {
 	if (nVariableNo > 7)

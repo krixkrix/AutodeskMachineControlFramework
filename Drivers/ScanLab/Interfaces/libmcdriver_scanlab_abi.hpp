@@ -356,6 +356,16 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcjo
 */
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcjob_addfreevariable(LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint32 nVariableNo, LibMCDriver_ScanLab_uint32 nValue);
 
+/**
+* Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+*
+* @param[in] pRTCJob - RTCJob instance.
+* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
+* @param[in] pMicrovectorArrayBuffer - MicroVector buffer of Microvector array to execute.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcjob_addmicrovectormovement(LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer);
+
 /*************************************************************************************************************************
  Class definition for RTCRecording
 **************************************************************************************************************************/
@@ -1231,6 +1241,16 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcco
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_addfreevariable(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nVariableNo, LibMCDriver_ScanLab_uint32 nValue);
+
+/**
+* Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
+* @param[in] pMicrovectorArrayBuffer - MicroVector buffer of Microvector array to execute.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_addmicrovectormovement(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer);
 
 /**
 * Returns the currently set free variable.

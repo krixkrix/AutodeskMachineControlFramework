@@ -352,6 +352,7 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELZNOTRECORDED: return "RTCCHANNELZNOTRECORDED";
 			case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH: return "RTCCHANNELXANDYRECORDCOUNTMISMATCH";
 			case LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR: return "SEGMENTDELAYEXCEEDSONEHOUR";
+			case LIBMCDRIVER_SCANLAB_ERROR_CALLNOTSUPPORTED: return "CALLNOTSUPPORTED";
 		}
 		return "UNKNOWN";
 	}
@@ -510,6 +511,7 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELZNOTRECORDED: return "RTC Channel Z not recorded.";
 			case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH: return "RTC X and Y record count mismatch.";
 			case LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR: return "Segment delay exceeds one hour.";
+			case LIBMCDRIVER_SCANLAB_ERROR_CALLNOTSUPPORTED: return "Call is not supported in current SCANLAB RTC SDK.";
 		}
 		return "unknown error";
 	}
@@ -776,6 +778,7 @@ public:
 	inline void AddMarkMovement(const LibMCDriver_ScanLab_double dTargetX, const LibMCDriver_ScanLab_double dTargetY);
 	inline void AddTimedMarkMovement(const LibMCDriver_ScanLab_double dTargetX, const LibMCDriver_ScanLab_double dTargetY, const LibMCDriver_ScanLab_double dDurationInMicroseconds);
 	inline void AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue);
+	inline void AddMicrovectorMovement(const CInputVector<sMicroVector> & MicrovectorArrayBuffer);
 };
 	
 /*************************************************************************************************************************
@@ -925,6 +928,7 @@ public:
 	inline void AddMarkMovement(const LibMCDriver_ScanLab_double dTargetX, const LibMCDriver_ScanLab_double dTargetY);
 	inline void AddTimedMarkMovement(const LibMCDriver_ScanLab_double dTargetX, const LibMCDriver_ScanLab_double dTargetY, const LibMCDriver_ScanLab_double dDurationInMicroseconds);
 	inline void AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue);
+	inline void AddMicrovectorMovement(const CInputVector<sMicroVector> & MicrovectorArrayBuffer);
 	inline LibMCDriver_ScanLab_uint32 GetCurrentFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo);
 	inline LibMCDriver_ScanLab_uint32 GetTimeStamp();
 	inline LibMCDriver_ScanLab_int32 GetRTCChannel(const eRTCChannelType eChannelType);
@@ -1292,6 +1296,7 @@ public:
 		pWrapperTable->m_RTCJob_AddMarkMovement = nullptr;
 		pWrapperTable->m_RTCJob_AddTimedMarkMovement = nullptr;
 		pWrapperTable->m_RTCJob_AddFreeVariable = nullptr;
+		pWrapperTable->m_RTCJob_AddMicrovectorMovement = nullptr;
 		pWrapperTable->m_RTCRecording_Clear = nullptr;
 		pWrapperTable->m_RTCRecording_AddChannel = nullptr;
 		pWrapperTable->m_RTCRecording_RemoveChannel = nullptr;
@@ -1377,6 +1382,7 @@ public:
 		pWrapperTable->m_RTCContext_AddMarkMovement = nullptr;
 		pWrapperTable->m_RTCContext_AddTimedMarkMovement = nullptr;
 		pWrapperTable->m_RTCContext_AddFreeVariable = nullptr;
+		pWrapperTable->m_RTCContext_AddMicrovectorMovement = nullptr;
 		pWrapperTable->m_RTCContext_GetCurrentFreeVariable = nullptr;
 		pWrapperTable->m_RTCContext_GetTimeStamp = nullptr;
 		pWrapperTable->m_RTCContext_GetRTCChannel = nullptr;
@@ -1827,6 +1833,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCJob_AddFreeVariable == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCJob_AddMicrovectorMovement = (PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtcjob_addmicrovectormovement");
+		#else // _WIN32
+		pWrapperTable->m_RTCJob_AddMicrovectorMovement = (PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtcjob_addmicrovectormovement");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCJob_AddMicrovectorMovement == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -2592,6 +2607,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_AddFreeVariable == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_AddMicrovectorMovement = (PLibMCDriver_ScanLabRTCContext_AddMicrovectorMovementPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_addmicrovectormovement");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_AddMicrovectorMovement = (PLibMCDriver_ScanLabRTCContext_AddMicrovectorMovementPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_addmicrovectormovement");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_AddMicrovectorMovement == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4149,6 +4173,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCJob_AddFreeVariable == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtcjob_addmicrovectormovement", (void**)&(pWrapperTable->m_RTCJob_AddMicrovectorMovement));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCJob_AddMicrovectorMovement == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtcrecording_clear", (void**)&(pWrapperTable->m_RTCRecording_Clear));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCRecording_Clear == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -4487,6 +4515,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_addfreevariable", (void**)&(pWrapperTable->m_RTCContext_AddFreeVariable));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_AddFreeVariable == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_addmicrovectormovement", (void**)&(pWrapperTable->m_RTCContext_AddMicrovectorMovement));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_AddMicrovectorMovement == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getcurrentfreevariable", (void**)&(pWrapperTable->m_RTCContext_GetCurrentFreeVariable));
@@ -5453,6 +5485,15 @@ public:
 	}
 	
 	/**
+	* CRTCJob::AddMicrovectorMovement - Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+	* @param[in] MicrovectorArrayBuffer - Microvector array to execute.
+	*/
+	void CRTCJob::AddMicrovectorMovement(const CInputVector<sMicroVector> & MicrovectorArrayBuffer)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_AddMicrovectorMovement(m_pHandle, (LibMCDriver_ScanLab_uint64)MicrovectorArrayBuffer.size(), MicrovectorArrayBuffer.data()));
+	}
+	
+	/**
 	 * Method definitions for class CRTCRecording
 	 */
 	
@@ -6374,6 +6415,15 @@ public:
 	void CRTCContext::AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_AddFreeVariable(m_pHandle, nVariableNo, nValue));
+	}
+	
+	/**
+	* CRTCContext::AddMicrovectorMovement - Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+	* @param[in] MicrovectorArrayBuffer - Microvector array to execute.
+	*/
+	void CRTCContext::AddMicrovectorMovement(const CInputVector<sMicroVector> & MicrovectorArrayBuffer)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_AddMicrovectorMovement(m_pHandle, (LibMCDriver_ScanLab_uint64)MicrovectorArrayBuffer.size(), MicrovectorArrayBuffer.data()));
 	}
 	
 	/**

@@ -625,6 +625,13 @@ public:
 	*/
 	virtual void AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue) = 0;
 
+	/**
+	* IRTCJob::AddMicrovectorMovement - Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+	* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
+	* @param[in] pMicrovectorArrayBuffer - Microvector array to execute.
+	*/
+	virtual void AddMicrovectorMovement(const LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer) = 0;
+
 };
 
 typedef IBaseSharedPtr<IRTCJob> PIRTCJob;
@@ -1267,6 +1274,13 @@ public:
 	* @param[in] nValue - Value to set.
 	*/
 	virtual void AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue) = 0;
+
+	/**
+	* IRTCContext::AddMicrovectorMovement - Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
+	* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
+	* @param[in] pMicrovectorArrayBuffer - Microvector array to execute.
+	*/
+	virtual void AddMicrovectorMovement(const LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer) = 0;
 
 	/**
 	* IRTCContext::GetCurrentFreeVariable - Returns the currently set free variable.

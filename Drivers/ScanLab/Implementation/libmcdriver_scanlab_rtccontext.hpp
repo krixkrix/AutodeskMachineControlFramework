@@ -436,6 +436,8 @@ public:
 
 	LibMCDriver_ScanLab_int32 GetRTCInternalValue(const LibMCDriver_ScanLab_uint32 nInternalSignalID) override;
 
+	void AddMicrovectorMovement(const LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector* pMicrovectorArrayBuffer) override;
+
 };
 
 

@@ -871,6 +871,32 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcjob_addfreevariable(LibMCDriver
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcjob_addmicrovectormovement(LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const sLibMCDriver_ScanLabMicroVector * pMicrovectorArrayBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pRTCJob;
+
+	try {
+		if ( (!pMicrovectorArrayBuffer) && (nMicrovectorArrayBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IRTCJob* pIRTCJob = dynamic_cast<IRTCJob*>(pIBaseClass);
+		if (!pIRTCJob)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCJob->AddMicrovectorMovement(nMicrovectorArrayBufferSize, pMicrovectorArrayBuffer);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for RTCRecording
@@ -3154,6 +3180,32 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_addfreevariable(LibMCDr
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
 		
 		pIRTCContext->AddFreeVariable(nVariableNo, nValue);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_addmicrovectormovement(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const sLibMCDriver_ScanLabMicroVector * pMicrovectorArrayBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if ( (!pMicrovectorArrayBuffer) && (nMicrovectorArrayBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->AddMicrovectorMovement(nMicrovectorArrayBufferSize, pMicrovectorArrayBuffer);
 
 		return LIBMCDRIVER_SCANLAB_SUCCESS;
 	}
@@ -7336,6 +7388,8 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcjob_addtimedmarkmovement;
 	if (sProcName == "libmcdriver_scanlab_rtcjob_addfreevariable") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcjob_addfreevariable;
+	if (sProcName == "libmcdriver_scanlab_rtcjob_addmicrovectormovement") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcjob_addmicrovectormovement;
 	if (sProcName == "libmcdriver_scanlab_rtcrecording_clear") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcrecording_clear;
 	if (sProcName == "libmcdriver_scanlab_rtcrecording_addchannel") 
@@ -7506,6 +7560,8 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_addtimedmarkmovement;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_addfreevariable") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_addfreevariable;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_addmicrovectormovement") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_addmicrovectormovement;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_getcurrentfreevariable") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getcurrentfreevariable;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_gettimestamp") 

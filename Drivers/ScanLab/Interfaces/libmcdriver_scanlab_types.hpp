@@ -246,6 +246,7 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELZNOTRECORDED 1141 /** RTC Channel Z not recorded. */
 #define LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH 1142 /** RTC X and Y record count mismatch. */
 #define LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR 1143 /** Segment delay exceeds one hour. */
+#define LIBMCDRIVER_SCANLAB_ERROR_CALLNOTSUPPORTED 1144 /** Call is not supported in current SCANLAB RTC SDK. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -404,6 +405,7 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELZNOTRECORDED: return "RTC Channel Z not recorded.";
     case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH: return "RTC X and Y record count mismatch.";
     case LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR: return "Segment delay exceeds one hour.";
+    case LIBMCDRIVER_SCANLAB_ERROR_CALLNOTSUPPORTED: return "Call is not supported in current SCANLAB RTC SDK.";
     default: return "unknown error";
   }
 }
@@ -548,6 +550,13 @@ namespace LibMCDriver_ScanLab {
       LibMCDriver_ScanLab_double m_PowerOutputScaling;
   } sLaserCalibrationPoint;
   
+  typedef struct sMicroVector {
+      LibMCDriver_ScanLab_double m_X;
+      LibMCDriver_ScanLab_double m_Y;
+      LibMCDriver_ScanLab_double m_LaserOnDelay;
+      LibMCDriver_ScanLab_double m_LaserOffDelay;
+  } sMicroVector;
+  
   #pragma pack ()
   
   /*************************************************************************************************************************
@@ -580,6 +589,7 @@ typedef LibMCDriver_ScanLab::eOIERecordingMode eLibMCDriver_ScanLabOIERecordingM
 typedef LibMCDriver_ScanLab::sPoint2D sLibMCDriver_ScanLabPoint2D;
 typedef LibMCDriver_ScanLab::sHatch2D sLibMCDriver_ScanLabHatch2D;
 typedef LibMCDriver_ScanLab::sLaserCalibrationPoint sLibMCDriver_ScanLabLaserCalibrationPoint;
+typedef LibMCDriver_ScanLab::sMicroVector sLibMCDriver_ScanLabMicroVector;
 typedef LibMCDriver_ScanLab::SpatialPowerModulationCallback LibMCDriver_ScanLabSpatialPowerModulationCallback;
 
 #endif // __LIBMCDRIVER_SCANLAB_TYPES_HEADER_CPP
