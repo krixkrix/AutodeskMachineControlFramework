@@ -296,40 +296,104 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 
 						std::string sBoundary = AMCCommon::CUtils::calculateRandomSHA256String(4) + "_" + sStreamUUID;
 
-						std::string sContentType = "multipart/x-mixed-replace;boundary=" + sBoundary;
 
 						auto pStreamConnection = m_pContext->CreateStreamConnection(sStreamUUID);
 
+						auto streamType = pStreamConnection->GetStreamType();
+
+						std::string sContentType;
+						switch (streamType) {
+							case LibMC::eStreamConnectionType::JSONEventStream: 
+								sContentType = "text/event-stream";
+								break;
+
+							case LibMC::eStreamConnectionType::JPEGImageStream:
+								sContentType = "multipart/x-mixed-replace;boundary=" + sBoundary;
+								break;
+
+							default:
+								throw std::runtime_error("invalid stream connection type.");
+						}
+							
+						// Handle CORS preflight requests
+						if (req.method == "OPTIONS") {
+							res.set_header("Access-Control-Allow-Origin", "*"); // Allow all origins
+							res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+							res.set_header("Access-Control-Allow-Headers", "Authorization, Content-Type");
+							res.status = 200; // HTTP OK
+							return;
+						}
+
+						// Add CORS headers to regular responses
+						res.set_header("Access-Control-Allow-Origin", "*");
+						res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+						res.set_header("Access-Control-Allow-Headers", "Authorization, Content-Type");
+
+						res.set_header("Connection", "keep-alive");
+						res.set_header("Cache-Control", "no-cache");
+
 						res.set_content_provider(
 							sContentType.c_str (),
-							[sBoundary, pStreamConnection](size_t offset, httplib::DataSink& sink) {
+							[pStreamConnection, this, streamType, sBoundary](size_t offset, httplib::DataSink& sink) -> bool {
+								try {
+									if (!sink.is_writable())
+										return false;
 
-								std::this_thread::sleep_for(std::chrono::milliseconds(pStreamConnection->GetIdleDelay ()));
+									// Initial connection response
+									{
+										std::string sInitial = ": connected\n\n"; // SSE comment
+										sink.os.write(sInitial.c_str(), sInitial.length());
+										sink.os.flush();
+									}
 
-								auto pContent = pStreamConnection->GetNewContent();
-								if (pContent.get() != nullptr) {
-									std::vector<uint8_t> dataBuffer;
-									pContent->GetData(dataBuffer);
-									std::string sMIMEType = pContent->GetMIMEType();
+									auto pContent = pStreamConnection->GetNewContent();
+									if (pContent.get() != nullptr) {
+										std::vector<uint8_t> dataBuffer;
+										pContent->GetData(dataBuffer);
+										std::string sMIMEType = pContent->GetMIMEType();
 
-									//std::cout << "writing " << dataBuffer.size() << " bytes.." << std::endl;
-									
-									if (dataBuffer.size() > 0) {
+										if (dataBuffer.size() > 0) {
 
-										std::string sHeader = sBoundary + "\r\n" +
-											"Content-Type: " + sMIMEType + "\r\n" +
-											"Content-Length: " + std::to_string (dataBuffer.size()) + "\r\n\r\n";
+											switch (streamType) {
+												case LibMC::eStreamConnectionType::JSONEventStream: {
+													std::string sPayload(reinterpret_cast<char*>(dataBuffer.data()), dataBuffer.size());
 
-										sink.os.write(sHeader.c_str(), sHeader.length());
-										sink.os.write((char*)dataBuffer.data(), dataBuffer.size());
+													// SSE format: event + data + double newline
+													std::string sData = "data: " + sPayload + "\n\n";
+													sink.os.write(sData.c_str(), sData.length());
+													sink.os.flush(); // Force immediate sending
+
+													break;
+												}
+
+												case LibMC::eStreamConnectionType::JPEGImageStream: {
+													std::string sHeader = sBoundary + "\r\n" +
+														"Content-Type: " + sMIMEType + "\r\n" +
+														"Content-Length: " + std::to_string (dataBuffer.size()) + "\r\n\r\n";
+
+													sink.os.write(sHeader.c_str(), sHeader.length());
+													sink.os.write((char*)dataBuffer.data(), dataBuffer.size());
+
+													break;
+												}
+
+											}									
+
+
+										}
 									}
 								}
+								catch (std::exception& E) {
+									this->log("Internal stream error: " + std::string(E.what()));
+									return false;
+								}
 
-								return true; 
-							});
+								return true;
+							}
+						);
+ 
 
-
-					}
+					} 
 				}
 
 

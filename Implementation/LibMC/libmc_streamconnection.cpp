@@ -61,15 +61,26 @@ CStreamConnection::~CStreamConnection()
 
 IStreamData * CStreamConnection::GetNewContent()
 {
-    std::cout << "GetNewContent" << std::endl;
+	std::unique_ptr<CStreamData> pStreamData(new CStreamData("image/jpeg"));
 
-    return new CStreamData ();
+    auto & buffer = pStreamData->getBuffer();
+
+    std::string sString = "{ \"test\": \"abc\" }";
+    for (auto ch : sString) {
+        buffer.push_back(ch);
+    }
+
+    return pStreamData.release();
 
 
 }
 
 uint32_t CStreamConnection::GetIdleDelay()
 {
-    return 1000;
+    return 100;
 }
 
+LibMC::eStreamConnectionType CStreamConnection::GetStreamType()
+{
+    return LibMC::eStreamConnectionType::JSONEventStream;
+}

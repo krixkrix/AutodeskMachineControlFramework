@@ -1515,6 +1515,7 @@ public:
 	
 	inline PStreamData GetNewContent();
 	inline LibMC_uint32 GetIdleDelay();
+	inline eStreamConnectionType GetStreamType();
 };
 	
 /*************************************************************************************************************************
@@ -1681,6 +1682,7 @@ public:
 		pWrapperTable->m_StreamData_GetMIMEType = nullptr;
 		pWrapperTable->m_StreamConnection_GetNewContent = nullptr;
 		pWrapperTable->m_StreamConnection_GetIdleDelay = nullptr;
+		pWrapperTable->m_StreamConnection_GetStreamType = nullptr;
 		pWrapperTable->m_APIRequestHandler_ExpectsRawBody = nullptr;
 		pWrapperTable->m_APIRequestHandler_ExpectsFormData = nullptr;
 		pWrapperTable->m_APIRequestHandler_GetFormDataDetails = nullptr;
@@ -1792,6 +1794,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_StreamConnection_GetIdleDelay == nullptr)
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StreamConnection_GetStreamType = (PLibMCStreamConnection_GetStreamTypePtr) GetProcAddress(hLibrary, "libmc_streamconnection_getstreamtype");
+		#else // _WIN32
+		pWrapperTable->m_StreamConnection_GetStreamType = (PLibMCStreamConnection_GetStreamTypePtr) dlsym(hLibrary, "libmc_streamconnection_getstreamtype");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StreamConnection_GetStreamType == nullptr)
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -2069,6 +2080,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_GetIdleDelay == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmc_streamconnection_getstreamtype", (void**)&(pWrapperTable->m_StreamConnection_GetStreamType));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_GetStreamType == nullptr) )
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmc_apirequesthandler_expectsrawbody", (void**)&(pWrapperTable->m_APIRequestHandler_ExpectsRawBody));
 		if ( (eLookupError != 0) || (pWrapperTable->m_APIRequestHandler_ExpectsRawBody == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -2248,6 +2263,18 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_GetIdleDelay(m_pHandle, &resultIdleDelay));
 		
 		return resultIdleDelay;
+	}
+	
+	/**
+	* CStreamConnection::GetStreamType - Returns the stream type.
+	* @return Content type of the stream.
+	*/
+	eStreamConnectionType CStreamConnection::GetStreamType()
+	{
+		eStreamConnectionType resultStreamType = (eStreamConnectionType) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_GetStreamType(m_pHandle, &resultStreamType));
+		
+		return resultStreamType;
 	}
 	
 	/**

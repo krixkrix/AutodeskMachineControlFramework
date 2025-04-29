@@ -684,6 +684,10 @@
 		<option name="Testing" value="3"/>
 	</enum>	
 
+	<enum name="StreamConnectionType">
+		<option name="JSONEventStream" value="1"/>
+		<option name="JPEGImageStream" value="2"/>
+	</enum>	
 		
 	<class name="Base">
 	
@@ -712,6 +716,10 @@
 
 		<method name="GetIdleDelay" description="Returns the number of milliseconds, that the caller should wait before checking for another content.">
 			<param name="IdleDelay" type="uint32" pass="return" description="Idle Delay." />	
+		</method>
+
+		<method name="GetStreamType" description="Returns the stream type.">
+			<param name="StreamType" type="enum" class="StreamConnectionType" pass="return" description="Content type of the stream." />	
 		</method>
 
 	</class>

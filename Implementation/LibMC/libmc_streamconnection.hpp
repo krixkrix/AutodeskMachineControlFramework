@@ -70,6 +70,8 @@ public:
 
 	uint32_t GetIdleDelay() override;
 
+    LibMC::eStreamConnectionType GetStreamType() override;
+
 };
 
 } // namespace Impl

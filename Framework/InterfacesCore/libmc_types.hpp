@@ -1255,10 +1255,16 @@ namespace LibMC {
     Testing = 3
   };
   
+  enum class eStreamConnectionType : LibMC_int32 {
+    JSONEventStream = 1,
+    JPEGImageStream = 2
+  };
+  
 } // namespace LibMC;
 
 // define legacy C-names for enums, structs and function types
 typedef LibMC::eLogLevel eLibMCLogLevel;
 typedef LibMC::eLogSubSystem eLibMCLogSubSystem;
+typedef LibMC::eStreamConnectionType eLibMCStreamConnectionType;
 
 #endif // __LIBMC_TYPES_HEADER_CPP
