@@ -346,6 +346,8 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 										sink.os.flush();
 									}
 
+									std::this_thread::sleep_for(std::chrono::milliseconds(pStreamConnection->GetIdleDelay()));
+
 									auto pContent = pStreamConnection->GetNewContent();
 									if (pContent.get() != nullptr) {
 										std::vector<uint8_t> dataBuffer;

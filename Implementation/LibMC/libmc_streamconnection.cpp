@@ -47,7 +47,8 @@ using namespace LibMC::Impl;
 **************************************************************************************************************************/
 
 CStreamConnection::CStreamConnection(const std::string& sStreamUUID)
-    : m_sStreamUUID (AMCCommon::CUtils::normalizeUUIDString (sStreamUUID))
+    : m_sStreamUUID (AMCCommon::CUtils::normalizeUUIDString (sStreamUUID)),
+    m_nDummy (0)
 {
 
 }
@@ -65,10 +66,12 @@ IStreamData * CStreamConnection::GetNewContent()
 
     auto & buffer = pStreamData->getBuffer();
 
-    std::string sString = "{ \"test\": \"abc\" }";
+    std::string sString = "{ \"test\": \"abc" + std::to_string (m_nDummy)  + "\" }";
     for (auto ch : sString) {
         buffer.push_back(ch);
     }
+
+    m_nDummy++;
 
     return pStreamData.release();
 
@@ -77,7 +80,7 @@ IStreamData * CStreamConnection::GetNewContent()
 
 uint32_t CStreamConnection::GetIdleDelay()
 {
-    return 100;
+    return 50;
 }
 
 LibMC::eStreamConnectionType CStreamConnection::GetStreamType()
