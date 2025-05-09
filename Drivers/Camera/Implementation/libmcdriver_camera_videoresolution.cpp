@@ -42,7 +42,7 @@ CVideoResolution::CVideoResolution(uint32_t nWidth, uint32_t nHeight, uint32_t n
         throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDCAMERARESOLUTION, "invalid camera resolution: " + std::to_string (nWidth) + "x" + std::to_string (nHeight));
     if ((nHeight < CAMERARESOLUTION_MIN) || (nHeight > CAMERARESOLUTION_MAX))
         throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDCAMERARESOLUTION, "invalid camera resolution: " + std::to_string(nWidth) + "x" + std::to_string(nHeight));
-    if ((nFramerate < CAMERARESOLUTION_MIN) || (nFramerate > CAMERARESOLUTION_MAX))
+    if ((nFramerate < CAMERAFRAMERATE_MIN) || (nFramerate > CAMERAFRAMERATE_MAX))
         throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDCAMERAFRAMERATE, "invalid camera framerate: " + std::to_string(nFramerate));
 }
 
