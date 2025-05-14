@@ -82,10 +82,6 @@ std::string CSMCContext::GetIPAddress()
 	return m_pContextInstance->GetIPAddress();
 }
 
-std::string CSMCContext::GetNetmask()
-{
-	return m_pContextInstance->GetNetmask();
-}
 
 LibMCDriver_ScanLabSMC_uint32 CSMCContext::GetSerialNumber()
 {

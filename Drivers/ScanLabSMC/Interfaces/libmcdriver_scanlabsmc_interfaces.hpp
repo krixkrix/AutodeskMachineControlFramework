@@ -615,12 +615,6 @@ public:
 	virtual std::string GetIPAddress() = 0;
 
 	/**
-	* ISMCContext::GetNetmask - Returns the Netmask of the RTC Card. Fails if driver has not been initialized.
-	* @return Netmask Value.
-	*/
-	virtual std::string GetNetmask() = 0;
-
-	/**
 	* ISMCContext::GetSerialNumber - Returns serial number of card
 	* @return Returns serial number of board.
 	*/

@@ -67,6 +67,8 @@ CSMCContextInstance::CSMCContextInstance(const std::string& sContextName, ISMCCo
 
 	m_pWorkingDirectory = m_pDriverEnvironment->CreateWorkingDirectory ();
 
+	m_sIPAddress = pSMCConfiguration->GetIPAddress();
+
 	auto pCorrectionFile = m_pWorkingDirectory->StoreCustomStringInTempFile("ct5", "");
 
 	eSMCConfigVersion configVersion = eSMCConfigVersion::Unknown;
@@ -130,11 +132,6 @@ void CSMCContextInstance::ReinitializeInstance()
 std::string CSMCContextInstance::GetIPAddress()
 {
 	return m_sIPAddress;
-}
-
-std::string CSMCContextInstance::GetNetmask()
-{
-	return m_sNetmask;
 }
 
 LibMCDriver_ScanLabSMC_uint32 CSMCContextInstance::GetSerialNumber()

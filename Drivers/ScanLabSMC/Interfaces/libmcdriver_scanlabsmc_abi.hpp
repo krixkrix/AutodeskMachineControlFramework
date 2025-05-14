@@ -514,17 +514,6 @@ LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlab
 LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getipaddress(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const LibMCDriver_ScanLabSMC_uint32 nIPAddressBufferSize, LibMCDriver_ScanLabSMC_uint32* pIPAddressNeededChars, char * pIPAddressBuffer);
 
 /**
-* Returns the Netmask of the RTC Card. Fails if driver has not been initialized.
-*
-* @param[in] pSMCContext - SMCContext instance.
-* @param[in] nNetmaskBufferSize - size of the buffer (including trailing 0)
-* @param[out] pNetmaskNeededChars - will be filled with the count of the written bytes, or needed buffer size.
-* @param[out] pNetmaskBuffer -  buffer of Netmask Value., may be NULL
-* @return error code or 0 (success)
-*/
-LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getnetmask(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const LibMCDriver_ScanLabSMC_uint32 nNetmaskBufferSize, LibMCDriver_ScanLabSMC_uint32* pNetmaskNeededChars, char * pNetmaskBuffer);
-
-/**
 * Returns serial number of card
 *
 * @param[in] pSMCContext - SMCContext instance.

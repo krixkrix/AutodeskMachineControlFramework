@@ -77,8 +77,6 @@ public:
 
 	std::string GetIPAddress() override;
 
-	std::string GetNetmask() override;
-
 	LibMCDriver_ScanLabSMC_uint32 GetSerialNumber() override;
 
 	LibMCDriver_ScanLabSMC_uint32 GetLaserIndex() override;

@@ -501,17 +501,6 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_Reiniti
 typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_GetIPAddressPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const LibMCDriver_ScanLabSMC_uint32 nIPAddressBufferSize, LibMCDriver_ScanLabSMC_uint32* pIPAddressNeededChars, char * pIPAddressBuffer);
 
 /**
-* Returns the Netmask of the RTC Card. Fails if driver has not been initialized.
-*
-* @param[in] pSMCContext - SMCContext instance.
-* @param[in] nNetmaskBufferSize - size of the buffer (including trailing 0)
-* @param[out] pNetmaskNeededChars - will be filled with the count of the written bytes, or needed buffer size.
-* @param[out] pNetmaskBuffer -  buffer of Netmask Value., may be NULL
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_GetNetmaskPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const LibMCDriver_ScanLabSMC_uint32 nNetmaskBufferSize, LibMCDriver_ScanLabSMC_uint32* pNetmaskNeededChars, char * pNetmaskBuffer);
-
-/**
 * Returns serial number of card
 *
 * @param[in] pSMCContext - SMCContext instance.
@@ -855,7 +844,6 @@ typedef struct {
 	PLibMCDriver_ScanLabSMCSMCContext_IsSimulationModePtr m_SMCContext_IsSimulationMode;
 	PLibMCDriver_ScanLabSMCSMCContext_ReinitializeInstancePtr m_SMCContext_ReinitializeInstance;
 	PLibMCDriver_ScanLabSMCSMCContext_GetIPAddressPtr m_SMCContext_GetIPAddress;
-	PLibMCDriver_ScanLabSMCSMCContext_GetNetmaskPtr m_SMCContext_GetNetmask;
 	PLibMCDriver_ScanLabSMCSMCContext_GetSerialNumberPtr m_SMCContext_GetSerialNumber;
 	PLibMCDriver_ScanLabSMCSMCContext_GetSimulationSubDirectoryPtr m_SMCContext_GetSimulationSubDirectory;
 	PLibMCDriver_ScanLabSMCSMCContext_GetLaserIndexPtr m_SMCContext_GetLaserIndex;

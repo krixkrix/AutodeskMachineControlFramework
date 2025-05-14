@@ -595,7 +595,6 @@ public:
 	inline bool IsSimulationMode();
 	inline void ReinitializeInstance();
 	inline std::string GetIPAddress();
-	inline std::string GetNetmask();
 	inline LibMCDriver_ScanLabSMC_uint32 GetSerialNumber();
 	inline std::string GetSimulationSubDirectory();
 	inline LibMCDriver_ScanLabSMC_uint32 GetLaserIndex();
@@ -802,7 +801,6 @@ public:
 		pWrapperTable->m_SMCContext_IsSimulationMode = nullptr;
 		pWrapperTable->m_SMCContext_ReinitializeInstance = nullptr;
 		pWrapperTable->m_SMCContext_GetIPAddress = nullptr;
-		pWrapperTable->m_SMCContext_GetNetmask = nullptr;
 		pWrapperTable->m_SMCContext_GetSerialNumber = nullptr;
 		pWrapperTable->m_SMCContext_GetSimulationSubDirectory = nullptr;
 		pWrapperTable->m_SMCContext_GetLaserIndex = nullptr;
@@ -1279,15 +1277,6 @@ public:
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_SMCContext_GetNetmask = (PLibMCDriver_ScanLabSMCSMCContext_GetNetmaskPtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smccontext_getnetmask");
-		#else // _WIN32
-		pWrapperTable->m_SMCContext_GetNetmask = (PLibMCDriver_ScanLabSMCSMCContext_GetNetmaskPtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smccontext_getnetmask");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_SMCContext_GetNetmask == nullptr)
-			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
 		pWrapperTable->m_SMCContext_GetSerialNumber = (PLibMCDriver_ScanLabSMCSMCContext_GetSerialNumberPtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smccontext_getserialnumber");
 		#else // _WIN32
 		pWrapperTable->m_SMCContext_GetSerialNumber = (PLibMCDriver_ScanLabSMCSMCContext_GetSerialNumberPtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smccontext_getserialnumber");
@@ -1738,10 +1727,6 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smccontext_getipaddress", (void**)&(pWrapperTable->m_SMCContext_GetIPAddress));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCContext_GetIPAddress == nullptr) )
-			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smccontext_getnetmask", (void**)&(pWrapperTable->m_SMCContext_GetNetmask));
-		if ( (eLookupError != 0) || (pWrapperTable->m_SMCContext_GetNetmask == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smccontext_getserialnumber", (void**)&(pWrapperTable->m_SMCContext_GetSerialNumber));
@@ -2375,21 +2360,6 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_GetIPAddress(m_pHandle, bytesNeededIPAddress, &bytesWrittenIPAddress, &bufferIPAddress[0]));
 		
 		return std::string(&bufferIPAddress[0]);
-	}
-	
-	/**
-	* CSMCContext::GetNetmask - Returns the Netmask of the RTC Card. Fails if driver has not been initialized.
-	* @return Netmask Value.
-	*/
-	std::string CSMCContext::GetNetmask()
-	{
-		LibMCDriver_ScanLabSMC_uint32 bytesNeededNetmask = 0;
-		LibMCDriver_ScanLabSMC_uint32 bytesWrittenNetmask = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_GetNetmask(m_pHandle, 0, &bytesNeededNetmask, nullptr));
-		std::vector<char> bufferNetmask(bytesNeededNetmask);
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_GetNetmask(m_pHandle, bytesNeededNetmask, &bytesWrittenNetmask, &bufferNetmask[0]));
-		
-		return std::string(&bufferNetmask[0]);
 	}
 	
 	/**

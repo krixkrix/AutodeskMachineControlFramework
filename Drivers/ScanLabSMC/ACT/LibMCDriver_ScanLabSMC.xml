@@ -438,10 +438,6 @@ Custom implementation
 			<param name="IPAddress" type="string" pass="return" description="IP Address Value." />
 		</method>		
 
-		<method name="GetNetmask" description="Returns the Netmask of the RTC Card. Fails if driver has not been initialized.">		
-			<param name="Netmask" type="string" pass="return" description="Netmask Value." />
-		</method>		
-
 		<method name="GetSerialNumber" description="Returns serial number of card">
 			<param name="SerialNumber" type="uint32" pass="return" description="Returns serial number of board." />
 		</method>

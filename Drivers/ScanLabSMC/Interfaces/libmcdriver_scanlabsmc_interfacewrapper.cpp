@@ -1403,54 +1403,6 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getipaddress(LibM
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getnetmask(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const LibMCDriver_ScanLabSMC_uint32 nNetmaskBufferSize, LibMCDriver_ScanLabSMC_uint32* pNetmaskNeededChars, char * pNetmaskBuffer)
-{
-	IBase* pIBaseClass = (IBase *)pSMCContext;
-
-	try {
-		if ( (!pNetmaskBuffer) && !(pNetmaskNeededChars) )
-			throw ELibMCDriver_ScanLabSMCInterfaceException (LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
-		std::string sNetmask("");
-		ISMCContext* pISMCContext = dynamic_cast<ISMCContext*>(pIBaseClass);
-		if (!pISMCContext)
-			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
-		
-		bool isCacheCall = (pNetmaskBuffer == nullptr);
-		if (isCacheCall) {
-			sNetmask = pISMCContext->GetNetmask();
-
-			pISMCContext->_setCache (new ParameterCache_1<std::string> (sNetmask));
-		}
-		else {
-			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pISMCContext->_getCache ());
-			if (cache == nullptr)
-				throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
-			cache->retrieveData (sNetmask);
-			pISMCContext->_setCache (nullptr);
-		}
-		
-		if (pNetmaskNeededChars)
-			*pNetmaskNeededChars = (LibMCDriver_ScanLabSMC_uint32) (sNetmask.size()+1);
-		if (pNetmaskBuffer) {
-			if (sNetmask.size() >= nNetmaskBufferSize)
-				throw ELibMCDriver_ScanLabSMCInterfaceException (LIBMCDRIVER_SCANLABSMC_ERROR_BUFFERTOOSMALL);
-			for (size_t iNetmask = 0; iNetmask < sNetmask.size(); iNetmask++)
-				pNetmaskBuffer[iNetmask] = sNetmask[iNetmask];
-			pNetmaskBuffer[sNetmask.size()] = 0;
-		}
-		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
-	}
-	catch (ELibMCDriver_ScanLabSMCInterfaceException & Exception) {
-		return handleLibMCDriver_ScanLabSMCException(pIBaseClass, Exception);
-	}
-	catch (std::exception & StdException) {
-		return handleStdException(pIBaseClass, StdException);
-	}
-	catch (...) {
-		return handleUnhandledException(pIBaseClass);
-	}
-}
-
 LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getserialnumber(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_uint32 * pSerialNumber)
 {
 	IBase* pIBaseClass = (IBase *)pSMCContext;
@@ -2192,8 +2144,6 @@ LibMCDriver_ScanLabSMCResult LibMCDriver_ScanLabSMC::Impl::LibMCDriver_ScanLabSM
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smccontext_reinitializeinstance;
 	if (sProcName == "libmcdriver_scanlabsmc_smccontext_getipaddress") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smccontext_getipaddress;
-	if (sProcName == "libmcdriver_scanlabsmc_smccontext_getnetmask") 
-		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smccontext_getnetmask;
 	if (sProcName == "libmcdriver_scanlabsmc_smccontext_getserialnumber") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smccontext_getserialnumber;
 	if (sProcName == "libmcdriver_scanlabsmc_smccontext_getsimulationsubdirectory") 

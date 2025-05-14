@@ -295,11 +295,11 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
     if (m_CorrectionFileData.size () == 0)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCCORRECTIONFILE);
 
-    if (m_sIPAddress.empty ())
+    if (sRTCIPAddress.empty ())
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYIPADDRESS);
-    for (auto ch : m_sIPAddress)
+    for (auto ch : sRTCIPAddress)
         if (!( ((ch >= '0') && (ch <= '9')) || (ch == '.') ))
-            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDIPADDRESS, "invalid RTC IP Address: " + m_sIPAddress);
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDIPADDRESS, "invalid RTC IP Address: " + sRTCIPAddress);
 
     newCorrectionFile = pWorkingDirectory->StoreCustomDataInTempFile("ct5", m_CorrectionFileData);
 
