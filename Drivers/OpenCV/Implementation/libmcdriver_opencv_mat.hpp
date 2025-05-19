@@ -56,6 +56,13 @@ namespace Impl {
  Class declaration of CMat 
 **************************************************************************************************************************/
 
+class COpenCVUtils {
+
+public:
+    static std::string convertUTF8FileNameToOSName(const std::string& sFileName);
+
+};
+
 class CMat : public virtual IMat, public virtual CBase {
 private:
 

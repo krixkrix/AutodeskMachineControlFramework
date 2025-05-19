@@ -40,6 +40,47 @@ Abstract: This is a stub class definition of CMat
 
 using namespace LibMCDriver_OpenCV::Impl;
 
+
+std::string COpenCVUtils::convertUTF8FileNameToOSName(const std::string& sFileName)
+{
+#ifdef _WIN32
+
+    // Convert filename to UTF16-string
+    int nLength = (int)sFileName.length();
+    if (nLength == 0)
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_EMPTYFILENAME);
+
+    int nBufferSize = nLength * 4 + 4;
+    std::vector<wchar_t> wsWideFileName(nBufferSize);
+    int nResultLength = MultiByteToWideChar(CP_UTF8, 0, sFileName.c_str(), nLength, &wsWideFileName[0], nBufferSize);
+    if ((nResultLength == 0) || (nResultLength + 1 >= nBufferSize))
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_COULDNOTCONVERTFILENAME, sFileName);
+
+    std::vector<wchar_t> wsWideShortFileName(nBufferSize);
+
+	DWORD nShortFileNameLength = GetShortPathNameW(wsWideFileName.data(), wsWideShortFileName.data(), nBufferSize);
+    if ((nShortFileNameLength == 0) || (((int64_t)nShortFileNameLength + 1) >= (int64_t)nBufferSize))
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_COULDNOTGETSHORTPATHNAME, sFileName);
+
+    // Add terminating character
+    wsWideShortFileName.at(nShortFileNameLength) = 0;
+
+    std::vector<char> sShortFileName(nBufferSize);
+    nResultLength = WideCharToMultiByte(CP_UTF8, 0, wsWideShortFileName.data(), nShortFileNameLength, sShortFileName.data(), nBufferSize, nullptr, nullptr);
+    if ((nResultLength == 0) || (nResultLength + 1 >= nBufferSize))
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_COULDNOTCONVERTSHORTFILENAME, sFileName);
+
+    // Add terminating character
+    sShortFileName.at(nResultLength) = 0;
+
+    // Return string
+    return std::string (sShortFileName.data ());
+
+#else
+	return sFileName;
+#endif
+}
+
 /*************************************************************************************************************************
  Class definition of CMat 
 **************************************************************************************************************************/
@@ -89,9 +130,11 @@ IImageBuffer* CMat::EncodeImage(const LibMCDriver_OpenCV::eImageWriteFormat eWri
 
     auto pWorkingFile = m_pWorkingDirectory->AddManagedTempFile(sExtension);
 
-	std::string sAbsoluteFileName = pWorkingFile->GetAbsoluteFileName();
+	std::string sAbsoluteFileNameUTF8 = pWorkingFile->GetAbsoluteFileName();
 
-    m_pMat->WriteToFile(sAbsoluteFileName, nullptr);
+    std::string sFileNameToWrite = COpenCVUtils::convertUTF8FileNameToOSName ( sAbsoluteFileNameUTF8 );
+
+    m_pMat->WriteToFile(sFileNameToWrite, nullptr);
 
     if (pWorkingFile->FileExists()) {
 		return new CImageBuffer (pWorkingFile, eWriteFormat);
@@ -99,7 +142,7 @@ IImageBuffer* CMat::EncodeImage(const LibMCDriver_OpenCV::eImageWriteFormat eWri
     }
     else {
 
-        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK, sAbsoluteFileName);
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK, sAbsoluteFileNameUTF8);
     }
 
 

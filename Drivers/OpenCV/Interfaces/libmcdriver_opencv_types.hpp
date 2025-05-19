@@ -106,6 +106,10 @@ typedef void * LibMCDriver_OpenCV_pvoid;
 #define LIBMCDRIVER_OPENCV_ERROR_INCOMPATIBLEBINARYVERSION 8 /** the version of the binary interface does not match the bindings interface */
 #define LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT 9 /** unknown image write format */
 #define LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK 10 /** could not write image to disk */
+#define LIBMCDRIVER_OPENCV_ERROR_EMPTYFILENAME 11 /** empty file name */
+#define LIBMCDRIVER_OPENCV_ERROR_COULDNOTCONVERTFILENAME 12 /** could not convert filename */
+#define LIBMCDRIVER_OPENCV_ERROR_COULDNOTGETSHORTPATHNAME 13 /** could not get short path name */
+#define LIBMCDRIVER_OPENCV_ERROR_COULDNOTCONVERTSHORTFILENAME 14 /** could not convert short path name */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_OpenCV
@@ -124,6 +128,10 @@ inline const char * LIBMCDRIVER_OPENCV_GETERRORSTRING (LibMCDriver_OpenCVResult 
     case LIBMCDRIVER_OPENCV_ERROR_INCOMPATIBLEBINARYVERSION: return "the version of the binary interface does not match the bindings interface";
     case LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT: return "unknown image write format";
     case LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK: return "could not write image to disk";
+    case LIBMCDRIVER_OPENCV_ERROR_EMPTYFILENAME: return "empty file name";
+    case LIBMCDRIVER_OPENCV_ERROR_COULDNOTCONVERTFILENAME: return "could not convert filename";
+    case LIBMCDRIVER_OPENCV_ERROR_COULDNOTGETSHORTPATHNAME: return "could not get short path name";
+    case LIBMCDRIVER_OPENCV_ERROR_COULDNOTCONVERTSHORTFILENAME: return "could not convert short path name";
     default: return "unknown error";
   }
 }

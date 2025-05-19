@@ -186,7 +186,9 @@ IMat * CDriver_OpenCV::LoadImageFromBuffer(const LibMCDriver_OpenCV_uint64 nBuff
     initOpenCV();
 
     auto pImageFile = m_pWorkingDirectory->StoreCustomDataInTempFile("dat", LibMCEnv::CInputVector<uint8_t>(pBufferBuffer, nBufferBufferSize));
-    auto pImageInstance = m_pOpenCVContext->LoadImageFromFile(pImageFile->GetAbsoluteFileName (), (LibOpenCV::eImageReadFormat)eReadFormat);
+    std::string sFileNameToRead = COpenCVUtils::convertUTF8FileNameToOSName(pImageFile->GetAbsoluteFileName());
+
+    auto pImageInstance = m_pOpenCVContext->LoadImageFromFile(sFileNameToRead, (LibOpenCV::eImageReadFormat)eReadFormat);
     pImageFile = nullptr;
 
     return new CMat(pImageInstance, m_pWorkingDirectory);
@@ -198,7 +200,9 @@ IMat * CDriver_OpenCV::LoadImageFromResource(const std::string & sResourceIdenti
     initOpenCV();
 
     auto pImageFile = m_pWorkingDirectory->StoreMachineResourceDataInTempFile("dat", sResourceIdentifier);
-    auto pImageInstance = m_pOpenCVContext->LoadImageFromFile(pImageFile->GetAbsoluteFileName(), (LibOpenCV::eImageReadFormat)eReadFormat);
+    std::string sFileNameToRead = COpenCVUtils::convertUTF8FileNameToOSName(pImageFile->GetAbsoluteFileName());
+
+    auto pImageInstance = m_pOpenCVContext->LoadImageFromFile(sFileNameToRead, (LibOpenCV::eImageReadFormat)eReadFormat);
     pImageFile = nullptr;
 
     return new CMat(pImageInstance, m_pWorkingDirectory);

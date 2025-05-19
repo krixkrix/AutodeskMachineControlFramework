@@ -50,8 +50,11 @@
 		<error name="INCOMPATIBLEBINARYVERSION" code="8" description="the version of the binary interface does not match the bindings interface" />
 		<error name="UNKNOWNIMAGEWRITEFORMAT" code="9" description="unknown image write format" />
 		<error name="COULDNOTWRITEIMAGETODISK" code="10" description="could not write image to disk" />
-		
-
+		<error name="EMPTYFILENAME" code="11" description="empty file name" />
+		<error name="COULDNOTCONVERTFILENAME" code="12" description="could not convert filename" />
+		<error name="COULDNOTGETSHORTPATHNAME" code="13" description="could not get short path name" />
+		<error name="COULDNOTCONVERTSHORTFILENAME" code="14" description="could not convert short path name" />
+				
 
 	</errors>
 
