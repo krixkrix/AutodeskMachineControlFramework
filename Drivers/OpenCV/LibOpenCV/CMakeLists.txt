@@ -84,3 +84,5 @@ set_target_properties(libopencv
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../Resources"
     
 )
+
+set_target_properties(libopencv PROPERTIES OUTPUT_NAME libopencv_x64)
