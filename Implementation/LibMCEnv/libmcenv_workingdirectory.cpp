@@ -46,10 +46,14 @@ using namespace LibMCEnv::Impl;
  Class definition of CWorkingDirectory 
 **************************************************************************************************************************/
 
-CWorkingDirectory::CWorkingDirectory(const std::string& sBasePath, AMC::PResourcePackage pResourcePackage)
-    : m_pResourcePackage (pResourcePackage), m_sTempFileNamePrefix ("amcf_")
+CWorkingDirectory::CWorkingDirectory(const std::string& sBasePath, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage)
+    : m_pDriverResourcePackage (pDriverResourcePackage), 
+    m_pMachineResourcePackage (pMachineResourcePackage),
+    m_sTempFileNamePrefix ("amcf_")
 {
-    if (pResourcePackage.get() == nullptr)
+    if (pDriverResourcePackage.get() == nullptr)
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
+    if (pMachineResourcePackage.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
     if (sBasePath.empty ())
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
@@ -123,7 +127,7 @@ IWorkingFile * CWorkingDirectory::StoreDriverData(const std::string & sFileName,
     m_pWorkingFileMonitor->addNewMonitoredFile(sFileName);
 
     std::vector<uint8_t> Buffer;
-    m_pResourcePackage->readEntry(sIdentifier, Buffer);
+    m_pDriverResourcePackage->readEntry(sIdentifier, Buffer);
 
     auto pStream = std::make_unique<AMCCommon::CExportStream_Native>(sAbsoluteFileName);
     if (Buffer.size () > 0)
@@ -133,6 +137,24 @@ IWorkingFile * CWorkingDirectory::StoreDriverData(const std::string & sFileName,
     return new CWorkingFile(sFileName, m_pWorkingFileMonitor);
 
 }
+
+
+IWorkingFile* CWorkingDirectory::StoreMachineResourceData(const std::string& sFileName, const std::string& sIdentifier)
+{
+    std::string sAbsoluteFileName = m_pWorkingFileMonitor->getAbsoluteFileName(sFileName);
+    m_pWorkingFileMonitor->addNewMonitoredFile(sFileName);
+
+    std::vector<uint8_t> Buffer;
+    m_pMachineResourcePackage->readEntry(sIdentifier, Buffer);
+
+    auto pStream = std::make_unique<AMCCommon::CExportStream_Native>(sAbsoluteFileName);
+    if (Buffer.size() > 0)
+        pStream->writeBuffer(Buffer.data(), Buffer.size());
+    pStream.reset();
+
+    return new CWorkingFile(sFileName, m_pWorkingFileMonitor);
+}
+
 
 std::string CWorkingDirectory::generateFileNameForExtension(const std::string& sExtension)
 {
@@ -176,6 +198,14 @@ IWorkingFile* CWorkingDirectory::StoreDriverDataInTempFile(const std::string& sE
 {
     std::string sFileName = generateFileNameForExtension(sExtension);
     return StoreDriverData (sFileName, sIdentifier);
+
+}
+
+
+IWorkingFile* CWorkingDirectory::StoreMachineResourceDataInTempFile(const std::string& sExtension, const std::string& sIdentifier)
+{
+    std::string sFileName = generateFileNameForExtension(sExtension);
+    return StoreMachineResourceData(sFileName, sIdentifier);
 
 }
 

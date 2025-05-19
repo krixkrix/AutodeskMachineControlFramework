@@ -62,7 +62,8 @@ private:
 
 protected:
 
-    AMC::PResourcePackage m_pResourcePackage;
+    AMC::PResourcePackage m_pDriverResourcePackage;
+    AMC::PResourcePackage m_pMachineResourcePackage;
 
     PWorkingFileMonitor m_pWorkingFileMonitor;
 
@@ -72,7 +73,7 @@ protected:
 
 public:
 
-    CWorkingDirectory(const std::string & sBasePath, AMC::PResourcePackage pResourcePackage);
+    CWorkingDirectory(const std::string & sBasePath, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage);
 
     ~CWorkingDirectory();
 
@@ -84,6 +85,8 @@ public:
 
 	IWorkingFile * StoreDriverData(const std::string & sFileName, const std::string & sIdentifier) override;
 
+    IWorkingFile* StoreMachineResourceData(const std::string& sFileName, const std::string& sIdentifier) override;
+
     IWorkingFile* StoreCustomString(const std::string& sFileName, const std::string& sDataString) override;
 
 	IWorkingFile* StoreCustomDataInTempFile(const std::string& sExtension, const LibMCEnv_uint64 nDataBufferBufferSize, const LibMCEnv_uint8* pDataBufferBuffer) override;
@@ -92,6 +95,7 @@ public:
 
 	IWorkingFile* StoreDriverDataInTempFile(const std::string& sExtension, const std::string& sIdentifier) override;
 
+    IWorkingFile* StoreMachineResourceDataInTempFile(const std::string& sExtension, const std::string& sIdentifier) override;
 
 	bool CleanUp() override;
 

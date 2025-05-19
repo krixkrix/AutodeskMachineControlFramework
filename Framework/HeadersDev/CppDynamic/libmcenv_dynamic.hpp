@@ -2137,9 +2137,11 @@ public:
 	inline PWorkingFile StoreCustomData(const std::string & sFileName, const CInputVector<LibMCEnv_uint8> & DataBufferBuffer);
 	inline PWorkingFile StoreCustomString(const std::string & sFileName, const std::string & sDataString);
 	inline PWorkingFile StoreDriverData(const std::string & sFileName, const std::string & sIdentifier);
+	inline PWorkingFile StoreMachineResourceData(const std::string & sFileName, const std::string & sIdentifier);
 	inline PWorkingFile StoreCustomDataInTempFile(const std::string & sExtension, const CInputVector<LibMCEnv_uint8> & DataBufferBuffer);
 	inline PWorkingFile StoreCustomStringInTempFile(const std::string & sExtension, const std::string & sDataString);
 	inline PWorkingFile StoreDriverDataInTempFile(const std::string & sExtension, const std::string & sIdentifier);
+	inline PWorkingFile StoreMachineResourceDataInTempFile(const std::string & sExtension, const std::string & sIdentifier);
 	inline bool CleanUp();
 	inline PWorkingFile AddManagedFile(const std::string & sFileName);
 	inline bool HasUnmanagedFiles();
@@ -3584,9 +3586,11 @@ public:
 		pWrapperTable->m_WorkingDirectory_StoreCustomData = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreCustomString = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreDriverData = nullptr;
+		pWrapperTable->m_WorkingDirectory_StoreMachineResourceData = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreCustomDataInTempFile = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreCustomStringInTempFile = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreDriverDataInTempFile = nullptr;
+		pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile = nullptr;
 		pWrapperTable->m_WorkingDirectory_CleanUp = nullptr;
 		pWrapperTable->m_WorkingDirectory_AddManagedFile = nullptr;
 		pWrapperTable->m_WorkingDirectory_HasUnmanagedFiles = nullptr;
@@ -7676,6 +7680,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_WorkingDirectory_StoreMachineResourceData = (PLibMCEnvWorkingDirectory_StoreMachineResourceDataPtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_storemachineresourcedata");
+		#else // _WIN32
+		pWrapperTable->m_WorkingDirectory_StoreMachineResourceData = (PLibMCEnvWorkingDirectory_StoreMachineResourceDataPtr) dlsym(hLibrary, "libmcenv_workingdirectory_storemachineresourcedata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingDirectory_StoreMachineResourceData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_WorkingDirectory_StoreCustomDataInTempFile = (PLibMCEnvWorkingDirectory_StoreCustomDataInTempFilePtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_storecustomdataintempfile");
 		#else // _WIN32
 		pWrapperTable->m_WorkingDirectory_StoreCustomDataInTempFile = (PLibMCEnvWorkingDirectory_StoreCustomDataInTempFilePtr) dlsym(hLibrary, "libmcenv_workingdirectory_storecustomdataintempfile");
@@ -7700,6 +7713,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_WorkingDirectory_StoreDriverDataInTempFile == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile = (PLibMCEnvWorkingDirectory_StoreMachineResourceDataInTempFilePtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_storemachineresourcedataintempfile");
+		#else // _WIN32
+		pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile = (PLibMCEnvWorkingDirectory_StoreMachineResourceDataInTempFilePtr) dlsym(hLibrary, "libmcenv_workingdirectory_storemachineresourcedataintempfile");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13722,6 +13744,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_StoreDriverData == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_workingdirectory_storemachineresourcedata", (void**)&(pWrapperTable->m_WorkingDirectory_StoreMachineResourceData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_StoreMachineResourceData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_storecustomdataintempfile", (void**)&(pWrapperTable->m_WorkingDirectory_StoreCustomDataInTempFile));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_StoreCustomDataInTempFile == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13732,6 +13758,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_storedriverdataintempfile", (void**)&(pWrapperTable->m_WorkingDirectory_StoreDriverDataInTempFile));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_StoreDriverDataInTempFile == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingdirectory_storemachineresourcedataintempfile", (void**)&(pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_cleanup", (void**)&(pWrapperTable->m_WorkingDirectory_CleanUp));
@@ -21088,6 +21118,23 @@ public:
 	}
 	
 	/**
+	* CWorkingDirectory::StoreMachineResourceData - Stores machine resource data in a temporary file.
+	* @param[in] sFileName - filename to store to. Can not include any path delimiters or ..
+	* @param[in] sIdentifier - identifier of the binary data in the machine resource package.
+	* @return working file instance.
+	*/
+	PWorkingFile CWorkingDirectory::StoreMachineResourceData(const std::string & sFileName, const std::string & sIdentifier)
+	{
+		LibMCEnvHandle hWorkingFile = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_StoreMachineResourceData(m_pHandle, sFileName.c_str(), sIdentifier.c_str(), &hWorkingFile));
+		
+		if (!hWorkingFile) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingFile>(m_pWrapper, hWorkingFile);
+	}
+	
+	/**
 	* CWorkingDirectory::StoreCustomDataInTempFile - Stores a data buffer in a temporary file with a generated name.
 	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
 	* @param[in] DataBufferBuffer - file data to store to.
@@ -21131,6 +21178,23 @@ public:
 	{
 		LibMCEnvHandle hWorkingFile = nullptr;
 		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_StoreDriverDataInTempFile(m_pHandle, sExtension.c_str(), sIdentifier.c_str(), &hWorkingFile));
+		
+		if (!hWorkingFile) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingFile>(m_pWrapper, hWorkingFile);
+	}
+	
+	/**
+	* CWorkingDirectory::StoreMachineResourceDataInTempFile - Stores machine resource data in a temporary file.
+	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+	* @param[in] sIdentifier - identifier of the binary data in the machine resource package.
+	* @return working file instance.
+	*/
+	PWorkingFile CWorkingDirectory::StoreMachineResourceDataInTempFile(const std::string & sExtension, const std::string & sIdentifier)
+	{
+		LibMCEnvHandle hWorkingFile = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_StoreMachineResourceDataInTempFile(m_pHandle, sExtension.c_str(), sIdentifier.c_str(), &hWorkingFile));
 		
 		if (!hWorkingFile) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);

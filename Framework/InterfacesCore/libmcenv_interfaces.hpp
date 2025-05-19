@@ -3540,6 +3540,14 @@ public:
 	virtual IWorkingFile * StoreDriverData(const std::string & sFileName, const std::string & sIdentifier) = 0;
 
 	/**
+	* IWorkingDirectory::StoreMachineResourceData - Stores machine resource data in a temporary file.
+	* @param[in] sFileName - filename to store to. Can not include any path delimiters or ..
+	* @param[in] sIdentifier - identifier of the binary data in the machine resource package.
+	* @return working file instance.
+	*/
+	virtual IWorkingFile * StoreMachineResourceData(const std::string & sFileName, const std::string & sIdentifier) = 0;
+
+	/**
 	* IWorkingDirectory::StoreCustomDataInTempFile - Stores a data buffer in a temporary file with a generated name.
 	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
 	* @param[in] nDataBufferBufferSize - Number of elements in buffer
@@ -3563,6 +3571,14 @@ public:
 	* @return working file instance.
 	*/
 	virtual IWorkingFile * StoreDriverDataInTempFile(const std::string & sExtension, const std::string & sIdentifier) = 0;
+
+	/**
+	* IWorkingDirectory::StoreMachineResourceDataInTempFile - Stores machine resource data in a temporary file.
+	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+	* @param[in] sIdentifier - identifier of the binary data in the machine resource package.
+	* @return working file instance.
+	*/
+	virtual IWorkingFile * StoreMachineResourceDataInTempFile(const std::string & sExtension, const std::string & sIdentifier) = 0;
 
 	/**
 	* IWorkingDirectory::CleanUp - Deletes all managed files in the directory and the directory. No storing is possible after a cleanup.

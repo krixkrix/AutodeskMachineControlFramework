@@ -4312,6 +4312,17 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_storecustomstring(Lib
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_storedriverdata(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pFileName, const char * pIdentifier, LibMCEnv_WorkingFile * pWorkingFile);
 
 /**
+* Stores machine resource data in a temporary file.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pFileName - filename to store to. Can not include any path delimiters or ..
+* @param[in] pIdentifier - identifier of the binary data in the machine resource package.
+* @param[out] pWorkingFile - working file instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_storemachineresourcedata(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pFileName, const char * pIdentifier, LibMCEnv_WorkingFile * pWorkingFile);
+
+/**
 * Stores a data buffer in a temporary file with a generated name.
 *
 * @param[in] pWorkingDirectory - WorkingDirectory instance.
@@ -4344,6 +4355,17 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_storecustomstringinte
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_storedriverdataintempfile(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, const char * pIdentifier, LibMCEnv_WorkingFile * pWorkingFile);
+
+/**
+* Stores machine resource data in a temporary file.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+* @param[in] pIdentifier - identifier of the binary data in the machine resource package.
+* @param[out] pWorkingFile - working file instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_storemachineresourcedataintempfile(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, const char * pIdentifier, LibMCEnv_WorkingFile * pWorkingFile);
 
 /**
 * Deletes all managed files in the directory and the directory. No storing is possible after a cleanup.
