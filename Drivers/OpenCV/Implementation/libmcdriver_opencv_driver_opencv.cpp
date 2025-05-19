@@ -107,7 +107,7 @@ void CDriver_OpenCV::initOpenCV()
             m_pWorkingDirectory = m_pDriverEnvironment->CreateWorkingDirectory();
             m_pLibOpenCVDLL = m_pWorkingDirectory->StoreDriverData("libopencv_x64.dll", "libopencv_x64");
             m_pOpenCVWorldDLL = m_pWorkingDirectory->StoreDriverData("opencv_world4110.dll", "opencv_world4110");
-            m_pOpenCVMSMFDLL = m_pWorkingDirectory->StoreDriverData("opencvopencv_videoio_ffmpeg4110_64_videoio_msmf4110_64.dll", "opencv_videoio_msmf4110_64");
+            m_pOpenCVMSMFDLL = m_pWorkingDirectory->StoreDriverData("opencv_videoio_msmf4110_64.dll", "opencv_videoio_msmf4110_64");
             m_pOpenCVFFMPEGDLL = m_pWorkingDirectory->StoreDriverData("opencv_videoio_ffmpeg4110_64.dll", "opencv_videoio_ffmpeg4110_64");
 
             auto pDLLDirectoryCache = std::make_shared<COpenCV_DLLDirectoryCache>();
@@ -189,7 +189,7 @@ IMat * CDriver_OpenCV::LoadImageFromBuffer(const LibMCDriver_OpenCV_uint64 nBuff
     auto pImageInstance = m_pOpenCVContext->LoadImageFromFile(pImageFile->GetAbsoluteFileName (), (LibOpenCV::eImageReadFormat)eReadFormat);
     pImageFile = nullptr;
 
-    return new CMat(pImageInstance);
+    return new CMat(pImageInstance, m_pWorkingDirectory);
 
 }
 
@@ -201,7 +201,7 @@ IMat * CDriver_OpenCV::LoadImageFromResource(const std::string & sResourceIdenti
     auto pImageInstance = m_pOpenCVContext->LoadImageFromFile(pImageFile->GetAbsoluteFileName(), (LibOpenCV::eImageReadFormat)eReadFormat);
     pImageFile = nullptr;
 
-    return new CMat(pImageInstance);
+    return new CMat(pImageInstance, m_pWorkingDirectory);
 }
 
 IMat* CDriver_OpenCV::CreateEmptyImage(const LibMCDriver_OpenCV_uint32 nColumnCount, const LibMCDriver_OpenCV_uint32 nRowCount, const LibMCDriver_OpenCV::eImageReadFormat eReadFormat)
@@ -210,7 +210,7 @@ IMat* CDriver_OpenCV::CreateEmptyImage(const LibMCDriver_OpenCV_uint32 nColumnCo
 
     auto pImageInstance = m_pOpenCVContext->CreateEmptyImage (nColumnCount, nRowCount, (LibOpenCV::eImageReadFormat) eReadFormat);
 
-    return new CMat(pImageInstance);
+    return new CMat(pImageInstance, m_pWorkingDirectory);
 }
 
 

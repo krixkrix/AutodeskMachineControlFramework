@@ -60,10 +60,11 @@ class CMat : public virtual IMat, public virtual CBase {
 private:
 
 	LibOpenCV::PMat m_pMat;
+	LibMCEnv::PWorkingDirectory m_pWorkingDirectory;
 
 public:
 
-    CMat(LibOpenCV::PMat pMat);
+    CMat(LibOpenCV::PMat pMat, LibMCEnv::PWorkingDirectory pWorkingDirectory);
 
     virtual ~CMat();
 
@@ -72,6 +73,10 @@ public:
 	LibMCDriver_OpenCV_uint32 Cols() override;
 
 	LibMCDriver_OpenCV_uint32 Rows() override;
+
+	IImageBuffer* EncodeImage(const LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, IImageSaveParameters* pSaveParameters) override;
+
+	void EncodeImageToStream(const LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, IImageSaveParameters* pSaveParameters, LibMCEnv::PTempStreamWriter pStream) override;
 
 };
 

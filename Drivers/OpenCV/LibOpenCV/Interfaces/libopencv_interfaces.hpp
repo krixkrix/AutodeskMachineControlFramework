@@ -55,6 +55,7 @@ namespace Impl {
  Forward declarations of class interfaces
 */
 class IBase;
+class IImageSaveParameters;
 class IMat;
 class IOpenCVContext;
 
@@ -238,6 +239,17 @@ typedef IBaseSharedPtr<IBase> PIBase;
 
 
 /*************************************************************************************************************************
+ Class interface for ImageSaveParameters 
+**************************************************************************************************************************/
+
+class IImageSaveParameters : public virtual IBase {
+public:
+};
+
+typedef IBaseSharedPtr<IImageSaveParameters> PIImageSaveParameters;
+
+
+/*************************************************************************************************************************
  Class interface for Mat 
 **************************************************************************************************************************/
 
@@ -260,6 +272,13 @@ public:
 	* @return Returns the number of rows of the matrix.
 	*/
 	virtual LibOpenCV_uint32 Rows() = 0;
+
+	/**
+	* IMat::WriteToFile - Writes a matrix as image to a file.
+	* @param[in] sFileName - Filename to write to (in UTF8). File type is derived from the file extension.
+	* @param[in] pSaveParameters - Optional parameters for writing the image file.
+	*/
+	virtual void WriteToFile(const std::string & sFileName, IImageSaveParameters* pSaveParameters) = 0;
 
 };
 

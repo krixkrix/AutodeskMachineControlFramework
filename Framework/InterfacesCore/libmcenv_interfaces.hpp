@@ -3440,6 +3440,14 @@ public:
 	virtual LibMCEnv_uint64 GetSize() = 0;
 
 	/**
+	* IWorkingFile::ReadContent - Returns the content of the working file.
+	* @param[in] nFileContentBufferSize - Number of elements in buffer
+	* @param[out] pFileContentNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pFileContentBuffer - uint8 buffer of Array the content will be read into.
+	*/
+	virtual void ReadContent(LibMCEnv_uint64 nFileContentBufferSize, LibMCEnv_uint64* pFileContentNeededCount, LibMCEnv_uint8 * pFileContentBuffer) = 0;
+
+	/**
 	* IWorkingFile::CalculateSHA2 - Calculates the SHA256 checksum of the file.
 	* @return sha256 checksum
 	*/
@@ -3592,6 +3600,13 @@ public:
 	* @return working file instance.
 	*/
 	virtual IWorkingFile * AddManagedFile(const std::string & sFileName) = 0;
+
+	/**
+	* IWorkingDirectory::AddManagedTempFile - Adds a managed temporary file in the directory (i.e. this file will be deleted at CleanUp). Subdirectories are not allowed.
+	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+	* @return working file instance.
+	*/
+	virtual IWorkingFile * AddManagedTempFile(const std::string & sExtension) = 0;
 
 	/**
 	* IWorkingDirectory::HasUnmanagedFiles - Returns if the working directory has unmanaged files. A clean implementation will never deal with unmanaged files.

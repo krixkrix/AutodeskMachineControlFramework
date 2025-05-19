@@ -112,6 +112,8 @@ public:
 
 	LibMCEnv_uint64 GetSize() override;
 
+    void ReadContent(LibMCEnv_uint64 nFileContentBufferSize, LibMCEnv_uint64* pFileContentNeededCount, LibMCEnv_uint8* pFileContentBuffer) override;
+
 	std::string CalculateSHA2() override;
 
 	IWorkingFileExecution * ExecuteFile() override;

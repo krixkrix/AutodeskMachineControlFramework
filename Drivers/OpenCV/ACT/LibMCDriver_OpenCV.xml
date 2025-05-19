@@ -48,6 +48,9 @@
 		<error name="COULDNOTLOADLIBRARY" code="6" description="the library could not be loaded" />
 		<error name="COULDNOTFINDLIBRARYEXPORT" code="7" description="a required exported symbol could not be found in the library" />
 		<error name="INCOMPATIBLEBINARYVERSION" code="8" description="the version of the binary interface does not match the bindings interface" />
+		<error name="UNKNOWNIMAGEWRITEFORMAT" code="9" description="unknown image write format" />
+		<error name="COULDNOTWRITEIMAGETODISK" code="10" description="could not write image to disk" />
+		
 
 
 	</errors>
@@ -115,6 +118,38 @@ Custom implementation
 	   <option name="RGB" value="3" />
 	</enum>
 	
+	<enum name="ImageWriteFormat">
+	   <option name="Unknown" value="0" />
+	   <option name="PNG" value="1" />
+	   <option name="JPEG" value="2" />
+	</enum>
+	
+	<class name="ImageSaveParameters" parent="Base" description="Class that stores save parameters for an image.">
+		
+	</class>
+
+	<class name="ImageBuffer" parent="Base" description="Class that stores save parameters for an image.">
+
+		<method name="GetImageFormat" description="Retrieves the image format of the encoded buffer.">
+			<param name="ImageFormat" type="enum" class="ImageWriteFormat" pass="return" description="Format to write to." />
+		</method>
+
+		<method name="GetSize" description="Retrieves the size of the encoded buffer.">
+			<param name="BufferSize" type="uint64" pass="return" description="Size of the buffer." />
+		</method>
+
+		<method name="GetData" description="Retrieves the data of the encoded buffer.">
+			<param name="MemoryArray" type="basicarray" class="uint8" pass="out" description="Array to write into." />
+		</method>
+		
+		<method name="StoreToStream" description="Stores the data in a temporary file stream.">
+			<param name="Stream" type="class" class="LibMCEnv:TempStreamWriter" pass="in" description="Stream to store the data to." />
+		</method>
+		
+
+	</class>
+
+	
 	<class name="Mat" parent="Base" description="Mat is a n-dimensional dense array class.">
 	
 		<method name="Empty" description="Returns if the Mat instance is empty.">
@@ -129,6 +164,17 @@ Custom implementation
 			<param name="NumberOfRows" type="uint32" pass="return" description="Returns the number of rows of the matrix." />
 		</method>
 	
+		<method name="EncodeImage" description="Writes a matrix as image buffer.">
+			<param name="WriteFormat" type="enum" class="ImageWriteFormat" pass="in" description="Format to write to." />
+			<param name="SaveParameters" type="optionalclass" class="ImageSaveParameters" pass="in" description="Optional parameters for writing the image file." />
+			<param name="OutputBuffer" type="class" class="ImageBuffer" pass="return" description="Returns an image buffer object." />
+		</method>
+	
+		<method name="EncodeImageToStream" description="Writes a matrix into a temporary file stream.">
+			<param name="WriteFormat" type="enum" class="ImageWriteFormat" pass="in" description="Format to write to." />
+			<param name="SaveParameters" type="optionalclass" class="ImageSaveParameters" pass="in" description="Optional parameters for writing the image file." />
+			<param name="Stream" type="class" class="LibMCEnv:TempStreamWriter" pass="in" description="Stream to store the data to." />
+		</method>	
 	</class>
 
 

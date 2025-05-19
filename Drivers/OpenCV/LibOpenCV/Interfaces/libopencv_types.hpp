@@ -107,6 +107,7 @@ typedef void * LibOpenCV_pvoid;
 #define LIBOPENCV_ERROR_INVALIDREADFORMAT 1009 /** Invalid read format */
 #define LIBOPENCV_ERROR_COULDNOTREADIMAGEFILE 1010 /** Could not read image file */
 #define LIBOPENCV_ERROR_COULDNOTCREATEEMPTYIMAGE 1011 /** Could not create empty image */
+#define LIBOPENCV_ERROR_COULDNOTWRITEIMAGEFILE 1012 /** Could not write image file */
 
 /*************************************************************************************************************************
  Error strings for LibOpenCV
@@ -126,6 +127,7 @@ inline const char * LIBOPENCV_GETERRORSTRING (LibOpenCVResult nErrorCode) {
     case LIBOPENCV_ERROR_INVALIDREADFORMAT: return "Invalid read format";
     case LIBOPENCV_ERROR_COULDNOTREADIMAGEFILE: return "Could not read image file";
     case LIBOPENCV_ERROR_COULDNOTCREATEEMPTYIMAGE: return "Could not create empty image";
+    case LIBOPENCV_ERROR_COULDNOTWRITEIMAGEFILE: return "Could not write image file";
     default: return "unknown error";
   }
 }
@@ -135,6 +137,7 @@ inline const char * LIBOPENCV_GETERRORSTRING (LibOpenCVResult nErrorCode) {
 **************************************************************************************************************************/
 
 typedef LibOpenCVHandle LibOpenCV_Base;
+typedef LibOpenCVHandle LibOpenCV_ImageSaveParameters;
 typedef LibOpenCVHandle LibOpenCV_Mat;
 typedef LibOpenCVHandle LibOpenCV_OpenCVContext;
 

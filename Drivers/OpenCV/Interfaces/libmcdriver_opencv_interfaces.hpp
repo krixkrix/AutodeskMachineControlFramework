@@ -57,6 +57,8 @@ namespace Impl {
 */
 class IBase;
 class IDriver;
+class IImageSaveParameters;
+class IImageBuffer;
 class IMat;
 class IDriver_OpenCV;
 
@@ -310,6 +312,54 @@ typedef IBaseSharedPtr<IDriver> PIDriver;
 
 
 /*************************************************************************************************************************
+ Class interface for ImageSaveParameters 
+**************************************************************************************************************************/
+
+class IImageSaveParameters : public virtual IBase {
+public:
+};
+
+typedef IBaseSharedPtr<IImageSaveParameters> PIImageSaveParameters;
+
+
+/*************************************************************************************************************************
+ Class interface for ImageBuffer 
+**************************************************************************************************************************/
+
+class IImageBuffer : public virtual IBase {
+public:
+	/**
+	* IImageBuffer::GetImageFormat - Retrieves the image format of the encoded buffer.
+	* @return Format to write to.
+	*/
+	virtual LibMCDriver_OpenCV::eImageWriteFormat GetImageFormat() = 0;
+
+	/**
+	* IImageBuffer::GetSize - Retrieves the size of the encoded buffer.
+	* @return Size of the buffer.
+	*/
+	virtual LibMCDriver_OpenCV_uint64 GetSize() = 0;
+
+	/**
+	* IImageBuffer::GetData - Retrieves the data of the encoded buffer.
+	* @param[in] nMemoryArrayBufferSize - Number of elements in buffer
+	* @param[out] pMemoryArrayNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pMemoryArrayBuffer - uint8 buffer of Array to write into.
+	*/
+	virtual void GetData(LibMCDriver_OpenCV_uint64 nMemoryArrayBufferSize, LibMCDriver_OpenCV_uint64* pMemoryArrayNeededCount, LibMCDriver_OpenCV_uint8 * pMemoryArrayBuffer) = 0;
+
+	/**
+	* IImageBuffer::StoreToStream - Stores the data in a temporary file stream.
+	* @param[in] pStream - Stream to store the data to.
+	*/
+	virtual void StoreToStream(LibMCEnv::PTempStreamWriter pStream) = 0;
+
+};
+
+typedef IBaseSharedPtr<IImageBuffer> PIImageBuffer;
+
+
+/*************************************************************************************************************************
  Class interface for Mat 
 **************************************************************************************************************************/
 
@@ -332,6 +382,22 @@ public:
 	* @return Returns the number of rows of the matrix.
 	*/
 	virtual LibMCDriver_OpenCV_uint32 Rows() = 0;
+
+	/**
+	* IMat::EncodeImage - Writes a matrix as image buffer.
+	* @param[in] eWriteFormat - Format to write to.
+	* @param[in] pSaveParameters - Optional parameters for writing the image file.
+	* @return Returns an image buffer object.
+	*/
+	virtual IImageBuffer * EncodeImage(const LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, IImageSaveParameters* pSaveParameters) = 0;
+
+	/**
+	* IMat::EncodeImageToStream - Writes a matrix into a temporary file stream.
+	* @param[in] eWriteFormat - Format to write to.
+	* @param[in] pSaveParameters - Optional parameters for writing the image file.
+	* @param[in] pStream - Stream to store the data to.
+	*/
+	virtual void EncodeImageToStream(const LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, IImageSaveParameters* pSaveParameters, LibMCEnv::PTempStreamWriter pStream) = 0;
 
 };
 

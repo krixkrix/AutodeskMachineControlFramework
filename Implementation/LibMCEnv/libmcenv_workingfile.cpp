@@ -197,6 +197,27 @@ LibMCEnv_uint64 CWorkingFile::GetSize()
     return pStream->retrieveSize();
 }
 
+void CWorkingFile::ReadContent(LibMCEnv_uint64 nFileContentBufferSize, LibMCEnv_uint64* pFileContentNeededCount, LibMCEnv_uint8* pFileContentBuffer)
+{
+    if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sAbsolutePath))
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST);
+
+    auto pStream = std::make_shared<AMCCommon::CImportStream_Native>(m_sAbsolutePath);
+    uint64_t nFileSize = pStream->retrieveSize();
+
+	if (pFileContentNeededCount != nullptr)
+		*pFileContentNeededCount = nFileSize;
+
+	if (pFileContentBuffer != nullptr) {
+		if (nFileContentBufferSize < nFileSize)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_BUFFERTOOSMALL);
+
+        if (nFileSize > 0)
+		    pStream->readBuffer (pFileContentBuffer, nFileSize, true);
+	}
+}
+
+
 std::string CWorkingFile::CalculateSHA2()
 {
     return AMCCommon::CUtils::calculateSHA256FromFile(m_sAbsolutePath);

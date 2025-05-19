@@ -62,6 +62,8 @@ namespace LibMCDriver_OpenCV {
 class CWrapper;
 class CBase;
 class CDriver;
+class CImageSaveParameters;
+class CImageBuffer;
 class CMat;
 class CDriver_OpenCV;
 
@@ -71,6 +73,8 @@ class CDriver_OpenCV;
 typedef CWrapper CLibMCDriver_OpenCVWrapper;
 typedef CBase CLibMCDriver_OpenCVBase;
 typedef CDriver CLibMCDriver_OpenCVDriver;
+typedef CImageSaveParameters CLibMCDriver_OpenCVImageSaveParameters;
+typedef CImageBuffer CLibMCDriver_OpenCVImageBuffer;
 typedef CMat CLibMCDriver_OpenCVMat;
 typedef CDriver_OpenCV CLibMCDriver_OpenCVDriver_OpenCV;
 
@@ -80,6 +84,8 @@ typedef CDriver_OpenCV CLibMCDriver_OpenCVDriver_OpenCV;
 typedef std::shared_ptr<CWrapper> PWrapper;
 typedef std::shared_ptr<CBase> PBase;
 typedef std::shared_ptr<CDriver> PDriver;
+typedef std::shared_ptr<CImageSaveParameters> PImageSaveParameters;
+typedef std::shared_ptr<CImageBuffer> PImageBuffer;
 typedef std::shared_ptr<CMat> PMat;
 typedef std::shared_ptr<CDriver_OpenCV> PDriver_OpenCV;
 
@@ -89,6 +95,8 @@ typedef std::shared_ptr<CDriver_OpenCV> PDriver_OpenCV;
 typedef PWrapper PLibMCDriver_OpenCVWrapper;
 typedef PBase PLibMCDriver_OpenCVBase;
 typedef PDriver PLibMCDriver_OpenCVDriver;
+typedef PImageSaveParameters PLibMCDriver_OpenCVImageSaveParameters;
+typedef PImageBuffer PLibMCDriver_OpenCVImageBuffer;
 typedef PMat PLibMCDriver_OpenCVMat;
 typedef PDriver_OpenCV PLibMCDriver_OpenCVDriver_OpenCV;
 
@@ -178,6 +186,8 @@ public:
 			case LIBMCDRIVER_OPENCV_ERROR_COULDNOTLOADLIBRARY: return "COULDNOTLOADLIBRARY";
 			case LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT: return "COULDNOTFINDLIBRARYEXPORT";
 			case LIBMCDRIVER_OPENCV_ERROR_INCOMPATIBLEBINARYVERSION: return "INCOMPATIBLEBINARYVERSION";
+			case LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT: return "UNKNOWNIMAGEWRITEFORMAT";
+			case LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK: return "COULDNOTWRITEIMAGETODISK";
 		}
 		return "UNKNOWN";
 	}
@@ -194,6 +204,8 @@ public:
 			case LIBMCDRIVER_OPENCV_ERROR_COULDNOTLOADLIBRARY: return "the library could not be loaded";
 			case LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT: return "a required exported symbol could not be found in the library";
 			case LIBMCDRIVER_OPENCV_ERROR_INCOMPATIBLEBINARYVERSION: return "the version of the binary interface does not match the bindings interface";
+			case LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT: return "unknown image write format";
+			case LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK: return "could not write image to disk";
 		}
 		return "unknown error";
 	}
@@ -317,6 +329,8 @@ private:
 
 	friend class CBase;
 	friend class CDriver;
+	friend class CImageSaveParameters;
+	friend class CImageBuffer;
 	friend class CMat;
 	friend class CDriver_OpenCV;
 
@@ -402,6 +416,42 @@ public:
 };
 	
 /*************************************************************************************************************************
+ Class CImageSaveParameters 
+**************************************************************************************************************************/
+class CImageSaveParameters : public CBase {
+public:
+	
+	/**
+	* CImageSaveParameters::CImageSaveParameters - Constructor for ImageSaveParameters class.
+	*/
+	CImageSaveParameters(CWrapper* pWrapper, LibMCDriver_OpenCVHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+};
+	
+/*************************************************************************************************************************
+ Class CImageBuffer 
+**************************************************************************************************************************/
+class CImageBuffer : public CBase {
+public:
+	
+	/**
+	* CImageBuffer::CImageBuffer - Constructor for ImageBuffer class.
+	*/
+	CImageBuffer(CWrapper* pWrapper, LibMCDriver_OpenCVHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+	inline eImageWriteFormat GetImageFormat();
+	inline LibMCDriver_OpenCV_uint64 GetSize();
+	inline void GetData(std::vector<LibMCDriver_OpenCV_uint8> & MemoryArrayBuffer);
+	inline void StoreToStream(classParam<LibMCEnv::CTempStreamWriter> pStream);
+};
+	
+/*************************************************************************************************************************
  Class CMat 
 **************************************************************************************************************************/
 class CMat : public CBase {
@@ -418,6 +468,8 @@ public:
 	inline bool Empty();
 	inline LibMCDriver_OpenCV_uint32 Cols();
 	inline LibMCDriver_OpenCV_uint32 Rows();
+	inline PImageBuffer EncodeImage(const eImageWriteFormat eWriteFormat, classParam<CImageSaveParameters> pSaveParameters);
+	inline void EncodeImageToStream(const eImageWriteFormat eWriteFormat, classParam<CImageSaveParameters> pSaveParameters, classParam<LibMCEnv::CTempStreamWriter> pStream);
 };
 	
 /*************************************************************************************************************************
@@ -567,9 +619,15 @@ public:
 		pWrapperTable->m_Driver_GetVersion = nullptr;
 		pWrapperTable->m_Driver_QueryParameters = nullptr;
 		pWrapperTable->m_Driver_QueryParametersEx = nullptr;
+		pWrapperTable->m_ImageBuffer_GetImageFormat = nullptr;
+		pWrapperTable->m_ImageBuffer_GetSize = nullptr;
+		pWrapperTable->m_ImageBuffer_GetData = nullptr;
+		pWrapperTable->m_ImageBuffer_StoreToStream = nullptr;
 		pWrapperTable->m_Mat_Empty = nullptr;
 		pWrapperTable->m_Mat_Cols = nullptr;
 		pWrapperTable->m_Mat_Rows = nullptr;
+		pWrapperTable->m_Mat_EncodeImage = nullptr;
+		pWrapperTable->m_Mat_EncodeImageToStream = nullptr;
 		pWrapperTable->m_Driver_OpenCV_LoadImageFromBuffer = nullptr;
 		pWrapperTable->m_Driver_OpenCV_LoadImageFromResource = nullptr;
 		pWrapperTable->m_Driver_OpenCV_CreateEmptyImage = nullptr;
@@ -685,6 +743,42 @@ public:
 			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_ImageBuffer_GetImageFormat = (PLibMCDriver_OpenCVImageBuffer_GetImageFormatPtr) GetProcAddress(hLibrary, "libmcdriver_opencv_imagebuffer_getimageformat");
+		#else // _WIN32
+		pWrapperTable->m_ImageBuffer_GetImageFormat = (PLibMCDriver_OpenCVImageBuffer_GetImageFormatPtr) dlsym(hLibrary, "libmcdriver_opencv_imagebuffer_getimageformat");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ImageBuffer_GetImageFormat == nullptr)
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ImageBuffer_GetSize = (PLibMCDriver_OpenCVImageBuffer_GetSizePtr) GetProcAddress(hLibrary, "libmcdriver_opencv_imagebuffer_getsize");
+		#else // _WIN32
+		pWrapperTable->m_ImageBuffer_GetSize = (PLibMCDriver_OpenCVImageBuffer_GetSizePtr) dlsym(hLibrary, "libmcdriver_opencv_imagebuffer_getsize");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ImageBuffer_GetSize == nullptr)
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ImageBuffer_GetData = (PLibMCDriver_OpenCVImageBuffer_GetDataPtr) GetProcAddress(hLibrary, "libmcdriver_opencv_imagebuffer_getdata");
+		#else // _WIN32
+		pWrapperTable->m_ImageBuffer_GetData = (PLibMCDriver_OpenCVImageBuffer_GetDataPtr) dlsym(hLibrary, "libmcdriver_opencv_imagebuffer_getdata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ImageBuffer_GetData == nullptr)
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ImageBuffer_StoreToStream = (PLibMCDriver_OpenCVImageBuffer_StoreToStreamPtr) GetProcAddress(hLibrary, "libmcdriver_opencv_imagebuffer_storetostream");
+		#else // _WIN32
+		pWrapperTable->m_ImageBuffer_StoreToStream = (PLibMCDriver_OpenCVImageBuffer_StoreToStreamPtr) dlsym(hLibrary, "libmcdriver_opencv_imagebuffer_storetostream");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ImageBuffer_StoreToStream == nullptr)
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_Mat_Empty = (PLibMCDriver_OpenCVMat_EmptyPtr) GetProcAddress(hLibrary, "libmcdriver_opencv_mat_empty");
 		#else // _WIN32
 		pWrapperTable->m_Mat_Empty = (PLibMCDriver_OpenCVMat_EmptyPtr) dlsym(hLibrary, "libmcdriver_opencv_mat_empty");
@@ -709,6 +803,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Mat_Rows == nullptr)
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Mat_EncodeImage = (PLibMCDriver_OpenCVMat_EncodeImagePtr) GetProcAddress(hLibrary, "libmcdriver_opencv_mat_encodeimage");
+		#else // _WIN32
+		pWrapperTable->m_Mat_EncodeImage = (PLibMCDriver_OpenCVMat_EncodeImagePtr) dlsym(hLibrary, "libmcdriver_opencv_mat_encodeimage");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Mat_EncodeImage == nullptr)
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Mat_EncodeImageToStream = (PLibMCDriver_OpenCVMat_EncodeImageToStreamPtr) GetProcAddress(hLibrary, "libmcdriver_opencv_mat_encodeimagetostream");
+		#else // _WIN32
+		pWrapperTable->m_Mat_EncodeImageToStream = (PLibMCDriver_OpenCVMat_EncodeImageToStreamPtr) dlsym(hLibrary, "libmcdriver_opencv_mat_encodeimagetostream");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Mat_EncodeImageToStream == nullptr)
 			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -841,6 +953,22 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_QueryParametersEx == nullptr) )
 			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_opencv_imagebuffer_getimageformat", (void**)&(pWrapperTable->m_ImageBuffer_GetImageFormat));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ImageBuffer_GetImageFormat == nullptr) )
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_opencv_imagebuffer_getsize", (void**)&(pWrapperTable->m_ImageBuffer_GetSize));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ImageBuffer_GetSize == nullptr) )
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_opencv_imagebuffer_getdata", (void**)&(pWrapperTable->m_ImageBuffer_GetData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ImageBuffer_GetData == nullptr) )
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_opencv_imagebuffer_storetostream", (void**)&(pWrapperTable->m_ImageBuffer_StoreToStream));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ImageBuffer_StoreToStream == nullptr) )
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_opencv_mat_empty", (void**)&(pWrapperTable->m_Mat_Empty));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Mat_Empty == nullptr) )
 			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -851,6 +979,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_opencv_mat_rows", (void**)&(pWrapperTable->m_Mat_Rows));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Mat_Rows == nullptr) )
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_opencv_mat_encodeimage", (void**)&(pWrapperTable->m_Mat_EncodeImage));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Mat_EncodeImage == nullptr) )
+			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_opencv_mat_encodeimagetostream", (void**)&(pWrapperTable->m_Mat_EncodeImageToStream));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Mat_EncodeImageToStream == nullptr) )
 			return LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_opencv_driver_opencv_loadimagefrombuffer", (void**)&(pWrapperTable->m_Driver_OpenCV_LoadImageFromBuffer));
@@ -981,6 +1117,61 @@ public:
 	}
 	
 	/**
+	 * Method definitions for class CImageSaveParameters
+	 */
+	
+	/**
+	 * Method definitions for class CImageBuffer
+	 */
+	
+	/**
+	* CImageBuffer::GetImageFormat - Retrieves the image format of the encoded buffer.
+	* @return Format to write to.
+	*/
+	eImageWriteFormat CImageBuffer::GetImageFormat()
+	{
+		eImageWriteFormat resultImageFormat = (eImageWriteFormat) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ImageBuffer_GetImageFormat(m_pHandle, &resultImageFormat));
+		
+		return resultImageFormat;
+	}
+	
+	/**
+	* CImageBuffer::GetSize - Retrieves the size of the encoded buffer.
+	* @return Size of the buffer.
+	*/
+	LibMCDriver_OpenCV_uint64 CImageBuffer::GetSize()
+	{
+		LibMCDriver_OpenCV_uint64 resultBufferSize = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ImageBuffer_GetSize(m_pHandle, &resultBufferSize));
+		
+		return resultBufferSize;
+	}
+	
+	/**
+	* CImageBuffer::GetData - Retrieves the data of the encoded buffer.
+	* @param[out] MemoryArrayBuffer - Array to write into.
+	*/
+	void CImageBuffer::GetData(std::vector<LibMCDriver_OpenCV_uint8> & MemoryArrayBuffer)
+	{
+		LibMCDriver_OpenCV_uint64 elementsNeededMemoryArray = 0;
+		LibMCDriver_OpenCV_uint64 elementsWrittenMemoryArray = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ImageBuffer_GetData(m_pHandle, 0, &elementsNeededMemoryArray, nullptr));
+		MemoryArrayBuffer.resize((size_t) elementsNeededMemoryArray);
+		CheckError(m_pWrapper->m_WrapperTable.m_ImageBuffer_GetData(m_pHandle, elementsNeededMemoryArray, &elementsWrittenMemoryArray, MemoryArrayBuffer.data()));
+	}
+	
+	/**
+	* CImageBuffer::StoreToStream - Stores the data in a temporary file stream.
+	* @param[in] pStream - Stream to store the data to.
+	*/
+	void CImageBuffer::StoreToStream(classParam<LibMCEnv::CTempStreamWriter> pStream)
+	{
+		LibMCEnvHandle hStream = pStream.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_ImageBuffer_StoreToStream(m_pHandle, hStream));
+	}
+	
+	/**
 	 * Method definitions for class CMat
 	 */
 	
@@ -1018,6 +1209,37 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_Mat_Rows(m_pHandle, &resultNumberOfRows));
 		
 		return resultNumberOfRows;
+	}
+	
+	/**
+	* CMat::EncodeImage - Writes a matrix as image buffer.
+	* @param[in] eWriteFormat - Format to write to.
+	* @param[in] pSaveParameters - Optional parameters for writing the image file.
+	* @return Returns an image buffer object.
+	*/
+	PImageBuffer CMat::EncodeImage(const eImageWriteFormat eWriteFormat, classParam<CImageSaveParameters> pSaveParameters)
+	{
+		LibMCDriver_OpenCVHandle hSaveParameters = pSaveParameters.GetHandle();
+		LibMCDriver_OpenCVHandle hOutputBuffer = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_Mat_EncodeImage(m_pHandle, eWriteFormat, hSaveParameters, &hOutputBuffer));
+		
+		if (!hOutputBuffer) {
+			CheckError(LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CImageBuffer>(m_pWrapper, hOutputBuffer);
+	}
+	
+	/**
+	* CMat::EncodeImageToStream - Writes a matrix into a temporary file stream.
+	* @param[in] eWriteFormat - Format to write to.
+	* @param[in] pSaveParameters - Optional parameters for writing the image file.
+	* @param[in] pStream - Stream to store the data to.
+	*/
+	void CMat::EncodeImageToStream(const eImageWriteFormat eWriteFormat, classParam<CImageSaveParameters> pSaveParameters, classParam<LibMCEnv::CTempStreamWriter> pStream)
+	{
+		LibMCDriver_OpenCVHandle hSaveParameters = pSaveParameters.GetHandle();
+		LibMCEnvHandle hStream = pStream.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_Mat_EncodeImageToStream(m_pHandle, eWriteFormat, hSaveParameters, hStream));
 	}
 	
 	/**

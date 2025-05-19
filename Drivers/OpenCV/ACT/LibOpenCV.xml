@@ -49,6 +49,8 @@
 		<error name="INVALIDREADFORMAT" code="1009" description="Invalid read format" />
 		<error name="COULDNOTREADIMAGEFILE" code="1010" description="Could not read image file" />
 		<error name="COULDNOTCREATEEMPTYIMAGE" code="1011" description="Could not create empty image" />		
+		<error name="COULDNOTWRITEIMAGEFILE" code="1012" description="Could not write image file" />		
+		
 			
 		
 	</errors>
@@ -65,6 +67,11 @@
 	
 	</class>
 
+	<class name="ImageSaveParameters" parent="Base" description="Class that stores save parameters for an image.">
+		
+	</class>
+
+
 	<class name="Mat" parent="Base" description="Mat is a n-dimensional dense array class.">
 	
 		<method name="Empty" description="Returns if the Mat instance is empty.">
@@ -78,7 +85,12 @@
 		<method name="Rows" description="Returns the number of rows.">
 			<param name="NumberOfRows" type="uint32" pass="return" description="Returns the number of rows of the matrix." />
 		</method>
-	
+			
+		<method name="WriteToFile" description="Writes a matrix as image to a file.">
+			<param name="FileName" type="string" pass="in" description="Filename to write to (in UTF8). File type is derived from the file extension." />
+			<param name="SaveParameters" type="optionalclass" class="ImageSaveParameters" pass="in" description="Optional parameters for writing the image file." />
+		</method>		
+		
 	</class>
 
 
@@ -96,6 +108,8 @@
 			<param name="ReadFormat" type="enum" class="ImageReadFormat" pass="in" description="Image format to output." />			
 			<param name="MatInstance" type="class" class="Mat" pass="return" description="Mat instance of the image that has been loaded." />
 		</method>
+	
+
 	
 	</class>
 	

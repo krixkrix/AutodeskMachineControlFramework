@@ -12152,6 +12152,32 @@ LibMCEnvResult libmcenv_workingfile_getsize(LibMCEnv_WorkingFile pWorkingFile, L
 	}
 }
 
+LibMCEnvResult libmcenv_workingfile_readcontent(LibMCEnv_WorkingFile pWorkingFile, const LibMCEnv_uint64 nFileContentBufferSize, LibMCEnv_uint64* pFileContentNeededCount, LibMCEnv_uint8 * pFileContentBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFile;
+
+	try {
+		if ((!pFileContentBuffer) && !(pFileContentNeededCount))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IWorkingFile* pIWorkingFile = dynamic_cast<IWorkingFile*>(pIBaseClass);
+		if (!pIWorkingFile)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFile->ReadContent(nFileContentBufferSize, pFileContentNeededCount, pFileContentBuffer);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_workingfile_calculatesha2(LibMCEnv_WorkingFile pWorkingFile, const LibMCEnv_uint32 nSHA2BufferSize, LibMCEnv_uint32* pSHA2NeededChars, char * pSHA2Buffer)
 {
 	IBase* pIBaseClass = (IBase *)pWorkingFile;
@@ -12752,6 +12778,37 @@ LibMCEnvResult libmcenv_workingdirectory_addmanagedfile(LibMCEnv_WorkingDirector
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
 		pBaseWorkingFile = pIWorkingDirectory->AddManagedFile(sFileName);
+
+		*pWorkingFile = (IBase*)(pBaseWorkingFile);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingdirectory_addmanagedtempfile(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, LibMCEnv_WorkingFile * pWorkingFile)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingDirectory;
+
+	try {
+		if (pExtension == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pWorkingFile == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sExtension(pExtension);
+		IBase* pBaseWorkingFile(nullptr);
+		IWorkingDirectory* pIWorkingDirectory = dynamic_cast<IWorkingDirectory*>(pIBaseClass);
+		if (!pIWorkingDirectory)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseWorkingFile = pIWorkingDirectory->AddManagedTempFile(sExtension);
 
 		*pWorkingFile = (IBase*)(pBaseWorkingFile);
 		return LIBMCENV_SUCCESS;
@@ -29619,6 +29676,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_workingfile_getabsolutefilename;
 	if (sProcName == "libmcenv_workingfile_getsize") 
 		*ppProcAddress = (void*) &libmcenv_workingfile_getsize;
+	if (sProcName == "libmcenv_workingfile_readcontent") 
+		*ppProcAddress = (void*) &libmcenv_workingfile_readcontent;
 	if (sProcName == "libmcenv_workingfile_calculatesha2") 
 		*ppProcAddress = (void*) &libmcenv_workingfile_calculatesha2;
 	if (sProcName == "libmcenv_workingfile_executefile") 
@@ -29657,6 +29716,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_cleanup;
 	if (sProcName == "libmcenv_workingdirectory_addmanagedfile") 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_addmanagedfile;
+	if (sProcName == "libmcenv_workingdirectory_addmanagedtempfile") 
+		*ppProcAddress = (void*) &libmcenv_workingdirectory_addmanagedtempfile;
 	if (sProcName == "libmcenv_workingdirectory_hasunmanagedfiles") 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_hasunmanagedfiles;
 	if (sProcName == "libmcenv_workingdirectory_retrieveunmanagedfiles") 

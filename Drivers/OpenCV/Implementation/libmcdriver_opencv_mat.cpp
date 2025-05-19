@@ -33,6 +33,7 @@ Abstract: This is a stub class definition of CMat
 
 #include "libmcdriver_opencv_mat.hpp"
 #include "libmcdriver_opencv_interfaceexception.hpp"
+#include "libmcdriver_opencv_imagebuffer.hpp"
 
 // Include custom headers here.
 
@@ -42,10 +43,12 @@ using namespace LibMCDriver_OpenCV::Impl;
 /*************************************************************************************************************************
  Class definition of CMat 
 **************************************************************************************************************************/
-CMat::CMat(LibOpenCV::PMat pMat)
-    : m_pMat (pMat)
+CMat::CMat(LibOpenCV::PMat pMat, LibMCEnv::PWorkingDirectory pWorkingDirectory)
+    : m_pMat (pMat), m_pWorkingDirectory (pWorkingDirectory)
 {
     if (pMat.get () == nullptr)
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
+    if (pWorkingDirectory.get() == nullptr)
         throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
 
 }
@@ -70,3 +73,40 @@ LibMCDriver_OpenCV_uint32 CMat::Rows()
     return m_pMat->Rows();
 }
 
+IImageBuffer* CMat::EncodeImage(const LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, IImageSaveParameters* pSaveParameters)
+{
+    std::string sExtension;
+    switch (eWriteFormat) {
+	    case LibMCDriver_OpenCV::eImageWriteFormat::PNG:
+		    sExtension = "png";
+		    break;
+        case LibMCDriver_OpenCV::eImageWriteFormat::JPEG:
+            sExtension = "jpg";
+            break;
+        default:
+            throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT, std::to_string ((int64_t)eWriteFormat));
+    }
+
+    auto pWorkingFile = m_pWorkingDirectory->AddManagedTempFile(sExtension);
+
+	std::string sAbsoluteFileName = pWorkingFile->GetAbsoluteFileName();
+
+    m_pMat->WriteToFile(sAbsoluteFileName, nullptr);
+
+    if (pWorkingFile->FileExists()) {
+		return new CImageBuffer (pWorkingFile, eWriteFormat);
+
+    }
+    else {
+
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK, sAbsoluteFileName);
+    }
+
+
+}
+
+void CMat::EncodeImageToStream(const LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, IImageSaveParameters* pSaveParameters, LibMCEnv::PTempStreamWriter pStream)
+{
+    std::unique_ptr<IImageBuffer> pImageBuffer (EncodeImage (eWriteFormat, pSaveParameters));
+    pImageBuffer->StoreToStream (pStream);
+}

@@ -334,6 +334,7 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION 10237 /** Subinterpolation data on linear modification. */
 #define LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA 10238 /** Invalid hatch subinterpolation data. */
 #define LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW 10239 /** Hatch subinterpolation data overflow. */
+#define LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST 10240 /** Working file does not exist. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -580,6 +581,7 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "Subinterpolation data on linear modification.";
     case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
     case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
+    case LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST: return "Working file does not exist.";
     default: return "unknown error";
   }
 }

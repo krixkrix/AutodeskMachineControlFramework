@@ -224,8 +224,23 @@ IWorkingFile* CWorkingDirectory::AddManagedFile(const std::string& sFileName)
     return new CWorkingFile(sFileName, m_pWorkingFileMonitor);
 }
 
+IWorkingFile* CWorkingDirectory::AddManagedTempFile(const std::string& sExtension)
+{
+    std::string sFileName = generateFileNameForExtension(sExtension);
+    return AddManagedFile(sFileName);
+
+}
+
+
 bool CWorkingDirectory::HasUnmanagedFiles()
 {
+
+    auto fileNames = AMCCommon::CUtils::findContentOfDirectory(m_pWorkingFileMonitor->getWorkingDirectory(), true, false);
+    for (auto sFileName : fileNames) {
+        if (!m_pWorkingFileMonitor->fileIsMonitored(sFileName))
+            return true;
+    }
+
     return false;
 }
 

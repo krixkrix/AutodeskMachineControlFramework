@@ -27,19 +27,18 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-Abstract: This is the class declaration of CDriver_OpenCV
+Abstract: This is the class declaration of CImageSaveParameters
 
 */
 
 
-#ifndef __LIBMCDRIVER_OPENCV_DRIVER_OPENCV
-#define __LIBMCDRIVER_OPENCV_DRIVER_OPENCV
+#ifndef __LIBMCDRIVER_OPENCV_IMAGESAVEPARAMETERS
+#define __LIBMCDRIVER_OPENCV_IMAGESAVEPARAMETERS
 
 #include "libmcdriver_opencv_interfaces.hpp"
-#include "libopencv_dynamic.hpp"
 
 // Parent classes
-#include "libmcdriver_opencv_driver.hpp"
+#include "libmcdriver_opencv_base.hpp"
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4250)
@@ -47,58 +46,39 @@ Abstract: This is the class declaration of CDriver_OpenCV
 
 // Include custom headers here.
 
+
 namespace LibMCDriver_OpenCV {
 namespace Impl {
 
 
 /*************************************************************************************************************************
- Class declaration of CDriver_OpenCV 
+ Class declaration of CImageSaveParameters 
 **************************************************************************************************************************/
 
-class CDriver_OpenCV : public virtual IDriver_OpenCV, public virtual CDriver {
+class CImageSaveParameters : public virtual IImageSaveParameters, public virtual CBase {
 private:
 
-    LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
-    LibMCEnv::PWorkingDirectory m_pWorkingDirectory;
+	/**
+	* Put private members here.
+	*/
 
-    LibMCEnv::PWorkingFile m_pLibOpenCVDLL;
-    LibMCEnv::PWorkingFile m_pOpenCVWorldDLL;
-    LibMCEnv::PWorkingFile m_pOpenCVMSMFDLL;
-    LibMCEnv::PWorkingFile m_pOpenCVFFMPEGDLL;
+protected:
 
-    LibOpenCV::PWrapper m_pOpenCVWrapper;
-    LibOpenCV::POpenCVContext m_pOpenCVContext;
-
-    // Initializes OpenCV if it is not initialized already
-    void initOpenCV();
-
-    // Releases all OpenCV DLLs and resources
-    void releaseOpenCV();
+	/**
+	* Put protected members here.
+	*/
 
 public:
 
-    CDriver_OpenCV(LibMCEnv::PDriverEnvironment pDriverEnvironment);
-
-    virtual ~CDriver_OpenCV();
-
-    void Configure(const std::string & sConfigurationString) override;
-
-	std::string GetName() override;
-
-	std::string GetType() override;
-
-	void GetVersion(LibMCDriver_OpenCV_uint32 & nMajor, LibMCDriver_OpenCV_uint32 & nMinor, LibMCDriver_OpenCV_uint32 & nMicro, std::string & sBuild) override;
-
-	void QueryParameters() override;
-
-	void QueryParametersEx(LibMCEnv::PDriverStatusUpdateSession pDriverUpdateInstance) override;
+	/**
+	* Put additional public members here. They will not be visible in the external API.
+	*/
 
 
-	IMat * LoadImageFromBuffer(const LibMCDriver_OpenCV_uint64 nBufferBufferSize, const LibMCDriver_OpenCV_uint8 * pBufferBuffer, const LibMCDriver_OpenCV::eImageReadFormat eReadFormat) override;
+	/**
+	* Public member functions to implement.
+	*/
 
-	IMat * LoadImageFromResource(const std::string & sResourceIdentifier, const LibMCDriver_OpenCV::eImageReadFormat eReadFormat) override;
-
-	IMat* CreateEmptyImage(const LibMCDriver_OpenCV_uint32 nColumnCount, const LibMCDriver_OpenCV_uint32 nRowCount, const LibMCDriver_OpenCV::eImageReadFormat eReadFormat) override;
 };
 
 } // namespace Impl
@@ -107,4 +87,4 @@ public:
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#endif // __LIBMCDRIVER_OPENCV_DRIVER_OPENCV
+#endif // __LIBMCDRIVER_OPENCV_IMAGESAVEPARAMETERS

@@ -663,6 +663,7 @@ public:
 			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "SUBINTERPOLATIONDATAONLINEARMODIFICATION";
 			case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "INVALIDHATCHSUBINTERPOLATIONDATA";
 			case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "HATCHSUBINTERPOLATIONDATAOVERFLOW";
+			case LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST: return "WORKINGFILEDOESNOTEXIST";
 		}
 		return "UNKNOWN";
 	}
@@ -909,6 +910,7 @@ public:
 			case LIBMCENV_ERROR_SUBINTERPOLATIONDATAONLINEARMODIFICATION: return "Subinterpolation data on linear modification.";
 			case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
 			case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
+			case LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST: return "Working file does not exist.";
 		}
 		return "unknown error";
 	}
@@ -2093,6 +2095,7 @@ public:
 	
 	inline std::string GetAbsoluteFileName();
 	inline LibMCEnv_uint64 GetSize();
+	inline void ReadContent(std::vector<LibMCEnv_uint8> & FileContentBuffer);
 	inline std::string CalculateSHA2();
 	inline PWorkingFileExecution ExecuteFile();
 	inline bool IsManaged();
@@ -2144,6 +2147,7 @@ public:
 	inline PWorkingFile StoreMachineResourceDataInTempFile(const std::string & sExtension, const std::string & sIdentifier);
 	inline bool CleanUp();
 	inline PWorkingFile AddManagedFile(const std::string & sFileName);
+	inline PWorkingFile AddManagedTempFile(const std::string & sExtension);
 	inline bool HasUnmanagedFiles();
 	inline PWorkingFileIterator RetrieveUnmanagedFiles();
 	inline PWorkingFileIterator RetrieveManagedFiles();
@@ -3574,6 +3578,7 @@ public:
 		pWrapperTable->m_WorkingFileExecution_ReturnStdOut = nullptr;
 		pWrapperTable->m_WorkingFile_GetAbsoluteFileName = nullptr;
 		pWrapperTable->m_WorkingFile_GetSize = nullptr;
+		pWrapperTable->m_WorkingFile_ReadContent = nullptr;
 		pWrapperTable->m_WorkingFile_CalculateSHA2 = nullptr;
 		pWrapperTable->m_WorkingFile_ExecuteFile = nullptr;
 		pWrapperTable->m_WorkingFile_IsManaged = nullptr;
@@ -3593,6 +3598,7 @@ public:
 		pWrapperTable->m_WorkingDirectory_StoreMachineResourceDataInTempFile = nullptr;
 		pWrapperTable->m_WorkingDirectory_CleanUp = nullptr;
 		pWrapperTable->m_WorkingDirectory_AddManagedFile = nullptr;
+		pWrapperTable->m_WorkingDirectory_AddManagedTempFile = nullptr;
 		pWrapperTable->m_WorkingDirectory_HasUnmanagedFiles = nullptr;
 		pWrapperTable->m_WorkingDirectory_RetrieveUnmanagedFiles = nullptr;
 		pWrapperTable->m_WorkingDirectory_RetrieveManagedFiles = nullptr;
@@ -7572,6 +7578,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_WorkingFile_ReadContent = (PLibMCEnvWorkingFile_ReadContentPtr) GetProcAddress(hLibrary, "libmcenv_workingfile_readcontent");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFile_ReadContent = (PLibMCEnvWorkingFile_ReadContentPtr) dlsym(hLibrary, "libmcenv_workingfile_readcontent");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFile_ReadContent == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_WorkingFile_CalculateSHA2 = (PLibMCEnvWorkingFile_CalculateSHA2Ptr) GetProcAddress(hLibrary, "libmcenv_workingfile_calculatesha2");
 		#else // _WIN32
 		pWrapperTable->m_WorkingFile_CalculateSHA2 = (PLibMCEnvWorkingFile_CalculateSHA2Ptr) dlsym(hLibrary, "libmcenv_workingfile_calculatesha2");
@@ -7740,6 +7755,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_WorkingDirectory_AddManagedFile == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingDirectory_AddManagedTempFile = (PLibMCEnvWorkingDirectory_AddManagedTempFilePtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_addmanagedtempfile");
+		#else // _WIN32
+		pWrapperTable->m_WorkingDirectory_AddManagedTempFile = (PLibMCEnvWorkingDirectory_AddManagedTempFilePtr) dlsym(hLibrary, "libmcenv_workingdirectory_addmanagedtempfile");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingDirectory_AddManagedTempFile == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13696,6 +13720,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFile_GetSize == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_workingfile_readcontent", (void**)&(pWrapperTable->m_WorkingFile_ReadContent));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFile_ReadContent == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_workingfile_calculatesha2", (void**)&(pWrapperTable->m_WorkingFile_CalculateSHA2));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFile_CalculateSHA2 == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13770,6 +13798,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_addmanagedfile", (void**)&(pWrapperTable->m_WorkingDirectory_AddManagedFile));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_AddManagedFile == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingdirectory_addmanagedtempfile", (void**)&(pWrapperTable->m_WorkingDirectory_AddManagedTempFile));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_AddManagedTempFile == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_hasunmanagedfiles", (void**)&(pWrapperTable->m_WorkingDirectory_HasUnmanagedFiles));
@@ -20943,6 +20975,19 @@ public:
 	}
 	
 	/**
+	* CWorkingFile::ReadContent - Returns the content of the working file.
+	* @param[out] FileContentBuffer - Array the content will be read into.
+	*/
+	void CWorkingFile::ReadContent(std::vector<LibMCEnv_uint8> & FileContentBuffer)
+	{
+		LibMCEnv_uint64 elementsNeededFileContent = 0;
+		LibMCEnv_uint64 elementsWrittenFileContent = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFile_ReadContent(m_pHandle, 0, &elementsNeededFileContent, nullptr));
+		FileContentBuffer.resize((size_t) elementsNeededFileContent);
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFile_ReadContent(m_pHandle, elementsNeededFileContent, &elementsWrittenFileContent, FileContentBuffer.data()));
+	}
+	
+	/**
 	* CWorkingFile::CalculateSHA2 - Calculates the SHA256 checksum of the file.
 	* @return sha256 checksum
 	*/
@@ -21223,6 +21268,22 @@ public:
 	{
 		LibMCEnvHandle hWorkingFile = nullptr;
 		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_AddManagedFile(m_pHandle, sFileName.c_str(), &hWorkingFile));
+		
+		if (!hWorkingFile) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingFile>(m_pWrapper, hWorkingFile);
+	}
+	
+	/**
+	* CWorkingDirectory::AddManagedTempFile - Adds a managed temporary file in the directory (i.e. this file will be deleted at CleanUp). Subdirectories are not allowed.
+	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+	* @return working file instance.
+	*/
+	PWorkingFile CWorkingDirectory::AddManagedTempFile(const std::string & sExtension)
+	{
+		LibMCEnvHandle hWorkingFile = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_AddManagedTempFile(m_pHandle, sExtension.c_str(), &hWorkingFile));
 		
 		if (!hWorkingFile) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);

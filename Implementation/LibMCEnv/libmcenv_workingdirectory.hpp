@@ -101,6 +101,8 @@ public:
 
 	IWorkingFile* AddManagedFile(const std::string& sFileName) override;
 
+    IWorkingFile* AddManagedTempFile(const std::string& sExtension) override;
+
 	bool HasUnmanagedFiles() override;
 
 	IWorkingFileIterator* RetrieveUnmanagedFiles() override;

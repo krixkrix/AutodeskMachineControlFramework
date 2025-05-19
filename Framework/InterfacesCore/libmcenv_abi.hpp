@@ -4186,6 +4186,17 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_getabsolutefilename(LibMCE
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_getsize(LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_uint64 * pFileSize);
 
 /**
+* Returns the content of the working file.
+*
+* @param[in] pWorkingFile - WorkingFile instance.
+* @param[in] nFileContentBufferSize - Number of elements in buffer
+* @param[out] pFileContentNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pFileContentBuffer - uint8  buffer of Array the content will be read into.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_readcontent(LibMCEnv_WorkingFile pWorkingFile, const LibMCEnv_uint64 nFileContentBufferSize, LibMCEnv_uint64* pFileContentNeededCount, LibMCEnv_uint8 * pFileContentBuffer);
+
+/**
 * Calculates the SHA256 checksum of the file.
 *
 * @param[in] pWorkingFile - WorkingFile instance.
@@ -4385,6 +4396,16 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_cleanup(LibMCEnv_Work
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_addmanagedfile(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pFileName, LibMCEnv_WorkingFile * pWorkingFile);
+
+/**
+* Adds a managed temporary file in the directory (i.e. this file will be deleted at CleanUp). Subdirectories are not allowed.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+* @param[out] pWorkingFile - working file instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingdirectory_addmanagedtempfile(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, LibMCEnv_WorkingFile * pWorkingFile);
 
 /**
 * Returns if the working directory has unmanaged files. A clean implementation will never deal with unmanaged files.

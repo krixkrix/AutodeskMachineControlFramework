@@ -4173,6 +4173,17 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFile_GetAbsoluteFileNamePtr) (LibMCEnv_
 typedef LibMCEnvResult (*PLibMCEnvWorkingFile_GetSizePtr) (LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_uint64 * pFileSize);
 
 /**
+* Returns the content of the working file.
+*
+* @param[in] pWorkingFile - WorkingFile instance.
+* @param[in] nFileContentBufferSize - Number of elements in buffer
+* @param[out] pFileContentNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pFileContentBuffer - uint8  buffer of Array the content will be read into.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFile_ReadContentPtr) (LibMCEnv_WorkingFile pWorkingFile, const LibMCEnv_uint64 nFileContentBufferSize, LibMCEnv_uint64* pFileContentNeededCount, LibMCEnv_uint8 * pFileContentBuffer);
+
+/**
 * Calculates the SHA256 checksum of the file.
 *
 * @param[in] pWorkingFile - WorkingFile instance.
@@ -4372,6 +4383,16 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_CleanUpPtr) (LibMCEnv_Working
 * @return error code or 0 (success)
 */
 typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_AddManagedFilePtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pFileName, LibMCEnv_WorkingFile * pWorkingFile);
+
+/**
+* Adds a managed temporary file in the directory (i.e. this file will be deleted at CleanUp). Subdirectories are not allowed.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+* @param[out] pWorkingFile - working file instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_AddManagedTempFilePtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, LibMCEnv_WorkingFile * pWorkingFile);
 
 /**
 * Returns if the working directory has unmanaged files. A clean implementation will never deal with unmanaged files.
@@ -10021,6 +10042,7 @@ typedef struct {
 	PLibMCEnvWorkingFileExecution_ReturnStdOutPtr m_WorkingFileExecution_ReturnStdOut;
 	PLibMCEnvWorkingFile_GetAbsoluteFileNamePtr m_WorkingFile_GetAbsoluteFileName;
 	PLibMCEnvWorkingFile_GetSizePtr m_WorkingFile_GetSize;
+	PLibMCEnvWorkingFile_ReadContentPtr m_WorkingFile_ReadContent;
 	PLibMCEnvWorkingFile_CalculateSHA2Ptr m_WorkingFile_CalculateSHA2;
 	PLibMCEnvWorkingFile_ExecuteFilePtr m_WorkingFile_ExecuteFile;
 	PLibMCEnvWorkingFile_IsManagedPtr m_WorkingFile_IsManaged;
@@ -10040,6 +10062,7 @@ typedef struct {
 	PLibMCEnvWorkingDirectory_StoreMachineResourceDataInTempFilePtr m_WorkingDirectory_StoreMachineResourceDataInTempFile;
 	PLibMCEnvWorkingDirectory_CleanUpPtr m_WorkingDirectory_CleanUp;
 	PLibMCEnvWorkingDirectory_AddManagedFilePtr m_WorkingDirectory_AddManagedFile;
+	PLibMCEnvWorkingDirectory_AddManagedTempFilePtr m_WorkingDirectory_AddManagedTempFile;
 	PLibMCEnvWorkingDirectory_HasUnmanagedFilesPtr m_WorkingDirectory_HasUnmanagedFiles;
 	PLibMCEnvWorkingDirectory_RetrieveUnmanagedFilesPtr m_WorkingDirectory_RetrieveUnmanagedFiles;
 	PLibMCEnvWorkingDirectory_RetrieveManagedFilesPtr m_WorkingDirectory_RetrieveManagedFiles;

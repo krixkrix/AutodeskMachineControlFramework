@@ -78,6 +78,8 @@ public:
 
 	LibOpenCV_uint32 Rows() override;
 
+    void WriteToFile(const std::string& sFileName, IImageSaveParameters* pSaveParameters) override;
+
 };
 
 } // namespace Impl

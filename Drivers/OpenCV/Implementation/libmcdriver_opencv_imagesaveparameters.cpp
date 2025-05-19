@@ -1,6 +1,6 @@
 /*++
 
-Copyright (C) 2024 Autodesk Inc.
+Copyright (C) 2025 Autodesk Inc.
 
 All rights reserved.
 
@@ -27,73 +27,19 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-Abstract: This is a stub class definition of CMat
+Abstract: This is a stub class definition of CImageSaveParameters
 
 */
 
-#include "libopencv_mat.hpp"
-#include "libopencv_interfaceexception.hpp"
+#include "libmcdriver_opencv_imagesaveparameters.hpp"
+#include "libmcdriver_opencv_interfaceexception.hpp"
 
 // Include custom headers here.
 
 
-using namespace LibOpenCV::Impl;
+using namespace LibMCDriver_OpenCV::Impl;
 
 /*************************************************************************************************************************
- Class definition of CMat 
+ Class definition of CImageSaveParameters 
 **************************************************************************************************************************/
 
-CMat::CMat(uint32_t nCols, uint32_t nRows, const LibOpenCV::eImageReadFormat eReadFormat)
-{
-	m_Mat = cv::Mat(nRows, nCols, CV_8UC3);
-
-    if (m_Mat.empty())
-        throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_COULDNOTCREATEEMPTYIMAGE, std::to_string (nCols) + "x" + std::to_string(nRows) + " pixels");
-}
-
-CMat::CMat(const std::string& sFileName, const LibOpenCV::eImageReadFormat eReadFormat)
-{
-	int flags = 0;
-    switch (eReadFormat) {
-	    case LibOpenCV::eImageReadFormat::GrayScale: flags = cv::IMREAD_GRAYSCALE; break;
-        case LibOpenCV::eImageReadFormat::RGB: flags = cv::IMREAD_COLOR_RGB; break;
-        case LibOpenCV::eImageReadFormat::BGR: flags = cv::IMREAD_COLOR_BGR; break;
-        default:
-            throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_INVALIDREADFORMAT);
-    }
-
-    // TODO: Fix Unicode conversion with filename
-	m_Mat = cv::imread(sFileName, flags);
-    if (m_Mat.empty ())
-        throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_COULDNOTREADIMAGEFILE, sFileName);
-}
-
-CMat::~CMat()
-{
-
-}
-
-
-bool CMat::Empty()
-{
-    return m_Mat.empty();
-}
-
-LibOpenCV_uint32 CMat::Cols()
-{
-	return m_Mat.cols;
-}
-
-LibOpenCV_uint32 CMat::Rows()
-{
-    return m_Mat.rows;
-}
-
-void CMat::WriteToFile(const std::string& sFileName, IImageSaveParameters* pSaveParameters)
-{
-    // TODO: Fix Unicode conversion with filename
-
-    bool bSuccess = cv::imwrite(sFileName, m_Mat);
-    if (!bSuccess)
-		throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_COULDNOTWRITEIMAGEFILE, sFileName);
-}

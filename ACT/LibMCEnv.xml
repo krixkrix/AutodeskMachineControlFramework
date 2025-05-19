@@ -277,6 +277,8 @@
 		<error name="SUBINTERPOLATIONDATAONLINEARMODIFICATION" code="10237" description="Subinterpolation data on linear modification." />		
 		<error name="INVALIDHATCHSUBINTERPOLATIONDATA" code="10238" description="Invalid hatch subinterpolation data." />
 		<error name="HATCHSUBINTERPOLATIONDATAOVERFLOW" code="10239" description="Hatch subinterpolation data overflow." />
+		<error name="WORKINGFILEDOESNOTEXIST" code="10240" description="Working file does not exist." />
+		
 
 		
 		
@@ -2540,6 +2542,10 @@
 			<param name="FileSize" type="uint64" pass="return" description="file size" />
 		</method>
 
+		<method name="ReadContent" description = "Returns the content of the working file.">
+			<param name="FileContent" type="basicarray" class="uint8" pass="out" description="Array the content will be read into." />
+		</method>
+
 		<method name="CalculateSHA2" description = "Calculates the SHA256 checksum of the file.">
 			<param name="SHA2" type="string" pass="return" description="sha256 checksum" />
 		</method>
@@ -2639,6 +2645,11 @@
 			<param name="WorkingFile" type="class" class="WorkingFile" pass="return" description="working file instance." />
 		</method>
 
+		<method name="AddManagedTempFile" description = "Adds a managed temporary file in the directory (i.e. this file will be deleted at CleanUp). Subdirectories are not allowed.">
+			<param name="Extension" type="string" pass="in" description="extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters." />
+			<param name="WorkingFile" type="class" class="WorkingFile" pass="return" description="working file instance." />
+		</method>
+		
 		<method name="HasUnmanagedFiles" description = "Returns if the working directory has unmanaged files. A clean implementation will never deal with unmanaged files.">
 			<param name="HasUnmanagedFiles" type="bool" pass="return" description="returns if there are unmanaged files." />
 		</method>

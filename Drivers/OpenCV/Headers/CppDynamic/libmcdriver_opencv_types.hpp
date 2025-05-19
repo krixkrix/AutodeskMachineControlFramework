@@ -104,6 +104,8 @@ typedef void * LibMCDriver_OpenCV_pvoid;
 #define LIBMCDRIVER_OPENCV_ERROR_COULDNOTLOADLIBRARY 6 /** the library could not be loaded */
 #define LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT 7 /** a required exported symbol could not be found in the library */
 #define LIBMCDRIVER_OPENCV_ERROR_INCOMPATIBLEBINARYVERSION 8 /** the version of the binary interface does not match the bindings interface */
+#define LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT 9 /** unknown image write format */
+#define LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK 10 /** could not write image to disk */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_OpenCV
@@ -120,6 +122,8 @@ inline const char * LIBMCDRIVER_OPENCV_GETERRORSTRING (LibMCDriver_OpenCVResult 
     case LIBMCDRIVER_OPENCV_ERROR_COULDNOTLOADLIBRARY: return "the library could not be loaded";
     case LIBMCDRIVER_OPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT: return "a required exported symbol could not be found in the library";
     case LIBMCDRIVER_OPENCV_ERROR_INCOMPATIBLEBINARYVERSION: return "the version of the binary interface does not match the bindings interface";
+    case LIBMCDRIVER_OPENCV_ERROR_UNKNOWNIMAGEWRITEFORMAT: return "unknown image write format";
+    case LIBMCDRIVER_OPENCV_ERROR_COULDNOTWRITEIMAGETODISK: return "could not write image to disk";
     default: return "unknown error";
   }
 }
@@ -130,6 +134,8 @@ inline const char * LIBMCDRIVER_OPENCV_GETERRORSTRING (LibMCDriver_OpenCVResult 
 
 typedef LibMCDriver_OpenCVHandle LibMCDriver_OpenCV_Base;
 typedef LibMCDriver_OpenCVHandle LibMCDriver_OpenCV_Driver;
+typedef LibMCDriver_OpenCVHandle LibMCDriver_OpenCV_ImageSaveParameters;
+typedef LibMCDriver_OpenCVHandle LibMCDriver_OpenCV_ImageBuffer;
 typedef LibMCDriver_OpenCVHandle LibMCDriver_OpenCV_Mat;
 typedef LibMCDriver_OpenCVHandle LibMCDriver_OpenCV_Driver_OpenCV;
 
@@ -146,9 +152,16 @@ namespace LibMCDriver_OpenCV {
     RGB = 3
   };
   
+  enum class eImageWriteFormat : LibMCDriver_OpenCV_int32 {
+    Unknown = 0,
+    PNG = 1,
+    JPEG = 2
+  };
+  
 } // namespace LibMCDriver_OpenCV;
 
 // define legacy C-names for enums, structs and function types
 typedef LibMCDriver_OpenCV::eImageReadFormat eLibMCDriver_OpenCVImageReadFormat;
+typedef LibMCDriver_OpenCV::eImageWriteFormat eLibMCDriver_OpenCVImageWriteFormat;
 
 #endif // __LIBMCDRIVER_OPENCV_TYPES_HEADER_CPP

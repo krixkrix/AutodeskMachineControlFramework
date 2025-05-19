@@ -60,6 +60,7 @@ namespace LibOpenCV {
 **************************************************************************************************************************/
 class CWrapper;
 class CBase;
+class CImageSaveParameters;
 class CMat;
 class COpenCVContext;
 
@@ -68,6 +69,7 @@ class COpenCVContext;
 **************************************************************************************************************************/
 typedef CWrapper CLibOpenCVWrapper;
 typedef CBase CLibOpenCVBase;
+typedef CImageSaveParameters CLibOpenCVImageSaveParameters;
 typedef CMat CLibOpenCVMat;
 typedef COpenCVContext CLibOpenCVOpenCVContext;
 
@@ -76,6 +78,7 @@ typedef COpenCVContext CLibOpenCVOpenCVContext;
 **************************************************************************************************************************/
 typedef std::shared_ptr<CWrapper> PWrapper;
 typedef std::shared_ptr<CBase> PBase;
+typedef std::shared_ptr<CImageSaveParameters> PImageSaveParameters;
 typedef std::shared_ptr<CMat> PMat;
 typedef std::shared_ptr<COpenCVContext> POpenCVContext;
 
@@ -84,6 +87,7 @@ typedef std::shared_ptr<COpenCVContext> POpenCVContext;
 **************************************************************************************************************************/
 typedef PWrapper PLibOpenCVWrapper;
 typedef PBase PLibOpenCVBase;
+typedef PImageSaveParameters PLibOpenCVImageSaveParameters;
 typedef PMat PLibOpenCVMat;
 typedef POpenCVContext PLibOpenCVOpenCVContext;
 
@@ -176,6 +180,7 @@ public:
 			case LIBOPENCV_ERROR_INVALIDREADFORMAT: return "INVALIDREADFORMAT";
 			case LIBOPENCV_ERROR_COULDNOTREADIMAGEFILE: return "COULDNOTREADIMAGEFILE";
 			case LIBOPENCV_ERROR_COULDNOTCREATEEMPTYIMAGE: return "COULDNOTCREATEEMPTYIMAGE";
+			case LIBOPENCV_ERROR_COULDNOTWRITEIMAGEFILE: return "COULDNOTWRITEIMAGEFILE";
 		}
 		return "UNKNOWN";
 	}
@@ -195,6 +200,7 @@ public:
 			case LIBOPENCV_ERROR_INVALIDREADFORMAT: return "Invalid read format";
 			case LIBOPENCV_ERROR_COULDNOTREADIMAGEFILE: return "Could not read image file";
 			case LIBOPENCV_ERROR_COULDNOTCREATEEMPTYIMAGE: return "Could not create empty image";
+			case LIBOPENCV_ERROR_COULDNOTWRITEIMAGEFILE: return "Could not write image file";
 		}
 		return "unknown error";
 	}
@@ -313,6 +319,7 @@ private:
 	LibOpenCVResult loadWrapperTableFromSymbolLookupMethod(sLibOpenCVDynamicWrapperTable * pWrapperTable, void* pSymbolLookupMethod);
 
 	friend class CBase;
+	friend class CImageSaveParameters;
 	friend class CMat;
 	friend class COpenCVContext;
 
@@ -376,6 +383,22 @@ public:
 };
 	
 /*************************************************************************************************************************
+ Class CImageSaveParameters 
+**************************************************************************************************************************/
+class CImageSaveParameters : public CBase {
+public:
+	
+	/**
+	* CImageSaveParameters::CImageSaveParameters - Constructor for ImageSaveParameters class.
+	*/
+	CImageSaveParameters(CWrapper* pWrapper, LibOpenCVHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+};
+	
+/*************************************************************************************************************************
  Class CMat 
 **************************************************************************************************************************/
 class CMat : public CBase {
@@ -392,6 +415,7 @@ public:
 	inline bool Empty();
 	inline LibOpenCV_uint32 Cols();
 	inline LibOpenCV_uint32 Rows();
+	inline void WriteToFile(const std::string & sFileName, classParam<CImageSaveParameters> pSaveParameters);
 };
 	
 /*************************************************************************************************************************
@@ -511,6 +535,7 @@ public:
 		pWrapperTable->m_Mat_Empty = nullptr;
 		pWrapperTable->m_Mat_Cols = nullptr;
 		pWrapperTable->m_Mat_Rows = nullptr;
+		pWrapperTable->m_Mat_WriteToFile = nullptr;
 		pWrapperTable->m_OpenCVContext_LoadImageFromFile = nullptr;
 		pWrapperTable->m_OpenCVContext_CreateEmptyImage = nullptr;
 		pWrapperTable->m_GetVersion = nullptr;
@@ -594,6 +619,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Mat_Rows == nullptr)
+			return LIBOPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Mat_WriteToFile = (PLibOpenCVMat_WriteToFilePtr) GetProcAddress(hLibrary, "libopencv_mat_writetofile");
+		#else // _WIN32
+		pWrapperTable->m_Mat_WriteToFile = (PLibOpenCVMat_WriteToFilePtr) dlsym(hLibrary, "libopencv_mat_writetofile");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Mat_WriteToFile == nullptr)
 			return LIBOPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -696,6 +730,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_Mat_Rows == nullptr) )
 			return LIBOPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libopencv_mat_writetofile", (void**)&(pWrapperTable->m_Mat_WriteToFile));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Mat_WriteToFile == nullptr) )
+			return LIBOPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libopencv_opencvcontext_loadimagefromfile", (void**)&(pWrapperTable->m_OpenCVContext_LoadImageFromFile));
 		if ( (eLookupError != 0) || (pWrapperTable->m_OpenCVContext_LoadImageFromFile == nullptr) )
 			return LIBOPENCV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -738,6 +776,10 @@ public:
 	 */
 	
 	/**
+	 * Method definitions for class CImageSaveParameters
+	 */
+	
+	/**
 	 * Method definitions for class CMat
 	 */
 	
@@ -775,6 +817,17 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_Mat_Rows(m_pHandle, &resultNumberOfRows));
 		
 		return resultNumberOfRows;
+	}
+	
+	/**
+	* CMat::WriteToFile - Writes a matrix as image to a file.
+	* @param[in] sFileName - Filename to write to (in UTF8). File type is derived from the file extension.
+	* @param[in] pSaveParameters - Optional parameters for writing the image file.
+	*/
+	void CMat::WriteToFile(const std::string & sFileName, classParam<CImageSaveParameters> pSaveParameters)
+	{
+		LibOpenCVHandle hSaveParameters = pSaveParameters.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_Mat_WriteToFile(m_pHandle, sFileName.c_str(), hSaveParameters));
 	}
 	
 	/**

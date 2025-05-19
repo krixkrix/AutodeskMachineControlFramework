@@ -93,6 +93,10 @@ LibOpenCVResult handleUnhandledException(IBase * pIBaseClass, CLibOpenCVInterfac
 **************************************************************************************************************************/
 
 /*************************************************************************************************************************
+ Class implementation for ImageSaveParameters
+**************************************************************************************************************************/
+
+/*************************************************************************************************************************
  Class implementation for Mat
 **************************************************************************************************************************/
 LibOpenCVResult libopencv_mat_empty(LibOpenCV_Mat pMat, bool * pIsEmpty)
@@ -182,6 +186,44 @@ LibOpenCVResult libopencv_mat_rows(LibOpenCV_Mat pMat, LibOpenCV_uint32 * pNumbe
 
 		if (pJournalEntry.get() != nullptr) {
 			pJournalEntry->addUInt32Result("NumberOfRows", *pNumberOfRows);
+			pJournalEntry->writeSuccess();
+		}
+		return LIBOPENCV_SUCCESS;
+	}
+	catch (ELibOpenCVInterfaceException & Exception) {
+		return handleLibOpenCVException(pIBaseClass, Exception, pJournalEntry.get());
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException, pJournalEntry.get());
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass, pJournalEntry.get());
+	}
+}
+
+LibOpenCVResult libopencv_mat_writetofile(LibOpenCV_Mat pMat, const char * pFileName, LibOpenCV_ImageSaveParameters pSaveParameters)
+{
+	IBase* pIBaseClass = (IBase *)pMat;
+
+	PLibOpenCVInterfaceJournalEntry pJournalEntry;
+	try {
+		if (m_GlobalJournal.get() != nullptr)  {
+			pJournalEntry = m_GlobalJournal->beginClassMethod(pMat, "Mat", "WriteToFile");
+			pJournalEntry->addStringParameter("FileName", pFileName);
+			pJournalEntry->addHandleParameter("SaveParameters", pSaveParameters);
+		}
+		if (pFileName == nullptr)
+			throw ELibOpenCVInterfaceException (LIBOPENCV_ERROR_INVALIDPARAM);
+		std::string sFileName(pFileName);
+		IBase* pIBaseClassSaveParameters = (IBase *)pSaveParameters;
+		IImageSaveParameters* pISaveParameters = dynamic_cast<IImageSaveParameters*>(pIBaseClassSaveParameters);
+		IMat* pIMat = dynamic_cast<IMat*>(pIBaseClass);
+		if (!pIMat)
+			throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_INVALIDCAST);
+		
+		pIMat->WriteToFile(sFileName, pISaveParameters);
+
+		if (pJournalEntry.get() != nullptr) {
 			pJournalEntry->writeSuccess();
 		}
 		return LIBOPENCV_SUCCESS;
@@ -302,6 +344,8 @@ LibOpenCVResult LibOpenCV::Impl::LibOpenCV_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libopencv_mat_cols;
 	if (sProcName == "libopencv_mat_rows") 
 		*ppProcAddress = (void*) &libopencv_mat_rows;
+	if (sProcName == "libopencv_mat_writetofile") 
+		*ppProcAddress = (void*) &libopencv_mat_writetofile;
 	if (sProcName == "libopencv_opencvcontext_loadimagefromfile") 
 		*ppProcAddress = (void*) &libopencv_opencvcontext_loadimagefromfile;
 	if (sProcName == "libopencv_opencvcontext_createemptyimage") 

@@ -48,6 +48,10 @@ Interface version: 1.2.0
 **************************************************************************************************************************/
 
 /*************************************************************************************************************************
+ Class definition for ImageSaveParameters
+**************************************************************************************************************************/
+
+/*************************************************************************************************************************
  Class definition for Mat
 **************************************************************************************************************************/
 
@@ -77,6 +81,16 @@ typedef LibOpenCVResult (*PLibOpenCVMat_ColsPtr) (LibOpenCV_Mat pMat, LibOpenCV_
 * @return error code or 0 (success)
 */
 typedef LibOpenCVResult (*PLibOpenCVMat_RowsPtr) (LibOpenCV_Mat pMat, LibOpenCV_uint32 * pNumberOfRows);
+
+/**
+* Writes a matrix as image to a file.
+*
+* @param[in] pMat - Mat instance.
+* @param[in] pFileName - Filename to write to (in UTF8). File type is derived from the file extension.
+* @param[in] pSaveParameters - Optional parameters for writing the image file.
+* @return error code or 0 (success)
+*/
+typedef LibOpenCVResult (*PLibOpenCVMat_WriteToFilePtr) (LibOpenCV_Mat pMat, const char * pFileName, LibOpenCV_ImageSaveParameters pSaveParameters);
 
 /*************************************************************************************************************************
  Class definition for OpenCVContext
@@ -172,6 +186,7 @@ typedef struct {
 	PLibOpenCVMat_EmptyPtr m_Mat_Empty;
 	PLibOpenCVMat_ColsPtr m_Mat_Cols;
 	PLibOpenCVMat_RowsPtr m_Mat_Rows;
+	PLibOpenCVMat_WriteToFilePtr m_Mat_WriteToFile;
 	PLibOpenCVOpenCVContext_LoadImageFromFilePtr m_OpenCVContext_LoadImageFromFile;
 	PLibOpenCVOpenCVContext_CreateEmptyImagePtr m_OpenCVContext_CreateEmptyImage;
 	PLibOpenCVGetVersionPtr m_GetVersion;

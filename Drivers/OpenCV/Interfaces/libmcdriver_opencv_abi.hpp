@@ -128,6 +128,52 @@ LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_driver_q
 LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_driver_queryparametersex(LibMCDriver_OpenCV_Driver pDriver, LibMCEnv_DriverStatusUpdateSession pDriverUpdateInstance);
 
 /*************************************************************************************************************************
+ Class definition for ImageSaveParameters
+**************************************************************************************************************************/
+
+/*************************************************************************************************************************
+ Class definition for ImageBuffer
+**************************************************************************************************************************/
+
+/**
+* Retrieves the image format of the encoded buffer.
+*
+* @param[in] pImageBuffer - ImageBuffer instance.
+* @param[out] pImageFormat - Format to write to.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_getimageformat(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, LibMCDriver_OpenCV::eImageWriteFormat * pImageFormat);
+
+/**
+* Retrieves the size of the encoded buffer.
+*
+* @param[in] pImageBuffer - ImageBuffer instance.
+* @param[out] pBufferSize - Size of the buffer.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_getsize(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, LibMCDriver_OpenCV_uint64 * pBufferSize);
+
+/**
+* Retrieves the data of the encoded buffer.
+*
+* @param[in] pImageBuffer - ImageBuffer instance.
+* @param[in] nMemoryArrayBufferSize - Number of elements in buffer
+* @param[out] pMemoryArrayNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pMemoryArrayBuffer - uint8  buffer of Array to write into.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_getdata(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, const LibMCDriver_OpenCV_uint64 nMemoryArrayBufferSize, LibMCDriver_OpenCV_uint64* pMemoryArrayNeededCount, LibMCDriver_OpenCV_uint8 * pMemoryArrayBuffer);
+
+/**
+* Stores the data in a temporary file stream.
+*
+* @param[in] pImageBuffer - ImageBuffer instance.
+* @param[in] pStream - Stream to store the data to.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_storetostream(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, LibMCEnv_TempStreamWriter pStream);
+
+/*************************************************************************************************************************
  Class definition for Mat
 **************************************************************************************************************************/
 
@@ -157,6 +203,28 @@ LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_mat_cols
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_mat_rows(LibMCDriver_OpenCV_Mat pMat, LibMCDriver_OpenCV_uint32 * pNumberOfRows);
+
+/**
+* Writes a matrix as image buffer.
+*
+* @param[in] pMat - Mat instance.
+* @param[in] eWriteFormat - Format to write to.
+* @param[in] pSaveParameters - Optional parameters for writing the image file.
+* @param[out] pOutputBuffer - Returns an image buffer object.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_mat_encodeimage(LibMCDriver_OpenCV_Mat pMat, LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, LibMCDriver_OpenCV_ImageSaveParameters pSaveParameters, LibMCDriver_OpenCV_ImageBuffer * pOutputBuffer);
+
+/**
+* Writes a matrix into a temporary file stream.
+*
+* @param[in] pMat - Mat instance.
+* @param[in] eWriteFormat - Format to write to.
+* @param[in] pSaveParameters - Optional parameters for writing the image file.
+* @param[in] pStream - Stream to store the data to.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENCV_DECLSPEC LibMCDriver_OpenCVResult libmcdriver_opencv_mat_encodeimagetostream(LibMCDriver_OpenCV_Mat pMat, LibMCDriver_OpenCV::eImageWriteFormat eWriteFormat, LibMCDriver_OpenCV_ImageSaveParameters pSaveParameters, LibMCEnv_TempStreamWriter pStream);
 
 /*************************************************************************************************************************
  Class definition for Driver_OpenCV

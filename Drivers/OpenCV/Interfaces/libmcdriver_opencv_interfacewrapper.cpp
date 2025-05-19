@@ -315,6 +315,121 @@ LibMCDriver_OpenCVResult libmcdriver_opencv_driver_queryparametersex(LibMCDriver
 
 
 /*************************************************************************************************************************
+ Class implementation for ImageSaveParameters
+**************************************************************************************************************************/
+
+/*************************************************************************************************************************
+ Class implementation for ImageBuffer
+**************************************************************************************************************************/
+LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_getimageformat(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, eLibMCDriver_OpenCVImageWriteFormat * pImageFormat)
+{
+	IBase* pIBaseClass = (IBase *)pImageBuffer;
+
+	try {
+		if (pImageFormat == nullptr)
+			throw ELibMCDriver_OpenCVInterfaceException (LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
+		IImageBuffer* pIImageBuffer = dynamic_cast<IImageBuffer*>(pIBaseClass);
+		if (!pIImageBuffer)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		*pImageFormat = pIImageBuffer->GetImageFormat();
+
+		return LIBMCDRIVER_OPENCV_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenCVInterfaceException & Exception) {
+		return handleLibMCDriver_OpenCVException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_getsize(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, LibMCDriver_OpenCV_uint64 * pBufferSize)
+{
+	IBase* pIBaseClass = (IBase *)pImageBuffer;
+
+	try {
+		if (pBufferSize == nullptr)
+			throw ELibMCDriver_OpenCVInterfaceException (LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
+		IImageBuffer* pIImageBuffer = dynamic_cast<IImageBuffer*>(pIBaseClass);
+		if (!pIImageBuffer)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		*pBufferSize = pIImageBuffer->GetSize();
+
+		return LIBMCDRIVER_OPENCV_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenCVInterfaceException & Exception) {
+		return handleLibMCDriver_OpenCVException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_getdata(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, const LibMCDriver_OpenCV_uint64 nMemoryArrayBufferSize, LibMCDriver_OpenCV_uint64* pMemoryArrayNeededCount, LibMCDriver_OpenCV_uint8 * pMemoryArrayBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pImageBuffer;
+
+	try {
+		if ((!pMemoryArrayBuffer) && !(pMemoryArrayNeededCount))
+			throw ELibMCDriver_OpenCVInterfaceException (LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
+		IImageBuffer* pIImageBuffer = dynamic_cast<IImageBuffer*>(pIBaseClass);
+		if (!pIImageBuffer)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		pIImageBuffer->GetData(nMemoryArrayBufferSize, pMemoryArrayNeededCount, pMemoryArrayBuffer);
+
+		return LIBMCDRIVER_OPENCV_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenCVInterfaceException & Exception) {
+		return handleLibMCDriver_OpenCVException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_OpenCVResult libmcdriver_opencv_imagebuffer_storetostream(LibMCDriver_OpenCV_ImageBuffer pImageBuffer, LibMCEnv_TempStreamWriter pStream)
+{
+	IBase* pIBaseClass = (IBase *)pImageBuffer;
+
+	try {
+		LibMCEnv::PTempStreamWriter pIStream = std::make_shared<LibMCEnv::CTempStreamWriter>(CWrapper::sPLibMCEnvWrapper.get(), pStream);
+		CWrapper::sPLibMCEnvWrapper->AcquireInstance(pIStream.get());
+		if (!pIStream)
+			throw ELibMCDriver_OpenCVInterfaceException (LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		IImageBuffer* pIImageBuffer = dynamic_cast<IImageBuffer*>(pIBaseClass);
+		if (!pIImageBuffer)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		pIImageBuffer->StoreToStream(pIStream);
+
+		return LIBMCDRIVER_OPENCV_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenCVInterfaceException & Exception) {
+		return handleLibMCDriver_OpenCVException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+
+/*************************************************************************************************************************
  Class implementation for Mat
 **************************************************************************************************************************/
 LibMCDriver_OpenCVResult libmcdriver_opencv_mat_empty(LibMCDriver_OpenCV_Mat pMat, bool * pIsEmpty)
@@ -381,6 +496,67 @@ LibMCDriver_OpenCVResult libmcdriver_opencv_mat_rows(LibMCDriver_OpenCV_Mat pMat
 			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
 		
 		*pNumberOfRows = pIMat->Rows();
+
+		return LIBMCDRIVER_OPENCV_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenCVInterfaceException & Exception) {
+		return handleLibMCDriver_OpenCVException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_OpenCVResult libmcdriver_opencv_mat_encodeimage(LibMCDriver_OpenCV_Mat pMat, eLibMCDriver_OpenCVImageWriteFormat eWriteFormat, LibMCDriver_OpenCV_ImageSaveParameters pSaveParameters, LibMCDriver_OpenCV_ImageBuffer * pOutputBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pMat;
+
+	try {
+		if (pOutputBuffer == nullptr)
+			throw ELibMCDriver_OpenCVInterfaceException (LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
+		IBase* pIBaseClassSaveParameters = (IBase *)pSaveParameters;
+		IImageSaveParameters* pISaveParameters = dynamic_cast<IImageSaveParameters*>(pIBaseClassSaveParameters);
+		IBase* pBaseOutputBuffer(nullptr);
+		IMat* pIMat = dynamic_cast<IMat*>(pIBaseClass);
+		if (!pIMat)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		pBaseOutputBuffer = pIMat->EncodeImage(eWriteFormat, pISaveParameters);
+
+		*pOutputBuffer = (IBase*)(pBaseOutputBuffer);
+		return LIBMCDRIVER_OPENCV_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenCVInterfaceException & Exception) {
+		return handleLibMCDriver_OpenCVException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_OpenCVResult libmcdriver_opencv_mat_encodeimagetostream(LibMCDriver_OpenCV_Mat pMat, eLibMCDriver_OpenCVImageWriteFormat eWriteFormat, LibMCDriver_OpenCV_ImageSaveParameters pSaveParameters, LibMCEnv_TempStreamWriter pStream)
+{
+	IBase* pIBaseClass = (IBase *)pMat;
+
+	try {
+		IBase* pIBaseClassSaveParameters = (IBase *)pSaveParameters;
+		IImageSaveParameters* pISaveParameters = dynamic_cast<IImageSaveParameters*>(pIBaseClassSaveParameters);
+		LibMCEnv::PTempStreamWriter pIStream = std::make_shared<LibMCEnv::CTempStreamWriter>(CWrapper::sPLibMCEnvWrapper.get(), pStream);
+		CWrapper::sPLibMCEnvWrapper->AcquireInstance(pIStream.get());
+		if (!pIStream)
+			throw ELibMCDriver_OpenCVInterfaceException (LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		IMat* pIMat = dynamic_cast<IMat*>(pIBaseClass);
+		if (!pIMat)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDCAST);
+		
+		pIMat->EncodeImageToStream(eWriteFormat, pISaveParameters, pIStream);
 
 		return LIBMCDRIVER_OPENCV_SUCCESS;
 	}
@@ -515,12 +691,24 @@ LibMCDriver_OpenCVResult LibMCDriver_OpenCV::Impl::LibMCDriver_OpenCV_GetProcAdd
 		*ppProcAddress = (void*) &libmcdriver_opencv_driver_queryparameters;
 	if (sProcName == "libmcdriver_opencv_driver_queryparametersex") 
 		*ppProcAddress = (void*) &libmcdriver_opencv_driver_queryparametersex;
+	if (sProcName == "libmcdriver_opencv_imagebuffer_getimageformat") 
+		*ppProcAddress = (void*) &libmcdriver_opencv_imagebuffer_getimageformat;
+	if (sProcName == "libmcdriver_opencv_imagebuffer_getsize") 
+		*ppProcAddress = (void*) &libmcdriver_opencv_imagebuffer_getsize;
+	if (sProcName == "libmcdriver_opencv_imagebuffer_getdata") 
+		*ppProcAddress = (void*) &libmcdriver_opencv_imagebuffer_getdata;
+	if (sProcName == "libmcdriver_opencv_imagebuffer_storetostream") 
+		*ppProcAddress = (void*) &libmcdriver_opencv_imagebuffer_storetostream;
 	if (sProcName == "libmcdriver_opencv_mat_empty") 
 		*ppProcAddress = (void*) &libmcdriver_opencv_mat_empty;
 	if (sProcName == "libmcdriver_opencv_mat_cols") 
 		*ppProcAddress = (void*) &libmcdriver_opencv_mat_cols;
 	if (sProcName == "libmcdriver_opencv_mat_rows") 
 		*ppProcAddress = (void*) &libmcdriver_opencv_mat_rows;
+	if (sProcName == "libmcdriver_opencv_mat_encodeimage") 
+		*ppProcAddress = (void*) &libmcdriver_opencv_mat_encodeimage;
+	if (sProcName == "libmcdriver_opencv_mat_encodeimagetostream") 
+		*ppProcAddress = (void*) &libmcdriver_opencv_mat_encodeimagetostream;
 	if (sProcName == "libmcdriver_opencv_driver_opencv_loadimagefrombuffer") 
 		*ppProcAddress = (void*) &libmcdriver_opencv_driver_opencv_loadimagefrombuffer;
 	if (sProcName == "libmcdriver_opencv_driver_opencv_loadimagefromresource") 

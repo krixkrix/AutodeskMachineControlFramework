@@ -1,6 +1,6 @@
 /*++
 
-Copyright (C) 2024 Autodesk Inc.
+Copyright (C) 2025 Autodesk Inc.
 
 All rights reserved.
 
@@ -27,73 +27,68 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-Abstract: This is a stub class definition of CMat
+Abstract: This is a stub class definition of CImageBuffer
 
 */
 
-#include "libopencv_mat.hpp"
-#include "libopencv_interfaceexception.hpp"
+#include "libmcdriver_opencv_imagebuffer.hpp"
+#include "libmcdriver_opencv_interfaceexception.hpp"
 
 // Include custom headers here.
 
 
-using namespace LibOpenCV::Impl;
+using namespace LibMCDriver_OpenCV::Impl;
 
 /*************************************************************************************************************************
- Class definition of CMat 
+ Class definition of CImageBuffer 
 **************************************************************************************************************************/
 
-CMat::CMat(uint32_t nCols, uint32_t nRows, const LibOpenCV::eImageReadFormat eReadFormat)
+CImageBuffer::CImageBuffer(LibMCEnv::PWorkingFile pWorkingFile, LibMCDriver_OpenCV::eImageWriteFormat imageFormat)
+    : m_ImageFormat (imageFormat)
 {
-	m_Mat = cv::Mat(nRows, nCols, CV_8UC3);
+    if (pWorkingFile.get() == nullptr)
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
 
-    if (m_Mat.empty())
-        throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_COULDNOTCREATEEMPTYIMAGE, std::to_string (nCols) + "x" + std::to_string(nRows) + " pixels");
+    //pWorkingFile->RetrieveContent(m_Buffer);
 }
 
-CMat::CMat(const std::string& sFileName, const LibOpenCV::eImageReadFormat eReadFormat)
-{
-	int flags = 0;
-    switch (eReadFormat) {
-	    case LibOpenCV::eImageReadFormat::GrayScale: flags = cv::IMREAD_GRAYSCALE; break;
-        case LibOpenCV::eImageReadFormat::RGB: flags = cv::IMREAD_COLOR_RGB; break;
-        case LibOpenCV::eImageReadFormat::BGR: flags = cv::IMREAD_COLOR_BGR; break;
-        default:
-            throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_INVALIDREADFORMAT);
-    }
-
-    // TODO: Fix Unicode conversion with filename
-	m_Mat = cv::imread(sFileName, flags);
-    if (m_Mat.empty ())
-        throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_COULDNOTREADIMAGEFILE, sFileName);
-}
-
-CMat::~CMat()
+CImageBuffer::~CImageBuffer()
 {
 
 }
 
 
-bool CMat::Empty()
+LibMCDriver_OpenCV::eImageWriteFormat CImageBuffer::GetImageFormat()
 {
-    return m_Mat.empty();
+    return m_ImageFormat;
 }
 
-LibOpenCV_uint32 CMat::Cols()
+LibMCDriver_OpenCV_uint64 CImageBuffer::GetSize()
 {
-	return m_Mat.cols;
+    return m_Buffer.size();
 }
 
-LibOpenCV_uint32 CMat::Rows()
+void CImageBuffer::GetData(LibMCDriver_OpenCV_uint64 nMemoryArrayBufferSize, LibMCDriver_OpenCV_uint64* pMemoryArrayNeededCount, LibMCDriver_OpenCV_uint8 * pMemoryArrayBuffer)
 {
-    return m_Mat.rows;
+    uint64_t nNeededCount = m_Buffer.size();
+
+    if (pMemoryArrayNeededCount != nullptr)
+        *pMemoryArrayNeededCount = nNeededCount;
+
+	if (pMemoryArrayBuffer != nullptr) {
+		if (nMemoryArrayBufferSize < nNeededCount)
+			throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_BUFFERTOOSMALL);
+
+		memcpy(pMemoryArrayBuffer, m_Buffer.data(), nNeededCount);
+	}
+	
 }
 
-void CMat::WriteToFile(const std::string& sFileName, IImageSaveParameters* pSaveParameters)
+void CImageBuffer::StoreToStream(LibMCEnv::PTempStreamWriter pStream)
 {
-    // TODO: Fix Unicode conversion with filename
+	if (pStream.get () == nullptr)
+        throw ELibMCDriver_OpenCVInterfaceException(LIBMCDRIVER_OPENCV_ERROR_INVALIDPARAM);
 
-    bool bSuccess = cv::imwrite(sFileName, m_Mat);
-    if (!bSuccess)
-		throw ELibOpenCVInterfaceException(LIBOPENCV_ERROR_COULDNOTWRITEIMAGEFILE, sFileName);
+    pStream->WriteData(m_Buffer);
 }
+

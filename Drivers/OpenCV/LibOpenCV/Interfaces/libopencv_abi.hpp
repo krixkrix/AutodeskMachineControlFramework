@@ -61,6 +61,10 @@ extern "C" {
 **************************************************************************************************************************/
 
 /*************************************************************************************************************************
+ Class definition for ImageSaveParameters
+**************************************************************************************************************************/
+
+/*************************************************************************************************************************
  Class definition for Mat
 **************************************************************************************************************************/
 
@@ -90,6 +94,16 @@ LIBOPENCV_DECLSPEC LibOpenCVResult libopencv_mat_cols(LibOpenCV_Mat pMat, LibOpe
 * @return error code or 0 (success)
 */
 LIBOPENCV_DECLSPEC LibOpenCVResult libopencv_mat_rows(LibOpenCV_Mat pMat, LibOpenCV_uint32 * pNumberOfRows);
+
+/**
+* Writes a matrix as image to a file.
+*
+* @param[in] pMat - Mat instance.
+* @param[in] pFileName - Filename to write to (in UTF8). File type is derived from the file extension.
+* @param[in] pSaveParameters - Optional parameters for writing the image file.
+* @return error code or 0 (success)
+*/
+LIBOPENCV_DECLSPEC LibOpenCVResult libopencv_mat_writetofile(LibOpenCV_Mat pMat, const char * pFileName, LibOpenCV_ImageSaveParameters pSaveParameters);
 
 /*************************************************************************************************************************
  Class definition for OpenCVContext
