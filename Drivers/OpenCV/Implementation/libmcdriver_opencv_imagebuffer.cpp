@@ -35,7 +35,7 @@ Abstract: This is a stub class definition of CImageBuffer
 #include "libmcdriver_opencv_interfaceexception.hpp"
 
 // Include custom headers here.
-
+#include <cstring>
 
 using namespace LibMCDriver_OpenCV::Impl;
 
