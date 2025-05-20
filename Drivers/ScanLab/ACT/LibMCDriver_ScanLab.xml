@@ -194,8 +194,17 @@
 		<error name="RTCCHANNELXANDYRECORDCOUNTMISMATCH" code="1142" description="RTC X and Y record count mismatch." />
 		<error name="SEGMENTDELAYEXCEEDSONEHOUR" code="1143" description="Segment delay exceeds one hour." />
 		<error name="CALLNOTSUPPORTED" code="1144" description="Call is not supported in current SCANLAB RTC SDK." />
-		
-		
+		<error name="INVALIDORNOSKYWRITINGLIMITPROVIDEDINPROFILE" code="1145" description="Invalid or no skywriting limit provided in profile." />
+		<error name="SKYWRITINGLIMITPROVIDEDTWICEINPROFILE" code="1146" description="Skywriting limit provided twice in profile." />
+		<error name="INVALIDORNOSKYWRITINGTIMELAGPROVIDEDINPROFILE" code="1147" description="Invalid or no skywriting timelag provided in profile." />
+		<error name="SKYWRITINGTIMELAGPROVIDEDTWICEINPROFILE" code="1148" description="Skywriting timelag provided twice in profile." />
+		<error name="INVALIDORNOSKYWRITINGLASERONSHIFTPROVIDEDINPROFILE" code="1149" description="Invalid or no skywriting laser on shift provided in profile." />
+		<error name="SKYWRITINGLASERONSHIFTPROVIDEDTWICEINPROFILE" code="1150" description="Skywriting laser on shift provided twice in profile." />
+		<error name="INVALIDORNOSKYWRITINGNPREVPROVIDEDINPROFILE" code="1151" description="Invalid or no skywriting nprev provided in profile." />
+		<error name="SKYWRITINGNPREVPROVIDEDTWICEINPROFILE" code="1152" description="Skywriting nprev provided twice in profile." />
+		<error name="INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE" code="1153" description="Invalid or no skywriting npost provided in profile." />
+		<error name="SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE" code="1154" description="Skywriting npost provided twice in profile." />
+			
 							
 	</errors>
 

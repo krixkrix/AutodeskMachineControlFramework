@@ -247,6 +247,16 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH 1142 /** RTC X and Y record count mismatch. */
 #define LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR 1143 /** Segment delay exceeds one hour. */
 #define LIBMCDRIVER_SCANLAB_ERROR_CALLNOTSUPPORTED 1144 /** Call is not supported in current SCANLAB RTC SDK. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLIMITPROVIDEDINPROFILE 1145 /** Invalid or no skywriting limit provided in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLIMITPROVIDEDTWICEINPROFILE 1146 /** Skywriting limit provided twice in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGTIMELAGPROVIDEDINPROFILE 1147 /** Invalid or no skywriting timelag provided in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGTIMELAGPROVIDEDTWICEINPROFILE 1148 /** Skywriting timelag provided twice in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLASERONSHIFTPROVIDEDINPROFILE 1149 /** Invalid or no skywriting laser on shift provided in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLASERONSHIFTPROVIDEDTWICEINPROFILE 1150 /** Skywriting laser on shift provided twice in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPREVPROVIDEDINPROFILE 1151 /** Invalid or no skywriting nprev provided in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE 1152 /** Skywriting nprev provided twice in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE 1153 /** Invalid or no skywriting npost provided in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE 1154 /** Skywriting npost provided twice in profile. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -406,6 +416,16 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_RTCCHANNELXANDYRECORDCOUNTMISMATCH: return "RTC X and Y record count mismatch.";
     case LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR: return "Segment delay exceeds one hour.";
     case LIBMCDRIVER_SCANLAB_ERROR_CALLNOTSUPPORTED: return "Call is not supported in current SCANLAB RTC SDK.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLIMITPROVIDEDINPROFILE: return "Invalid or no skywriting limit provided in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLIMITPROVIDEDTWICEINPROFILE: return "Skywriting limit provided twice in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGTIMELAGPROVIDEDINPROFILE: return "Invalid or no skywriting timelag provided in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGTIMELAGPROVIDEDTWICEINPROFILE: return "Skywriting timelag provided twice in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLASERONSHIFTPROVIDEDINPROFILE: return "Invalid or no skywriting laser on shift provided in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLASERONSHIFTPROVIDEDTWICEINPROFILE: return "Skywriting laser on shift provided twice in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPREVPROVIDEDINPROFILE: return "Invalid or no skywriting nprev provided in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE: return "Skywriting nprev provided twice in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "Invalid or no skywriting npost provided in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "Skywriting npost provided twice in profile.";
     default: return "unknown error";
   }
 }

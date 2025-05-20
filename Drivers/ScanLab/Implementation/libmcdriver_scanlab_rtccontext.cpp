@@ -2299,6 +2299,141 @@ void CRTCContext::addGPIOSequenceToList(const std::string& sSequenceName)
 
 }
 
+
+double readSkywritingLimitInCosine(LibMCEnv::CToolpathLayer * pLayer, uint32_t nSegmentIndex)
+{
+	double dSkywritingLimit_Cosine = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit", -100.0);
+	double dSkywritingLimit_Degree = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit_degree", -100.0);
+
+	bool bCosineIsInRange = (dSkywritingLimit_Cosine >= -1.0) && (dSkywritingLimit_Cosine <= 1.0);
+	bool bDegreeIsInRange = (dSkywritingLimit_Cosine >= 0.0) && (dSkywritingLimit_Cosine <= 180.0);
+
+	if (!bCosineIsInRange && !bDegreeIsInRange)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLIMITPROVIDEDINPROFILE);
+	
+	if (bCosineIsInRange) {
+		// Cosine is given
+		return dSkywritingLimit_Cosine;
+
+	}
+	else if (bDegreeIsInRange) {
+		// Degree is given
+		return cos (dSkywritingLimit_Degree / 180.0 * 3.14159265358979);
+	}
+	else {
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLIMITPROVIDEDTWICEINPROFILE);
+	}
+
+}
+
+double readSkywritingTimeLagInMicroseconds(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
+{
+	double dSkywritingTimelag = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "timelag", -100.0);
+	double dSkywritingTimelag_us = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "timelag_us", -100.0);
+
+	bool bTimelagIsInRange = (dSkywritingTimelag >= 0.0) && (dSkywritingTimelag <= 1000000.0);
+	bool bTimelagUsIsInRange = (dSkywritingTimelag_us >= 0.0) && (dSkywritingTimelag_us <= 1000000.0);
+
+	if (!bTimelagIsInRange && !bTimelagUsIsInRange)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGTIMELAGPROVIDEDINPROFILE);
+
+	if (bTimelagIsInRange) {
+		// Cosine is given
+		return dSkywritingTimelag;
+
+	}
+	else if (bTimelagUsIsInRange) {
+		// Degree is given
+		return dSkywritingTimelag_us;
+	}
+	else {
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGTIMELAGPROVIDEDTWICEINPROFILE);
+	}
+}
+
+int64_t readSkywritingLaserOnShiftIn64thus(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
+{
+	int64_t nLaserOnShiftIn64thus = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "laseronshift", -10000000);
+	double nLaserOnShiftInus = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "laseronshift_us", -10000000.0);
+
+	bool bLaserOnShiftIsInRange = (nLaserOnShiftIn64thus > -1000000) && (nLaserOnShiftIn64thus < 1000000);
+	bool bLaserOnShiftUsIsInRange = (nLaserOnShiftInus > -1000000.0) && (nLaserOnShiftInus < 1000000.0);
+
+	if (!bLaserOnShiftIsInRange && !bLaserOnShiftUsIsInRange)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLASERONSHIFTPROVIDEDINPROFILE);
+
+	if (bLaserOnShiftIsInRange) {
+		return nLaserOnShiftIn64thus;
+	}
+	else if (bLaserOnShiftUsIsInRange) {
+		// Microseconds is given
+		return (int64_t) round(nLaserOnShiftInus * 64.0);
+	}
+	else {
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLASERONSHIFTPROVIDEDTWICEINPROFILE);
+	}
+}
+
+
+int64_t readSkywritingRunInPhaseInBits(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
+{
+	// We think 1 Million should be enough, even if RTC Documentation says it can go up to 2^32
+	int64_t nMaxNPrev = 1000000;
+
+	// See RTC Documentation set_sky_writing_para for details about the interpretation of the delays
+	double dFactor = 10.0;
+
+	int64_t nPrevInBits = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "nprev", -10000000);
+	double nPrevInMicroseconds = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "nprev_us", -10000000);
+
+	bool bPrevInBitsIsInRange = (nPrevInBits >= 0) && (nPrevInBits < nMaxNPrev);
+	bool bPrevInMicrosecondsIsInRange = (nPrevInMicroseconds >= 0.0) && (nPrevInMicroseconds < (nMaxNPrev * dFactor));
+
+	if (!bPrevInBitsIsInRange && !bPrevInMicrosecondsIsInRange)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPREVPROVIDEDINPROFILE);
+
+	if (bPrevInBitsIsInRange) {
+		return nPrevInBits;
+	}
+	else if (bPrevInMicrosecondsIsInRange) {
+		// Microseconds is given
+		return (int64_t)round(nPrevInMicroseconds / dFactor);
+	}
+	else {
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE);
+	}
+}
+
+
+int64_t readSkywritingRunOutPhaseInBits(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
+{
+	// We think 1 Million should be enough, even if RTC Documentation says it can go up to 2^32
+	int64_t nMaxNPost = 1000000;
+
+	// See RTC Documentation set_sky_writing_para for details about the interpretation of the delays
+	double dFactor = 10.0;
+
+	int64_t nPostInBits = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "npost", -10000000);
+	double nPostInMicroseconds = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "npost_us", -10000000);
+
+	bool bPostInBitsIsInRange = (nPostInBits >= 0) && (nPostInBits < nMaxNPost);
+	bool bPostInMicrosecondsIsInRange = (nPostInMicroseconds >= 0.0) && (nPostInMicroseconds < (nMaxNPost * dFactor));
+
+	if (!bPostInBitsIsInRange && !bPostInMicrosecondsIsInRange)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE);
+
+	if (bPostInBitsIsInRange) {
+		return nPostInBits;
+	}
+	else if (bPostInMicrosecondsIsInRange) {
+		// Microseconds is given
+		return (int64_t)round(nPostInMicroseconds / dFactor);
+	}
+	else {
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE);
+	}
+}
+
 void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordingMode oieRecordingMode, uint32_t nAttributeFilterID, int64_t nAttributeFilterValue, float fMaxLaserPowerInWatts, bool bFailIfNonAssignedDataExists)
 {
 	if (pLayer.get() == nullptr)
@@ -2400,14 +2535,20 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 				int64_t nSkywritingMode = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "mode", 0);
 
 				if (nSkywritingMode != 0) {
-					double dSkywritingTimeLag = pLayer->GetSegmentProfileDoubleValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "timelag");
-					int64_t nSkywritingLaserOnShift = pLayer->GetSegmentProfileIntegerValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "laseronshift");
-					int64_t nSkywritingPrev = pLayer->GetSegmentProfileIntegerValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "nprev");
-					int64_t nSkywritingPost = pLayer->GetSegmentProfileIntegerValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "npost");
+
+					double dSkywritingTimeLag = readSkywritingTimeLagInMicroseconds(pLayer.get(), nSegmentIndex);
+
+
+					int64_t nSkywritingLaserOnShift = readSkywritingLaserOnShiftIn64thus(pLayer.get(), nSegmentIndex);
+					int64_t nSkywritingPrev = readSkywritingRunInPhaseInBits (pLayer.get(), nSegmentIndex);
+					int64_t nSkywritingPost = readSkywritingRunOutPhaseInBits (pLayer.get(), nSegmentIndex);
 
 					double dSkywritingLimit = 0.0;
 					if ((nSkywritingMode == 3) || (nSkywritingMode == 4)) {
-						dSkywritingLimit = pLayer->GetSegmentProfileDoubleValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit");
+
+						dSkywritingLimit = readSkywritingLimitInCosine(pLayer.get(), nSegmentIndex);
+
+
 					}
 
 
