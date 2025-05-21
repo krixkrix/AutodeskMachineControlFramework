@@ -1754,6 +1754,33 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_driver_scanlabsmc_setdllreso
 	}
 }
 
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcename(LibMCDriver_ScanLabSMC_Driver_ScanLabSMC pDriver_ScanLabSMC, const char * pRTCServiceDLLResourceName)
+{
+	IBase* pIBaseClass = (IBase *)pDriver_ScanLabSMC;
+
+	try {
+		if (pRTCServiceDLLResourceName == nullptr)
+			throw ELibMCDriver_ScanLabSMCInterfaceException (LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
+		std::string sRTCServiceDLLResourceName(pRTCServiceDLLResourceName);
+		IDriver_ScanLabSMC* pIDriver_ScanLabSMC = dynamic_cast<IDriver_ScanLabSMC*>(pIBaseClass);
+		if (!pIDriver_ScanLabSMC)
+			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
+		
+		pIDriver_ScanLabSMC->SetRTCServiceDLLResourceName(sRTCServiceDLLResourceName);
+
+		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabSMCInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabSMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_driver_scanlabsmc_setxercesdllresource(LibMCDriver_ScanLabSMC_Driver_ScanLabSMC pDriver_ScanLabSMC, const char * pXercesDLLResourceName)
 {
 	IBase* pIBaseClass = (IBase *)pDriver_ScanLabSMC;
@@ -1795,6 +1822,32 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomd
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
 		pIDriver_ScanLabSMC->SetCustomDLLData(nSMCDLLResourceDataBufferSize, pSMCDLLResourceDataBuffer, nRTCDLLResourceDataBufferSize, pRTCDLLResourceDataBuffer);
+
+		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabSMCInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabSMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcedata(LibMCDriver_ScanLabSMC_Driver_ScanLabSMC pDriver_ScanLabSMC, LibMCDriver_ScanLabSMC_uint64 nRTCServiceDLLResourceDataBufferSize, const LibMCDriver_ScanLabSMC_uint8 * pRTCServiceDLLResourceDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pDriver_ScanLabSMC;
+
+	try {
+		if ( (!pRTCServiceDLLResourceDataBuffer) && (nRTCServiceDLLResourceDataBufferSize>0))
+			throw ELibMCDriver_ScanLabSMCInterfaceException (LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
+		IDriver_ScanLabSMC* pIDriver_ScanLabSMC = dynamic_cast<IDriver_ScanLabSMC*>(pIBaseClass);
+		if (!pIDriver_ScanLabSMC)
+			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
+		
+		pIDriver_ScanLabSMC->SetRTCServiceDLLResourceData(nRTCServiceDLLResourceDataBufferSize, pRTCServiceDLLResourceDataBuffer);
 
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
 	}
@@ -2168,10 +2221,14 @@ LibMCDriver_ScanLabSMCResult LibMCDriver_ScanLabSMC::Impl::LibMCDriver_ScanLabSM
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_smccontext_drawlayer;
 	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_setdllresources") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_driver_scanlabsmc_setdllresources;
+	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcename") 
+		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcename;
 	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_setxercesdllresource") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_driver_scanlabsmc_setxercesdllresource;
 	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomdlldata") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomdlldata;
+	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcedata") 
+		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcedata;
 	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomxercesdlldata") 
 		*ppProcAddress = (void*) &libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomxercesdlldata;
 	if (sProcName == "libmcdriver_scanlabsmc_driver_scanlabsmc_loadsdk") 

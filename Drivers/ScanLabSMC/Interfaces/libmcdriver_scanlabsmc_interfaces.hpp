@@ -710,6 +710,12 @@ public:
 	virtual void SetDLLResources(const std::string & sSMCDLLResourceName, const std::string & sRTCDLLResourceName) = 0;
 
 	/**
+	* IDriver_ScanLabSMC::SetRTCServiceDLLResourceName - Sets the default resource name of the RTC Service DLL. Overrides custom resource data if set before.
+	* @param[in] sRTCServiceDLLResourceName - Resource name of RTC Service DLL
+	*/
+	virtual void SetRTCServiceDLLResourceName(const std::string & sRTCServiceDLLResourceName) = 0;
+
+	/**
 	* IDriver_ScanLabSMC::SetXercesDLLResource - Sets the default resource name of auxiliary resource DLLs. Overrides custom resource data if set before.
 	* @param[in] sXercesDLLResourceName - Resource name of the Xerces dependency DLL
 	*/
@@ -723,6 +729,13 @@ public:
 	* @param[in] pRTCDLLResourceDataBuffer - Resource data of RTC DLL
 	*/
 	virtual void SetCustomDLLData(const LibMCDriver_ScanLabSMC_uint64 nSMCDLLResourceDataBufferSize, const LibMCDriver_ScanLabSMC_uint8 * pSMCDLLResourceDataBuffer, const LibMCDriver_ScanLabSMC_uint64 nRTCDLLResourceDataBufferSize, const LibMCDriver_ScanLabSMC_uint8 * pRTCDLLResourceDataBuffer) = 0;
+
+	/**
+	* IDriver_ScanLabSMC::SetRTCServiceDLLResourceData - Sets custom binaries for the needed RTC Service DLLs. Overrides custom resource data if set before.
+	* @param[in] nRTCServiceDLLResourceDataBufferSize - Number of elements in buffer
+	* @param[in] pRTCServiceDLLResourceDataBuffer - Resource data of RTC Service DLL
+	*/
+	virtual void SetRTCServiceDLLResourceData(const LibMCDriver_ScanLabSMC_uint64 nRTCServiceDLLResourceDataBufferSize, const LibMCDriver_ScanLabSMC_uint8 * pRTCServiceDLLResourceDataBuffer) = 0;
 
 	/**
 	* IDriver_ScanLabSMC::SetCustomXercesDLLData - Sets the custom binary for auxiliary resource DLLs. Overrides custom resource data if set before.
