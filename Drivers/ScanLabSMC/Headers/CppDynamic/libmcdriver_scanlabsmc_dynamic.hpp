@@ -568,6 +568,8 @@ public:
 	inline eWarnLevel GetWarnLevel();
 	inline void SetBlendMode(const eBlendMode eBlendMode);
 	inline eBlendMode GetBlendMode();
+	inline void SetSendToHardware(const bool bSendToHardware);
+	inline bool GetSendToHardware();
 	inline void SetSerialNumber(const LibMCDriver_ScanLabSMC_uint32 nValue);
 	inline LibMCDriver_ScanLabSMC_uint32 GetSerialNumber();
 	inline void SetIPAddress(const std::string & sValue);
@@ -792,6 +794,8 @@ public:
 		pWrapperTable->m_SMCConfiguration_GetWarnLevel = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetBlendMode = nullptr;
 		pWrapperTable->m_SMCConfiguration_GetBlendMode = nullptr;
+		pWrapperTable->m_SMCConfiguration_SetSendToHardware = nullptr;
+		pWrapperTable->m_SMCConfiguration_GetSendToHardware = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetSerialNumber = nullptr;
 		pWrapperTable->m_SMCConfiguration_GetSerialNumber = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetIPAddress = nullptr;
@@ -1131,6 +1135,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_SMCConfiguration_GetBlendMode == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_SetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetSendToHardwarePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_SetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetSendToHardwarePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_SetSendToHardware == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_GetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetSendToHardwarePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_GetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetSendToHardwarePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_GetSendToHardware == nullptr)
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -1689,6 +1711,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetBlendMode == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware", (void**)&(pWrapperTable->m_SMCConfiguration_SetSendToHardware));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetSendToHardware == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware", (void**)&(pWrapperTable->m_SMCConfiguration_GetSendToHardware));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetSendToHardware == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setserialnumber", (void**)&(pWrapperTable->m_SMCConfiguration_SetSerialNumber));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetSerialNumber == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -2207,6 +2237,27 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_GetBlendMode(m_pHandle, &resultBlendMode));
 		
 		return resultBlendMode;
+	}
+	
+	/**
+	* CSMCConfiguration::SetSendToHardware - Sets if the computation shall be sent to the hardware.
+	* @param[in] bSendToHardware - Flag, if the computation shall be sent to the hardware.
+	*/
+	void CSMCConfiguration::SetSendToHardware(const bool bSendToHardware)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_SetSendToHardware(m_pHandle, bSendToHardware));
+	}
+	
+	/**
+	* CSMCConfiguration::GetSendToHardware - Returns if the computation shall be sent to the hardware.
+	* @return Flag, if the computation shall be sent to the hardware.
+	*/
+	bool CSMCConfiguration::GetSendToHardware()
+	{
+		bool resultSendToHardware = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_GetSendToHardware(m_pHandle, &resultSendToHardware));
+		
+		return resultSendToHardware;
 	}
 	
 	/**

@@ -496,6 +496,18 @@ public:
 	virtual LibMCDriver_ScanLabSMC::eBlendMode GetBlendMode() = 0;
 
 	/**
+	* ISMCConfiguration::SetSendToHardware - Sets if the computation shall be sent to the hardware.
+	* @param[in] bSendToHardware - Flag, if the computation shall be sent to the hardware.
+	*/
+	virtual void SetSendToHardware(const bool bSendToHardware) = 0;
+
+	/**
+	* ISMCConfiguration::GetSendToHardware - Returns if the computation shall be sent to the hardware.
+	* @return Flag, if the computation shall be sent to the hardware.
+	*/
+	virtual bool GetSendToHardware() = 0;
+
+	/**
 	* ISMCConfiguration::SetSerialNumber - Sets the RTC Serial number. MUST be larger than 0.
 	* @param[in] nValue - Value to set.
 	*/

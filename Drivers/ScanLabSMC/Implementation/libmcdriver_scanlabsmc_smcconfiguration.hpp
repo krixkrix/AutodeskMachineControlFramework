@@ -73,6 +73,8 @@ private:
     std::string m_sConfigurationTemplateXML;
     std::string m_sSimulationSubDirectory;
 
+    bool m_bSendToHardware;
+
 public:
 
     CSMCConfiguration(LibMCEnv::PDriverEnvironment pDriverEnvironment);
@@ -92,6 +94,10 @@ public:
 	LibMCDriver_ScanLabSMC_uint32 GetSerialNumber() override;
 
 	void SetIPAddress(const std::string& sValue) override;
+
+    void SetSendToHardware(const bool bSendToHardware) override;
+
+    bool GetSendToHardware() override;
 
 	std::string GetIPAddress() override;
 

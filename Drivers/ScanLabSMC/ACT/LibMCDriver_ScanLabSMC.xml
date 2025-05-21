@@ -366,6 +366,14 @@ Custom implementation
 			<param name="BlendMode" type="enum" class="BlendMode" pass="return" description="Blend Mode that the job shall be drawn in." />			
 		</method>		
 
+		<method name="SetSendToHardware" description="Sets if the computation shall be sent to the hardware.">
+			<param name="SendToHardware" type="bool" pass="in" description="Flag, if the computation shall be sent to the hardware." />
+		</method>	
+
+		<method name="GetSendToHardware" description="Returns if the computation shall be sent to the hardware.">
+			<param name="SendToHardware" type="bool" pass="return" description="Flag, if the computation shall be sent to the hardware." />
+		</method>
+
 	
 		<method name="SetSerialNumber" description="Sets the RTC Serial number. MUST be larger than 0.">
 			<param name="Value" type="uint32" class="WarnLevel" pass="in" description="Value to set." />

@@ -46,7 +46,11 @@ using namespace LibMCDriver_ScanLabSMC::Impl;
 **************************************************************************************************************************/
 
 CSMCContextInstance::CSMCContextInstance(const std::string& sContextName, ISMCConfiguration* pSMCConfiguration, PScanLabSMCSDK pSDK, LibMCEnv::PDriverEnvironment pDriverEnvironment)
-	: m_pSDK (pSDK), m_pDriverEnvironment (pDriverEnvironment), m_sContextName (sContextName), m_nSerialNumber (0)
+	: m_pSDK (pSDK), 
+	m_pDriverEnvironment (pDriverEnvironment), 
+	m_sContextName (sContextName), 
+	m_nSerialNumber (0)
+
 {
 	if (pSDK.get() == nullptr)
 		throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);

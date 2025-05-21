@@ -343,6 +343,24 @@ LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlab
 LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_getblendmode(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eBlendMode * pBlendMode);
 
 /**
+* Sets if the computation shall be sent to the hardware.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[in] bSendToHardware - Flag, if the computation shall be sent to the hardware.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, bool bSendToHardware);
+
+/**
+* Returns if the computation shall be sent to the hardware.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[out] pSendToHardware - Flag, if the computation shall be sent to the hardware.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLABSMC_DECLSPEC LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware(LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, bool * pSendToHardware);
+
+/**
 * Sets the RTC Serial number. MUST be larger than 0.
 *
 * @param[in] pSMCConfiguration - SMCConfiguration instance.

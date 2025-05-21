@@ -330,6 +330,24 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_S
 typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr) (LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, LibMCDriver_ScanLabSMC::eBlendMode * pBlendMode);
 
 /**
+* Sets if the computation shall be sent to the hardware.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[in] bSendToHardware - Flag, if the computation shall be sent to the hardware.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_SetSendToHardwarePtr) (LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, bool bSendToHardware);
+
+/**
+* Returns if the computation shall be sent to the hardware.
+*
+* @param[in] pSMCConfiguration - SMCConfiguration instance.
+* @param[out] pSendToHardware - Flag, if the computation shall be sent to the hardware.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCConfiguration_GetSendToHardwarePtr) (LibMCDriver_ScanLabSMC_SMCConfiguration pSMCConfiguration, bool * pSendToHardware);
+
+/**
 * Sets the RTC Serial number. MUST be larger than 0.
 *
 * @param[in] pSMCConfiguration - SMCConfiguration instance.
@@ -846,6 +864,8 @@ typedef struct {
 	PLibMCDriver_ScanLabSMCSMCConfiguration_GetWarnLevelPtr m_SMCConfiguration_GetWarnLevel;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr m_SMCConfiguration_SetBlendMode;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr m_SMCConfiguration_GetBlendMode;
+	PLibMCDriver_ScanLabSMCSMCConfiguration_SetSendToHardwarePtr m_SMCConfiguration_SetSendToHardware;
+	PLibMCDriver_ScanLabSMCSMCConfiguration_GetSendToHardwarePtr m_SMCConfiguration_GetSendToHardware;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_SetSerialNumberPtr m_SMCConfiguration_SetSerialNumber;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_GetSerialNumberPtr m_SMCConfiguration_GetSerialNumber;
 	PLibMCDriver_ScanLabSMCSMCConfiguration_SetIPAddressPtr m_SMCConfiguration_SetIPAddress;
