@@ -299,7 +299,7 @@ ISMCContext* CDriver_ScanLabSMC::CreateContext(const std::string& sContextName, 
     if (m_pSDK.get() == nullptr)
         LoadSDK();
 
-    auto pContextInstance = std::make_shared<CSMCContextInstance>(sContextName, pSMCConfiguration, m_pSDK, m_pDriverEnvironment);
+    auto pContextInstance = std::make_shared<CSMCContextInstance>(sContextName, pSMCConfiguration, m_pSDK, m_pDriverEnvironment, m_pDLLDirectory->GetAbsoluteFilePath ());
     m_pContextMap.insert(std::make_pair (sContextName, pContextInstance));
 
     return new CSMCContext (pContextInstance, m_pDriverEnvironment);

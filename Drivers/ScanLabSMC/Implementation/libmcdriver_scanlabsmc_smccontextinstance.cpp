@@ -37,7 +37,49 @@ Abstract: This is a stub class definition of CSMCContext
 #include "libmcdriver_scanlabsmc_smcjob.hpp"
 
 // Include custom headers here.
+class CSMC_DLLDirectoryCache {
+private:
+#ifdef _WIN32
+	std::wstring m_sCachedDLLDirectoryW;
+	std::wstring m_sCachedCurrentDirectoryW;
+#endif // _WIN32
 
+public:
+	CSMC_DLLDirectoryCache();
+	virtual ~CSMC_DLLDirectoryCache();
+
+};
+
+typedef std::shared_ptr<CSMC_DLLDirectoryCache> PSMC_DLLDirectoryCache;
+
+
+CSMC_DLLDirectoryCache::CSMC_DLLDirectoryCache()
+{
+#ifdef _WIN32
+	std::vector<wchar_t> buffer;
+	buffer.resize(MAX_PATH + 1);
+	GetDllDirectoryW(MAX_PATH, buffer.data());
+
+	buffer.at(MAX_PATH) = 0;
+	m_sCachedDLLDirectoryW = std::wstring(buffer.data());
+
+	GetCurrentDirectoryW(MAX_PATH, buffer.data());
+	buffer.at(MAX_PATH) = 0;
+	m_sCachedCurrentDirectoryW = std::wstring(buffer.data());
+#endif // _WIN32
+}
+
+CSMC_DLLDirectoryCache::~CSMC_DLLDirectoryCache()
+{
+#ifdef _WIN32
+	if (!m_sCachedDLLDirectoryW.empty()) {
+		SetDllDirectoryW(m_sCachedDLLDirectoryW.c_str());
+	}
+	if (!m_sCachedCurrentDirectoryW.empty()) {
+		SetCurrentDirectoryW(m_sCachedCurrentDirectoryW.c_str());
+	}
+#endif // _WIN32
+}
 
 using namespace LibMCDriver_ScanLabSMC::Impl;
 
@@ -45,7 +87,7 @@ using namespace LibMCDriver_ScanLabSMC::Impl;
  Class definition of CSMCContext 
 **************************************************************************************************************************/
 
-CSMCContextInstance::CSMCContextInstance(const std::string& sContextName, ISMCConfiguration* pSMCConfiguration, PScanLabSMCSDK pSDK, LibMCEnv::PDriverEnvironment pDriverEnvironment)
+CSMCContextInstance::CSMCContextInstance(const std::string& sContextName, ISMCConfiguration* pSMCConfiguration, PScanLabSMCSDK pSDK, LibMCEnv::PDriverEnvironment pDriverEnvironment, const std::string& sRTCDLLDirectory)
 	: m_pSDK (pSDK), 
 	m_pDriverEnvironment (pDriverEnvironment), 
 	m_sContextName (sContextName), 
@@ -105,6 +147,22 @@ CSMCContextInstance::CSMCContextInstance(const std::string& sContextName, ISMCCo
 
 	auto pConfigurationFile = m_pWorkingDirectory->StoreCustomDataInTempFile("xml", Buffer);
 	std::string sConfigurationFilePath = pConfigurationFile->GetAbsoluteFileName ();
+	
+	auto pDLLDirectoryCache = std::make_shared<CSMC_DLLDirectoryCache>();
+
+#ifdef _WIN32
+	std::string sDLLDirectoryUTF8 = sRTCDLLDirectory;
+
+	int nPathLength = (int)sDLLDirectoryUTF8.length();
+	int nPathBufferSize = nPathLength * 2 + 2;
+	std::vector<wchar_t> wsDLLPath(nPathBufferSize);
+	int nPathResult = MultiByteToWideChar(CP_UTF8, 0, sDLLDirectoryUTF8.c_str(), nPathLength, &wsDLLPath[0], nPathBufferSize);
+	if (nPathResult == 0)
+		throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTLOADLIBRARY);
+	SetDllDirectoryW(wsDLLPath.data());
+	SetCurrentDirectoryW(wsDLLPath.data());
+#endif
+
 
 	slscHandle newHandle = 0;
 	m_pSDK->checkError(newHandle, m_pSDK->slsc_cfg_initialize_from_file(&newHandle, sConfigurationFilePath.c_str()));
