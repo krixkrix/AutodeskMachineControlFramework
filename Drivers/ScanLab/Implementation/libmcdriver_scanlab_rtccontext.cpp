@@ -2508,8 +2508,8 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 			float fPowerInWatts = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
 			float fPowerInPercent = (fPowerInWatts * 100.f) / fMaxLaserPowerInWatts;
 			float fLaserFocus = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserFocus);
-			double dPreSegmentDelay = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PreSegmentDelay);
-			double dPostSegmentDelay = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PostSegmentDelay);
+			double dPreSegmentDelay = (float)pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PreSegmentDelay, 0.0);
+			double dPostSegmentDelay = (float)pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PostSegmentDelay, 0.0);
 
 			uint32_t nOIEPIDControlIndex = 0;
 			if (m_bEnableOIEPIDControl) {
