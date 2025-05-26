@@ -2634,7 +2634,7 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 						targetHatch.m_X1 = (float)(srcHatch.m_X1 * dUnits);
 						targetHatch.m_Y1 = (float)(srcHatch.m_Y1 * dUnits);
 						targetHatch.m_X2 = (float)(srcHatch.m_X2 * dUnits);
-						targetHatch.m_Y2 = (float)(srcHatch.m_Y1 * dUnits);
+						targetHatch.m_Y2 = (float)(srcHatch.m_Y2 * dUnits);
 					}
 
 					DrawHatchesOIE(RTCHatches.size(), RTCHatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
