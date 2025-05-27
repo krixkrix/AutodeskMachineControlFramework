@@ -1478,6 +1478,14 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcco
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_initializeforoie(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nSignalChannelsBufferSize, const LibMCDriver_ScanLab_uint32 * pSignalChannelsBuffer, LibMCDriver_ScanLab::eOIEOperationMode eOperationMode);
 
 /**
+* Disables the on the fly marking after OIE initialization. This is a workaround that will become depreciated in newer versions..
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_disableontheflyforoie(LibMCDriver_ScanLab_RTCContext pRTCContext);
+
+/**
 * Sets the laser pin outputs to a certain state. Control command, has immediate effect.
 *
 * @param[in] pRTCContext - RTCContext instance.

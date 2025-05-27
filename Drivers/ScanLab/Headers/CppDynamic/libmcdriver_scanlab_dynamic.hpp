@@ -970,6 +970,7 @@ public:
 	inline void SetCommunicationTimeouts(const LibMCDriver_ScanLab_double dInitialTimeout, const LibMCDriver_ScanLab_double dMaxTimeout, const LibMCDriver_ScanLab_double dMultiplier);
 	inline void GetCommunicationTimeouts(LibMCDriver_ScanLab_double & dInitialTimeout, LibMCDriver_ScanLab_double & dMaxTimeout, LibMCDriver_ScanLab_double & dMultiplier);
 	inline void InitializeForOIE(const CInputVector<LibMCDriver_ScanLab_uint32> & SignalChannelsBuffer, const eOIEOperationMode eOperationMode);
+	inline void DisableOnTheFlyForOIE();
 	inline void SetLaserPinOut(const bool bLaserOut1, const bool bLaserOut2);
 	inline void GetLaserPinIn(bool & bLaserOut1, bool & bLaserOut2);
 	inline void AddLaserPinOutToList(const bool bLaserOut1, const bool bLaserOut2);
@@ -1424,6 +1425,7 @@ public:
 		pWrapperTable->m_RTCContext_SetCommunicationTimeouts = nullptr;
 		pWrapperTable->m_RTCContext_GetCommunicationTimeouts = nullptr;
 		pWrapperTable->m_RTCContext_InitializeForOIE = nullptr;
+		pWrapperTable->m_RTCContext_DisableOnTheFlyForOIE = nullptr;
 		pWrapperTable->m_RTCContext_SetLaserPinOut = nullptr;
 		pWrapperTable->m_RTCContext_GetLaserPinIn = nullptr;
 		pWrapperTable->m_RTCContext_AddLaserPinOutToList = nullptr;
@@ -2825,6 +2827,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_InitializeForOIE == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_DisableOnTheFlyForOIE = (PLibMCDriver_ScanLabRTCContext_DisableOnTheFlyForOIEPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_disableontheflyforoie");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_DisableOnTheFlyForOIE = (PLibMCDriver_ScanLabRTCContext_DisableOnTheFlyForOIEPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_disableontheflyforoie");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_DisableOnTheFlyForOIE == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4623,6 +4634,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_initializeforoie", (void**)&(pWrapperTable->m_RTCContext_InitializeForOIE));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_InitializeForOIE == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_disableontheflyforoie", (void**)&(pWrapperTable->m_RTCContext_DisableOnTheFlyForOIE));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_DisableOnTheFlyForOIE == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_setlaserpinout", (void**)&(pWrapperTable->m_RTCContext_SetLaserPinOut));
@@ -6686,6 +6701,14 @@ public:
 	void CRTCContext::InitializeForOIE(const CInputVector<LibMCDriver_ScanLab_uint32> & SignalChannelsBuffer, const eOIEOperationMode eOperationMode)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_InitializeForOIE(m_pHandle, (LibMCDriver_ScanLab_uint64)SignalChannelsBuffer.size(), SignalChannelsBuffer.data(), eOperationMode));
+	}
+	
+	/**
+	* CRTCContext::DisableOnTheFlyForOIE - Disables the on the fly marking after OIE initialization. This is a workaround that will become depreciated in newer versions..
+	*/
+	void CRTCContext::DisableOnTheFlyForOIE()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DisableOnTheFlyForOIE(m_pHandle));
 	}
 	
 	/**

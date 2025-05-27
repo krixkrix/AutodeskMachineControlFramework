@@ -3791,6 +3791,30 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_initializeforoie(LibMCD
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_disableontheflyforoie(LibMCDriver_ScanLab_RTCContext pRTCContext)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->DisableOnTheFlyForOIE();
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_setlaserpinout(LibMCDriver_ScanLab_RTCContext pRTCContext, bool bLaserOut1, bool bLaserOut2)
 {
 	IBase* pIBaseClass = (IBase *)pRTCContext;
@@ -7604,6 +7628,8 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getcommunicationtimeouts;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_initializeforoie") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_initializeforoie;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_disableontheflyforoie") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_disableontheflyforoie;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_setlaserpinout") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_setlaserpinout;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_getlaserpinin") 

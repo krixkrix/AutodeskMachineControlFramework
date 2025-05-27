@@ -1465,6 +1465,14 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetCommunicat
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_InitializeForOIEPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nSignalChannelsBufferSize, const LibMCDriver_ScanLab_uint32 * pSignalChannelsBuffer, LibMCDriver_ScanLab::eOIEOperationMode eOperationMode);
 
 /**
+* Disables the on the fly marking after OIE initialization. This is a workaround that will become depreciated in newer versions..
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DisableOnTheFlyForOIEPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext);
+
+/**
 * Sets the laser pin outputs to a certain state. Control command, has immediate effect.
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -3016,6 +3024,7 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_SetCommunicationTimeoutsPtr m_RTCContext_SetCommunicationTimeouts;
 	PLibMCDriver_ScanLabRTCContext_GetCommunicationTimeoutsPtr m_RTCContext_GetCommunicationTimeouts;
 	PLibMCDriver_ScanLabRTCContext_InitializeForOIEPtr m_RTCContext_InitializeForOIE;
+	PLibMCDriver_ScanLabRTCContext_DisableOnTheFlyForOIEPtr m_RTCContext_DisableOnTheFlyForOIE;
 	PLibMCDriver_ScanLabRTCContext_SetLaserPinOutPtr m_RTCContext_SetLaserPinOut;
 	PLibMCDriver_ScanLabRTCContext_GetLaserPinInPtr m_RTCContext_GetLaserPinIn;
 	PLibMCDriver_ScanLabRTCContext_AddLaserPinOutToListPtr m_RTCContext_AddLaserPinOutToList;

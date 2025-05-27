@@ -1445,6 +1445,11 @@ public:
 	virtual void InitializeForOIE(const LibMCDriver_ScanLab_uint64 nSignalChannelsBufferSize, const LibMCDriver_ScanLab_uint32 * pSignalChannelsBuffer, const LibMCDriver_ScanLab::eOIEOperationMode eOperationMode) = 0;
 
 	/**
+	* IRTCContext::DisableOnTheFlyForOIE - Disables the on the fly marking after OIE initialization. This is a workaround that will become depreciated in newer versions..
+	*/
+	virtual void DisableOnTheFlyForOIE() = 0;
+
+	/**
 	* IRTCContext::SetLaserPinOut - Sets the laser pin outputs to a certain state. Control command, has immediate effect.
 	* @param[in] bLaserOut1 - Value for Laser Out Pin 1
 	* @param[in] bLaserOut2 - Value for Laser Out Pin 2

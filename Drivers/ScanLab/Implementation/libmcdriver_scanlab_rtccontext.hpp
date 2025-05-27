@@ -265,6 +265,8 @@ public:
 
 	void InitializeForOIE(const LibMCDriver_ScanLab_uint64 nSignalChannelsBufferSize, const LibMCDriver_ScanLab_uint32* pSignalChannelsBuffer, const LibMCDriver_ScanLab::eOIEOperationMode eOperationMode) override;
 
+	void DisableOnTheFlyForOIE();
+
 	void SetLaserPinOut(const bool bLaserOut1, const bool bLaserOut2) override;
 
 	void GetLaserPinIn(bool & bLaserOut1, bool & bLaserOut2) override;

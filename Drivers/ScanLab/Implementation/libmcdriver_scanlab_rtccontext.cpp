@@ -1364,6 +1364,17 @@ void CRTCContext::InitializeForOIE(const LibMCDriver_ScanLab_uint64 nSignalChann
 	m_pScanLabSDK->n_set_multi_mcbsp_in(m_CardNo, 0, 0, 0);
 
 
+	// Check Error
+	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
+
+}
+
+
+void CRTCContext::DisableOnTheFlyForOIE()
+{
+	// Check Error
+	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
+
 	// Workaround: Ensure that MCBSP Mark On The Fly is disabled!
 	SetStartList(1, 0);
 	m_pScanLabSDK->n_set_fly_2d(m_CardNo, 1.0, 1.0);
@@ -1386,6 +1397,7 @@ void CRTCContext::InitializeForOIE(const LibMCDriver_ScanLab_uint64 nSignalChann
 
 	if (Busy)
 		throw std::runtime_error("could not properly intialise MCBSP connection to OIE");
+
 
 	// Check Error
 	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);

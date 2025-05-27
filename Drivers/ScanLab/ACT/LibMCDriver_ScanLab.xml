@@ -1072,6 +1072,9 @@ Custom implementation
 			<param name="OperationMode" type="enum" class="OIEOperationMode" pass="in" description="OIE Operation Mode" />			
 		</method>
 
+		<method name="DisableOnTheFlyForOIE" description="Disables the on the fly marking after OIE initialization. This is a workaround that will become depreciated in newer versions..">
+		</method>
+
 		<method name="SetLaserPinOut" description="Sets the laser pin outputs to a certain state. Control command, has immediate effect.">
 			<param name="LaserOut1" type="bool" pass="in" description="Value for Laser Out Pin 1" />
 			<param name="LaserOut2" type="bool" pass="in" description="Value for Laser Out Pin 2" />
