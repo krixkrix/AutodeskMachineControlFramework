@@ -305,6 +305,13 @@
 		<member name="Y" type="single" />
 	</struct>
 
+	<struct name="OIEMeasurementTagData">
+		<member name="PartID" type="uint32" description="ID of the part." />
+		<member name="ProfileID" type="uint32" description="ID of the profile." />
+		<member name="SegmentID" type="uint32" description="ID of the segment." />
+		<member name="VectorID" type="uint32" description="ID of the vector." />
+	</struct>
+
 	<struct name="Hatch2D">
 		<member name="X1" type="single" />
 		<member name="Y1" type="single" />
@@ -720,6 +727,52 @@ Custom implementation
 
 		<method name="AddCustomSelection" description="Adds a custom selection cycle to the currenly open list.">
 			<param name="AFXModeIndex" type="uint32" pass="in" description="AFX Mode index to set. MUST be between 0 and 7." />
+		</method>
+
+	</class>
+
+	<class name="OIEMeasurementTagMap" parent="Base" description="Contains the content of an OIE Tag mapping.">
+
+		<method name="GetOIEMaxMeasurementTag" description="Returns the current maximum measurement tag that has been sent to the OIE.">
+			<param name="MeasurementTag" type="uint32" pass="return" description="Measurement Tag that has been sent to the OIE." />
+		</method>		
+
+		<method name="MapOIEMeasurementTag" description="Maps an OIE Measurement tag back to the original scan parameters.">
+			<param name="MeasurementTag" type="uint32" pass="in" description="Measurement Tag that has been sent to the OIE." />
+			<param name="PartID" type="uint32" pass="out" description="ID of the part." />
+			<param name="ProfileID" type="uint32" pass="out" description="ID of the profile." />
+			<param name="SegmentID" type="uint32" pass="out" description="ID of the segment." />
+			<param name="VectorID" type="uint32" pass="out" description="ID of the vector." />
+		</method>
+
+		<method name="MapOIEMeasurementTagData" description="Maps an OIE Measurement tag back to the original scan parameters.">
+			<param name="MeasurementTag" type="uint32" pass="in" description="Measurement Tag that has been sent to the OIE." />
+			<param name="Data" type="struct" class="OIEMeasurementTagData" pass="return" description="Measurement as tag data struct." />
+		</method>
+
+		<method name="MapOIEMeasurementTags" description="Maps an array of OIE Measurement tags back to the original scan parameters.">
+			<param name="MeasurementTag" type="basicarray" class="uint32" pass="in" description="Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!" />
+			<param name="Data" type="structarray" class="OIEMeasurementTagData" pass="out" description="Will be filled with all the tags associated with the input array. The length of the array will match the input array." />
+		</method>
+
+		<method name="MapOIEMeasurementPartIDs" description="Maps an array of OIE Measurement tags back to the original part IDs.">
+			<param name="MeasurementTag" type="basicarray" class="uint32" pass="in" description="Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!" />
+			<param name="Data" type="basicarray" class="uint32" pass="out" description="Will be filled with all the part IDs associated with the input array. The length of the array will match the input array." />
+		</method>
+
+		<method name="MapOIEMeasurementProfileIDs" description="Maps an array of OIE Measurement tags back to the original profile IDs.">
+			<param name="MeasurementTag" type="basicarray" class="uint32" pass="in" description="Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!" />
+			<param name="Data" type="basicarray" class="uint32" pass="out" description="Will be filled with all the profile IDs associated with the input array. The length of the array will match the input array." />
+		</method>
+
+		<method name="MapOIEMeasurementSegmentIDs" description="Maps an array of OIE Measurement tags back to the original segment IDs.">
+			<param name="MeasurementTag" type="basicarray" class="uint32" pass="in" description="Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!" />
+			<param name="Data" type="basicarray" class="uint32" pass="out" description="Will be filled with all the segment IDs associated with the input array. The length of the array will match the input array." />
+		</method>
+
+		<method name="MapOIEMeasurementVectorIDs" description="Maps an array of OIE Measurement tags back to the original vector IDs.">
+			<param name="MeasurementTag" type="basicarray" class="uint32" pass="in" description="Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!" />
+			<param name="Data" type="basicarray" class="uint32" pass="out" description="Will be filled with all the vector  IDs associated with the input array. The length of the array will match the input array." />
 		</method>
 
 	</class>
@@ -1151,17 +1204,21 @@ Custom implementation
 		<method name="ClearOIEMeasurementTags" description="Clears all stored OIE Measurement tags of the context. New Tag Indices will start from 0 again.">
 		</method>
 
+		<method name="RetrieveOIEMeasurementTags" description="Extracts all stored OIE Measurement tags of the context and returns them as separate object. New Tag Indices will start from 0 again.">
+			<param name="MeasurementTags" type="class" class="OIEMeasurementTagMap" pass="return" description="Instance of the OIE Measurement Tag data." />
+		</method>
+
 		<method name="EnableOIEMeasurementTagging" description="Enables OIE Measurement tagging.">
 		</method>
 
 		<method name="DisableOIEMeasurementTagging" description="Disables OIE Measurement tagging.">
 		</method>
 		
-		<method name="GetOIEMaxMeasurementTag" description="Returns the current maximum measurement tag that has been sent to the OIE.">
+		<method name="GetOIEMaxMeasurementTag" description="Returns the current maximum measurement tag that has been sent to the OIE. Will return 0 after RetrieveOIEMeasurementTags has been called.">
 			<param name="MeasurementTag" type="uint32" pass="return" description="Measurement Tag that has been sent to the OIE." />
 		</method>		
 
-		<method name="MapOIEMeasurementTag" description="Maps an OIE Measurement tag back to the original scan parameters.">
+		<method name="MapOIEMeasurementTag" description="DEPRECIATED! Maps an OIE Measurement tag back to the original scan parameters. Use RetrieveOIEMeasurementTags instead.">
 			<param name="MeasurementTag" type="uint32" pass="in" description="Measurement Tag that has been sent to the OIE." />
 			<param name="PartID" type="uint32" pass="out" description="ID of the part." />
 			<param name="ProfileID" type="uint32" pass="out" description="ID of the profile." />

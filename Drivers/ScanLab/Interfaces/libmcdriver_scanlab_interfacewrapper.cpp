@@ -2054,6 +2054,234 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_nlightafxprofileselector_addcustom
 
 
 /*************************************************************************************************************************
+ Class implementation for OIEMeasurementTagMap
+**************************************************************************************************************************/
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_getoiemaxmeasurementtag(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 * pMeasurementTag)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if (pMeasurementTag == nullptr)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		*pMeasurementTag = pIOIEMeasurementTagMap->GetOIEMaxMeasurementTag();
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtag(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32 * pPartID, LibMCDriver_ScanLab_uint32 * pProfileID, LibMCDriver_ScanLab_uint32 * pSegmentID, LibMCDriver_ScanLab_uint32 * pVectorID)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if (!pPartID)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pProfileID)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pSegmentID)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pVectorID)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIOIEMeasurementTagMap->MapOIEMeasurementTag(nMeasurementTag, *pPartID, *pProfileID, *pSegmentID, *pVectorID);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtagdata(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 nMeasurementTag, sLibMCDriver_ScanLabOIEMeasurementTagData * pData)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if (pData == nullptr)
+		throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		*pData = pIOIEMeasurementTagMap->MapOIEMeasurementTagData(nMeasurementTag);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtags(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, sLibMCDriver_ScanLabOIEMeasurementTagData * pDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if ( (!pMeasurementTagBuffer) && (nMeasurementTagBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if ((!pDataBuffer) && !(pDataNeededCount))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIOIEMeasurementTagMap->MapOIEMeasurementTags(nMeasurementTagBufferSize, pMeasurementTagBuffer, nDataBufferSize, pDataNeededCount, pDataBuffer);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementpartids(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if ( (!pMeasurementTagBuffer) && (nMeasurementTagBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if ((!pDataBuffer) && !(pDataNeededCount))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIOIEMeasurementTagMap->MapOIEMeasurementPartIDs(nMeasurementTagBufferSize, pMeasurementTagBuffer, nDataBufferSize, pDataNeededCount, pDataBuffer);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementprofileids(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if ( (!pMeasurementTagBuffer) && (nMeasurementTagBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if ((!pDataBuffer) && !(pDataNeededCount))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIOIEMeasurementTagMap->MapOIEMeasurementProfileIDs(nMeasurementTagBufferSize, pMeasurementTagBuffer, nDataBufferSize, pDataNeededCount, pDataBuffer);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementsegmentids(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if ( (!pMeasurementTagBuffer) && (nMeasurementTagBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if ((!pDataBuffer) && !(pDataNeededCount))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIOIEMeasurementTagMap->MapOIEMeasurementSegmentIDs(nMeasurementTagBufferSize, pMeasurementTagBuffer, nDataBufferSize, pDataNeededCount, pDataBuffer);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementvectorids(LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pOIEMeasurementTagMap;
+
+	try {
+		if ( (!pMeasurementTagBuffer) && (nMeasurementTagBufferSize>0))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if ((!pDataBuffer) && !(pDataNeededCount))
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IOIEMeasurementTagMap* pIOIEMeasurementTagMap = dynamic_cast<IOIEMeasurementTagMap*>(pIBaseClass);
+		if (!pIOIEMeasurementTagMap)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIOIEMeasurementTagMap->MapOIEMeasurementVectorIDs(nMeasurementTagBufferSize, pMeasurementTagBuffer, nDataBufferSize, pDataNeededCount, pDataBuffer);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+
+/*************************************************************************************************************************
  Class implementation for RTCContext
 **************************************************************************************************************************/
 LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_loadfirmware(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nFirmwareDataBufferSize, const LibMCDriver_ScanLab_uint8 * pFirmwareDataBuffer, LibMCDriver_ScanLab_uint64 nFPGADataBufferSize, const LibMCDriver_ScanLab_uint8 * pFPGADataBuffer, LibMCDriver_ScanLab_uint64 nAuxiliaryDataBufferSize, const LibMCDriver_ScanLab_uint8 * pAuxiliaryDataBuffer)
@@ -4286,6 +4514,34 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_clearoiemeasurementtags
 		
 		pIRTCContext->ClearOIEMeasurementTags();
 
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_retrieveoiemeasurementtags(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_OIEMeasurementTagMap * pMeasurementTags)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if (pMeasurementTags == nullptr)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IBase* pBaseMeasurementTags(nullptr);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pBaseMeasurementTags = pIRTCContext->RetrieveOIEMeasurementTags();
+
+		*pMeasurementTags = (IBase*)(pBaseMeasurementTags);
 		return LIBMCDRIVER_SCANLAB_SUCCESS;
 	}
 	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
@@ -7496,6 +7752,22 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_nlightafxprofileselector_disableautomaticselection;
 	if (sProcName == "libmcdriver_scanlab_nlightafxprofileselector_addcustomselection") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_nlightafxprofileselector_addcustomselection;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_getoiemaxmeasurementtag") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_getoiemaxmeasurementtag;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtag") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtag;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtagdata") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtagdata;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtags") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtags;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementpartids") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementpartids;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementprofileids") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementprofileids;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementsegmentids") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementsegmentids;
+	if (sProcName == "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementvectorids") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementvectorids;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_loadfirmware") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_loadfirmware;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_loadcorrectionfile") 
@@ -7668,6 +7940,8 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_disableoiepidcontrol;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_clearoiemeasurementtags") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_clearoiemeasurementtags;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_retrieveoiemeasurementtags") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_retrieveoiemeasurementtags;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_enableoiemeasurementtagging") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_enableoiemeasurementtagging;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_disableoiemeasurementtagging") 

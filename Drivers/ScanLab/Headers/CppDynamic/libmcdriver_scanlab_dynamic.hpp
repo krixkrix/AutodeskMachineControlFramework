@@ -67,6 +67,7 @@ class CRTCJob;
 class CRTCRecording;
 class CGPIOSequence;
 class CNLightAFXProfileSelector;
+class COIEMeasurementTagMap;
 class CRTCContext;
 class CRTCSelector;
 class CDriver_ScanLab;
@@ -84,6 +85,7 @@ typedef CRTCJob CLibMCDriver_ScanLabRTCJob;
 typedef CRTCRecording CLibMCDriver_ScanLabRTCRecording;
 typedef CGPIOSequence CLibMCDriver_ScanLabGPIOSequence;
 typedef CNLightAFXProfileSelector CLibMCDriver_ScanLabNLightAFXProfileSelector;
+typedef COIEMeasurementTagMap CLibMCDriver_ScanLabOIEMeasurementTagMap;
 typedef CRTCContext CLibMCDriver_ScanLabRTCContext;
 typedef CRTCSelector CLibMCDriver_ScanLabRTCSelector;
 typedef CDriver_ScanLab CLibMCDriver_ScanLabDriver_ScanLab;
@@ -101,6 +103,7 @@ typedef std::shared_ptr<CRTCJob> PRTCJob;
 typedef std::shared_ptr<CRTCRecording> PRTCRecording;
 typedef std::shared_ptr<CGPIOSequence> PGPIOSequence;
 typedef std::shared_ptr<CNLightAFXProfileSelector> PNLightAFXProfileSelector;
+typedef std::shared_ptr<COIEMeasurementTagMap> POIEMeasurementTagMap;
 typedef std::shared_ptr<CRTCContext> PRTCContext;
 typedef std::shared_ptr<CRTCSelector> PRTCSelector;
 typedef std::shared_ptr<CDriver_ScanLab> PDriver_ScanLab;
@@ -118,6 +121,7 @@ typedef PRTCJob PLibMCDriver_ScanLabRTCJob;
 typedef PRTCRecording PLibMCDriver_ScanLabRTCRecording;
 typedef PGPIOSequence PLibMCDriver_ScanLabGPIOSequence;
 typedef PNLightAFXProfileSelector PLibMCDriver_ScanLabNLightAFXProfileSelector;
+typedef POIEMeasurementTagMap PLibMCDriver_ScanLabOIEMeasurementTagMap;
 typedef PRTCContext PLibMCDriver_ScanLabRTCContext;
 typedef PRTCSelector PLibMCDriver_ScanLabRTCSelector;
 typedef PDriver_ScanLab PLibMCDriver_ScanLabDriver_ScanLab;
@@ -660,6 +664,7 @@ private:
 	friend class CRTCRecording;
 	friend class CGPIOSequence;
 	friend class CNLightAFXProfileSelector;
+	friend class COIEMeasurementTagMap;
 	friend class CRTCContext;
 	friend class CRTCSelector;
 	friend class CDriver_ScanLab;
@@ -891,6 +896,30 @@ public:
 };
 	
 /*************************************************************************************************************************
+ Class COIEMeasurementTagMap 
+**************************************************************************************************************************/
+class COIEMeasurementTagMap : public CBase {
+public:
+	
+	/**
+	* COIEMeasurementTagMap::COIEMeasurementTagMap - Constructor for OIEMeasurementTagMap class.
+	*/
+	COIEMeasurementTagMap(CWrapper* pWrapper, LibMCDriver_ScanLabHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+	inline LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag();
+	inline void MapOIEMeasurementTag(const LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32 & nPartID, LibMCDriver_ScanLab_uint32 & nProfileID, LibMCDriver_ScanLab_uint32 & nSegmentID, LibMCDriver_ScanLab_uint32 & nVectorID);
+	inline sOIEMeasurementTagData MapOIEMeasurementTagData(const LibMCDriver_ScanLab_uint32 nMeasurementTag);
+	inline void MapOIEMeasurementTags(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<sOIEMeasurementTagData> & DataBuffer);
+	inline void MapOIEMeasurementPartIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer);
+	inline void MapOIEMeasurementProfileIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer);
+	inline void MapOIEMeasurementSegmentIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer);
+	inline void MapOIEMeasurementVectorIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer);
+};
+	
+/*************************************************************************************************************************
  Class CRTCContext 
 **************************************************************************************************************************/
 class CRTCContext : public CBase {
@@ -990,6 +1019,7 @@ public:
 	inline void EnableOIEPIDControl();
 	inline void DisableOIEPIDControl();
 	inline void ClearOIEMeasurementTags();
+	inline POIEMeasurementTagMap RetrieveOIEMeasurementTags();
 	inline void EnableOIEMeasurementTagging();
 	inline void DisableOIEMeasurementTagging();
 	inline LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag();
@@ -1359,6 +1389,14 @@ public:
 		pWrapperTable->m_NLightAFXProfileSelector_EnableAutomaticSelection = nullptr;
 		pWrapperTable->m_NLightAFXProfileSelector_DisableAutomaticSelection = nullptr;
 		pWrapperTable->m_NLightAFXProfileSelector_AddCustomSelection = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTag = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTagData = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTags = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs = nullptr;
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs = nullptr;
 		pWrapperTable->m_RTCContext_LoadFirmware = nullptr;
 		pWrapperTable->m_RTCContext_LoadCorrectionFile = nullptr;
 		pWrapperTable->m_RTCContext_SelectCorrectionTable = nullptr;
@@ -1445,6 +1483,7 @@ public:
 		pWrapperTable->m_RTCContext_EnableOIEPIDControl = nullptr;
 		pWrapperTable->m_RTCContext_DisableOIEPIDControl = nullptr;
 		pWrapperTable->m_RTCContext_ClearOIEMeasurementTags = nullptr;
+		pWrapperTable->m_RTCContext_RetrieveOIEMeasurementTags = nullptr;
 		pWrapperTable->m_RTCContext_EnableOIEMeasurementTagging = nullptr;
 		pWrapperTable->m_RTCContext_DisableOIEMeasurementTagging = nullptr;
 		pWrapperTable->m_RTCContext_GetOIEMaxMeasurementTag = nullptr;
@@ -2236,6 +2275,78 @@ public:
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag = (PLibMCDriver_ScanLabOIEMeasurementTagMap_GetOIEMaxMeasurementTagPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_getoiemaxmeasurementtag");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag = (PLibMCDriver_ScanLabOIEMeasurementTagMap_GetOIEMaxMeasurementTagPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_getoiemaxmeasurementtag");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTag = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtag");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTag = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtag");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTag == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTagData = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagDataPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtagdata");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTagData = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagDataPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtagdata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTagData == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTags = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtags");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTags = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagsPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtags");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTags == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementPartIDsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementpartids");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementPartIDsPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementpartids");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementProfileIDsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementprofileids");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementProfileIDsPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementprofileids");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementSegmentIDsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementsegmentids");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementSegmentIDsPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementsegmentids");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementVectorIDsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementvectorids");
+		#else // _WIN32
+		pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs = (PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementVectorIDsPtr) dlsym(hLibrary, "libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementvectorids");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_RTCContext_LoadFirmware = (PLibMCDriver_ScanLabRTCContext_LoadFirmwarePtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_loadfirmware");
 		#else // _WIN32
 		pWrapperTable->m_RTCContext_LoadFirmware = (PLibMCDriver_ScanLabRTCContext_LoadFirmwarePtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_loadfirmware");
@@ -3007,6 +3118,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_ClearOIEMeasurementTags == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_RetrieveOIEMeasurementTags = (PLibMCDriver_ScanLabRTCContext_RetrieveOIEMeasurementTagsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_retrieveoiemeasurementtags");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_RetrieveOIEMeasurementTags = (PLibMCDriver_ScanLabRTCContext_RetrieveOIEMeasurementTagsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_retrieveoiemeasurementtags");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_RetrieveOIEMeasurementTags == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4372,6 +4492,38 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_NLightAFXProfileSelector_AddCustomSelection == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_getoiemaxmeasurementtag", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtag", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTag));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTag == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtagdata", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTagData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTagData == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementtags", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTags));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementTags == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementpartids", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementprofileids", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementsegmentids", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_oiemeasurementtagmap_mapoiemeasurementvectorids", (void**)&(pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_loadfirmware", (void**)&(pWrapperTable->m_RTCContext_LoadFirmware));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_LoadFirmware == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -4714,6 +4866,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_clearoiemeasurementtags", (void**)&(pWrapperTable->m_RTCContext_ClearOIEMeasurementTags));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_ClearOIEMeasurementTags == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_retrieveoiemeasurementtags", (void**)&(pWrapperTable->m_RTCContext_RetrieveOIEMeasurementTags));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_RetrieveOIEMeasurementTags == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_enableoiemeasurementtagging", (void**)&(pWrapperTable->m_RTCContext_EnableOIEMeasurementTagging));
@@ -5982,6 +6138,118 @@ public:
 	}
 	
 	/**
+	 * Method definitions for class COIEMeasurementTagMap
+	 */
+	
+	/**
+	* COIEMeasurementTagMap::GetOIEMaxMeasurementTag - Returns the current maximum measurement tag that has been sent to the OIE.
+	* @return Measurement Tag that has been sent to the OIE.
+	*/
+	LibMCDriver_ScanLab_uint32 COIEMeasurementTagMap::GetOIEMaxMeasurementTag()
+	{
+		LibMCDriver_ScanLab_uint32 resultMeasurementTag = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag(m_pHandle, &resultMeasurementTag));
+		
+		return resultMeasurementTag;
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters. Depreciated! Use RetrieveOIEMeasurementTags instead.
+	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
+	* @param[out] nPartID - ID of the part.
+	* @param[out] nProfileID - ID of the profile.
+	* @param[out] nSegmentID - ID of the segment.
+	* @param[out] nVectorID - ID of the vector.
+	*/
+	void COIEMeasurementTagMap::MapOIEMeasurementTag(const LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32 & nPartID, LibMCDriver_ScanLab_uint32 & nProfileID, LibMCDriver_ScanLab_uint32 & nSegmentID, LibMCDriver_ScanLab_uint32 & nVectorID)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementTag(m_pHandle, nMeasurementTag, &nPartID, &nProfileID, &nSegmentID, &nVectorID));
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementTagData - Maps an OIE Measurement tag back to the original scan parameters.
+	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
+	* @return Measurement as tag data struct.
+	*/
+	sOIEMeasurementTagData COIEMeasurementTagMap::MapOIEMeasurementTagData(const LibMCDriver_ScanLab_uint32 nMeasurementTag)
+	{
+		sOIEMeasurementTagData resultData;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementTagData(m_pHandle, nMeasurementTag, &resultData));
+		
+		return resultData;
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementTags - Maps an array of OIE Measurement tags back to the original scan parameters.
+	* @param[in] MeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[out] DataBuffer - Will be filled with all the tags associated with the input array. The length of the array will match the input array.
+	*/
+	void COIEMeasurementTagMap::MapOIEMeasurementTags(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<sOIEMeasurementTagData> & DataBuffer)
+	{
+		LibMCDriver_ScanLab_uint64 elementsNeededData = 0;
+		LibMCDriver_ScanLab_uint64 elementsWrittenData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementTags(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), 0, &elementsNeededData, nullptr));
+		DataBuffer.resize((size_t) elementsNeededData);
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementTags(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), elementsNeededData, &elementsWrittenData, DataBuffer.data()));
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementPartIDs - Maps an array of OIE Measurement tags back to the original part IDs.
+	* @param[in] MeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[out] DataBuffer - Will be filled with all the part IDs associated with the input array. The length of the array will match the input array.
+	*/
+	void COIEMeasurementTagMap::MapOIEMeasurementPartIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer)
+	{
+		LibMCDriver_ScanLab_uint64 elementsNeededData = 0;
+		LibMCDriver_ScanLab_uint64 elementsWrittenData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), 0, &elementsNeededData, nullptr));
+		DataBuffer.resize((size_t) elementsNeededData);
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), elementsNeededData, &elementsWrittenData, DataBuffer.data()));
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementProfileIDs - Maps an array of OIE Measurement tags back to the original profile IDs.
+	* @param[in] MeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[out] DataBuffer - Will be filled with all the profile IDs associated with the input array. The length of the array will match the input array.
+	*/
+	void COIEMeasurementTagMap::MapOIEMeasurementProfileIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer)
+	{
+		LibMCDriver_ScanLab_uint64 elementsNeededData = 0;
+		LibMCDriver_ScanLab_uint64 elementsWrittenData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), 0, &elementsNeededData, nullptr));
+		DataBuffer.resize((size_t) elementsNeededData);
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), elementsNeededData, &elementsWrittenData, DataBuffer.data()));
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementSegmentIDs - Maps an array of OIE Measurement tags back to the original segment IDs.
+	* @param[in] MeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[out] DataBuffer - Will be filled with all the segment IDs associated with the input array. The length of the array will match the input array.
+	*/
+	void COIEMeasurementTagMap::MapOIEMeasurementSegmentIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer)
+	{
+		LibMCDriver_ScanLab_uint64 elementsNeededData = 0;
+		LibMCDriver_ScanLab_uint64 elementsWrittenData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), 0, &elementsNeededData, nullptr));
+		DataBuffer.resize((size_t) elementsNeededData);
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), elementsNeededData, &elementsWrittenData, DataBuffer.data()));
+	}
+	
+	/**
+	* COIEMeasurementTagMap::MapOIEMeasurementVectorIDs - Maps an array of OIE Measurement tags back to the original vector IDs.
+	* @param[in] MeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[out] DataBuffer - Will be filled with all the vector  IDs associated with the input array. The length of the array will match the input array.
+	*/
+	void COIEMeasurementTagMap::MapOIEMeasurementVectorIDs(const CInputVector<LibMCDriver_ScanLab_uint32> & MeasurementTagBuffer, std::vector<LibMCDriver_ScanLab_uint32> & DataBuffer)
+	{
+		LibMCDriver_ScanLab_uint64 elementsNeededData = 0;
+		LibMCDriver_ScanLab_uint64 elementsWrittenData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), 0, &elementsNeededData, nullptr));
+		DataBuffer.resize((size_t) elementsNeededData);
+		CheckError(m_pWrapper->m_WrapperTable.m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs(m_pHandle, (LibMCDriver_ScanLab_uint64)MeasurementTagBuffer.size(), MeasurementTagBuffer.data(), elementsNeededData, &elementsWrittenData, DataBuffer.data()));
+	}
+	
+	/**
 	 * Method definitions for class CRTCContext
 	 */
 	
@@ -6902,6 +7170,21 @@ public:
 	}
 	
 	/**
+	* CRTCContext::RetrieveOIEMeasurementTags - Extracts all stored OIE Measurement tags of the context and returns them as separate object. New Tag Indices will start from 0 again.
+	* @return Instance of the OIE Measurement Tag data.
+	*/
+	POIEMeasurementTagMap CRTCContext::RetrieveOIEMeasurementTags()
+	{
+		LibMCDriver_ScanLabHandle hMeasurementTags = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_RetrieveOIEMeasurementTags(m_pHandle, &hMeasurementTags));
+		
+		if (!hMeasurementTags) {
+			CheckError(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<COIEMeasurementTagMap>(m_pWrapper, hMeasurementTags);
+	}
+	
+	/**
 	* CRTCContext::EnableOIEMeasurementTagging - Enables OIE Measurement tagging.
 	*/
 	void CRTCContext::EnableOIEMeasurementTagging()
@@ -6918,7 +7201,7 @@ public:
 	}
 	
 	/**
-	* CRTCContext::GetOIEMaxMeasurementTag - Returns the current maximum measurement tag that has been sent to the OIE.
+	* CRTCContext::GetOIEMaxMeasurementTag - Returns the current maximum measurement tag that has been sent to the OIE. Will return 0 after RetrieveOIEMeasurementTags has been called.
 	* @return Measurement Tag that has been sent to the OIE.
 	*/
 	LibMCDriver_ScanLab_uint32 CRTCContext::GetOIEMaxMeasurementTag()
@@ -6930,7 +7213,7 @@ public:
 	}
 	
 	/**
-	* CRTCContext::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters.
+	* CRTCContext::MapOIEMeasurementTag - DEPRECIATED! Maps an OIE Measurement tag back to the original scan parameters. Use RetrieveOIEMeasurementTags instead.
 	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
 	* @param[out] nPartID - ID of the part.
 	* @param[out] nProfileID - ID of the profile.

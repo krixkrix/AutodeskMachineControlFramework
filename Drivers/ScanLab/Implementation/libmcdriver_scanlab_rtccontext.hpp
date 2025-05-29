@@ -17,6 +17,7 @@ Abstract: This is the class declaration of CRTCContext
 #include "libmcdriver_scanlab_rtcrecordinginstance.hpp"
 #include "libmcdriver_scanlab_nlightafxprofileselector.hpp"
 #include "libmcdriver_scanlab_gpiosequence.hpp"
+#include "libmcdriver_scanlab_measurementtagmapinstance.hpp"
 
 // Parent classes
 #include "libmcdriver_scanlab_base.hpp"
@@ -31,13 +32,6 @@ Abstract: This is the class declaration of CRTCContext
 namespace LibMCDriver_ScanLab {
 namespace Impl {
 
-
-typedef struct _sMeasurementTagInfo {
-	uint32_t m_nCurrentPartID;
-	uint32_t m_nCurrentProfileID;
-	uint32_t m_nCurrentSegmentID;
-	uint32_t m_nCurrentVectorID;
-} sMeasurementTagInfo;
 
 /*************************************************************************************************************************
  Class declaration of CRTCContext 
@@ -97,8 +91,8 @@ protected:
 	int32_t m_nCurrentScanPositionX;
 	int32_t m_nCurrentScanPositionY;
 
-	sMeasurementTagInfo m_CurrentMeasurementTagInfo;
-	std::vector<sMeasurementTagInfo> m_MeasurementTags;
+	PRTCMeasurementTagMapInstance m_pMeasurementTagMap;
+	sOIEMeasurementTagData m_CurrentMeasurementTagInfo;
 
 	bool m_bEnableOIEPIDControl;
 	uint32_t m_nCurrentFreeVariable0;
@@ -300,6 +294,8 @@ public:
 	void SetOIEPIDMode(const LibMCDriver_ScanLab_uint32 nOIEPIDIndex) override;
 
 	void ClearOIEMeasurementTags() override;
+
+	IOIEMeasurementTagMap* CRTCContext::RetrieveOIEMeasurementTags() override;
 
 	LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag() override;
 

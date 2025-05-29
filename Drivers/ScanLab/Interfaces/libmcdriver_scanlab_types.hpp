@@ -441,6 +441,7 @@ typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_RTCJob;
 typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_RTCRecording;
 typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_GPIOSequence;
 typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_NLightAFXProfileSelector;
+typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_OIEMeasurementTagMap;
 typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_RTCContext;
 typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_RTCSelector;
 typedef LibMCDriver_ScanLabHandle LibMCDriver_ScanLab_Driver_ScanLab;
@@ -557,6 +558,13 @@ namespace LibMCDriver_ScanLab {
       LibMCDriver_ScanLab_single m_Y;
   } sPoint2D;
   
+  typedef struct sOIEMeasurementTagData {
+      LibMCDriver_ScanLab_uint32 m_PartID;
+      LibMCDriver_ScanLab_uint32 m_ProfileID;
+      LibMCDriver_ScanLab_uint32 m_SegmentID;
+      LibMCDriver_ScanLab_uint32 m_VectorID;
+  } sOIEMeasurementTagData;
+  
   typedef struct sHatch2D {
       LibMCDriver_ScanLab_single m_X1;
       LibMCDriver_ScanLab_single m_Y1;
@@ -608,6 +616,7 @@ typedef LibMCDriver_ScanLab::eRTCChannelType eLibMCDriver_ScanLabRTCChannelType;
 typedef LibMCDriver_ScanLab::eRTCRecordingFrequency eLibMCDriver_ScanLabRTCRecordingFrequency;
 typedef LibMCDriver_ScanLab::eOIERecordingMode eLibMCDriver_ScanLabOIERecordingMode;
 typedef LibMCDriver_ScanLab::sPoint2D sLibMCDriver_ScanLabPoint2D;
+typedef LibMCDriver_ScanLab::sOIEMeasurementTagData sLibMCDriver_ScanLabOIEMeasurementTagData;
 typedef LibMCDriver_ScanLab::sHatch2D sLibMCDriver_ScanLabHatch2D;
 typedef LibMCDriver_ScanLab::sLaserCalibrationPoint sLibMCDriver_ScanLabLaserCalibrationPoint;
 typedef LibMCDriver_ScanLab::sMicroVector sLibMCDriver_ScanLabMicroVector;

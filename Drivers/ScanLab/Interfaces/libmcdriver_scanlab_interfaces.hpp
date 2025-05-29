@@ -62,6 +62,7 @@ class IRTCJob;
 class IRTCRecording;
 class IGPIOSequence;
 class INLightAFXProfileSelector;
+class IOIEMeasurementTagMap;
 class IRTCContext;
 class IRTCSelector;
 class IDriver_ScanLab;
@@ -952,6 +953,90 @@ typedef IBaseSharedPtr<INLightAFXProfileSelector> PINLightAFXProfileSelector;
 
 
 /*************************************************************************************************************************
+ Class interface for OIEMeasurementTagMap 
+**************************************************************************************************************************/
+
+class IOIEMeasurementTagMap : public virtual IBase {
+public:
+	/**
+	* IOIEMeasurementTagMap::GetOIEMaxMeasurementTag - Returns the current maximum measurement tag that has been sent to the OIE.
+	* @return Measurement Tag that has been sent to the OIE.
+	*/
+	virtual LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag() = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters. Depreciated! Use RetrieveOIEMeasurementTags instead.
+	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
+	* @param[out] nPartID - ID of the part.
+	* @param[out] nProfileID - ID of the profile.
+	* @param[out] nSegmentID - ID of the segment.
+	* @param[out] nVectorID - ID of the vector.
+	*/
+	virtual void MapOIEMeasurementTag(const LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32 & nPartID, LibMCDriver_ScanLab_uint32 & nProfileID, LibMCDriver_ScanLab_uint32 & nSegmentID, LibMCDriver_ScanLab_uint32 & nVectorID) = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementTagData - Maps an OIE Measurement tag back to the original scan parameters.
+	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
+	* @return Measurement as tag data struct.
+	*/
+	virtual LibMCDriver_ScanLab::sOIEMeasurementTagData MapOIEMeasurementTagData(const LibMCDriver_ScanLab_uint32 nMeasurementTag) = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementTags - Maps an array of OIE Measurement tags back to the original scan parameters.
+	* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
+	* @param[in] pMeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[in] nDataBufferSize - Number of elements in buffer
+	* @param[out] pDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pDataBuffer - OIEMeasurementTagData buffer of Will be filled with all the tags associated with the input array. The length of the array will match the input array.
+	*/
+	virtual void MapOIEMeasurementTags(const LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab::sOIEMeasurementTagData * pDataBuffer) = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementPartIDs - Maps an array of OIE Measurement tags back to the original part IDs.
+	* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
+	* @param[in] pMeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[in] nDataBufferSize - Number of elements in buffer
+	* @param[out] pDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pDataBuffer - uint32 buffer of Will be filled with all the part IDs associated with the input array. The length of the array will match the input array.
+	*/
+	virtual void MapOIEMeasurementPartIDs(const LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer) = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementProfileIDs - Maps an array of OIE Measurement tags back to the original profile IDs.
+	* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
+	* @param[in] pMeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[in] nDataBufferSize - Number of elements in buffer
+	* @param[out] pDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pDataBuffer - uint32 buffer of Will be filled with all the profile IDs associated with the input array. The length of the array will match the input array.
+	*/
+	virtual void MapOIEMeasurementProfileIDs(const LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer) = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementSegmentIDs - Maps an array of OIE Measurement tags back to the original segment IDs.
+	* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
+	* @param[in] pMeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[in] nDataBufferSize - Number of elements in buffer
+	* @param[out] pDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pDataBuffer - uint32 buffer of Will be filled with all the segment IDs associated with the input array. The length of the array will match the input array.
+	*/
+	virtual void MapOIEMeasurementSegmentIDs(const LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer) = 0;
+
+	/**
+	* IOIEMeasurementTagMap::MapOIEMeasurementVectorIDs - Maps an array of OIE Measurement tags back to the original vector IDs.
+	* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
+	* @param[in] pMeasurementTagBuffer - Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
+	* @param[in] nDataBufferSize - Number of elements in buffer
+	* @param[out] pDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pDataBuffer - uint32 buffer of Will be filled with all the vector  IDs associated with the input array. The length of the array will match the input array.
+	*/
+	virtual void MapOIEMeasurementVectorIDs(const LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer) = 0;
+
+};
+
+typedef IBaseSharedPtr<IOIEMeasurementTagMap> PIOIEMeasurementTagMap;
+
+
+/*************************************************************************************************************************
  Class interface for RTCContext 
 **************************************************************************************************************************/
 
@@ -1564,6 +1649,12 @@ public:
 	virtual void ClearOIEMeasurementTags() = 0;
 
 	/**
+	* IRTCContext::RetrieveOIEMeasurementTags - Extracts all stored OIE Measurement tags of the context and returns them as separate object. New Tag Indices will start from 0 again.
+	* @return Instance of the OIE Measurement Tag data.
+	*/
+	virtual IOIEMeasurementTagMap * RetrieveOIEMeasurementTags() = 0;
+
+	/**
 	* IRTCContext::EnableOIEMeasurementTagging - Enables OIE Measurement tagging.
 	*/
 	virtual void EnableOIEMeasurementTagging() = 0;
@@ -1574,13 +1665,13 @@ public:
 	virtual void DisableOIEMeasurementTagging() = 0;
 
 	/**
-	* IRTCContext::GetOIEMaxMeasurementTag - Returns the current maximum measurement tag that has been sent to the OIE.
+	* IRTCContext::GetOIEMaxMeasurementTag - Returns the current maximum measurement tag that has been sent to the OIE. Will return 0 after RetrieveOIEMeasurementTags has been called.
 	* @return Measurement Tag that has been sent to the OIE.
 	*/
 	virtual LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag() = 0;
 
 	/**
-	* IRTCContext::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters.
+	* IRTCContext::MapOIEMeasurementTag - DEPRECIATED! Maps an OIE Measurement tag back to the original scan parameters. Use RetrieveOIEMeasurementTags instead.
 	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
 	* @param[out] nPartID - ID of the part.
 	* @param[out] nProfileID - ID of the profile.

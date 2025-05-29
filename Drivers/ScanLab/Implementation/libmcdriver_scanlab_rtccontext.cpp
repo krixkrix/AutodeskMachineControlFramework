@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcdriver_scanlab_rtcrecording.hpp"
 #include "libmcdriver_scanlab_gpiosequence.hpp"
 #include "libmcdriver_scanlab_gpiosequenceinstance.hpp"
+#include "libmcdriver_scanlab_oiemeasurementtagmap.hpp"
 
 // Include custom headers here.
 #include <math.h>
@@ -167,10 +168,11 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 
 	m_pScanLabSDK->n_reset_error(m_CardNo, 0xffffffff);
 
-	m_CurrentMeasurementTagInfo.m_nCurrentPartID = 0;
-	m_CurrentMeasurementTagInfo.m_nCurrentProfileID = 0;
-	m_CurrentMeasurementTagInfo.m_nCurrentSegmentID = 0;
-	m_CurrentMeasurementTagInfo.m_nCurrentVectorID = 0;
+	m_pMeasurementTagMap = std::make_shared<CRTCMeasurementTagMapInstance>();
+	m_CurrentMeasurementTagInfo.m_PartID = 0;
+	m_CurrentMeasurementTagInfo.m_ProfileID = 0;
+	m_CurrentMeasurementTagInfo.m_SegmentID = 0;
+	m_CurrentMeasurementTagInfo.m_VectorID = 0;
 
 }
 
@@ -416,10 +418,10 @@ void CRTCContext::SetStartList(const LibMCDriver_ScanLab_uint32 nListIndex, cons
 	m_pScanLabSDK->n_set_start_list_pos(m_CardNo, nListIndex, nPosition);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
 
-	m_CurrentMeasurementTagInfo.m_nCurrentPartID = 0;
-	m_CurrentMeasurementTagInfo.m_nCurrentProfileID = 0;
-	m_CurrentMeasurementTagInfo.m_nCurrentSegmentID = 0;
-	m_CurrentMeasurementTagInfo.m_nCurrentVectorID = 0;
+	m_CurrentMeasurementTagInfo.m_PartID = 0;
+	m_CurrentMeasurementTagInfo.m_ProfileID = 0;
+	m_CurrentMeasurementTagInfo.m_SegmentID = 0;
+	m_CurrentMeasurementTagInfo.m_VectorID = 0;
 }
 
 void CRTCContext::SetEndOfList()
@@ -1433,12 +1435,11 @@ void CRTCContext::sendFreeVariable0(uint32_t nValue)
 void CRTCContext::sendOIEMeasurementTag(uint32_t nCurrentVectorID)
 {
 	if (m_bMeasurementTagging) {
-		m_CurrentMeasurementTagInfo.m_nCurrentVectorID = nCurrentVectorID;
-		m_MeasurementTags.push_back(m_CurrentMeasurementTagInfo);
 
-		uint32_t nMeasurementTag = (uint32_t)m_MeasurementTags.size() & ((1UL << 22) - 1);
+		m_CurrentMeasurementTagInfo.m_VectorID = nCurrentVectorID;
+		uint32_t nMeasurementTag = m_pMeasurementTagMap->addTag(m_CurrentMeasurementTagInfo);
 
-		m_pScanLabSDK->n_set_free_variable_list(m_CardNo, 1, nMeasurementTag);
+		m_pScanLabSDK->n_set_free_variable_list(m_CardNo, 1, (uint32_t) (nMeasurementTag & ((1UL << 22) - 1)));
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
 
 	}
@@ -1695,12 +1696,12 @@ void CRTCContext::SetOIEPIDMode(const LibMCDriver_ScanLab_uint32 nOIEPIDIndex)
 
 void CRTCContext::ClearOIEMeasurementTags()
 {
-	m_MeasurementTags.clear();
+	m_pMeasurementTagMap = std::make_shared<CRTCMeasurementTagMapInstance>();
 }
 
 LibMCDriver_ScanLab_uint32 CRTCContext::GetOIEMaxMeasurementTag()
 {
-	return (uint32_t)m_MeasurementTags.size();
+	return m_pMeasurementTagMap->getSize ();
 }
 
 
@@ -1716,15 +1717,26 @@ void CRTCContext::DisableOIEMeasurementTagging()
 
 void CRTCContext::MapOIEMeasurementTag(const LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32& nPartID, LibMCDriver_ScanLab_uint32& nProfileID, LibMCDriver_ScanLab_uint32& nSegmentID, LibMCDriver_ScanLab_uint32& nVectorID)
 {
-	if ((nMeasurementTag >= 1) && (nMeasurementTag <= m_MeasurementTags.size())) {
-		auto & record = m_MeasurementTags.at (nMeasurementTag - 1);
-		nPartID = record.m_nCurrentPartID;
-		nSegmentID = record.m_nCurrentSegmentID;
-		nProfileID = record.m_nCurrentProfileID;
-		nVectorID = record.m_nCurrentVectorID;
+	sOIEMeasurementTagData tagData;
+	if (m_pMeasurementTagMap->findTag (nMeasurementTag, tagData)) {
+		nPartID = tagData.m_PartID;
+		nSegmentID = tagData.m_SegmentID;
+		nProfileID = tagData.m_ProfileID;
+		nVectorID = tagData.m_VectorID;
 
 	} else
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag" + std::to_string (nMeasurementTag));
+}
+
+
+
+IOIEMeasurementTagMap* CRTCContext::RetrieveOIEMeasurementTags()
+{
+	auto pCurrentInstance = m_pMeasurementTagMap;
+
+	m_pMeasurementTagMap = std::make_shared<CRTCMeasurementTagMapInstance>();
+
+	return new COIEMeasurementTagMap(pCurrentInstance);
 }
 
 
@@ -2478,9 +2490,9 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 	uint32_t nSegmentCount = pLayer->GetSegmentCount();
 	for (uint32_t nSegmentIndex = 0; nSegmentIndex < nSegmentCount; nSegmentIndex++) {
 
-		m_CurrentMeasurementTagInfo.m_nCurrentSegmentID = (uint32_t) (nSegmentIndex + 1);
-		m_CurrentMeasurementTagInfo.m_nCurrentProfileID = (uint32_t) pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/oie/2023/08", "measurementid", 0);
-		m_CurrentMeasurementTagInfo.m_nCurrentPartID = (uint32_t)pLayer->GetSegmentLocalPartID(nSegmentIndex);
+		m_CurrentMeasurementTagInfo.m_SegmentID = (uint32_t) (nSegmentIndex + 1);
+		m_CurrentMeasurementTagInfo.m_ProfileID = (uint32_t) pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/oie/2023/08", "measurementid", 0);
+		m_CurrentMeasurementTagInfo.m_PartID = (uint32_t)pLayer->GetSegmentLocalPartID(nSegmentIndex);
 
 		LibMCEnv::eToolpathSegmentType eSegmentType;
 		uint32_t nPointCount;
