@@ -117,8 +117,19 @@ void COIEMeasurementTagMap::MapOIEMeasurementTags(const LibMCDriver_ScanLab_uint
 				pTagPtr++;
 
 				if (nMeasurementTag != nCurrentMeasurementTag) {
-					if (!m_pInstance->findTag(nMeasurementTag, tagData))
-						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+
+					if (nMeasurementTag != 0) {
+
+						if (!m_pInstance->findTag(nMeasurementTag, tagData))
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					}
+					else {
+						tagData.m_PartID = 0;
+						tagData.m_ProfileID = 0;
+						tagData.m_SegmentID = 0;
+						tagData.m_VectorID = 0;
+
+					}
 
 					nCurrentMeasurementTag = nMeasurementTag;
 				}
@@ -162,8 +173,13 @@ void COIEMeasurementTagMap::MapOIEMeasurementPartIDs(const LibMCDriver_ScanLab_u
 				pTagPtr++;
 
 				if (nMeasurementTag != nCurrentMeasurementTag) {
-					if (!m_pInstance->findPartID(nMeasurementTag, nPartID))
-						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					if (nMeasurementTag != 0) {
+						if (!m_pInstance->findPartID(nMeasurementTag, nPartID))
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					}
+					else {
+						nPartID = 0;
+					}
 
 					nCurrentMeasurementTag = nMeasurementTag;
 				}
@@ -204,8 +220,13 @@ void COIEMeasurementTagMap::MapOIEMeasurementProfileIDs(const LibMCDriver_ScanLa
 				pTagPtr++;
 
 				if (nMeasurementTag != nCurrentMeasurementTag) {
-					if (!m_pInstance->findProfileID(nMeasurementTag, nProfileID))
-						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					if (nMeasurementTag != 0) {
+						if (!m_pInstance->findProfileID(nMeasurementTag, nProfileID))
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					}
+					else {
+						nProfileID = 0;
+					}
 
 					nCurrentMeasurementTag = nMeasurementTag;
 				}
@@ -246,8 +267,14 @@ void COIEMeasurementTagMap::MapOIEMeasurementSegmentIDs(const LibMCDriver_ScanLa
 				pTagPtr++;
 
 				if (nMeasurementTag != nCurrentMeasurementTag) {
-					if (!m_pInstance->findSegmentID(nMeasurementTag, nSegmentID))
-						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					if (nMeasurementTag != 0) {
+						if (!m_pInstance->findSegmentID(nMeasurementTag, nSegmentID))
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					}
+					else {
+						nSegmentID = 0;
+					}
+
 
 					nCurrentMeasurementTag = nMeasurementTag;
 				}
@@ -291,8 +318,13 @@ void COIEMeasurementTagMap::MapOIEMeasurementVectorIDs(const LibMCDriver_ScanLab
 				pTagPtr++;
 
 				if (nMeasurementTag != nCurrentMeasurementTag) {
-					if (!m_pInstance->findVectorID(nMeasurementTag, nVectorID))
-						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					if (nMeasurementTag != 0) {
+						if (!m_pInstance->findVectorID(nMeasurementTag, nVectorID))
+							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag " + std::to_string(nMeasurementTag));
+					}
+					else {
+						nVectorID = 0;
+					}
 
 					nCurrentMeasurementTag = nMeasurementTag;
 				}

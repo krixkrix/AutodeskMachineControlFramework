@@ -59,7 +59,7 @@ bool CRTCMeasurementTagMapInstance::findTag(uint32_t nMeasurementTag, sOIEMeasur
 {
 	if ((nMeasurementTag > 0) && (nMeasurementTag <= m_MeasurementTags.size ())) 
 	{	
-		tagData = m_MeasurementTags.at(nMeasurementTag);
+		tagData = m_MeasurementTags.at(nMeasurementTag - 1);
 		return true;
 	}
 		
@@ -75,7 +75,7 @@ bool CRTCMeasurementTagMapInstance::findPartID(uint32_t nMeasurementTag, uint32_
 {
 	if ((nMeasurementTag > 0) && (nMeasurementTag <= m_MeasurementTags.size()))
 	{
-		nPartID = m_MeasurementTags.at(nMeasurementTag).m_PartID;
+		nPartID = m_MeasurementTags.at(nMeasurementTag - 1).m_PartID;
 		return true;
 	}
 
@@ -89,7 +89,7 @@ bool CRTCMeasurementTagMapInstance::findProfileID(uint32_t nMeasurementTag, uint
 {
 	if ((nMeasurementTag > 0) && (nMeasurementTag <= m_MeasurementTags.size()))
 	{
-		nProfileID = m_MeasurementTags.at(nMeasurementTag).m_ProfileID;
+		nProfileID = m_MeasurementTags.at(nMeasurementTag - 1).m_ProfileID;
 		return true;
 	}
 
@@ -103,7 +103,7 @@ bool CRTCMeasurementTagMapInstance::findSegmentID(uint32_t nMeasurementTag, uint
 {
 	if ((nMeasurementTag > 0) && (nMeasurementTag <= m_MeasurementTags.size()))
 	{
-		nSegmentID = m_MeasurementTags.at(nMeasurementTag).m_SegmentID;
+		nSegmentID = m_MeasurementTags.at(nMeasurementTag - 1).m_SegmentID;
 		return true;
 	}
 
@@ -117,7 +117,7 @@ bool CRTCMeasurementTagMapInstance::findVectorID(uint32_t nMeasurementTag, uint3
 {
 	if ((nMeasurementTag > 0) && (nMeasurementTag <= m_MeasurementTags.size()))
 	{
-		nVectorID = m_MeasurementTags.at(nMeasurementTag).m_VectorID;
+		nVectorID = m_MeasurementTags.at(nMeasurementTag - 1).m_VectorID;
 		return true;
 	}
 
