@@ -111,6 +111,12 @@ public:
 
 	IModelDataComponentInstance * GetSubComponent(const LibMCEnv_uint32 nIndex) override;
 
+	void CalculateTotalOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
+
+	void CalculateSolidOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
+
+	void CalculateSupportOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
+
 };
 
 } // namespace Impl

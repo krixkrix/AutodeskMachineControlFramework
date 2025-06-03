@@ -1546,6 +1546,15 @@
 			<param name="BoundToLoginSession" type="bool" pass="in" description="If true, the mesh will be freed once the client login session expires." />
 			<param name="PersistentMesh" type="class" class="PersistentMeshObject" pass="return" description="Returns a persistent instance to the same mesh data." />
 		</method>
+		
+		<method name="CalculateOutbox" description="Calculates the outbox of the model.">
+			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
+			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
+			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
+			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
+			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
+			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
+		</method>
 
 	</class>
 
@@ -1593,6 +1602,33 @@
 		<method name="GetSubComponent" description="Returns a subcomponent of the component.">
 			<param name="Index" type="uint32" pass="in" description="Index of Subcomponent. MUST be between 0 and SubComponentCount - 1." />
 			<param name="SubComponentInstance" type="class" class="ModelDataComponentInstance" pass="return" description="SubComponent. MUST be between 0 and ModelCount - 1." />
+		</method>
+
+		<method name="CalculateTotalOutbox" description="Calculates the outbox of the model (Solid and Support).">
+			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
+			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
+			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
+			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
+			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
+			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
+		</method>
+
+		<method name="CalculateSolidOutbox" description="Calculates the outbox of the solid part of the model.">
+			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
+			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
+			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
+			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
+			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
+			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
+		</method>
+
+		<method name="CalculateSupportOutbox" description="Calculates the outbox of the support part of the model.">
+			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
+			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
+			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
+			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
+			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
+			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
 		</method>
 
 	</class>
@@ -1731,7 +1767,7 @@
 		<method name="GetRootComponent" description="Returns the Root Component of the part.">
 			<param name="RootComponent" type="class" class="ModelDataComponentInstance" pass="return" description="Returns root component instance." />
 		</method>
-	
+
 	</class>
 
 
@@ -2053,6 +2089,7 @@
 			<param name="Part" type="class" class="ToolpathPart" pass="return" description="Part Instance" />
 		</method>
 
+
 		<method name="FindPartByUUID" description="Finds the part information of a toolpath.">
 			<param name="PartUUID" type="string" pass="in" description="UUID of part." />
 			<param name="Part" type="optionalclass" class="ToolpathPart" pass="return" description="Part Instance. Returns null if part does not exist." />
@@ -2105,15 +2142,35 @@
 
 
 		<method name="HasBinaryMetaData" description="Checks if a binary metadata exists in the build file with a certain path.">
-			<param name="Identifier" type="string" pass="in" description="Identifier of the binary metadata" />
+			<param name="PackagePath" type="string" pass="in" description="Path of the binary metadata in the 3MF Package" />
 			<param name="HasMetaData" type="bool" pass="return" description="Returns if the metadata exists." />
 		</method>
 
 		<method name="GetBinaryMetaData" description="Returns a binary metadata of the build file. Fails if binary metadata does not exist.">
-			<param name="Identifier" type="string" pass="in" description="Identifier of the binary metadata" />
+			<param name="PackagePath" type="string" pass="in" description="Path of the binary metadata in the 3MF Package" />
 			<param name="MetaData" type="basicarray" class="uint8" pass="out" description="Returns the content of the binary binary data." />
 		</method>
 		
+		<method name="GetBinaryMetaDataAsString" description="Returns a binary metadata of the build file as string. Fails if binary metadata does not exist.">
+			<param name="PackagePath" type="string" pass="in" description="Path of the binary metadata in the 3MF Package" />
+			<param name="MetaData" type="string" pass="return" description="Returns the content of the binary binary data." />
+		</method>
+
+		<method name="HasBinaryMetaDataSchema" description="Checks if a binary metadata exists in the build file with a certain relationship schema. Fails if schema does not exist or is not unique.">
+			<param name="RelationshipSchema" type="string" pass="in" description="Relationship schema of the root part in the 3MF Package" />
+			<param name="HasMetaData" type="bool" pass="return" description="Returns if the metadata exists." />
+		</method>
+
+		<method name="GetBinaryMetaDataBySchema" description="Returns a binary metadata of the build file. Fails if binary metadata does not exist or is not unique.">
+			<param name="RelationshipSchema" type="string" pass="in" description="Relationship schema of the root part in the 3MF Package" />
+			<param name="MetaData" type="basicarray" class="uint8" pass="out" description="Returns the content of the binary binary data." />
+		</method>
+		
+		<method name="GetBinaryMetaDataAsStringBySchema" description="Returns a binary metadata of the build file as string. Fails if binary metadata does not exist or is not unique.">
+			<param name="RelationshipSchema" type="string" pass="in" description="Relationship schema of the root part in the 3MF Package" />
+			<param name="MetaData" type="string" pass="return" description="Returns the content of the binary binary data." />
+		</method>
+
 	</class>
 
 

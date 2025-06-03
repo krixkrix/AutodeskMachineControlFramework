@@ -294,3 +294,34 @@ IModelDataComponentInstance * CModelDataComponentInstance::GetSubComponent(const
 
 }
 
+void CModelDataComponentInstance::CalculateTotalOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ)
+{
+	dMinX = 0.0;
+	dMinY = 0.0;
+	dMinZ = 0.0;
+	dMaxX = 0.0;
+	dMaxY = 0.0;
+	dMaxZ = 0.0;
+}
+
+void CModelDataComponentInstance::CalculateSolidOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ)
+{
+	dMinX = 0.0;
+	dMinY = 0.0;
+	dMinZ = 0.0;
+	dMaxX = 0.0;
+	dMaxY = 0.0;
+	dMaxZ = 0.0;
+
+}
+
+void CModelDataComponentInstance::CalculateSupportOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ)
+{
+	dMinX = 0.0;
+	dMinY = 0.0;
+	dMinZ = 0.0;
+	dMaxX = 0.0;
+	dMaxY = 0.0;
+	dMaxZ = 0.0;
+
+}

@@ -653,6 +653,7 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT 636 /** Invalid modifier interpolation count */
 #define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE 10234 /** Invalid toolpath modifier type. */
 #define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR 10235 /** Invalid toolpath modifier factor. */
+#define LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND 10236 /** Binary metadata relationship not found. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1218,6 +1219,7 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT: return "Invalid modifier interpolation count";
     case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE: return "Invalid toolpath modifier type.";
     case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR: return "Invalid toolpath modifier factor.";
+    case LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND: return "Binary metadata relationship not found.";
     default: return "unknown error";
   }
 }

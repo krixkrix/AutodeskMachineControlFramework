@@ -1724,6 +1724,7 @@ public:
 	inline sModelDataTransform GetAbsoluteTransform();
 	inline PMeshObject CreateCopiedMesh();
 	inline PPersistentMeshObject CreatePersistentMesh(const bool bBoundToLoginSession);
+	inline void CalculateOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
 };
 	
 /*************************************************************************************************************************
@@ -1750,6 +1751,9 @@ public:
 	inline PModelDataMeshInstance GetSupportMesh(const LibMCEnv_uint32 nIndex);
 	inline LibMCEnv_uint32 GetSubComponentCount();
 	inline PModelDataComponentInstance GetSubComponent(const LibMCEnv_uint32 nIndex);
+	inline void CalculateTotalOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
+	inline void CalculateSolidOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
+	inline void CalculateSupportOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
 };
 	
 /*************************************************************************************************************************
@@ -1935,8 +1939,12 @@ public:
 	inline PXMLDocumentNode GetMetaDataContent(const LibMCEnv_uint32 nMetaDataIndex);
 	inline bool HasUniqueMetaData(const std::string & sNamespace, const std::string & sName);
 	inline PXMLDocumentNode FindUniqueMetaData(const std::string & sNamespace, const std::string & sName);
-	inline bool HasBinaryMetaData(const std::string & sIdentifier);
-	inline void GetBinaryMetaData(const std::string & sIdentifier, std::vector<LibMCEnv_uint8> & MetaDataBuffer);
+	inline bool HasBinaryMetaData(const std::string & sPackagePath);
+	inline void GetBinaryMetaData(const std::string & sPackagePath, std::vector<LibMCEnv_uint8> & MetaDataBuffer);
+	inline std::string GetBinaryMetaDataAsString(const std::string & sPackagePath);
+	inline bool HasBinaryMetaDataSchema(const std::string & sRelationshipSchema);
+	inline void GetBinaryMetaDataBySchema(const std::string & sRelationshipSchema, std::vector<LibMCEnv_uint8> & MetaDataBuffer);
+	inline std::string GetBinaryMetaDataAsStringBySchema(const std::string & sRelationshipSchema);
 };
 	
 /*************************************************************************************************************************
@@ -3399,6 +3407,7 @@ public:
 		pWrapperTable->m_ModelDataMeshInstance_GetAbsoluteTransform = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CreateCopiedMesh = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh = nullptr;
+		pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetName = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetUUID = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetLocalTransform = nullptr;
@@ -3409,6 +3418,9 @@ public:
 		pWrapperTable->m_ModelDataComponentInstance_GetSupportMesh = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetSubComponentCount = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetSubComponent = nullptr;
+		pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox = nullptr;
+		pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox = nullptr;
+		pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox = nullptr;
 		pWrapperTable->m_MeshSceneItem_GetItemUUID = nullptr;
 		pWrapperTable->m_MeshSceneItem_GetSceneUUID = nullptr;
 		pWrapperTable->m_MeshSceneItem_GetTransform = nullptr;
@@ -3500,6 +3512,10 @@ public:
 		pWrapperTable->m_ToolpathAccessor_FindUniqueMetaData = nullptr;
 		pWrapperTable->m_ToolpathAccessor_HasBinaryMetaData = nullptr;
 		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaData = nullptr;
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsString = nullptr;
+		pWrapperTable->m_ToolpathAccessor_HasBinaryMetaDataSchema = nullptr;
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataBySchema = nullptr;
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema = nullptr;
 		pWrapperTable->m_BuildExecution_GetUUID = nullptr;
 		pWrapperTable->m_BuildExecution_GetBuildUUID = nullptr;
 		pWrapperTable->m_BuildExecution_GetBuild = nullptr;
@@ -5967,6 +5983,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox = (PLibMCEnvModelDataMeshInstance_CalculateOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatameshinstance_calculateoutbox");
+		#else // _WIN32
+		pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox = (PLibMCEnvModelDataMeshInstance_CalculateOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatameshinstance_calculateoutbox");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_ModelDataComponentInstance_GetName = (PLibMCEnvModelDataComponentInstance_GetNamePtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_getname");
 		#else // _WIN32
 		pWrapperTable->m_ModelDataComponentInstance_GetName = (PLibMCEnvModelDataComponentInstance_GetNamePtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_getname");
@@ -6054,6 +6079,33 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_ModelDataComponentInstance_GetSubComponent == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox = (PLibMCEnvModelDataComponentInstance_CalculateTotalOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculatetotaloutbox");
+		#else // _WIN32
+		pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox = (PLibMCEnvModelDataComponentInstance_CalculateTotalOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculatetotaloutbox");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSolidOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesolidoutbox");
+		#else // _WIN32
+		pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSolidOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesolidoutbox");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSupportOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesupportoutbox");
+		#else // _WIN32
+		pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSupportOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesupportoutbox");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6873,6 +6925,42 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsString = (PLibMCEnvToolpathAccessor_GetBinaryMetaDataAsStringPtr) GetProcAddress(hLibrary, "libmcenv_toolpathaccessor_getbinarymetadataasstring");
+		#else // _WIN32
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsString = (PLibMCEnvToolpathAccessor_GetBinaryMetaDataAsStringPtr) dlsym(hLibrary, "libmcenv_toolpathaccessor_getbinarymetadataasstring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ToolpathAccessor_HasBinaryMetaDataSchema = (PLibMCEnvToolpathAccessor_HasBinaryMetaDataSchemaPtr) GetProcAddress(hLibrary, "libmcenv_toolpathaccessor_hasbinarymetadataschema");
+		#else // _WIN32
+		pWrapperTable->m_ToolpathAccessor_HasBinaryMetaDataSchema = (PLibMCEnvToolpathAccessor_HasBinaryMetaDataSchemaPtr) dlsym(hLibrary, "libmcenv_toolpathaccessor_hasbinarymetadataschema");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ToolpathAccessor_HasBinaryMetaDataSchema == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataBySchema = (PLibMCEnvToolpathAccessor_GetBinaryMetaDataBySchemaPtr) GetProcAddress(hLibrary, "libmcenv_toolpathaccessor_getbinarymetadatabyschema");
+		#else // _WIN32
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataBySchema = (PLibMCEnvToolpathAccessor_GetBinaryMetaDataBySchemaPtr) dlsym(hLibrary, "libmcenv_toolpathaccessor_getbinarymetadatabyschema");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataBySchema == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema = (PLibMCEnvToolpathAccessor_GetBinaryMetaDataAsStringBySchemaPtr) GetProcAddress(hLibrary, "libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema");
+		#else // _WIN32
+		pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema = (PLibMCEnvToolpathAccessor_GetBinaryMetaDataAsStringBySchemaPtr) dlsym(hLibrary, "libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13004,6 +13092,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_calculateoutbox", (void**)&(pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_getname", (void**)&(pWrapperTable->m_ModelDataComponentInstance_GetName));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_GetName == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13042,6 +13134,18 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_getsubcomponent", (void**)&(pWrapperTable->m_ModelDataComponentInstance_GetSubComponent));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_GetSubComponent == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculatetotaloutbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculatesolidoutbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculatesupportoutbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_meshsceneitem_getitemuuid", (void**)&(pWrapperTable->m_MeshSceneItem_GetItemUUID));
@@ -13406,6 +13510,22 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_toolpathaccessor_getbinarymetadata", (void**)&(pWrapperTable->m_ToolpathAccessor_GetBinaryMetaData));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_toolpathaccessor_getbinarymetadataasstring", (void**)&(pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_toolpathaccessor_hasbinarymetadataschema", (void**)&(pWrapperTable->m_ToolpathAccessor_HasBinaryMetaDataSchema));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathAccessor_HasBinaryMetaDataSchema == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_toolpathaccessor_getbinarymetadatabyschema", (void**)&(pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataBySchema));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataBySchema == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema", (void**)&(pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_buildexecution_getuuid", (void**)&(pWrapperTable->m_BuildExecution_GetUUID));
@@ -18327,6 +18447,20 @@ public:
 	}
 	
 	/**
+	* CModelDataMeshInstance::CalculateOutbox - Calculates the outbox of the model.
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	void CModelDataMeshInstance::CalculateOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataMeshInstance_CalculateOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
+	}
+	
+	/**
 	 * Method definitions for class CModelDataComponentInstance
 	 */
 	
@@ -18466,6 +18600,48 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CModelDataComponentInstance>(m_pWrapper, hSubComponentInstance);
+	}
+	
+	/**
+	* CModelDataComponentInstance::CalculateTotalOutbox - Calculates the outbox of the model (Solid and Support).
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	void CModelDataComponentInstance::CalculateTotalOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateTotalOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
+	}
+	
+	/**
+	* CModelDataComponentInstance::CalculateSolidOutbox - Calculates the outbox of the solid part of the model.
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	void CModelDataComponentInstance::CalculateSolidOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateSolidOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
+	}
+	
+	/**
+	* CModelDataComponentInstance::CalculateSupportOutbox - Calculates the outbox of the support part of the model.
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	void CModelDataComponentInstance::CalculateSupportOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateSupportOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
 	}
 	
 	/**
@@ -19772,29 +19948,88 @@ public:
 	
 	/**
 	* CToolpathAccessor::HasBinaryMetaData - Checks if a binary metadata exists in the build file with a certain path.
-	* @param[in] sIdentifier - Identifier of the binary metadata
+	* @param[in] sPackagePath - Path of the binary metadata in the 3MF Package
 	* @return Returns if the metadata exists.
 	*/
-	bool CToolpathAccessor::HasBinaryMetaData(const std::string & sIdentifier)
+	bool CToolpathAccessor::HasBinaryMetaData(const std::string & sPackagePath)
 	{
 		bool resultHasMetaData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_HasBinaryMetaData(m_pHandle, sIdentifier.c_str(), &resultHasMetaData));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_HasBinaryMetaData(m_pHandle, sPackagePath.c_str(), &resultHasMetaData));
 		
 		return resultHasMetaData;
 	}
 	
 	/**
 	* CToolpathAccessor::GetBinaryMetaData - Returns a binary metadata of the build file. Fails if binary metadata does not exist.
-	* @param[in] sIdentifier - Identifier of the binary metadata
+	* @param[in] sPackagePath - Path of the binary metadata in the 3MF Package
 	* @param[out] MetaDataBuffer - Returns the content of the binary binary data.
 	*/
-	void CToolpathAccessor::GetBinaryMetaData(const std::string & sIdentifier, std::vector<LibMCEnv_uint8> & MetaDataBuffer)
+	void CToolpathAccessor::GetBinaryMetaData(const std::string & sPackagePath, std::vector<LibMCEnv_uint8> & MetaDataBuffer)
 	{
 		LibMCEnv_uint64 elementsNeededMetaData = 0;
 		LibMCEnv_uint64 elementsWrittenMetaData = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaData(m_pHandle, sIdentifier.c_str(), 0, &elementsNeededMetaData, nullptr));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaData(m_pHandle, sPackagePath.c_str(), 0, &elementsNeededMetaData, nullptr));
 		MetaDataBuffer.resize((size_t) elementsNeededMetaData);
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaData(m_pHandle, sIdentifier.c_str(), elementsNeededMetaData, &elementsWrittenMetaData, MetaDataBuffer.data()));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaData(m_pHandle, sPackagePath.c_str(), elementsNeededMetaData, &elementsWrittenMetaData, MetaDataBuffer.data()));
+	}
+	
+	/**
+	* CToolpathAccessor::GetBinaryMetaDataAsString - Returns a binary metadata of the build file as string. Fails if binary metadata does not exist.
+	* @param[in] sPackagePath - Path of the binary metadata in the 3MF Package
+	* @return Returns the content of the binary binary data.
+	*/
+	std::string CToolpathAccessor::GetBinaryMetaDataAsString(const std::string & sPackagePath)
+	{
+		LibMCEnv_uint32 bytesNeededMetaData = 0;
+		LibMCEnv_uint32 bytesWrittenMetaData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaDataAsString(m_pHandle, sPackagePath.c_str(), 0, &bytesNeededMetaData, nullptr));
+		std::vector<char> bufferMetaData(bytesNeededMetaData);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaDataAsString(m_pHandle, sPackagePath.c_str(), bytesNeededMetaData, &bytesWrittenMetaData, &bufferMetaData[0]));
+		
+		return std::string(&bufferMetaData[0]);
+	}
+	
+	/**
+	* CToolpathAccessor::HasBinaryMetaDataSchema - Checks if a binary metadata exists in the build file with a certain relationship schema. Fails if schema does not exist or is not unique.
+	* @param[in] sRelationshipSchema - Relationship schema of the root part in the 3MF Package
+	* @return Returns if the metadata exists.
+	*/
+	bool CToolpathAccessor::HasBinaryMetaDataSchema(const std::string & sRelationshipSchema)
+	{
+		bool resultHasMetaData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_HasBinaryMetaDataSchema(m_pHandle, sRelationshipSchema.c_str(), &resultHasMetaData));
+		
+		return resultHasMetaData;
+	}
+	
+	/**
+	* CToolpathAccessor::GetBinaryMetaDataBySchema - Returns a binary metadata of the build file. Fails if binary metadata does not exist or is not unique.
+	* @param[in] sRelationshipSchema - Relationship schema of the root part in the 3MF Package
+	* @param[out] MetaDataBuffer - Returns the content of the binary binary data.
+	*/
+	void CToolpathAccessor::GetBinaryMetaDataBySchema(const std::string & sRelationshipSchema, std::vector<LibMCEnv_uint8> & MetaDataBuffer)
+	{
+		LibMCEnv_uint64 elementsNeededMetaData = 0;
+		LibMCEnv_uint64 elementsWrittenMetaData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaDataBySchema(m_pHandle, sRelationshipSchema.c_str(), 0, &elementsNeededMetaData, nullptr));
+		MetaDataBuffer.resize((size_t) elementsNeededMetaData);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaDataBySchema(m_pHandle, sRelationshipSchema.c_str(), elementsNeededMetaData, &elementsWrittenMetaData, MetaDataBuffer.data()));
+	}
+	
+	/**
+	* CToolpathAccessor::GetBinaryMetaDataAsStringBySchema - Returns a binary metadata of the build file as string. Fails if binary metadata does not exist or is not unique.
+	* @param[in] sRelationshipSchema - Relationship schema of the root part in the 3MF Package
+	* @return Returns the content of the binary binary data.
+	*/
+	std::string CToolpathAccessor::GetBinaryMetaDataAsStringBySchema(const std::string & sRelationshipSchema)
+	{
+		LibMCEnv_uint32 bytesNeededMetaData = 0;
+		LibMCEnv_uint32 bytesWrittenMetaData = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema(m_pHandle, sRelationshipSchema.c_str(), 0, &bytesNeededMetaData, nullptr));
+		std::vector<char> bufferMetaData(bytesNeededMetaData);
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathAccessor_GetBinaryMetaDataAsStringBySchema(m_pHandle, sRelationshipSchema.c_str(), bytesNeededMetaData, &bytesWrittenMetaData, &bufferMetaData[0]));
+		
+		return std::string(&bufferMetaData[0]);
 	}
 	
 	/**

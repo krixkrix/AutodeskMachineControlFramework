@@ -125,3 +125,14 @@ IPersistentMeshObject * CModelDataMeshInstance::CreatePersistentMesh(const bool 
 
 }
 
+void CModelDataMeshInstance::CalculateOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ)
+{
+    Lib3MF::sBox box = m_pMeshObject->GetOutbox();
+    dMinX = box.m_MinCoordinate[0];
+    dMinY = box.m_MinCoordinate[1];
+    dMinZ = box.m_MinCoordinate[2];
+    dMaxX = box.m_MaxCoordinate[0];
+    dMaxY = box.m_MaxCoordinate[1];
+    dMaxZ = box.m_MaxCoordinate[2];
+}
+

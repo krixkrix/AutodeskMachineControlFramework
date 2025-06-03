@@ -6063,6 +6063,42 @@ LibMCEnvResult libmcenv_modeldatameshinstance_createpersistentmesh(LibMCEnv_Mode
 	}
 }
 
+LibMCEnvResult libmcenv_modeldatameshinstance_calculateoutbox(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
+{
+	IBase* pIBaseClass = (IBase *)pModelDataMeshInstance;
+
+	try {
+		if (!pMinX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IModelDataMeshInstance* pIModelDataMeshInstance = dynamic_cast<IModelDataMeshInstance*>(pIBaseClass);
+		if (!pIModelDataMeshInstance)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIModelDataMeshInstance->CalculateOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for ModelDataComponentInstance
@@ -6364,6 +6400,114 @@ LibMCEnvResult libmcenv_modeldatacomponentinstance_getsubcomponent(LibMCEnv_Mode
 		pBaseSubComponentInstance = pIModelDataComponentInstance->GetSubComponent(nIndex);
 
 		*pSubComponentInstance = (IBase*)(pBaseSubComponentInstance);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatetotaloutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
+{
+	IBase* pIBaseClass = (IBase *)pModelDataComponentInstance;
+
+	try {
+		if (!pMinX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IModelDataComponentInstance* pIModelDataComponentInstance = dynamic_cast<IModelDataComponentInstance*>(pIBaseClass);
+		if (!pIModelDataComponentInstance)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIModelDataComponentInstance->CalculateTotalOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatesolidoutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
+{
+	IBase* pIBaseClass = (IBase *)pModelDataComponentInstance;
+
+	try {
+		if (!pMinX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IModelDataComponentInstance* pIModelDataComponentInstance = dynamic_cast<IModelDataComponentInstance*>(pIBaseClass);
+		if (!pIModelDataComponentInstance)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIModelDataComponentInstance->CalculateSolidOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatesupportoutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
+{
+	IBase* pIBaseClass = (IBase *)pModelDataComponentInstance;
+
+	try {
+		if (!pMinX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMinZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pMaxZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IModelDataComponentInstance* pIModelDataComponentInstance = dynamic_cast<IModelDataComponentInstance*>(pIBaseClass);
+		if (!pIModelDataComponentInstance)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIModelDataComponentInstance->CalculateSupportOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
+
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -9257,21 +9401,21 @@ LibMCEnvResult libmcenv_toolpathaccessor_finduniquemetadata(LibMCEnv_ToolpathAcc
 	}
 }
 
-LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pIdentifier, bool * pHasMetaData)
+LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pPackagePath, bool * pHasMetaData)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathAccessor;
 
 	try {
-		if (pIdentifier == nullptr)
+		if (pPackagePath == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		if (pHasMetaData == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		std::string sIdentifier(pIdentifier);
+		std::string sPackagePath(pPackagePath);
 		IToolpathAccessor* pIToolpathAccessor = dynamic_cast<IToolpathAccessor*>(pIBaseClass);
 		if (!pIToolpathAccessor)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pHasMetaData = pIToolpathAccessor->HasBinaryMetaData(sIdentifier);
+		*pHasMetaData = pIToolpathAccessor->HasBinaryMetaData(sPackagePath);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -9286,22 +9430,182 @@ LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadata(LibMCEnv_ToolpathAcce
 	}
 }
 
-LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pIdentifier, const LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer)
+LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pPackagePath, const LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pToolpathAccessor;
 
 	try {
-		if (pIdentifier == nullptr)
+		if (pPackagePath == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
 		if ((!pMetaDataBuffer) && !(pMetaDataNeededCount))
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		std::string sIdentifier(pIdentifier);
+		std::string sPackagePath(pPackagePath);
 		IToolpathAccessor* pIToolpathAccessor = dynamic_cast<IToolpathAccessor*>(pIBaseClass);
 		if (!pIToolpathAccessor)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIToolpathAccessor->GetBinaryMetaData(sIdentifier, nMetaDataBufferSize, pMetaDataNeededCount, pMetaDataBuffer);
+		pIToolpathAccessor->GetBinaryMetaData(sPackagePath, nMetaDataBufferSize, pMetaDataNeededCount, pMetaDataBuffer);
 
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadataasstring(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pPackagePath, const LibMCEnv_uint32 nMetaDataBufferSize, LibMCEnv_uint32* pMetaDataNeededChars, char * pMetaDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pToolpathAccessor;
+
+	try {
+		if (pPackagePath == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if ( (!pMetaDataBuffer) && !(pMetaDataNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sPackagePath(pPackagePath);
+		std::string sMetaData("");
+		IToolpathAccessor* pIToolpathAccessor = dynamic_cast<IToolpathAccessor*>(pIBaseClass);
+		if (!pIToolpathAccessor)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pMetaDataBuffer == nullptr);
+		if (isCacheCall) {
+			sMetaData = pIToolpathAccessor->GetBinaryMetaDataAsString(sPackagePath);
+
+			pIToolpathAccessor->_setCache (new ParameterCache_1<std::string> (sMetaData));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIToolpathAccessor->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sMetaData);
+			pIToolpathAccessor->_setCache (nullptr);
+		}
+		
+		if (pMetaDataNeededChars)
+			*pMetaDataNeededChars = (LibMCEnv_uint32) (sMetaData.size()+1);
+		if (pMetaDataBuffer) {
+			if (sMetaData.size() >= nMetaDataBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iMetaData = 0; iMetaData < sMetaData.size(); iMetaData++)
+				pMetaDataBuffer[iMetaData] = sMetaData[iMetaData];
+			pMetaDataBuffer[sMetaData.size()] = 0;
+		}
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadataschema(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pRelationshipSchema, bool * pHasMetaData)
+{
+	IBase* pIBaseClass = (IBase *)pToolpathAccessor;
+
+	try {
+		if (pRelationshipSchema == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pHasMetaData == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sRelationshipSchema(pRelationshipSchema);
+		IToolpathAccessor* pIToolpathAccessor = dynamic_cast<IToolpathAccessor*>(pIBaseClass);
+		if (!pIToolpathAccessor)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pHasMetaData = pIToolpathAccessor->HasBinaryMetaDataSchema(sRelationshipSchema);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadatabyschema(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pRelationshipSchema, const LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pToolpathAccessor;
+
+	try {
+		if (pRelationshipSchema == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if ((!pMetaDataBuffer) && !(pMetaDataNeededCount))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sRelationshipSchema(pRelationshipSchema);
+		IToolpathAccessor* pIToolpathAccessor = dynamic_cast<IToolpathAccessor*>(pIBaseClass);
+		if (!pIToolpathAccessor)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIToolpathAccessor->GetBinaryMetaDataBySchema(sRelationshipSchema, nMetaDataBufferSize, pMetaDataNeededCount, pMetaDataBuffer);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pRelationshipSchema, const LibMCEnv_uint32 nMetaDataBufferSize, LibMCEnv_uint32* pMetaDataNeededChars, char * pMetaDataBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pToolpathAccessor;
+
+	try {
+		if (pRelationshipSchema == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if ( (!pMetaDataBuffer) && !(pMetaDataNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sRelationshipSchema(pRelationshipSchema);
+		std::string sMetaData("");
+		IToolpathAccessor* pIToolpathAccessor = dynamic_cast<IToolpathAccessor*>(pIBaseClass);
+		if (!pIToolpathAccessor)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pMetaDataBuffer == nullptr);
+		if (isCacheCall) {
+			sMetaData = pIToolpathAccessor->GetBinaryMetaDataAsStringBySchema(sRelationshipSchema);
+
+			pIToolpathAccessor->_setCache (new ParameterCache_1<std::string> (sMetaData));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIToolpathAccessor->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sMetaData);
+			pIToolpathAccessor->_setCache (nullptr);
+		}
+		
+		if (pMetaDataNeededChars)
+			*pMetaDataNeededChars = (LibMCEnv_uint32) (sMetaData.size()+1);
+		if (pMetaDataBuffer) {
+			if (sMetaData.size() >= nMetaDataBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iMetaData = 0; iMetaData < sMetaData.size(); iMetaData++)
+				pMetaDataBuffer[iMetaData] = sMetaData[iMetaData];
+			pMetaDataBuffer[sMetaData.size()] = 0;
+		}
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -29318,6 +29622,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createcopiedmesh;
 	if (sProcName == "libmcenv_modeldatameshinstance_createpersistentmesh") 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createpersistentmesh;
+	if (sProcName == "libmcenv_modeldatameshinstance_calculateoutbox") 
+		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_calculateoutbox;
 	if (sProcName == "libmcenv_modeldatacomponentinstance_getname") 
 		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_getname;
 	if (sProcName == "libmcenv_modeldatacomponentinstance_getuuid") 
@@ -29338,6 +29644,12 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_getsubcomponentcount;
 	if (sProcName == "libmcenv_modeldatacomponentinstance_getsubcomponent") 
 		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_getsubcomponent;
+	if (sProcName == "libmcenv_modeldatacomponentinstance_calculatetotaloutbox") 
+		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculatetotaloutbox;
+	if (sProcName == "libmcenv_modeldatacomponentinstance_calculatesolidoutbox") 
+		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculatesolidoutbox;
+	if (sProcName == "libmcenv_modeldatacomponentinstance_calculatesupportoutbox") 
+		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculatesupportoutbox;
 	if (sProcName == "libmcenv_meshsceneitem_getitemuuid") 
 		*ppProcAddress = (void*) &libmcenv_meshsceneitem_getitemuuid;
 	if (sProcName == "libmcenv_meshsceneitem_getsceneuuid") 
@@ -29520,6 +29832,14 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_toolpathaccessor_hasbinarymetadata;
 	if (sProcName == "libmcenv_toolpathaccessor_getbinarymetadata") 
 		*ppProcAddress = (void*) &libmcenv_toolpathaccessor_getbinarymetadata;
+	if (sProcName == "libmcenv_toolpathaccessor_getbinarymetadataasstring") 
+		*ppProcAddress = (void*) &libmcenv_toolpathaccessor_getbinarymetadataasstring;
+	if (sProcName == "libmcenv_toolpathaccessor_hasbinarymetadataschema") 
+		*ppProcAddress = (void*) &libmcenv_toolpathaccessor_hasbinarymetadataschema;
+	if (sProcName == "libmcenv_toolpathaccessor_getbinarymetadatabyschema") 
+		*ppProcAddress = (void*) &libmcenv_toolpathaccessor_getbinarymetadatabyschema;
+	if (sProcName == "libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema") 
+		*ppProcAddress = (void*) &libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema;
 	if (sProcName == "libmcenv_buildexecution_getuuid") 
 		*ppProcAddress = (void*) &libmcenv_buildexecution_getuuid;
 	if (sProcName == "libmcenv_buildexecution_getbuilduuid") 

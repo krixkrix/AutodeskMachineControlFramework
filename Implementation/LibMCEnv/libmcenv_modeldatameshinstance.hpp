@@ -86,6 +86,8 @@ public:
 
 	IPersistentMeshObject * CreatePersistentMesh(const bool bBoundToLoginSession) override;
 
+    void CalculateOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
+
 };
 
 } // namespace Impl

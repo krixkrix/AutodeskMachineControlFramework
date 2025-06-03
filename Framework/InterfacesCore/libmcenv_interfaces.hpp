@@ -229,6 +229,31 @@ template <class T1, class T2, class T3, class T4, class T5> class ParameterCache
 		}
 };
 
+template <class T1, class T2, class T3, class T4, class T5, class T6> class ParameterCache_6 : public ParameterCache {
+	private:
+		T1 m_param1;
+		T2 m_param2;
+		T3 m_param3;
+		T4 m_param4;
+		T5 m_param5;
+		T6 m_param6;
+	public:
+		ParameterCache_6 (const T1 & param1, const T2 & param2, const T3 & param3, const T4 & param4, const T5 & param5, const T6 & param6)
+			: m_param1 (param1), m_param2 (param2), m_param3 (param3), m_param4 (param4), m_param5 (param5), m_param6 (param6)
+		{
+		}
+
+		void retrieveData (T1 & param1, T2 & param2, T3 & param3, T4 & param4, T5 & param5, T6 & param6)
+		{
+			param1 = m_param1;
+			param2 = m_param2;
+			param3 = m_param3;
+			param4 = m_param4;
+			param5 = m_param5;
+			param6 = m_param6;
+		}
+};
+
 
 /*************************************************************************************************************************
  Class interface for Base 
@@ -2003,6 +2028,17 @@ public:
 	*/
 	virtual IPersistentMeshObject * CreatePersistentMesh(const bool bBoundToLoginSession) = 0;
 
+	/**
+	* IModelDataMeshInstance::CalculateOutbox - Calculates the outbox of the model.
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	virtual void CalculateOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
+
 };
 
 typedef IBaseSharedPtr<IModelDataMeshInstance> PIModelDataMeshInstance;
@@ -2076,6 +2112,39 @@ public:
 	* @return SubComponent. MUST be between 0 and ModelCount - 1.
 	*/
 	virtual IModelDataComponentInstance * GetSubComponent(const LibMCEnv_uint32 nIndex) = 0;
+
+	/**
+	* IModelDataComponentInstance::CalculateTotalOutbox - Calculates the outbox of the model (Solid and Support).
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	virtual void CalculateTotalOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
+
+	/**
+	* IModelDataComponentInstance::CalculateSolidOutbox - Calculates the outbox of the solid part of the model.
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	virtual void CalculateSolidOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
+
+	/**
+	* IModelDataComponentInstance::CalculateSupportOutbox - Calculates the outbox of the support part of the model.
+	* @param[out] dMinX - Minimum Coordinate in X in mm.
+	* @param[out] dMinY - Minimum Coordinate in Y in mm.
+	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
+	* @param[out] dMaxX - Maximum Coordinate in X in mm.
+	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
+	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	*/
+	virtual void CalculateSupportOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
 
 };
 
@@ -2810,19 +2879,49 @@ public:
 
 	/**
 	* IToolpathAccessor::HasBinaryMetaData - Checks if a binary metadata exists in the build file with a certain path.
-	* @param[in] sIdentifier - Identifier of the binary metadata
+	* @param[in] sPackagePath - Path of the binary metadata in the 3MF Package
 	* @return Returns if the metadata exists.
 	*/
-	virtual bool HasBinaryMetaData(const std::string & sIdentifier) = 0;
+	virtual bool HasBinaryMetaData(const std::string & sPackagePath) = 0;
 
 	/**
 	* IToolpathAccessor::GetBinaryMetaData - Returns a binary metadata of the build file. Fails if binary metadata does not exist.
-	* @param[in] sIdentifier - Identifier of the binary metadata
+	* @param[in] sPackagePath - Path of the binary metadata in the 3MF Package
 	* @param[in] nMetaDataBufferSize - Number of elements in buffer
 	* @param[out] pMetaDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
 	* @param[out] pMetaDataBuffer - uint8 buffer of Returns the content of the binary binary data.
 	*/
-	virtual void GetBinaryMetaData(const std::string & sIdentifier, LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer) = 0;
+	virtual void GetBinaryMetaData(const std::string & sPackagePath, LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer) = 0;
+
+	/**
+	* IToolpathAccessor::GetBinaryMetaDataAsString - Returns a binary metadata of the build file as string. Fails if binary metadata does not exist.
+	* @param[in] sPackagePath - Path of the binary metadata in the 3MF Package
+	* @return Returns the content of the binary binary data.
+	*/
+	virtual std::string GetBinaryMetaDataAsString(const std::string & sPackagePath) = 0;
+
+	/**
+	* IToolpathAccessor::HasBinaryMetaDataSchema - Checks if a binary metadata exists in the build file with a certain relationship schema. Fails if schema does not exist or is not unique.
+	* @param[in] sRelationshipSchema - Relationship schema of the root part in the 3MF Package
+	* @return Returns if the metadata exists.
+	*/
+	virtual bool HasBinaryMetaDataSchema(const std::string & sRelationshipSchema) = 0;
+
+	/**
+	* IToolpathAccessor::GetBinaryMetaDataBySchema - Returns a binary metadata of the build file. Fails if binary metadata does not exist or is not unique.
+	* @param[in] sRelationshipSchema - Relationship schema of the root part in the 3MF Package
+	* @param[in] nMetaDataBufferSize - Number of elements in buffer
+	* @param[out] pMetaDataNeededCount - will be filled with the count of the written structs, or needed buffer size.
+	* @param[out] pMetaDataBuffer - uint8 buffer of Returns the content of the binary binary data.
+	*/
+	virtual void GetBinaryMetaDataBySchema(const std::string & sRelationshipSchema, LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer) = 0;
+
+	/**
+	* IToolpathAccessor::GetBinaryMetaDataAsStringBySchema - Returns a binary metadata of the build file as string. Fails if binary metadata does not exist or is not unique.
+	* @param[in] sRelationshipSchema - Relationship schema of the root part in the 3MF Package
+	* @return Returns the content of the binary binary data.
+	*/
+	virtual std::string GetBinaryMetaDataAsStringBySchema(const std::string & sRelationshipSchema) = 0;
 
 };
 

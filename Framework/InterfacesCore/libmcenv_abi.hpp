@@ -2214,6 +2214,20 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_createcopiedmesh
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_createpersistentmesh(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, bool bBoundToLoginSession, LibMCEnv_PersistentMeshObject * pPersistentMesh);
 
+/**
+* Calculates the outbox of the model.
+*
+* @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
+* @param[out] pMinX - Minimum Coordinate in X in mm.
+* @param[out] pMinY - Minimum Coordinate in Y in mm.
+* @param[out] pMinZ - Minimum Coordinate in Z in mm.
+* @param[out] pMaxX - Maximum Coordinate in X in mm.
+* @param[out] pMaxY - Maximum Coordinate in Y in mm.
+* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_calculateoutbox(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
+
 /*************************************************************************************************************************
  Class definition for ModelDataComponentInstance
 **************************************************************************************************************************/
@@ -2314,6 +2328,48 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatacomponentinstance_getsubcompo
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatacomponentinstance_getsubcomponent(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_uint32 nIndex, LibMCEnv_ModelDataComponentInstance * pSubComponentInstance);
+
+/**
+* Calculates the outbox of the model (Solid and Support).
+*
+* @param[in] pModelDataComponentInstance - ModelDataComponentInstance instance.
+* @param[out] pMinX - Minimum Coordinate in X in mm.
+* @param[out] pMinY - Minimum Coordinate in Y in mm.
+* @param[out] pMinZ - Minimum Coordinate in Z in mm.
+* @param[out] pMaxX - Maximum Coordinate in X in mm.
+* @param[out] pMaxY - Maximum Coordinate in Y in mm.
+* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatetotaloutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
+
+/**
+* Calculates the outbox of the solid part of the model.
+*
+* @param[in] pModelDataComponentInstance - ModelDataComponentInstance instance.
+* @param[out] pMinX - Minimum Coordinate in X in mm.
+* @param[out] pMinY - Minimum Coordinate in Y in mm.
+* @param[out] pMinZ - Minimum Coordinate in Z in mm.
+* @param[out] pMaxX - Maximum Coordinate in X in mm.
+* @param[out] pMaxY - Maximum Coordinate in Y in mm.
+* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatesolidoutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
+
+/**
+* Calculates the outbox of the support part of the model.
+*
+* @param[in] pModelDataComponentInstance - ModelDataComponentInstance instance.
+* @param[out] pMinX - Minimum Coordinate in X in mm.
+* @param[out] pMinY - Minimum Coordinate in Y in mm.
+* @param[out] pMinZ - Minimum Coordinate in Z in mm.
+* @param[out] pMaxX - Maximum Coordinate in X in mm.
+* @param[out] pMaxY - Maximum Coordinate in Y in mm.
+* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatesupportoutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
 
 /*************************************************************************************************************************
  Class definition for MeshSceneItem
@@ -3307,23 +3363,69 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_finduniquemetadata(Li
 * Checks if a binary metadata exists in the build file with a certain path.
 *
 * @param[in] pToolpathAccessor - ToolpathAccessor instance.
-* @param[in] pIdentifier - Identifier of the binary metadata
+* @param[in] pPackagePath - Path of the binary metadata in the 3MF Package
 * @param[out] pHasMetaData - Returns if the metadata exists.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pIdentifier, bool * pHasMetaData);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pPackagePath, bool * pHasMetaData);
 
 /**
 * Returns a binary metadata of the build file. Fails if binary metadata does not exist.
 *
 * @param[in] pToolpathAccessor - ToolpathAccessor instance.
-* @param[in] pIdentifier - Identifier of the binary metadata
+* @param[in] pPackagePath - Path of the binary metadata in the 3MF Package
 * @param[in] nMetaDataBufferSize - Number of elements in buffer
 * @param[out] pMetaDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
 * @param[out] pMetaDataBuffer - uint8  buffer of Returns the content of the binary binary data.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pIdentifier, const LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadata(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pPackagePath, const LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer);
+
+/**
+* Returns a binary metadata of the build file as string. Fails if binary metadata does not exist.
+*
+* @param[in] pToolpathAccessor - ToolpathAccessor instance.
+* @param[in] pPackagePath - Path of the binary metadata in the 3MF Package
+* @param[in] nMetaDataBufferSize - size of the buffer (including trailing 0)
+* @param[out] pMetaDataNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pMetaDataBuffer -  buffer of Returns the content of the binary binary data., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadataasstring(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pPackagePath, const LibMCEnv_uint32 nMetaDataBufferSize, LibMCEnv_uint32* pMetaDataNeededChars, char * pMetaDataBuffer);
+
+/**
+* Checks if a binary metadata exists in the build file with a certain relationship schema. Fails if schema does not exist or is not unique.
+*
+* @param[in] pToolpathAccessor - ToolpathAccessor instance.
+* @param[in] pRelationshipSchema - Relationship schema of the root part in the 3MF Package
+* @param[out] pHasMetaData - Returns if the metadata exists.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_hasbinarymetadataschema(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pRelationshipSchema, bool * pHasMetaData);
+
+/**
+* Returns a binary metadata of the build file. Fails if binary metadata does not exist or is not unique.
+*
+* @param[in] pToolpathAccessor - ToolpathAccessor instance.
+* @param[in] pRelationshipSchema - Relationship schema of the root part in the 3MF Package
+* @param[in] nMetaDataBufferSize - Number of elements in buffer
+* @param[out] pMetaDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
+* @param[out] pMetaDataBuffer - uint8  buffer of Returns the content of the binary binary data.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadatabyschema(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pRelationshipSchema, const LibMCEnv_uint64 nMetaDataBufferSize, LibMCEnv_uint64* pMetaDataNeededCount, LibMCEnv_uint8 * pMetaDataBuffer);
+
+/**
+* Returns a binary metadata of the build file as string. Fails if binary metadata does not exist or is not unique.
+*
+* @param[in] pToolpathAccessor - ToolpathAccessor instance.
+* @param[in] pRelationshipSchema - Relationship schema of the root part in the 3MF Package
+* @param[in] nMetaDataBufferSize - size of the buffer (including trailing 0)
+* @param[out] pMetaDataNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pMetaDataBuffer -  buffer of Returns the content of the binary binary data., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_getbinarymetadataasstringbyschema(LibMCEnv_ToolpathAccessor pToolpathAccessor, const char * pRelationshipSchema, const LibMCEnv_uint32 nMetaDataBufferSize, LibMCEnv_uint32* pMetaDataNeededChars, char * pMetaDataBuffer);
 
 /*************************************************************************************************************************
  Class definition for BuildExecution

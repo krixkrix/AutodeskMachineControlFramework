@@ -662,6 +662,8 @@
 		<error name="INVALIDMODIFIERINTERPOLATIONCOUNT" code="636" description="Invalid modifier interpolation count" />
 		<error name="INVALIDTOOLPATHMODIFIERTYPE" code="10234" description="Invalid toolpath modifier type." />		
 		<error name="INVALIDTOOLPATHMODIFIERFACTOR" code="10235" description="Invalid toolpath modifier factor." />				
+		<error name="BINARYMETADATARELATIONSHIPNOTFOUND" code="10236" description="Binary metadata relationship not found." />		
+		
 		
 					
 	</errors>
