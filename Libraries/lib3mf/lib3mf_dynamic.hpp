@@ -731,6 +731,7 @@ public:
 			case LIB3MF_ERROR_TOOLPATH_SCALINGDATANEEDSTOMATCHHATCHDATA: return "TOOLPATH_SCALINGDATANEEDSTOMATCHHATCHDATA";
 			case LIB3MF_ERROR_TOOLPATH_SCALINGDATANEEDSTOMATCHPOINTDATA: return "TOOLPATH_SCALINGDATANEEDSTOMATCHPOINTDATA";
 			case LIB3MF_ERROR_TOOLPATH_SEGMENTISNOTOFTYPEHATCH: return "TOOLPATH_SEGMENTISNOTOFTYPEHATCH";
+			case LIB3MF_ERROR_TOOLPATH_MODIFIERNOTFOUND: return "TOOLPATH_MODIFIERNOTFOUND";
 		}
 		return "UNKNOWN";
 	}
@@ -809,6 +810,7 @@ public:
 			case LIB3MF_ERROR_TOOLPATH_SCALINGDATANEEDSTOMATCHHATCHDATA: return "Scaling data needs to match hatch data";
 			case LIB3MF_ERROR_TOOLPATH_SCALINGDATANEEDSTOMATCHPOINTDATA: return "Scaling data needs to match point data";
 			case LIB3MF_ERROR_TOOLPATH_SEGMENTISNOTOFTYPEHATCH: return "Segment is not of type hatch";
+			case LIB3MF_ERROR_TOOLPATH_MODIFIERNOTFOUND: return "Toolpath modifier not found";
 		}
 		return "unknown error";
 	}
@@ -1183,6 +1185,8 @@ public:
 	inline PBinaryStream CreateBinaryStream(const std::string & sIndexPath, const std::string & sBinaryPath);
 	inline void AssignBinaryStream(classParam<CBase> pInstance, classParam<CBinaryStream> pBinaryStream);
 	inline void RegisterCustomNamespace(const std::string & sPrefix, const std::string & sNameSpace);
+	inline void SetCustomNamespaceRequired(const std::string & sPrefix, const bool bShallBeRequired);
+	inline bool GetCustomNamespaceRequired(const std::string & sPrefix);
 };
 	
 /*************************************************************************************************************************
@@ -1225,6 +1229,8 @@ public:
 	inline void SetProgressCallback(const ProgressCallback pProgressCallback, const Lib3MF_pvoid pUserData);
 	inline void AddRelationToRead(const std::string & sRelationShipType);
 	inline void RemoveRelationToRead(const std::string & sRelationShipType);
+	inline void AddSupportedCustomNamespace(const std::string & sNameSpace);
+	inline void RemoveSupportedCustomNamespace(const std::string & sNameSpace);
 	inline void SetStrictModeActive(const bool bStrictModeActive);
 	inline bool GetStrictModeActive();
 	inline std::string GetWarning(const Lib3MF_uint32 nIndex, Lib3MF_uint32 & nErrorCode);
@@ -1729,6 +1735,7 @@ public:
 	inline PAttachment GetThumbnailAttachment();
 	inline void ClearThumbnailAttachment();
 	inline sBox GetOutbox();
+	inline sBox GetOutboxWithTransform(const sTransform & Transform);
 	inline std::string GetUUID(bool & bHasUUID);
 	inline void SetUUID(const std::string & sUUID);
 	inline PMetaDataGroup GetMetaDataGroup();
@@ -3516,7 +3523,8 @@ public:
 	inline bool HasModifier(const std::string & sNameSpaceName, const std::string & sValueName);
 	inline void GetModifierInformationByIndex(const Lib3MF_uint32 nIndex, std::string & sNameSpaceName, std::string & sValueName, eToolpathProfileModificationType & eModifierType, eToolpathProfileModificationFactor & eModificationFactor, Lib3MF_double & dMinValue, Lib3MF_double & dMaxValue);
 	inline void GetModifierInformationByName(const std::string & sNameSpaceName, const std::string & sValueName, eToolpathProfileModificationType & eModifierType, eToolpathProfileModificationFactor & eModificationFactor, Lib3MF_double & dMinValue, Lib3MF_double & dMaxValue);
-	inline void SetModifier(const std::string & sNameSpaceName, const std::string & sValueName, const eToolpathProfileModificationType eModifierType, const eToolpathProfileModificationFactor eModificationFactor, const Lib3MF_double dMinValue, const Lib3MF_double dMaxValue);
+	inline void AddModifier(const std::string & sNameSpaceName, const std::string & sValueName, const eToolpathProfileModificationType eModifierType, const eToolpathProfileModificationFactor eModificationFactor, const Lib3MF_double dMinValue, const Lib3MF_double dMaxValue);
+	inline void ChangeModifier(const std::string & sNameSpaceName, const std::string & sValueName, const eToolpathProfileModificationType eModifierType, const eToolpathProfileModificationFactor eModificationFactor, const Lib3MF_double dMinValue, const Lib3MF_double dMaxValue);
 	inline void RemoveModifier(const std::string & sNameSpaceName, const std::string & sValueName);
 };
 	
@@ -4383,6 +4391,8 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		pWrapperTable->m_Writer_CreateBinaryStream = nullptr;
 		pWrapperTable->m_Writer_AssignBinaryStream = nullptr;
 		pWrapperTable->m_Writer_RegisterCustomNamespace = nullptr;
+		pWrapperTable->m_Writer_SetCustomNamespaceRequired = nullptr;
+		pWrapperTable->m_Writer_GetCustomNamespaceRequired = nullptr;
 		pWrapperTable->m_PersistentReaderSource_GetSourceType = nullptr;
 		pWrapperTable->m_PersistentReaderSource_InvalidateSourceData = nullptr;
 		pWrapperTable->m_PersistentReaderSource_SourceDataIsValid = nullptr;
@@ -4393,6 +4403,8 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		pWrapperTable->m_Reader_SetProgressCallback = nullptr;
 		pWrapperTable->m_Reader_AddRelationToRead = nullptr;
 		pWrapperTable->m_Reader_RemoveRelationToRead = nullptr;
+		pWrapperTable->m_Reader_AddSupportedCustomNamespace = nullptr;
+		pWrapperTable->m_Reader_RemoveSupportedCustomNamespace = nullptr;
 		pWrapperTable->m_Reader_SetStrictModeActive = nullptr;
 		pWrapperTable->m_Reader_GetStrictModeActive = nullptr;
 		pWrapperTable->m_Reader_GetWarning = nullptr;
@@ -4513,6 +4525,7 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		pWrapperTable->m_Object_GetThumbnailAttachment = nullptr;
 		pWrapperTable->m_Object_ClearThumbnailAttachment = nullptr;
 		pWrapperTable->m_Object_GetOutbox = nullptr;
+		pWrapperTable->m_Object_GetOutboxWithTransform = nullptr;
 		pWrapperTable->m_Object_GetUUID = nullptr;
 		pWrapperTable->m_Object_SetUUID = nullptr;
 		pWrapperTable->m_Object_GetMetaDataGroup = nullptr;
@@ -4924,7 +4937,8 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		pWrapperTable->m_ToolpathProfile_HasModifier = nullptr;
 		pWrapperTable->m_ToolpathProfile_GetModifierInformationByIndex = nullptr;
 		pWrapperTable->m_ToolpathProfile_GetModifierInformationByName = nullptr;
-		pWrapperTable->m_ToolpathProfile_SetModifier = nullptr;
+		pWrapperTable->m_ToolpathProfile_AddModifier = nullptr;
+		pWrapperTable->m_ToolpathProfile_ChangeModifier = nullptr;
 		pWrapperTable->m_ToolpathProfile_RemoveModifier = nullptr;
 		pWrapperTable->m_ToolpathLayerReader_GetLayerDataUUID = nullptr;
 		pWrapperTable->m_ToolpathLayerReader_GetCustomDataCount = nullptr;
@@ -5438,6 +5452,24 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_Writer_SetCustomNamespaceRequired = (PLib3MFWriter_SetCustomNamespaceRequiredPtr) GetProcAddress(hLibrary, "lib3mf_writer_setcustomnamespacerequired");
+		#else // _WIN32
+		pWrapperTable->m_Writer_SetCustomNamespaceRequired = (PLib3MFWriter_SetCustomNamespaceRequiredPtr) dlsym(hLibrary, "lib3mf_writer_setcustomnamespacerequired");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Writer_SetCustomNamespaceRequired == nullptr)
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Writer_GetCustomNamespaceRequired = (PLib3MFWriter_GetCustomNamespaceRequiredPtr) GetProcAddress(hLibrary, "lib3mf_writer_getcustomnamespacerequired");
+		#else // _WIN32
+		pWrapperTable->m_Writer_GetCustomNamespaceRequired = (PLib3MFWriter_GetCustomNamespaceRequiredPtr) dlsym(hLibrary, "lib3mf_writer_getcustomnamespacerequired");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Writer_GetCustomNamespaceRequired == nullptr)
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_PersistentReaderSource_GetSourceType = (PLib3MFPersistentReaderSource_GetSourceTypePtr) GetProcAddress(hLibrary, "lib3mf_persistentreadersource_getsourcetype");
 		#else // _WIN32
 		pWrapperTable->m_PersistentReaderSource_GetSourceType = (PLib3MFPersistentReaderSource_GetSourceTypePtr) dlsym(hLibrary, "lib3mf_persistentreadersource_getsourcetype");
@@ -5525,6 +5557,24 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Reader_RemoveRelationToRead == nullptr)
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Reader_AddSupportedCustomNamespace = (PLib3MFReader_AddSupportedCustomNamespacePtr) GetProcAddress(hLibrary, "lib3mf_reader_addsupportedcustomnamespace");
+		#else // _WIN32
+		pWrapperTable->m_Reader_AddSupportedCustomNamespace = (PLib3MFReader_AddSupportedCustomNamespacePtr) dlsym(hLibrary, "lib3mf_reader_addsupportedcustomnamespace");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Reader_AddSupportedCustomNamespace == nullptr)
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Reader_RemoveSupportedCustomNamespace = (PLib3MFReader_RemoveSupportedCustomNamespacePtr) GetProcAddress(hLibrary, "lib3mf_reader_removesupportedcustomnamespace");
+		#else // _WIN32
+		pWrapperTable->m_Reader_RemoveSupportedCustomNamespace = (PLib3MFReader_RemoveSupportedCustomNamespacePtr) dlsym(hLibrary, "lib3mf_reader_removesupportedcustomnamespace");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Reader_RemoveSupportedCustomNamespace == nullptr)
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6605,6 +6655,15 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Object_GetOutbox == nullptr)
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Object_GetOutboxWithTransform = (PLib3MFObject_GetOutboxWithTransformPtr) GetProcAddress(hLibrary, "lib3mf_object_getoutboxwithtransform");
+		#else // _WIN32
+		pWrapperTable->m_Object_GetOutboxWithTransform = (PLib3MFObject_GetOutboxWithTransformPtr) dlsym(hLibrary, "lib3mf_object_getoutboxwithtransform");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Object_GetOutboxWithTransform == nullptr)
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -10307,12 +10366,21 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ToolpathProfile_SetModifier = (PLib3MFToolpathProfile_SetModifierPtr) GetProcAddress(hLibrary, "lib3mf_toolpathprofile_setmodifier");
+		pWrapperTable->m_ToolpathProfile_AddModifier = (PLib3MFToolpathProfile_AddModifierPtr) GetProcAddress(hLibrary, "lib3mf_toolpathprofile_addmodifier");
 		#else // _WIN32
-		pWrapperTable->m_ToolpathProfile_SetModifier = (PLib3MFToolpathProfile_SetModifierPtr) dlsym(hLibrary, "lib3mf_toolpathprofile_setmodifier");
+		pWrapperTable->m_ToolpathProfile_AddModifier = (PLib3MFToolpathProfile_AddModifierPtr) dlsym(hLibrary, "lib3mf_toolpathprofile_addmodifier");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ToolpathProfile_SetModifier == nullptr)
+		if (pWrapperTable->m_ToolpathProfile_AddModifier == nullptr)
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ToolpathProfile_ChangeModifier = (PLib3MFToolpathProfile_ChangeModifierPtr) GetProcAddress(hLibrary, "lib3mf_toolpathprofile_changemodifier");
+		#else // _WIN32
+		pWrapperTable->m_ToolpathProfile_ChangeModifier = (PLib3MFToolpathProfile_ChangeModifierPtr) dlsym(hLibrary, "lib3mf_toolpathprofile_changemodifier");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ToolpathProfile_ChangeModifier == nullptr)
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -12564,6 +12632,14 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		if ( (eLookupError != 0) || (pWrapperTable->m_Writer_RegisterCustomNamespace == nullptr) )
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("lib3mf_writer_setcustomnamespacerequired", (void**)&(pWrapperTable->m_Writer_SetCustomNamespaceRequired));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Writer_SetCustomNamespaceRequired == nullptr) )
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("lib3mf_writer_getcustomnamespacerequired", (void**)&(pWrapperTable->m_Writer_GetCustomNamespaceRequired));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Writer_GetCustomNamespaceRequired == nullptr) )
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("lib3mf_persistentreadersource_getsourcetype", (void**)&(pWrapperTable->m_PersistentReaderSource_GetSourceType));
 		if ( (eLookupError != 0) || (pWrapperTable->m_PersistentReaderSource_GetSourceType == nullptr) )
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -12602,6 +12678,14 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		
 		eLookupError = (*pLookup)("lib3mf_reader_removerelationtoread", (void**)&(pWrapperTable->m_Reader_RemoveRelationToRead));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Reader_RemoveRelationToRead == nullptr) )
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("lib3mf_reader_addsupportedcustomnamespace", (void**)&(pWrapperTable->m_Reader_AddSupportedCustomNamespace));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Reader_AddSupportedCustomNamespace == nullptr) )
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("lib3mf_reader_removesupportedcustomnamespace", (void**)&(pWrapperTable->m_Reader_RemoveSupportedCustomNamespace));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Reader_RemoveSupportedCustomNamespace == nullptr) )
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("lib3mf_reader_setstrictmodeactive", (void**)&(pWrapperTable->m_Reader_SetStrictModeActive));
@@ -13082,6 +13166,10 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		
 		eLookupError = (*pLookup)("lib3mf_object_getoutbox", (void**)&(pWrapperTable->m_Object_GetOutbox));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Object_GetOutbox == nullptr) )
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("lib3mf_object_getoutboxwithtransform", (void**)&(pWrapperTable->m_Object_GetOutboxWithTransform));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Object_GetOutboxWithTransform == nullptr) )
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("lib3mf_object_getuuid", (void**)&(pWrapperTable->m_Object_GetUUID));
@@ -14728,8 +14816,12 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathProfile_GetModifierInformationByName == nullptr) )
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("lib3mf_toolpathprofile_setmodifier", (void**)&(pWrapperTable->m_ToolpathProfile_SetModifier));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathProfile_SetModifier == nullptr) )
+		eLookupError = (*pLookup)("lib3mf_toolpathprofile_addmodifier", (void**)&(pWrapperTable->m_ToolpathProfile_AddModifier));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathProfile_AddModifier == nullptr) )
+			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("lib3mf_toolpathprofile_changemodifier", (void**)&(pWrapperTable->m_ToolpathProfile_ChangeModifier));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ToolpathProfile_ChangeModifier == nullptr) )
 			return LIB3MF_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("lib3mf_toolpathprofile_removemodifier", (void**)&(pWrapperTable->m_ToolpathProfile_RemoveModifier));
@@ -15975,13 +16067,36 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 	}
 	
 	/**
-	* CWriter::RegisterCustomNamespace - Registers a custom 3MF Namespace. Fails if Prefix is already registered.
+	* CWriter::RegisterCustomNamespace - Registers a custom 3MF Namespace. Fails if Prefix is already registered. The namespace will not be required by default.
 	* @param[in] sPrefix - Prefix to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
 	* @param[in] sNameSpace - Namespace to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
 	*/
 	void CWriter::RegisterCustomNamespace(const std::string & sPrefix, const std::string & sNameSpace)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_Writer_RegisterCustomNamespace(m_pHandle, sPrefix.c_str(), sNameSpace.c_str()));
+	}
+	
+	/**
+	* CWriter::SetCustomNamespaceRequired - Sets if a custom 3MF Namespace is required. Fails if Namespace has not been registered first.
+	* @param[in] sPrefix - Prefix to change value for. Fails if prefix does not exist.
+	* @param[in] bShallBeRequired - True, if the namespace shall be required. False if not.
+	*/
+	void CWriter::SetCustomNamespaceRequired(const std::string & sPrefix, const bool bShallBeRequired)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Writer_SetCustomNamespaceRequired(m_pHandle, sPrefix.c_str(), bShallBeRequired));
+	}
+	
+	/**
+	* CWriter::GetCustomNamespaceRequired - Sets if a custom 3MF Namespace is required. Fails if Namespace has not been registered first.
+	* @param[in] sPrefix - Prefix to return value. Fails if prefix does not exist.
+	* @return Returns true, if the namespace shall be required. False if not. Default is not required.
+	*/
+	bool CWriter::GetCustomNamespaceRequired(const std::string & sPrefix)
+	{
+		bool resultIsRequired = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_Writer_GetCustomNamespaceRequired(m_pHandle, sPrefix.c_str(), &resultIsRequired));
+		
+		return resultIsRequired;
 	}
 	
 	/**
@@ -16091,6 +16206,24 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 	void CReader::RemoveRelationToRead(const std::string & sRelationShipType)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_Reader_RemoveRelationToRead(m_pHandle, sRelationShipType.c_str()));
+	}
+	
+	/**
+	* CReader::AddSupportedCustomNamespace - Signals, that a custom namespace is supported by the consumer. If not properly set, a required namespace will fail reading.
+	* @param[in] sNameSpace - Namespace to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
+	*/
+	void CReader::AddSupportedCustomNamespace(const std::string & sNameSpace)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Reader_AddSupportedCustomNamespace(m_pHandle, sNameSpace.c_str()));
+	}
+	
+	/**
+	* CReader::RemoveSupportedCustomNamespace - Reverts AddSupportedCustomNamespace. A required namespace of this type will fail reading.
+	* @param[in] sNameSpace - Namespace to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
+	*/
+	void CReader::RemoveSupportedCustomNamespace(const std::string & sNameSpace)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Reader_RemoveSupportedCustomNamespace(m_pHandle, sNameSpace.c_str()));
 	}
 	
 	/**
@@ -17708,13 +17841,26 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 	}
 	
 	/**
-	* CObject::GetOutbox - Returns the outbox of a build item
-	* @return Outbox of this build item
+	* CObject::GetOutbox - Returns the outbox of the object
+	* @return Outbox of this object
 	*/
 	sBox CObject::GetOutbox()
 	{
 		sBox resultOutbox;
 		CheckError(m_pWrapper->m_WrapperTable.m_Object_GetOutbox(m_pHandle, &resultOutbox));
+		
+		return resultOutbox;
+	}
+	
+	/**
+	* CObject::GetOutboxWithTransform - Returns the outbox of the object with an applied transform
+	* @param[in] Transform - transformation matrix to use.
+	* @return Outbox of this object with a transform.
+	*/
+	sBox CObject::GetOutboxWithTransform(const sTransform & Transform)
+	{
+		sBox resultOutbox;
+		CheckError(m_pWrapper->m_WrapperTable.m_Object_GetOutboxWithTransform(m_pHandle, &Transform, &resultOutbox));
 		
 		return resultOutbox;
 	}
@@ -23610,7 +23756,7 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 	}
 	
 	/**
-	* CToolpathProfile::SetModifier - Adds a new modifier. Replaces the modifier, should it already exist with the same name. Fails if no Parameter exists with this name/namespace. Fails if the parameter does not have a Double value attached.
+	* CToolpathProfile::AddModifier - Adds a new modifier. Fails, should a modifier already exist with the same name. Fails if no Parameter exists with this name/namespace. Fails if the parameter does not have a Double value attached.
 	* @param[in] sNameSpaceName - Name of the Parameter Namespace.
 	* @param[in] sValueName - Parameter key string.
 	* @param[in] eModifierType - Returns the type of the modifier.
@@ -23618,9 +23764,23 @@ inline CBase* CWrapper::polymorphicFactory(Lib3MFHandle pHandle)
 	* @param[in] dMinValue - Desired Value if Factor is equal 0. The corresponding double parameter value MUST be between MinValue and MaxValue.
 	* @param[in] dMaxValue - Desired Value if Factor is equal 1. The corresponding double parameter value MUST be between MinValue and MaxValue.
 	*/
-	void CToolpathProfile::SetModifier(const std::string & sNameSpaceName, const std::string & sValueName, const eToolpathProfileModificationType eModifierType, const eToolpathProfileModificationFactor eModificationFactor, const Lib3MF_double dMinValue, const Lib3MF_double dMaxValue)
+	void CToolpathProfile::AddModifier(const std::string & sNameSpaceName, const std::string & sValueName, const eToolpathProfileModificationType eModifierType, const eToolpathProfileModificationFactor eModificationFactor, const Lib3MF_double dMinValue, const Lib3MF_double dMaxValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathProfile_SetModifier(m_pHandle, sNameSpaceName.c_str(), sValueName.c_str(), eModifierType, eModificationFactor, dMinValue, dMaxValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathProfile_AddModifier(m_pHandle, sNameSpaceName.c_str(), sValueName.c_str(), eModifierType, eModificationFactor, dMinValue, dMaxValue));
+	}
+	
+	/**
+	* CToolpathProfile::ChangeModifier - Changes an existing modifier. Fails, should no modifier exist with this name. Fails if no Parameter exists with this name/namespace. Fails if the parameter does not have a Double value attached.
+	* @param[in] sNameSpaceName - Name of the Parameter Namespace.
+	* @param[in] sValueName - Parameter key string.
+	* @param[in] eModifierType - Returns the type of the modifier.
+	* @param[in] eModificationFactor - which type of modification factor to use.
+	* @param[in] dMinValue - Desired Value if Factor is equal 0. The corresponding double parameter value MUST be between MinValue and MaxValue.
+	* @param[in] dMaxValue - Desired Value if Factor is equal 1. The corresponding double parameter value MUST be between MinValue and MaxValue.
+	*/
+	void CToolpathProfile::ChangeModifier(const std::string & sNameSpaceName, const std::string & sValueName, const eToolpathProfileModificationType eModifierType, const eToolpathProfileModificationFactor eModificationFactor, const Lib3MF_double dMinValue, const Lib3MF_double dMaxValue)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_ToolpathProfile_ChangeModifier(m_pHandle, sNameSpaceName.c_str(), sValueName.c_str(), eModifierType, eModificationFactor, dMinValue, dMaxValue));
 	}
 	
 	/**

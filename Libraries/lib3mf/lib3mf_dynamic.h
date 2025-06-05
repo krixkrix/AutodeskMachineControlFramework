@@ -290,7 +290,7 @@ typedef Lib3MFResult (*PLib3MFWriter_CreateBinaryStreamPtr) (Lib3MF_Writer pWrit
 typedef Lib3MFResult (*PLib3MFWriter_AssignBinaryStreamPtr) (Lib3MF_Writer pWriter, Lib3MF_Base pInstance, Lib3MF_BinaryStream pBinaryStream);
 
 /**
-* Registers a custom 3MF Namespace. Fails if Prefix is already registered.
+* Registers a custom 3MF Namespace. Fails if Prefix is already registered. The namespace will not be required by default.
 *
 * @param[in] pWriter - Writer instance.
 * @param[in] pPrefix - Prefix to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
@@ -298,6 +298,26 @@ typedef Lib3MFResult (*PLib3MFWriter_AssignBinaryStreamPtr) (Lib3MF_Writer pWrit
 * @return error code or 0 (success)
 */
 typedef Lib3MFResult (*PLib3MFWriter_RegisterCustomNamespacePtr) (Lib3MF_Writer pWriter, const char * pPrefix, const char * pNameSpace);
+
+/**
+* Sets if a custom 3MF Namespace is required. Fails if Namespace has not been registered first.
+*
+* @param[in] pWriter - Writer instance.
+* @param[in] pPrefix - Prefix to change value for. Fails if prefix does not exist.
+* @param[in] bShallBeRequired - True, if the namespace shall be required. False if not.
+* @return error code or 0 (success)
+*/
+typedef Lib3MFResult (*PLib3MFWriter_SetCustomNamespaceRequiredPtr) (Lib3MF_Writer pWriter, const char * pPrefix, bool bShallBeRequired);
+
+/**
+* Sets if a custom 3MF Namespace is required. Fails if Namespace has not been registered first.
+*
+* @param[in] pWriter - Writer instance.
+* @param[in] pPrefix - Prefix to return value. Fails if prefix does not exist.
+* @param[out] pIsRequired - Returns true, if the namespace shall be required. False if not. Default is not required.
+* @return error code or 0 (success)
+*/
+typedef Lib3MFResult (*PLib3MFWriter_GetCustomNamespaceRequiredPtr) (Lib3MF_Writer pWriter, const char * pPrefix, bool * pIsRequired);
 
 /*************************************************************************************************************************
  Class definition for PersistentReaderSource
@@ -400,6 +420,24 @@ typedef Lib3MFResult (*PLib3MFReader_AddRelationToReadPtr) (Lib3MF_Reader pReade
 * @return error code or 0 (success)
 */
 typedef Lib3MFResult (*PLib3MFReader_RemoveRelationToReadPtr) (Lib3MF_Reader pReader, const char * pRelationShipType);
+
+/**
+* Signals, that a custom namespace is supported by the consumer. If not properly set, a required namespace will fail reading.
+*
+* @param[in] pReader - Reader instance.
+* @param[in] pNameSpace - Namespace to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
+* @return error code or 0 (success)
+*/
+typedef Lib3MFResult (*PLib3MFReader_AddSupportedCustomNamespacePtr) (Lib3MF_Reader pReader, const char * pNameSpace);
+
+/**
+* Reverts AddSupportedCustomNamespace. A required namespace of this type will fail reading.
+*
+* @param[in] pReader - Reader instance.
+* @param[in] pNameSpace - Namespace to be used. MUST NOT be empty. MUST be alphanumeric, not starting with a number
+* @return error code or 0 (success)
+*/
+typedef Lib3MFResult (*PLib3MFReader_RemoveSupportedCustomNamespacePtr) (Lib3MF_Reader pReader, const char * pNameSpace);
 
 /**
 * Activates (deactivates) the strict mode of the reader.
@@ -1652,13 +1690,23 @@ typedef Lib3MFResult (*PLib3MFObject_GetThumbnailAttachmentPtr) (Lib3MF_Object p
 typedef Lib3MFResult (*PLib3MFObject_ClearThumbnailAttachmentPtr) (Lib3MF_Object pObject);
 
 /**
-* Returns the outbox of a build item
+* Returns the outbox of the object
 *
 * @param[in] pObject - Object instance.
-* @param[out] pOutbox - Outbox of this build item
+* @param[out] pOutbox - Outbox of this object
 * @return error code or 0 (success)
 */
 typedef Lib3MFResult (*PLib3MFObject_GetOutboxPtr) (Lib3MF_Object pObject, Lib3MF::sBox * pOutbox);
+
+/**
+* Returns the outbox of the object with an applied transform
+*
+* @param[in] pObject - Object instance.
+* @param[in] pTransform - transformation matrix to use.
+* @param[out] pOutbox - Outbox of this object with a transform.
+* @return error code or 0 (success)
+*/
+typedef Lib3MFResult (*PLib3MFObject_GetOutboxWithTransformPtr) (Lib3MF_Object pObject, const Lib3MF::sTransform * pTransform, Lib3MF::sBox * pOutbox);
 
 /**
 * Retrieves an object's uuid string (see production extension specification)
@@ -6140,7 +6188,7 @@ typedef Lib3MFResult (*PLib3MFToolpathProfile_GetModifierInformationByIndexPtr) 
 typedef Lib3MFResult (*PLib3MFToolpathProfile_GetModifierInformationByNamePtr) (Lib3MF_ToolpathProfile pToolpathProfile, const char * pNameSpaceName, const char * pValueName, Lib3MF::eToolpathProfileModificationType * pModifierType, Lib3MF::eToolpathProfileModificationFactor * pModificationFactor, Lib3MF_double * pMinValue, Lib3MF_double * pMaxValue);
 
 /**
-* Adds a new modifier. Replaces the modifier, should it already exist with the same name. Fails if no Parameter exists with this name/namespace. Fails if the parameter does not have a Double value attached.
+* Adds a new modifier. Fails, should a modifier already exist with the same name. Fails if no Parameter exists with this name/namespace. Fails if the parameter does not have a Double value attached.
 *
 * @param[in] pToolpathProfile - ToolpathProfile instance.
 * @param[in] pNameSpaceName - Name of the Parameter Namespace.
@@ -6151,7 +6199,21 @@ typedef Lib3MFResult (*PLib3MFToolpathProfile_GetModifierInformationByNamePtr) (
 * @param[in] dMaxValue - Desired Value if Factor is equal 1. The corresponding double parameter value MUST be between MinValue and MaxValue.
 * @return error code or 0 (success)
 */
-typedef Lib3MFResult (*PLib3MFToolpathProfile_SetModifierPtr) (Lib3MF_ToolpathProfile pToolpathProfile, const char * pNameSpaceName, const char * pValueName, Lib3MF::eToolpathProfileModificationType eModifierType, Lib3MF::eToolpathProfileModificationFactor eModificationFactor, Lib3MF_double dMinValue, Lib3MF_double dMaxValue);
+typedef Lib3MFResult (*PLib3MFToolpathProfile_AddModifierPtr) (Lib3MF_ToolpathProfile pToolpathProfile, const char * pNameSpaceName, const char * pValueName, Lib3MF::eToolpathProfileModificationType eModifierType, Lib3MF::eToolpathProfileModificationFactor eModificationFactor, Lib3MF_double dMinValue, Lib3MF_double dMaxValue);
+
+/**
+* Changes an existing modifier. Fails, should no modifier exist with this name. Fails if no Parameter exists with this name/namespace. Fails if the parameter does not have a Double value attached.
+*
+* @param[in] pToolpathProfile - ToolpathProfile instance.
+* @param[in] pNameSpaceName - Name of the Parameter Namespace.
+* @param[in] pValueName - Parameter key string.
+* @param[in] eModifierType - Returns the type of the modifier.
+* @param[in] eModificationFactor - which type of modification factor to use.
+* @param[in] dMinValue - Desired Value if Factor is equal 0. The corresponding double parameter value MUST be between MinValue and MaxValue.
+* @param[in] dMaxValue - Desired Value if Factor is equal 1. The corresponding double parameter value MUST be between MinValue and MaxValue.
+* @return error code or 0 (success)
+*/
+typedef Lib3MFResult (*PLib3MFToolpathProfile_ChangeModifierPtr) (Lib3MF_ToolpathProfile pToolpathProfile, const char * pNameSpaceName, const char * pValueName, Lib3MF::eToolpathProfileModificationType eModifierType, Lib3MF::eToolpathProfileModificationFactor eModificationFactor, Lib3MF_double dMinValue, Lib3MF_double dMaxValue);
 
 /**
 * Removes a modifier, if it exists.
@@ -8695,6 +8757,8 @@ typedef struct {
 	PLib3MFWriter_CreateBinaryStreamPtr m_Writer_CreateBinaryStream;
 	PLib3MFWriter_AssignBinaryStreamPtr m_Writer_AssignBinaryStream;
 	PLib3MFWriter_RegisterCustomNamespacePtr m_Writer_RegisterCustomNamespace;
+	PLib3MFWriter_SetCustomNamespaceRequiredPtr m_Writer_SetCustomNamespaceRequired;
+	PLib3MFWriter_GetCustomNamespaceRequiredPtr m_Writer_GetCustomNamespaceRequired;
 	PLib3MFPersistentReaderSource_GetSourceTypePtr m_PersistentReaderSource_GetSourceType;
 	PLib3MFPersistentReaderSource_InvalidateSourceDataPtr m_PersistentReaderSource_InvalidateSourceData;
 	PLib3MFPersistentReaderSource_SourceDataIsValidPtr m_PersistentReaderSource_SourceDataIsValid;
@@ -8705,6 +8769,8 @@ typedef struct {
 	PLib3MFReader_SetProgressCallbackPtr m_Reader_SetProgressCallback;
 	PLib3MFReader_AddRelationToReadPtr m_Reader_AddRelationToRead;
 	PLib3MFReader_RemoveRelationToReadPtr m_Reader_RemoveRelationToRead;
+	PLib3MFReader_AddSupportedCustomNamespacePtr m_Reader_AddSupportedCustomNamespace;
+	PLib3MFReader_RemoveSupportedCustomNamespacePtr m_Reader_RemoveSupportedCustomNamespace;
 	PLib3MFReader_SetStrictModeActivePtr m_Reader_SetStrictModeActive;
 	PLib3MFReader_GetStrictModeActivePtr m_Reader_GetStrictModeActive;
 	PLib3MFReader_GetWarningPtr m_Reader_GetWarning;
@@ -8825,6 +8891,7 @@ typedef struct {
 	PLib3MFObject_GetThumbnailAttachmentPtr m_Object_GetThumbnailAttachment;
 	PLib3MFObject_ClearThumbnailAttachmentPtr m_Object_ClearThumbnailAttachment;
 	PLib3MFObject_GetOutboxPtr m_Object_GetOutbox;
+	PLib3MFObject_GetOutboxWithTransformPtr m_Object_GetOutboxWithTransform;
 	PLib3MFObject_GetUUIDPtr m_Object_GetUUID;
 	PLib3MFObject_SetUUIDPtr m_Object_SetUUID;
 	PLib3MFObject_GetMetaDataGroupPtr m_Object_GetMetaDataGroup;
@@ -9236,7 +9303,8 @@ typedef struct {
 	PLib3MFToolpathProfile_HasModifierPtr m_ToolpathProfile_HasModifier;
 	PLib3MFToolpathProfile_GetModifierInformationByIndexPtr m_ToolpathProfile_GetModifierInformationByIndex;
 	PLib3MFToolpathProfile_GetModifierInformationByNamePtr m_ToolpathProfile_GetModifierInformationByName;
-	PLib3MFToolpathProfile_SetModifierPtr m_ToolpathProfile_SetModifier;
+	PLib3MFToolpathProfile_AddModifierPtr m_ToolpathProfile_AddModifier;
+	PLib3MFToolpathProfile_ChangeModifierPtr m_ToolpathProfile_ChangeModifier;
 	PLib3MFToolpathProfile_RemoveModifierPtr m_ToolpathProfile_RemoveModifier;
 	PLib3MFToolpathLayerReader_GetLayerDataUUIDPtr m_ToolpathLayerReader_GetLayerDataUUID;
 	PLib3MFToolpathLayerReader_GetCustomDataCountPtr m_ToolpathLayerReader_GetCustomDataCount;
