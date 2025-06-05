@@ -278,10 +278,13 @@
 		<error name="INVALIDHATCHSUBINTERPOLATIONDATA" code="10238" description="Invalid hatch subinterpolation data." />
 		<error name="HATCHSUBINTERPOLATIONDATAOVERFLOW" code="10239" description="Hatch subinterpolation data overflow." />
 		<error name="WORKINGFILEDOESNOTEXIST" code="10240" description="Working file does not exist." />
+		<error name="ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX" code="10241" description="Attempted to access empty bounding box." />
+		<error name="MINIMUMEXTENTSARENOTPOSITIVE" code="10242" description="Minimum extents are not positive." />
+		<error name="CANNOTWRITETOFINISHEDWORKINGFILE" code="10243" description="Can not write to finished working file." />					
+		<error name="INVALIDWRITEBUFFERSIZE" code="10244" description="Invalid write buffer size." />					
+		<error name="INVALIDWRITEBUFFFERPOSITION" code="10245" description="Invalid write buffer position." />					
 		
-
-		
-		
+			
 	</errors>
 
 	<enum name="AlertLevel">
@@ -438,6 +441,10 @@
 
 	<struct name="FloatPosition2D">
 		<member name="Coordinates" type="double" rows="2"/>
+	</struct>
+
+	<struct name="FloatPosition3D">
+		<member name="Coordinates" type="double" rows="3"/>
 	</struct>
 
 	<struct name="FieldData2DPoint">
@@ -1518,6 +1525,72 @@
 		</method>
 
 	</class>
+	
+	
+	<class name="BoundingBox3D" parent="Base" description="Bounding Box Instance.">
+
+		<method name="IsEmpty" description="Returns if the bounding box is empty.">
+			<param name="Empty" type="bool" pass="return" description="Returns true if the Bounding box is empty." />
+		</method>
+		
+		<method name="Clear" description="Makes the bounding box empty.">
+		</method>
+
+		<method name="SetExtent" description="Set Minimum and Maximum position. If coordinates are not ordered, they will be ordered.">
+			<param name="MinimumPoint" type="struct" class="FloatPosition3D" pass="in" description="Minimum Position." />
+			<param name="MaximumPoint" type="struct" class="FloatPosition3D" pass="in" description="Maximum Position." />
+		</method>
+		
+		<method name="GetExtents" description="Returns the extents of the team. Fails if Bounding box is empty.">
+			<param name="X" type="double" pass="out" description="X Coordinate in mm" />
+			<param name="Y" type="double" pass="out" description="Y Coordinate in mm" />
+			<param name="Z" type="double" pass="out" description="Z Coordinate in mm" />
+		</method>
+		
+		<method name="AddPoint" description="Adds a new point to the boundary box.">
+			<param name="Point" type="struct" class="FloatPosition3D" pass="in" description="Position." />
+		</method>
+
+		<method name="AddPointCoordinates" description="Adds a new point to the boundary box.">
+			<param name="X" type="double" pass="in" description="X Coordinate in mm" />
+			<param name="Y" type="double" pass="in" description="Y Coordinate in mm" />
+			<param name="Z" type="double" pass="in" description="Z Coordinate in mm" />
+		</method>
+
+		<method name="HasMinimumExtents" description="Returns, if the extents are of a minimum value in each axis. Returns false, if Bounding Box is empty.">
+			<param name="MinimumExtents" type="double" pass="in" description="Minimum Extents value. MUST be larger than 0." />
+			<param name="Value" type="bool" pass="return" description="True, if the bounding box is of the minimum extents." />
+		</method>
+
+		<method name="GetMinimum" description="Returns the minimum point. Fails if Bounding box is empty.">
+			<param name="MinimumPoint" type="struct" class="FloatPosition3D" pass="return" description="Minimum Position." />
+		</method>
+		
+		<method name="GetMaximum" description="Returns the maximum point. Fails if Bounding box is empty.">
+			<param name="MaximumPoint" type="struct" class="FloatPosition3D" pass="return" description="Maximum Position." />
+		</method>
+
+		<method name="GetMinimumCoordinates" description="Returns the minimum point coordinates. Fails if Bounding box is empty.">
+			<param name="X" type="double" pass="out" description="X Coordinate in mm" />
+			<param name="Y" type="double" pass="out" description="Y Coordinate in mm" />
+			<param name="Z" type="double" pass="out" description="Z Coordinate in mm" />
+		</method>
+
+		<method name="GetMaximumCoordinates" description="Returns the maximum point coordinates. Fails if Bounding box is empty.">
+			<param name="X" type="double" pass="out" description="X Coordinate in mm" />
+			<param name="Y" type="double" pass="out" description="Y Coordinate in mm" />
+			<param name="Z" type="double" pass="out" description="Z Coordinate in mm" />
+		</method>
+
+		<method name="Duplicate" description="Returns a duplicate of the bounding box.">
+			<param name="DuplicateInstance" type="class" class="BoundingBox3D" pass="return" description="Returns a duplicate instance." />
+		</method>
+
+		<method name="Merge" description="Merges another Bounding box. Will copy the other instance if current instance is empty. Will do nothing if other instance is empty.">
+			<param name="AnotherInstance" type="class" class="BoundingBox3D" pass="in" description="Instance to merge into the Bounding box." />
+		</method>
+
+	</class>
 
 
 	<class name="ModelDataMeshInstance" parent="Base" description="An instance of a 3D Model Data.">
@@ -1547,13 +1620,8 @@
 			<param name="PersistentMesh" type="class" class="PersistentMeshObject" pass="return" description="Returns a persistent instance to the same mesh data." />
 		</method>
 		
-		<method name="CalculateOutbox" description="Calculates the outbox of the model.">
-			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
-			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
-			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
-			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
-			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
-			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
+		<method name="CalculateBoundingBox" description="Calculates the bounding box of the model.">
+			<param name="BoundingBoxInstance" type="class" class="BoundingBox3D" pass="return" description="Bounding Box Instance." />
 		</method>
 
 	</class>
@@ -1604,31 +1672,8 @@
 			<param name="SubComponentInstance" type="class" class="ModelDataComponentInstance" pass="return" description="SubComponent. MUST be between 0 and ModelCount - 1." />
 		</method>
 
-		<method name="CalculateTotalOutbox" description="Calculates the outbox of the model (Solid and Support).">
-			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
-			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
-			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
-			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
-			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
-			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
-		</method>
-
-		<method name="CalculateSolidOutbox" description="Calculates the outbox of the solid part of the model.">
-			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
-			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
-			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
-			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
-			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
-			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
-		</method>
-
-		<method name="CalculateSupportOutbox" description="Calculates the outbox of the support part of the model.">
-			<param name="MinX" type="double" pass="out" description="Minimum Coordinate in X in mm." />
-			<param name="MinY" type="double" pass="out" description="Minimum Coordinate in Y in mm." />
-			<param name="MinZ" type="double" pass="out" description="Minimum Coordinate in Z in mm." />
-			<param name="MaxX" type="double" pass="out" description="Maximum Coordinate in X in mm." />
-			<param name="MaxY" type="double" pass="out" description="Maximum Coordinate in Y in mm." />
-			<param name="MaxZ" type="double" pass="out" description="Maximum Coordinate in Z in mm." />
+		<method name="CalculateBoundingBox" description="Calculates the bounding box of the model.">
+			<param name="BoundingBoxInstance" type="class" class="BoundingBox3D" pass="return" description="Bounding Box Instance." />
 		</method>
 
 	</class>
@@ -2633,6 +2678,54 @@
 			<param name="WorkingFile" type="handle" class="WorkingFile" pass="return" description="returns the WorkingFile instance."/>
 		</method>
 	</class>
+	
+	<class name="WorkingFileWriter" parent="Base" description="Working File Access Object">
+
+		<method name="GetSize" description = "Returns the current size of file.">
+			<param name="FileSize" type="uint64" pass="return" description="file size" />
+		</method>
+
+		<method name="GetAbsoluteFileName" description = "Retrieves absolute file name of the working file on disk">
+			<param name="AbsoluteFileName" type="string" pass="return" description="global path of the file" />
+		</method>
+	
+		<method name="GetFileName" description = "Retrieves relative file name of the working file in the directory (without path)">
+			<param name="LocalFileName" type="string" pass="return" description="local name of the file" />
+		</method>
+
+		<method name="FlushBuffer" description = "Writes all unwritten data to disk.">
+		</method>
+
+		<method name="Finish" description = "Finishes the writing and returns the corresponding working file.">
+			<param name="WorkingFile" type="class" class="WorkingFile" pass="return" description="returns the WorkingFile instance."/>
+		</method>
+
+		<method name="WriteData" description = "Writes an array to the file.">
+			<param name="Buffer" type="basicarray" class="uint8" pass="in" description="Buffer that will be written." />
+		</method>
+
+		<method name="WriteString" description = "Writes a string to the file.">
+			<param name="Value" type="string" pass="in" description="String that will be written." />
+		</method>
+
+		<method name="WriteLine" description = "Writes a string to the file with line ending.">
+			<param name="Value" type="string" pass="in" description="String that will be written." />
+			<param name="UnixLineEnding" type="bool" pass="in" description="If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10)." />
+		</method>
+
+		<method name="WriteFixedFloat" description = "Writes a double to the file with fixed number of digits.">
+			<param name="Value" type="double" pass="in" description="Double that will be written." />
+			<param name="Digits" type="uint32" pass="in" description="Number of Digits to export to.. (in mm)" />
+		</method>
+
+		<method name="WriteFixedFloatLine" description = "Writes a double to the file with fixed number of digits and a new line after.">
+			<param name="Value" type="double" pass="in" description="Double that will be written." />
+			<param name="Digits" type="uint32" pass="in" description="Number of Digits to export to.. (in mm)" />
+			<param name="UnixLineEnding" type="bool" pass="in" description="If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10)." />
+		</method>
+
+	</class>
+	
 
 
 	<class name="WorkingDirectory" parent="Base" description="Working Directory Access Object">
@@ -2640,6 +2733,12 @@
 		<method name="IsActive" description = "Working directory is active.">
 			<param name="IsActive" type="bool" pass="return" description="returns true if files can be read and written to the directory." />
 		</method>
+
+		<method name="CreateSubDirectory" description = "Creates a managed subdirectory in the directory.">
+			<param name="DirectoryName" type="string" pass="in" description="Directory name to create. Can not include any path delimiters or .." />
+			<param name="SubDirectory" type="class" class="WorkingDirectory" pass="return" description="Working directory instance." />
+		</method>
+
 
 		<method name="GetAbsoluteFilePath" description = "Retrieves absolute file path.">
 			<param name="FilePath" type="string" pass="return" description="global path of the directory, including path delimiter." />
@@ -2721,6 +2820,18 @@
 
 		<method name="RetrieveAllFiles" description = "Returns a list of all files in the directory." >
 			<param name="IteratorInstance" type="class" class="WorkingFileIterator" pass="return" description="working file iterator instance." />
+		</method>
+
+		<method name="AddBufferedWriter" description = "Adds a buffered writer to the directory.">
+			<param name="FileName" type="string" pass="in" description="Filename to manage. The file will be created." />
+			<param name="BufferSizeInkB" type="uint32" pass="in" description="Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576." />
+			<param name="WriterInstance" type="class" class="WorkingFileWriter" pass="return" description="Working file writer instance." />
+		</method>
+
+		<method name="AddBufferedWriterTempFile" description = "Adds a buffered writer to the directory with a temporary file name.">
+			<param name="Extension" type="string" pass="in" description="extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters." />
+			<param name="BufferSizeInkB" type="uint32" pass="in" description="Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576." />
+			<param name="WriterInstance" type="class" class="WorkingFileWriter" pass="return" description="Working file writer instance." />
 		</method>
 
 	</class>

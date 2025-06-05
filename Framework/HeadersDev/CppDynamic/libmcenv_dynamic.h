@@ -2139,6 +2139,136 @@ typedef LibMCEnvResult (*PLibMCEnvMeshObject_MakePersistentPtr) (LibMCEnv_MeshOb
 typedef LibMCEnvResult (*PLibMCEnvPersistentMeshObject_IsBoundToLoginSessionPtr) (LibMCEnv_PersistentMeshObject pPersistentMeshObject, bool * pValue);
 
 /*************************************************************************************************************************
+ Class definition for BoundingBox3D
+**************************************************************************************************************************/
+
+/**
+* Returns if the bounding box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pEmpty - Returns true if the Bounding box is empty.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_IsEmptyPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, bool * pEmpty);
+
+/**
+* Makes the bounding box empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_ClearPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D);
+
+/**
+* Set Minimum and Maximum position. If coordinates are not ordered, they will be ordered.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[in] pMinimumPoint - Minimum Position.
+* @param[in] pMaximumPoint - Maximum Position.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_SetExtentPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, const LibMCEnv::sFloatPosition3D * pMinimumPoint, const LibMCEnv::sFloatPosition3D * pMaximumPoint);
+
+/**
+* Returns the extents of the team. Fails if Bounding box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pX - X Coordinate in mm
+* @param[out] pY - Y Coordinate in mm
+* @param[out] pZ - Z Coordinate in mm
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_GetExtentsPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double * pX, LibMCEnv_double * pY, LibMCEnv_double * pZ);
+
+/**
+* Adds a new point to the boundary box.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[in] pPoint - Position.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_AddPointPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, const LibMCEnv::sFloatPosition3D * pPoint);
+
+/**
+* Adds a new point to the boundary box.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[in] dX - X Coordinate in mm
+* @param[in] dY - Y Coordinate in mm
+* @param[in] dZ - Z Coordinate in mm
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_AddPointCoordinatesPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double dX, LibMCEnv_double dY, LibMCEnv_double dZ);
+
+/**
+* Returns, if the extents are of a minimum value in each axis. Returns false, if Bounding Box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[in] dMinimumExtents - Minimum Extents value. MUST be larger than 0.
+* @param[out] pValue - True, if the bounding box is of the minimum extents.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_HasMinimumExtentsPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double dMinimumExtents, bool * pValue);
+
+/**
+* Returns the minimum point. Fails if Bounding box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pMinimumPoint - Minimum Position.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_GetMinimumPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv::sFloatPosition3D * pMinimumPoint);
+
+/**
+* Returns the maximum point. Fails if Bounding box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pMaximumPoint - Maximum Position.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_GetMaximumPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv::sFloatPosition3D * pMaximumPoint);
+
+/**
+* Returns the minimum point coordinates. Fails if Bounding box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pX - X Coordinate in mm
+* @param[out] pY - Y Coordinate in mm
+* @param[out] pZ - Z Coordinate in mm
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_GetMinimumCoordinatesPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double * pX, LibMCEnv_double * pY, LibMCEnv_double * pZ);
+
+/**
+* Returns the maximum point coordinates. Fails if Bounding box is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pX - X Coordinate in mm
+* @param[out] pY - Y Coordinate in mm
+* @param[out] pZ - Z Coordinate in mm
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_GetMaximumCoordinatesPtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double * pX, LibMCEnv_double * pY, LibMCEnv_double * pZ);
+
+/**
+* Returns a duplicate of the bounding box.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[out] pDuplicateInstance - Returns a duplicate instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_DuplicatePtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_BoundingBox3D * pDuplicateInstance);
+
+/**
+* Merges another Bounding box. Will copy the other instance if current instance is empty. Will do nothing if other instance is empty.
+*
+* @param[in] pBoundingBox3D - BoundingBox3D instance.
+* @param[in] pAnotherInstance - Instance to merge into the Bounding box.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBoundingBox3D_MergePtr) (LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_BoundingBox3D pAnotherInstance);
+
+/*************************************************************************************************************************
  Class definition for ModelDataMeshInstance
 **************************************************************************************************************************/
 
@@ -2202,18 +2332,13 @@ typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_CreateCopiedMeshPtr) (Li
 typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_CreatePersistentMeshPtr) (LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, bool bBoundToLoginSession, LibMCEnv_PersistentMeshObject * pPersistentMesh);
 
 /**
-* Calculates the outbox of the model.
+* Calculates the bounding box of the model.
 *
 * @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
-* @param[out] pMinX - Minimum Coordinate in X in mm.
-* @param[out] pMinY - Minimum Coordinate in Y in mm.
-* @param[out] pMinZ - Minimum Coordinate in Z in mm.
-* @param[out] pMaxX - Maximum Coordinate in X in mm.
-* @param[out] pMaxY - Maximum Coordinate in Y in mm.
-* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
+* @param[out] pBoundingBoxInstance - Bounding Box Instance.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_CalculateOutboxPtr) (LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
+typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_CalculateBoundingBoxPtr) (LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_BoundingBox3D * pBoundingBoxInstance);
 
 /*************************************************************************************************************************
  Class definition for ModelDataComponentInstance
@@ -2317,46 +2442,13 @@ typedef LibMCEnvResult (*PLibMCEnvModelDataComponentInstance_GetSubComponentCoun
 typedef LibMCEnvResult (*PLibMCEnvModelDataComponentInstance_GetSubComponentPtr) (LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_uint32 nIndex, LibMCEnv_ModelDataComponentInstance * pSubComponentInstance);
 
 /**
-* Calculates the outbox of the model (Solid and Support).
+* Calculates the bounding box of the model.
 *
 * @param[in] pModelDataComponentInstance - ModelDataComponentInstance instance.
-* @param[out] pMinX - Minimum Coordinate in X in mm.
-* @param[out] pMinY - Minimum Coordinate in Y in mm.
-* @param[out] pMinZ - Minimum Coordinate in Z in mm.
-* @param[out] pMaxX - Maximum Coordinate in X in mm.
-* @param[out] pMaxY - Maximum Coordinate in Y in mm.
-* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
+* @param[out] pBoundingBoxInstance - Bounding Box Instance.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvModelDataComponentInstance_CalculateTotalOutboxPtr) (LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
-
-/**
-* Calculates the outbox of the solid part of the model.
-*
-* @param[in] pModelDataComponentInstance - ModelDataComponentInstance instance.
-* @param[out] pMinX - Minimum Coordinate in X in mm.
-* @param[out] pMinY - Minimum Coordinate in Y in mm.
-* @param[out] pMinZ - Minimum Coordinate in Z in mm.
-* @param[out] pMaxX - Maximum Coordinate in X in mm.
-* @param[out] pMaxY - Maximum Coordinate in Y in mm.
-* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
-* @return error code or 0 (success)
-*/
-typedef LibMCEnvResult (*PLibMCEnvModelDataComponentInstance_CalculateSolidOutboxPtr) (LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
-
-/**
-* Calculates the outbox of the support part of the model.
-*
-* @param[in] pModelDataComponentInstance - ModelDataComponentInstance instance.
-* @param[out] pMinX - Minimum Coordinate in X in mm.
-* @param[out] pMinY - Minimum Coordinate in Y in mm.
-* @param[out] pMinZ - Minimum Coordinate in Z in mm.
-* @param[out] pMaxX - Maximum Coordinate in X in mm.
-* @param[out] pMaxY - Maximum Coordinate in Y in mm.
-* @param[out] pMaxZ - Maximum Coordinate in Z in mm.
-* @return error code or 0 (success)
-*/
-typedef LibMCEnvResult (*PLibMCEnvModelDataComponentInstance_CalculateSupportOutboxPtr) (LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ);
+typedef LibMCEnvResult (*PLibMCEnvModelDataComponentInstance_CalculateBoundingBoxPtr) (LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_BoundingBox3D * pBoundingBoxInstance);
 
 /*************************************************************************************************************************
  Class definition for MeshSceneItem
@@ -4354,6 +4446,108 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFile_DeleteFromDiskPtr) (LibMCEnv_Worki
 typedef LibMCEnvResult (*PLibMCEnvWorkingFileIterator_GetCurrentFilePtr) (LibMCEnv_WorkingFileIterator pWorkingFileIterator, LibMCEnv_WorkingFile * pWorkingFile);
 
 /*************************************************************************************************************************
+ Class definition for WorkingFileWriter
+**************************************************************************************************************************/
+
+/**
+* Returns the current size of file.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[out] pFileSize - file size
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_GetSizePtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_uint64 * pFileSize);
+
+/**
+* Retrieves absolute file name of the working file on disk
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] nAbsoluteFileNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pAbsoluteFileNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pAbsoluteFileNameBuffer -  buffer of global path of the file, may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_GetAbsoluteFileNamePtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, const LibMCEnv_uint32 nAbsoluteFileNameBufferSize, LibMCEnv_uint32* pAbsoluteFileNameNeededChars, char * pAbsoluteFileNameBuffer);
+
+/**
+* Retrieves relative file name of the working file in the directory (without path)
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] nLocalFileNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pLocalFileNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pLocalFileNameBuffer -  buffer of local name of the file, may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_GetFileNamePtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, const LibMCEnv_uint32 nLocalFileNameBufferSize, LibMCEnv_uint32* pLocalFileNameNeededChars, char * pLocalFileNameBuffer);
+
+/**
+* Writes all unwritten data to disk.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_FlushBufferPtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter);
+
+/**
+* Finishes the writing and returns the corresponding working file.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[out] pWorkingFile - returns the WorkingFile instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_FinishPtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_WorkingFile * pWorkingFile);
+
+/**
+* Writes an array to the file.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] nBufferBufferSize - Number of elements in buffer
+* @param[in] pBufferBuffer - uint8 buffer of Buffer that will be written.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_WriteDataPtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_uint64 nBufferBufferSize, const LibMCEnv_uint8 * pBufferBuffer);
+
+/**
+* Writes a string to the file.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] pValue - String that will be written.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_WriteStringPtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, const char * pValue);
+
+/**
+* Writes a string to the file with line ending.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] pValue - String that will be written.
+* @param[in] bUnixLineEnding - If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10).
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_WriteLinePtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, const char * pValue, bool bUnixLineEnding);
+
+/**
+* Writes a double to the file with fixed number of digits.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] dValue - Double that will be written.
+* @param[in] nDigits - Number of Digits to export to.. (in mm)
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_WriteFixedFloatPtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_double dValue, LibMCEnv_uint32 nDigits);
+
+/**
+* Writes a double to the file with fixed number of digits and a new line after.
+*
+* @param[in] pWorkingFileWriter - WorkingFileWriter instance.
+* @param[in] dValue - Double that will be written.
+* @param[in] nDigits - Number of Digits to export to.. (in mm)
+* @param[in] bUnixLineEnding - If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10).
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileWriter_WriteFixedFloatLinePtr) (LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_double dValue, LibMCEnv_uint32 nDigits, bool bUnixLineEnding);
+
+/*************************************************************************************************************************
  Class definition for WorkingDirectory
 **************************************************************************************************************************/
 
@@ -4365,6 +4559,16 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFileIterator_GetCurrentFilePtr) (LibMCE
 * @return error code or 0 (success)
 */
 typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_IsActivePtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, bool * pIsActive);
+
+/**
+* Creates a managed subdirectory in the directory.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pDirectoryName - Directory name to create. Can not include any path delimiters or ..
+* @param[out] pSubDirectory - Working directory instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_CreateSubDirectoryPtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pDirectoryName, LibMCEnv_WorkingDirectory * pSubDirectory);
 
 /**
 * Retrieves absolute file path.
@@ -4531,6 +4735,28 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_RetrieveManagedFilesPtr) (Lib
 * @return error code or 0 (success)
 */
 typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_RetrieveAllFilesPtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, LibMCEnv_WorkingFileIterator * pIteratorInstance);
+
+/**
+* Adds a buffered writer to the directory.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pFileName - Filename to manage. The file will be created.
+* @param[in] nBufferSizeInkB - Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576.
+* @param[out] pWriterInstance - Working file writer instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_AddBufferedWriterPtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pFileName, LibMCEnv_uint32 nBufferSizeInkB, LibMCEnv_WorkingFileWriter * pWriterInstance);
+
+/**
+* Adds a buffered writer to the directory with a temporary file name.
+*
+* @param[in] pWorkingDirectory - WorkingDirectory instance.
+* @param[in] pExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+* @param[in] nBufferSizeInkB - Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576.
+* @param[out] pWriterInstance - Working file writer instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingDirectory_AddBufferedWriterTempFilePtr) (LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, LibMCEnv_uint32 nBufferSizeInkB, LibMCEnv_WorkingFileWriter * pWriterInstance);
 
 /*************************************************************************************************************************
  Class definition for XMLDocumentAttribute
@@ -9959,13 +10185,26 @@ typedef struct {
 	PLibMCEnvMeshObject_IsPersistentPtr m_MeshObject_IsPersistent;
 	PLibMCEnvMeshObject_MakePersistentPtr m_MeshObject_MakePersistent;
 	PLibMCEnvPersistentMeshObject_IsBoundToLoginSessionPtr m_PersistentMeshObject_IsBoundToLoginSession;
+	PLibMCEnvBoundingBox3D_IsEmptyPtr m_BoundingBox3D_IsEmpty;
+	PLibMCEnvBoundingBox3D_ClearPtr m_BoundingBox3D_Clear;
+	PLibMCEnvBoundingBox3D_SetExtentPtr m_BoundingBox3D_SetExtent;
+	PLibMCEnvBoundingBox3D_GetExtentsPtr m_BoundingBox3D_GetExtents;
+	PLibMCEnvBoundingBox3D_AddPointPtr m_BoundingBox3D_AddPoint;
+	PLibMCEnvBoundingBox3D_AddPointCoordinatesPtr m_BoundingBox3D_AddPointCoordinates;
+	PLibMCEnvBoundingBox3D_HasMinimumExtentsPtr m_BoundingBox3D_HasMinimumExtents;
+	PLibMCEnvBoundingBox3D_GetMinimumPtr m_BoundingBox3D_GetMinimum;
+	PLibMCEnvBoundingBox3D_GetMaximumPtr m_BoundingBox3D_GetMaximum;
+	PLibMCEnvBoundingBox3D_GetMinimumCoordinatesPtr m_BoundingBox3D_GetMinimumCoordinates;
+	PLibMCEnvBoundingBox3D_GetMaximumCoordinatesPtr m_BoundingBox3D_GetMaximumCoordinates;
+	PLibMCEnvBoundingBox3D_DuplicatePtr m_BoundingBox3D_Duplicate;
+	PLibMCEnvBoundingBox3D_MergePtr m_BoundingBox3D_Merge;
 	PLibMCEnvModelDataMeshInstance_GetNamePtr m_ModelDataMeshInstance_GetName;
 	PLibMCEnvModelDataMeshInstance_GetUUIDPtr m_ModelDataMeshInstance_GetUUID;
 	PLibMCEnvModelDataMeshInstance_GetLocalTransformPtr m_ModelDataMeshInstance_GetLocalTransform;
 	PLibMCEnvModelDataMeshInstance_GetAbsoluteTransformPtr m_ModelDataMeshInstance_GetAbsoluteTransform;
 	PLibMCEnvModelDataMeshInstance_CreateCopiedMeshPtr m_ModelDataMeshInstance_CreateCopiedMesh;
 	PLibMCEnvModelDataMeshInstance_CreatePersistentMeshPtr m_ModelDataMeshInstance_CreatePersistentMesh;
-	PLibMCEnvModelDataMeshInstance_CalculateOutboxPtr m_ModelDataMeshInstance_CalculateOutbox;
+	PLibMCEnvModelDataMeshInstance_CalculateBoundingBoxPtr m_ModelDataMeshInstance_CalculateBoundingBox;
 	PLibMCEnvModelDataComponentInstance_GetNamePtr m_ModelDataComponentInstance_GetName;
 	PLibMCEnvModelDataComponentInstance_GetUUIDPtr m_ModelDataComponentInstance_GetUUID;
 	PLibMCEnvModelDataComponentInstance_GetLocalTransformPtr m_ModelDataComponentInstance_GetLocalTransform;
@@ -9976,9 +10215,7 @@ typedef struct {
 	PLibMCEnvModelDataComponentInstance_GetSupportMeshPtr m_ModelDataComponentInstance_GetSupportMesh;
 	PLibMCEnvModelDataComponentInstance_GetSubComponentCountPtr m_ModelDataComponentInstance_GetSubComponentCount;
 	PLibMCEnvModelDataComponentInstance_GetSubComponentPtr m_ModelDataComponentInstance_GetSubComponent;
-	PLibMCEnvModelDataComponentInstance_CalculateTotalOutboxPtr m_ModelDataComponentInstance_CalculateTotalOutbox;
-	PLibMCEnvModelDataComponentInstance_CalculateSolidOutboxPtr m_ModelDataComponentInstance_CalculateSolidOutbox;
-	PLibMCEnvModelDataComponentInstance_CalculateSupportOutboxPtr m_ModelDataComponentInstance_CalculateSupportOutbox;
+	PLibMCEnvModelDataComponentInstance_CalculateBoundingBoxPtr m_ModelDataComponentInstance_CalculateBoundingBox;
 	PLibMCEnvMeshSceneItem_GetItemUUIDPtr m_MeshSceneItem_GetItemUUID;
 	PLibMCEnvMeshSceneItem_GetSceneUUIDPtr m_MeshSceneItem_GetSceneUUID;
 	PLibMCEnvMeshSceneItem_GetTransformPtr m_MeshSceneItem_GetTransform;
@@ -10160,7 +10397,18 @@ typedef struct {
 	PLibMCEnvWorkingFile_FileExistsPtr m_WorkingFile_FileExists;
 	PLibMCEnvWorkingFile_DeleteFromDiskPtr m_WorkingFile_DeleteFromDisk;
 	PLibMCEnvWorkingFileIterator_GetCurrentFilePtr m_WorkingFileIterator_GetCurrentFile;
+	PLibMCEnvWorkingFileWriter_GetSizePtr m_WorkingFileWriter_GetSize;
+	PLibMCEnvWorkingFileWriter_GetAbsoluteFileNamePtr m_WorkingFileWriter_GetAbsoluteFileName;
+	PLibMCEnvWorkingFileWriter_GetFileNamePtr m_WorkingFileWriter_GetFileName;
+	PLibMCEnvWorkingFileWriter_FlushBufferPtr m_WorkingFileWriter_FlushBuffer;
+	PLibMCEnvWorkingFileWriter_FinishPtr m_WorkingFileWriter_Finish;
+	PLibMCEnvWorkingFileWriter_WriteDataPtr m_WorkingFileWriter_WriteData;
+	PLibMCEnvWorkingFileWriter_WriteStringPtr m_WorkingFileWriter_WriteString;
+	PLibMCEnvWorkingFileWriter_WriteLinePtr m_WorkingFileWriter_WriteLine;
+	PLibMCEnvWorkingFileWriter_WriteFixedFloatPtr m_WorkingFileWriter_WriteFixedFloat;
+	PLibMCEnvWorkingFileWriter_WriteFixedFloatLinePtr m_WorkingFileWriter_WriteFixedFloatLine;
 	PLibMCEnvWorkingDirectory_IsActivePtr m_WorkingDirectory_IsActive;
+	PLibMCEnvWorkingDirectory_CreateSubDirectoryPtr m_WorkingDirectory_CreateSubDirectory;
 	PLibMCEnvWorkingDirectory_GetAbsoluteFilePathPtr m_WorkingDirectory_GetAbsoluteFilePath;
 	PLibMCEnvWorkingDirectory_StoreCustomDataPtr m_WorkingDirectory_StoreCustomData;
 	PLibMCEnvWorkingDirectory_StoreCustomStringPtr m_WorkingDirectory_StoreCustomString;
@@ -10177,6 +10425,8 @@ typedef struct {
 	PLibMCEnvWorkingDirectory_RetrieveUnmanagedFilesPtr m_WorkingDirectory_RetrieveUnmanagedFiles;
 	PLibMCEnvWorkingDirectory_RetrieveManagedFilesPtr m_WorkingDirectory_RetrieveManagedFiles;
 	PLibMCEnvWorkingDirectory_RetrieveAllFilesPtr m_WorkingDirectory_RetrieveAllFiles;
+	PLibMCEnvWorkingDirectory_AddBufferedWriterPtr m_WorkingDirectory_AddBufferedWriter;
+	PLibMCEnvWorkingDirectory_AddBufferedWriterTempFilePtr m_WorkingDirectory_AddBufferedWriterTempFile;
 	PLibMCEnvXMLDocumentAttribute_GetNameSpacePtr m_XMLDocumentAttribute_GetNameSpace;
 	PLibMCEnvXMLDocumentAttribute_GetNamePtr m_XMLDocumentAttribute_GetName;
 	PLibMCEnvXMLDocumentAttribute_GetValuePtr m_XMLDocumentAttribute_GetValue;

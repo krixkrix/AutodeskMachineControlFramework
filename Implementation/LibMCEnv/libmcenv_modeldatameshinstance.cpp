@@ -35,6 +35,7 @@ Abstract: This is a stub class definition of CModelDataMeshInstance
 #include "libmcenv_interfaceexception.hpp"
 #include "libmcenv_meshobject.hpp"
 #include "libmcenv_persistentmeshobject.hpp"
+#include "libmcenv_boundingbox3d.hpp"
 
 // Include custom headers here.
 #include "common_utils.hpp"
@@ -125,14 +126,16 @@ IPersistentMeshObject * CModelDataMeshInstance::CreatePersistentMesh(const bool 
 
 }
 
-void CModelDataMeshInstance::CalculateOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ)
+IBoundingBox3D* CModelDataMeshInstance::CalculateBoundingBox()
 {
-    Lib3MF::sBox box = m_pMeshObject->GetOutbox();
-    dMinX = box.m_MinCoordinate[0];
-    dMinY = box.m_MinCoordinate[1];
-    dMinZ = box.m_MinCoordinate[2];
-    dMaxX = box.m_MaxCoordinate[0];
-    dMaxY = box.m_MaxCoordinate[1];
-    dMaxZ = box.m_MaxCoordinate[2];
-}
+    std::unique_ptr<CBoundingBox3D> boundingBox(new CBoundingBox3D());
 
+    // TODO: directly call Lib3MF
+    std::vector<Lib3MF::sPosition> verticesBuffer;
+    m_pMeshObject->GetVertices(verticesBuffer);
+
+    for (auto v : verticesBuffer)
+        boundingBox->AddPointCoordinates(v.m_Coordinates[0], v.m_Coordinates[1], v.m_Coordinates[2]);
+
+    return boundingBox.release ();
+}

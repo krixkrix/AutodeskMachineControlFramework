@@ -82,6 +82,7 @@ class CDateTimeDifference;
 class CDateTime;
 class CMeshObject;
 class CPersistentMeshObject;
+class CBoundingBox3D;
 class CModelDataMeshInstance;
 class CModelDataComponentInstance;
 class CMeshSceneItem;
@@ -96,6 +97,7 @@ class CBuild;
 class CWorkingFileExecution;
 class CWorkingFile;
 class CWorkingFileIterator;
+class CWorkingFileWriter;
 class CWorkingDirectory;
 class CXMLDocumentAttribute;
 class CJSONObject;
@@ -155,6 +157,7 @@ typedef CDateTimeDifference CLibMCEnvDateTimeDifference;
 typedef CDateTime CLibMCEnvDateTime;
 typedef CMeshObject CLibMCEnvMeshObject;
 typedef CPersistentMeshObject CLibMCEnvPersistentMeshObject;
+typedef CBoundingBox3D CLibMCEnvBoundingBox3D;
 typedef CModelDataMeshInstance CLibMCEnvModelDataMeshInstance;
 typedef CModelDataComponentInstance CLibMCEnvModelDataComponentInstance;
 typedef CMeshSceneItem CLibMCEnvMeshSceneItem;
@@ -169,6 +172,7 @@ typedef CBuild CLibMCEnvBuild;
 typedef CWorkingFileExecution CLibMCEnvWorkingFileExecution;
 typedef CWorkingFile CLibMCEnvWorkingFile;
 typedef CWorkingFileIterator CLibMCEnvWorkingFileIterator;
+typedef CWorkingFileWriter CLibMCEnvWorkingFileWriter;
 typedef CWorkingDirectory CLibMCEnvWorkingDirectory;
 typedef CXMLDocumentAttribute CLibMCEnvXMLDocumentAttribute;
 typedef CJSONObject CLibMCEnvJSONObject;
@@ -228,6 +232,7 @@ typedef std::shared_ptr<CDateTimeDifference> PDateTimeDifference;
 typedef std::shared_ptr<CDateTime> PDateTime;
 typedef std::shared_ptr<CMeshObject> PMeshObject;
 typedef std::shared_ptr<CPersistentMeshObject> PPersistentMeshObject;
+typedef std::shared_ptr<CBoundingBox3D> PBoundingBox3D;
 typedef std::shared_ptr<CModelDataMeshInstance> PModelDataMeshInstance;
 typedef std::shared_ptr<CModelDataComponentInstance> PModelDataComponentInstance;
 typedef std::shared_ptr<CMeshSceneItem> PMeshSceneItem;
@@ -242,6 +247,7 @@ typedef std::shared_ptr<CBuild> PBuild;
 typedef std::shared_ptr<CWorkingFileExecution> PWorkingFileExecution;
 typedef std::shared_ptr<CWorkingFile> PWorkingFile;
 typedef std::shared_ptr<CWorkingFileIterator> PWorkingFileIterator;
+typedef std::shared_ptr<CWorkingFileWriter> PWorkingFileWriter;
 typedef std::shared_ptr<CWorkingDirectory> PWorkingDirectory;
 typedef std::shared_ptr<CXMLDocumentAttribute> PXMLDocumentAttribute;
 typedef std::shared_ptr<CJSONObject> PJSONObject;
@@ -301,6 +307,7 @@ typedef PDateTimeDifference PLibMCEnvDateTimeDifference;
 typedef PDateTime PLibMCEnvDateTime;
 typedef PMeshObject PLibMCEnvMeshObject;
 typedef PPersistentMeshObject PLibMCEnvPersistentMeshObject;
+typedef PBoundingBox3D PLibMCEnvBoundingBox3D;
 typedef PModelDataMeshInstance PLibMCEnvModelDataMeshInstance;
 typedef PModelDataComponentInstance PLibMCEnvModelDataComponentInstance;
 typedef PMeshSceneItem PLibMCEnvMeshSceneItem;
@@ -315,6 +322,7 @@ typedef PBuild PLibMCEnvBuild;
 typedef PWorkingFileExecution PLibMCEnvWorkingFileExecution;
 typedef PWorkingFile PLibMCEnvWorkingFile;
 typedef PWorkingFileIterator PLibMCEnvWorkingFileIterator;
+typedef PWorkingFileWriter PLibMCEnvWorkingFileWriter;
 typedef PWorkingDirectory PLibMCEnvWorkingDirectory;
 typedef PXMLDocumentAttribute PLibMCEnvXMLDocumentAttribute;
 typedef PJSONObject PLibMCEnvJSONObject;
@@ -664,6 +672,11 @@ public:
 			case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "INVALIDHATCHSUBINTERPOLATIONDATA";
 			case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "HATCHSUBINTERPOLATIONDATAOVERFLOW";
 			case LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST: return "WORKINGFILEDOESNOTEXIST";
+			case LIBMCENV_ERROR_ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX: return "ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX";
+			case LIBMCENV_ERROR_MINIMUMEXTENTSARENOTPOSITIVE: return "MINIMUMEXTENTSARENOTPOSITIVE";
+			case LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE: return "CANNOTWRITETOFINISHEDWORKINGFILE";
+			case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "INVALIDWRITEBUFFERSIZE";
+			case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "INVALIDWRITEBUFFFERPOSITION";
 		}
 		return "UNKNOWN";
 	}
@@ -911,6 +924,11 @@ public:
 			case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
 			case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
 			case LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST: return "Working file does not exist.";
+			case LIBMCENV_ERROR_ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX: return "Attempted to access empty bounding box.";
+			case LIBMCENV_ERROR_MINIMUMEXTENTSARENOTPOSITIVE: return "Minimum extents are not positive.";
+			case LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE: return "Can not write to finished working file.";
+			case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
+			case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
 		}
 		return "unknown error";
 	}
@@ -1050,6 +1068,7 @@ private:
 	friend class CDateTime;
 	friend class CMeshObject;
 	friend class CPersistentMeshObject;
+	friend class CBoundingBox3D;
 	friend class CModelDataMeshInstance;
 	friend class CModelDataComponentInstance;
 	friend class CMeshSceneItem;
@@ -1064,6 +1083,7 @@ private:
 	friend class CWorkingFileExecution;
 	friend class CWorkingFile;
 	friend class CWorkingFileIterator;
+	friend class CWorkingFileWriter;
 	friend class CWorkingDirectory;
 	friend class CXMLDocumentAttribute;
 	friend class CJSONObject;
@@ -1705,6 +1725,35 @@ public:
 };
 	
 /*************************************************************************************************************************
+ Class CBoundingBox3D 
+**************************************************************************************************************************/
+class CBoundingBox3D : public CBase {
+public:
+	
+	/**
+	* CBoundingBox3D::CBoundingBox3D - Constructor for BoundingBox3D class.
+	*/
+	CBoundingBox3D(CWrapper* pWrapper, LibMCEnvHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+	inline bool IsEmpty();
+	inline void Clear();
+	inline void SetExtent(const sFloatPosition3D & MinimumPoint, const sFloatPosition3D & MaximumPoint);
+	inline void GetExtents(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ);
+	inline void AddPoint(const sFloatPosition3D & Point);
+	inline void AddPointCoordinates(const LibMCEnv_double dX, const LibMCEnv_double dY, const LibMCEnv_double dZ);
+	inline bool HasMinimumExtents(const LibMCEnv_double dMinimumExtents);
+	inline sFloatPosition3D GetMinimum();
+	inline sFloatPosition3D GetMaximum();
+	inline void GetMinimumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ);
+	inline void GetMaximumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ);
+	inline PBoundingBox3D Duplicate();
+	inline void Merge(classParam<CBoundingBox3D> pAnotherInstance);
+};
+	
+/*************************************************************************************************************************
  Class CModelDataMeshInstance 
 **************************************************************************************************************************/
 class CModelDataMeshInstance : public CBase {
@@ -1724,7 +1773,7 @@ public:
 	inline sModelDataTransform GetAbsoluteTransform();
 	inline PMeshObject CreateCopiedMesh();
 	inline PPersistentMeshObject CreatePersistentMesh(const bool bBoundToLoginSession);
-	inline void CalculateOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
+	inline PBoundingBox3D CalculateBoundingBox();
 };
 	
 /*************************************************************************************************************************
@@ -1751,9 +1800,7 @@ public:
 	inline PModelDataMeshInstance GetSupportMesh(const LibMCEnv_uint32 nIndex);
 	inline LibMCEnv_uint32 GetSubComponentCount();
 	inline PModelDataComponentInstance GetSubComponent(const LibMCEnv_uint32 nIndex);
-	inline void CalculateTotalOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
-	inline void CalculateSolidOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
-	inline void CalculateSupportOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ);
+	inline PBoundingBox3D CalculateBoundingBox();
 };
 	
 /*************************************************************************************************************************
@@ -2130,6 +2177,32 @@ public:
 };
 	
 /*************************************************************************************************************************
+ Class CWorkingFileWriter 
+**************************************************************************************************************************/
+class CWorkingFileWriter : public CBase {
+public:
+	
+	/**
+	* CWorkingFileWriter::CWorkingFileWriter - Constructor for WorkingFileWriter class.
+	*/
+	CWorkingFileWriter(CWrapper* pWrapper, LibMCEnvHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+	inline LibMCEnv_uint64 GetSize();
+	inline std::string GetAbsoluteFileName();
+	inline std::string GetFileName();
+	inline void FlushBuffer();
+	inline PWorkingFile Finish();
+	inline void WriteData(const CInputVector<LibMCEnv_uint8> & BufferBuffer);
+	inline void WriteString(const std::string & sValue);
+	inline void WriteLine(const std::string & sValue, const bool bUnixLineEnding);
+	inline void WriteFixedFloat(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits);
+	inline void WriteFixedFloatLine(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits, const bool bUnixLineEnding);
+};
+	
+/*************************************************************************************************************************
  Class CWorkingDirectory 
 **************************************************************************************************************************/
 class CWorkingDirectory : public CBase {
@@ -2144,6 +2217,7 @@ public:
 	}
 	
 	inline bool IsActive();
+	inline PWorkingDirectory CreateSubDirectory(const std::string & sDirectoryName);
 	inline std::string GetAbsoluteFilePath();
 	inline PWorkingFile StoreCustomData(const std::string & sFileName, const CInputVector<LibMCEnv_uint8> & DataBufferBuffer);
 	inline PWorkingFile StoreCustomString(const std::string & sFileName, const std::string & sDataString);
@@ -2160,6 +2234,8 @@ public:
 	inline PWorkingFileIterator RetrieveUnmanagedFiles();
 	inline PWorkingFileIterator RetrieveManagedFiles();
 	inline PWorkingFileIterator RetrieveAllFiles();
+	inline PWorkingFileWriter AddBufferedWriter(const std::string & sFileName, const LibMCEnv_uint32 nBufferSizeInkB);
+	inline PWorkingFileWriter AddBufferedWriterTempFile(const std::string & sExtension, const LibMCEnv_uint32 nBufferSizeInkB);
 };
 	
 /*************************************************************************************************************************
@@ -3401,13 +3477,26 @@ public:
 		pWrapperTable->m_MeshObject_IsPersistent = nullptr;
 		pWrapperTable->m_MeshObject_MakePersistent = nullptr;
 		pWrapperTable->m_PersistentMeshObject_IsBoundToLoginSession = nullptr;
+		pWrapperTable->m_BoundingBox3D_IsEmpty = nullptr;
+		pWrapperTable->m_BoundingBox3D_Clear = nullptr;
+		pWrapperTable->m_BoundingBox3D_SetExtent = nullptr;
+		pWrapperTable->m_BoundingBox3D_GetExtents = nullptr;
+		pWrapperTable->m_BoundingBox3D_AddPoint = nullptr;
+		pWrapperTable->m_BoundingBox3D_AddPointCoordinates = nullptr;
+		pWrapperTable->m_BoundingBox3D_HasMinimumExtents = nullptr;
+		pWrapperTable->m_BoundingBox3D_GetMinimum = nullptr;
+		pWrapperTable->m_BoundingBox3D_GetMaximum = nullptr;
+		pWrapperTable->m_BoundingBox3D_GetMinimumCoordinates = nullptr;
+		pWrapperTable->m_BoundingBox3D_GetMaximumCoordinates = nullptr;
+		pWrapperTable->m_BoundingBox3D_Duplicate = nullptr;
+		pWrapperTable->m_BoundingBox3D_Merge = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_GetName = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_GetUUID = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_GetLocalTransform = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_GetAbsoluteTransform = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CreateCopiedMesh = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh = nullptr;
-		pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox = nullptr;
+		pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetName = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetUUID = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetLocalTransform = nullptr;
@@ -3418,9 +3507,7 @@ public:
 		pWrapperTable->m_ModelDataComponentInstance_GetSupportMesh = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetSubComponentCount = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetSubComponent = nullptr;
-		pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox = nullptr;
-		pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox = nullptr;
-		pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox = nullptr;
+		pWrapperTable->m_ModelDataComponentInstance_CalculateBoundingBox = nullptr;
 		pWrapperTable->m_MeshSceneItem_GetItemUUID = nullptr;
 		pWrapperTable->m_MeshSceneItem_GetSceneUUID = nullptr;
 		pWrapperTable->m_MeshSceneItem_GetTransform = nullptr;
@@ -3602,7 +3689,18 @@ public:
 		pWrapperTable->m_WorkingFile_FileExists = nullptr;
 		pWrapperTable->m_WorkingFile_DeleteFromDisk = nullptr;
 		pWrapperTable->m_WorkingFileIterator_GetCurrentFile = nullptr;
+		pWrapperTable->m_WorkingFileWriter_GetSize = nullptr;
+		pWrapperTable->m_WorkingFileWriter_GetAbsoluteFileName = nullptr;
+		pWrapperTable->m_WorkingFileWriter_GetFileName = nullptr;
+		pWrapperTable->m_WorkingFileWriter_FlushBuffer = nullptr;
+		pWrapperTable->m_WorkingFileWriter_Finish = nullptr;
+		pWrapperTable->m_WorkingFileWriter_WriteData = nullptr;
+		pWrapperTable->m_WorkingFileWriter_WriteString = nullptr;
+		pWrapperTable->m_WorkingFileWriter_WriteLine = nullptr;
+		pWrapperTable->m_WorkingFileWriter_WriteFixedFloat = nullptr;
+		pWrapperTable->m_WorkingFileWriter_WriteFixedFloatLine = nullptr;
 		pWrapperTable->m_WorkingDirectory_IsActive = nullptr;
+		pWrapperTable->m_WorkingDirectory_CreateSubDirectory = nullptr;
 		pWrapperTable->m_WorkingDirectory_GetAbsoluteFilePath = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreCustomData = nullptr;
 		pWrapperTable->m_WorkingDirectory_StoreCustomString = nullptr;
@@ -3619,6 +3717,8 @@ public:
 		pWrapperTable->m_WorkingDirectory_RetrieveUnmanagedFiles = nullptr;
 		pWrapperTable->m_WorkingDirectory_RetrieveManagedFiles = nullptr;
 		pWrapperTable->m_WorkingDirectory_RetrieveAllFiles = nullptr;
+		pWrapperTable->m_WorkingDirectory_AddBufferedWriter = nullptr;
+		pWrapperTable->m_WorkingDirectory_AddBufferedWriterTempFile = nullptr;
 		pWrapperTable->m_XMLDocumentAttribute_GetNameSpace = nullptr;
 		pWrapperTable->m_XMLDocumentAttribute_GetName = nullptr;
 		pWrapperTable->m_XMLDocumentAttribute_GetValue = nullptr;
@@ -5929,6 +6029,123 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_IsEmpty = (PLibMCEnvBoundingBox3D_IsEmptyPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_isempty");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_IsEmpty = (PLibMCEnvBoundingBox3D_IsEmptyPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_isempty");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_IsEmpty == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_Clear = (PLibMCEnvBoundingBox3D_ClearPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_clear");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_Clear = (PLibMCEnvBoundingBox3D_ClearPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_clear");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_Clear == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_SetExtent = (PLibMCEnvBoundingBox3D_SetExtentPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_setextent");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_SetExtent = (PLibMCEnvBoundingBox3D_SetExtentPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_setextent");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_SetExtent == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_GetExtents = (PLibMCEnvBoundingBox3D_GetExtentsPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_getextents");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_GetExtents = (PLibMCEnvBoundingBox3D_GetExtentsPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_getextents");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_GetExtents == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_AddPoint = (PLibMCEnvBoundingBox3D_AddPointPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_addpoint");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_AddPoint = (PLibMCEnvBoundingBox3D_AddPointPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_addpoint");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_AddPoint == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_AddPointCoordinates = (PLibMCEnvBoundingBox3D_AddPointCoordinatesPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_addpointcoordinates");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_AddPointCoordinates = (PLibMCEnvBoundingBox3D_AddPointCoordinatesPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_addpointcoordinates");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_AddPointCoordinates == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_HasMinimumExtents = (PLibMCEnvBoundingBox3D_HasMinimumExtentsPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_hasminimumextents");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_HasMinimumExtents = (PLibMCEnvBoundingBox3D_HasMinimumExtentsPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_hasminimumextents");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_HasMinimumExtents == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMinimum = (PLibMCEnvBoundingBox3D_GetMinimumPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_getminimum");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMinimum = (PLibMCEnvBoundingBox3D_GetMinimumPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_getminimum");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_GetMinimum == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMaximum = (PLibMCEnvBoundingBox3D_GetMaximumPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_getmaximum");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMaximum = (PLibMCEnvBoundingBox3D_GetMaximumPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_getmaximum");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_GetMaximum == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMinimumCoordinates = (PLibMCEnvBoundingBox3D_GetMinimumCoordinatesPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_getminimumcoordinates");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMinimumCoordinates = (PLibMCEnvBoundingBox3D_GetMinimumCoordinatesPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_getminimumcoordinates");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_GetMinimumCoordinates == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMaximumCoordinates = (PLibMCEnvBoundingBox3D_GetMaximumCoordinatesPtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_getmaximumcoordinates");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_GetMaximumCoordinates = (PLibMCEnvBoundingBox3D_GetMaximumCoordinatesPtr) dlsym(hLibrary, "libmcenv_boundingbox3d_getmaximumcoordinates");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_GetMaximumCoordinates == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_Duplicate = (PLibMCEnvBoundingBox3D_DuplicatePtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_duplicate");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_Duplicate = (PLibMCEnvBoundingBox3D_DuplicatePtr) dlsym(hLibrary, "libmcenv_boundingbox3d_duplicate");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_Duplicate == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BoundingBox3D_Merge = (PLibMCEnvBoundingBox3D_MergePtr) GetProcAddress(hLibrary, "libmcenv_boundingbox3d_merge");
+		#else // _WIN32
+		pWrapperTable->m_BoundingBox3D_Merge = (PLibMCEnvBoundingBox3D_MergePtr) dlsym(hLibrary, "libmcenv_boundingbox3d_merge");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BoundingBox3D_Merge == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_ModelDataMeshInstance_GetName = (PLibMCEnvModelDataMeshInstance_GetNamePtr) GetProcAddress(hLibrary, "libmcenv_modeldatameshinstance_getname");
 		#else // _WIN32
 		pWrapperTable->m_ModelDataMeshInstance_GetName = (PLibMCEnvModelDataMeshInstance_GetNamePtr) dlsym(hLibrary, "libmcenv_modeldatameshinstance_getname");
@@ -5983,12 +6200,12 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox = (PLibMCEnvModelDataMeshInstance_CalculateOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatameshinstance_calculateoutbox");
+		pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox = (PLibMCEnvModelDataMeshInstance_CalculateBoundingBoxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatameshinstance_calculateboundingbox");
 		#else // _WIN32
-		pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox = (PLibMCEnvModelDataMeshInstance_CalculateOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatameshinstance_calculateoutbox");
+		pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox = (PLibMCEnvModelDataMeshInstance_CalculateBoundingBoxPtr) dlsym(hLibrary, "libmcenv_modeldatameshinstance_calculateboundingbox");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox == nullptr)
+		if (pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6082,30 +6299,12 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox = (PLibMCEnvModelDataComponentInstance_CalculateTotalOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculatetotaloutbox");
+		pWrapperTable->m_ModelDataComponentInstance_CalculateBoundingBox = (PLibMCEnvModelDataComponentInstance_CalculateBoundingBoxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculateboundingbox");
 		#else // _WIN32
-		pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox = (PLibMCEnvModelDataComponentInstance_CalculateTotalOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculatetotaloutbox");
+		pWrapperTable->m_ModelDataComponentInstance_CalculateBoundingBox = (PLibMCEnvModelDataComponentInstance_CalculateBoundingBoxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculateboundingbox");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox == nullptr)
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
-		pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSolidOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesolidoutbox");
-		#else // _WIN32
-		pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSolidOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesolidoutbox");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox == nullptr)
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
-		pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSupportOutboxPtr) GetProcAddress(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesupportoutbox");
-		#else // _WIN32
-		pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox = (PLibMCEnvModelDataComponentInstance_CalculateSupportOutboxPtr) dlsym(hLibrary, "libmcenv_modeldatacomponentinstance_calculatesupportoutbox");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox == nullptr)
+		if (pWrapperTable->m_ModelDataComponentInstance_CalculateBoundingBox == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -7738,12 +7937,111 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_GetSize = (PLibMCEnvWorkingFileWriter_GetSizePtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_getsize");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_GetSize = (PLibMCEnvWorkingFileWriter_GetSizePtr) dlsym(hLibrary, "libmcenv_workingfilewriter_getsize");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_GetSize == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_GetAbsoluteFileName = (PLibMCEnvWorkingFileWriter_GetAbsoluteFileNamePtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_getabsolutefilename");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_GetAbsoluteFileName = (PLibMCEnvWorkingFileWriter_GetAbsoluteFileNamePtr) dlsym(hLibrary, "libmcenv_workingfilewriter_getabsolutefilename");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_GetAbsoluteFileName == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_GetFileName = (PLibMCEnvWorkingFileWriter_GetFileNamePtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_getfilename");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_GetFileName = (PLibMCEnvWorkingFileWriter_GetFileNamePtr) dlsym(hLibrary, "libmcenv_workingfilewriter_getfilename");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_GetFileName == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_FlushBuffer = (PLibMCEnvWorkingFileWriter_FlushBufferPtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_flushbuffer");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_FlushBuffer = (PLibMCEnvWorkingFileWriter_FlushBufferPtr) dlsym(hLibrary, "libmcenv_workingfilewriter_flushbuffer");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_FlushBuffer == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_Finish = (PLibMCEnvWorkingFileWriter_FinishPtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_finish");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_Finish = (PLibMCEnvWorkingFileWriter_FinishPtr) dlsym(hLibrary, "libmcenv_workingfilewriter_finish");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_Finish == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteData = (PLibMCEnvWorkingFileWriter_WriteDataPtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_writedata");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteData = (PLibMCEnvWorkingFileWriter_WriteDataPtr) dlsym(hLibrary, "libmcenv_workingfilewriter_writedata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_WriteData == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteString = (PLibMCEnvWorkingFileWriter_WriteStringPtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_writestring");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteString = (PLibMCEnvWorkingFileWriter_WriteStringPtr) dlsym(hLibrary, "libmcenv_workingfilewriter_writestring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_WriteString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteLine = (PLibMCEnvWorkingFileWriter_WriteLinePtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_writeline");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteLine = (PLibMCEnvWorkingFileWriter_WriteLinePtr) dlsym(hLibrary, "libmcenv_workingfilewriter_writeline");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_WriteLine == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteFixedFloat = (PLibMCEnvWorkingFileWriter_WriteFixedFloatPtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_writefixedfloat");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteFixedFloat = (PLibMCEnvWorkingFileWriter_WriteFixedFloatPtr) dlsym(hLibrary, "libmcenv_workingfilewriter_writefixedfloat");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_WriteFixedFloat == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteFixedFloatLine = (PLibMCEnvWorkingFileWriter_WriteFixedFloatLinePtr) GetProcAddress(hLibrary, "libmcenv_workingfilewriter_writefixedfloatline");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileWriter_WriteFixedFloatLine = (PLibMCEnvWorkingFileWriter_WriteFixedFloatLinePtr) dlsym(hLibrary, "libmcenv_workingfilewriter_writefixedfloatline");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileWriter_WriteFixedFloatLine == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_WorkingDirectory_IsActive = (PLibMCEnvWorkingDirectory_IsActivePtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_isactive");
 		#else // _WIN32
 		pWrapperTable->m_WorkingDirectory_IsActive = (PLibMCEnvWorkingDirectory_IsActivePtr) dlsym(hLibrary, "libmcenv_workingdirectory_isactive");
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_WorkingDirectory_IsActive == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingDirectory_CreateSubDirectory = (PLibMCEnvWorkingDirectory_CreateSubDirectoryPtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_createsubdirectory");
+		#else // _WIN32
+		pWrapperTable->m_WorkingDirectory_CreateSubDirectory = (PLibMCEnvWorkingDirectory_CreateSubDirectoryPtr) dlsym(hLibrary, "libmcenv_workingdirectory_createsubdirectory");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingDirectory_CreateSubDirectory == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -7888,6 +8186,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_WorkingDirectory_RetrieveAllFiles == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingDirectory_AddBufferedWriter = (PLibMCEnvWorkingDirectory_AddBufferedWriterPtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_addbufferedwriter");
+		#else // _WIN32
+		pWrapperTable->m_WorkingDirectory_AddBufferedWriter = (PLibMCEnvWorkingDirectory_AddBufferedWriterPtr) dlsym(hLibrary, "libmcenv_workingdirectory_addbufferedwriter");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingDirectory_AddBufferedWriter == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingDirectory_AddBufferedWriterTempFile = (PLibMCEnvWorkingDirectory_AddBufferedWriterTempFilePtr) GetProcAddress(hLibrary, "libmcenv_workingdirectory_addbufferedwritertempfile");
+		#else // _WIN32
+		pWrapperTable->m_WorkingDirectory_AddBufferedWriterTempFile = (PLibMCEnvWorkingDirectory_AddBufferedWriterTempFilePtr) dlsym(hLibrary, "libmcenv_workingdirectory_addbufferedwritertempfile");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingDirectory_AddBufferedWriterTempFile == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13068,6 +13384,58 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_PersistentMeshObject_IsBoundToLoginSession == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_isempty", (void**)&(pWrapperTable->m_BoundingBox3D_IsEmpty));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_IsEmpty == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_clear", (void**)&(pWrapperTable->m_BoundingBox3D_Clear));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_Clear == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_setextent", (void**)&(pWrapperTable->m_BoundingBox3D_SetExtent));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_SetExtent == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_getextents", (void**)&(pWrapperTable->m_BoundingBox3D_GetExtents));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_GetExtents == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_addpoint", (void**)&(pWrapperTable->m_BoundingBox3D_AddPoint));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_AddPoint == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_addpointcoordinates", (void**)&(pWrapperTable->m_BoundingBox3D_AddPointCoordinates));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_AddPointCoordinates == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_hasminimumextents", (void**)&(pWrapperTable->m_BoundingBox3D_HasMinimumExtents));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_HasMinimumExtents == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_getminimum", (void**)&(pWrapperTable->m_BoundingBox3D_GetMinimum));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_GetMinimum == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_getmaximum", (void**)&(pWrapperTable->m_BoundingBox3D_GetMaximum));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_GetMaximum == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_getminimumcoordinates", (void**)&(pWrapperTable->m_BoundingBox3D_GetMinimumCoordinates));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_GetMinimumCoordinates == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_getmaximumcoordinates", (void**)&(pWrapperTable->m_BoundingBox3D_GetMaximumCoordinates));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_GetMaximumCoordinates == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_duplicate", (void**)&(pWrapperTable->m_BoundingBox3D_Duplicate));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_Duplicate == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_boundingbox3d_merge", (void**)&(pWrapperTable->m_BoundingBox3D_Merge));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BoundingBox3D_Merge == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_getname", (void**)&(pWrapperTable->m_ModelDataMeshInstance_GetName));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_GetName == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -13092,8 +13460,8 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_calculateoutbox", (void**)&(pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CalculateOutbox == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_calculateboundingbox", (void**)&(pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_getname", (void**)&(pWrapperTable->m_ModelDataComponentInstance_GetName));
@@ -13136,16 +13504,8 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_GetSubComponent == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculatetotaloutbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateTotalOutbox == nullptr) )
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculatesolidoutbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateSolidOutbox == nullptr) )
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculatesupportoutbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox));
-		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateSupportOutbox == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_modeldatacomponentinstance_calculateboundingbox", (void**)&(pWrapperTable->m_ModelDataComponentInstance_CalculateBoundingBox));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataComponentInstance_CalculateBoundingBox == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_meshsceneitem_getitemuuid", (void**)&(pWrapperTable->m_MeshSceneItem_GetItemUUID));
@@ -13872,8 +14232,52 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileIterator_GetCurrentFile == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_getsize", (void**)&(pWrapperTable->m_WorkingFileWriter_GetSize));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_GetSize == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_getabsolutefilename", (void**)&(pWrapperTable->m_WorkingFileWriter_GetAbsoluteFileName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_GetAbsoluteFileName == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_getfilename", (void**)&(pWrapperTable->m_WorkingFileWriter_GetFileName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_GetFileName == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_flushbuffer", (void**)&(pWrapperTable->m_WorkingFileWriter_FlushBuffer));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_FlushBuffer == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_finish", (void**)&(pWrapperTable->m_WorkingFileWriter_Finish));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_Finish == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_writedata", (void**)&(pWrapperTable->m_WorkingFileWriter_WriteData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_WriteData == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_writestring", (void**)&(pWrapperTable->m_WorkingFileWriter_WriteString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_WriteString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_writeline", (void**)&(pWrapperTable->m_WorkingFileWriter_WriteLine));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_WriteLine == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_writefixedfloat", (void**)&(pWrapperTable->m_WorkingFileWriter_WriteFixedFloat));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_WriteFixedFloat == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfilewriter_writefixedfloatline", (void**)&(pWrapperTable->m_WorkingFileWriter_WriteFixedFloatLine));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileWriter_WriteFixedFloatLine == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_isactive", (void**)&(pWrapperTable->m_WorkingDirectory_IsActive));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_IsActive == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingdirectory_createsubdirectory", (void**)&(pWrapperTable->m_WorkingDirectory_CreateSubDirectory));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_CreateSubDirectory == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_getabsolutefilepath", (void**)&(pWrapperTable->m_WorkingDirectory_GetAbsoluteFilePath));
@@ -13938,6 +14342,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_workingdirectory_retrieveallfiles", (void**)&(pWrapperTable->m_WorkingDirectory_RetrieveAllFiles));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_RetrieveAllFiles == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingdirectory_addbufferedwriter", (void**)&(pWrapperTable->m_WorkingDirectory_AddBufferedWriter));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_AddBufferedWriter == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingdirectory_addbufferedwritertempfile", (void**)&(pWrapperTable->m_WorkingDirectory_AddBufferedWriterTempFile));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingDirectory_AddBufferedWriterTempFile == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_xmldocumentattribute_getnamespace", (void**)&(pWrapperTable->m_XMLDocumentAttribute_GetNameSpace));
@@ -18358,6 +18770,155 @@ public:
 	}
 	
 	/**
+	 * Method definitions for class CBoundingBox3D
+	 */
+	
+	/**
+	* CBoundingBox3D::IsEmpty - Returns if the bounding box is empty.
+	* @return Returns true if the Bounding box is empty.
+	*/
+	bool CBoundingBox3D::IsEmpty()
+	{
+		bool resultEmpty = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_IsEmpty(m_pHandle, &resultEmpty));
+		
+		return resultEmpty;
+	}
+	
+	/**
+	* CBoundingBox3D::Clear - Makes the bounding box empty.
+	*/
+	void CBoundingBox3D::Clear()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_Clear(m_pHandle));
+	}
+	
+	/**
+	* CBoundingBox3D::SetExtent - Set Minimum and Maximum position. If coordinates are not ordered, they will be ordered.
+	* @param[in] MinimumPoint - Minimum Position.
+	* @param[in] MaximumPoint - Maximum Position.
+	*/
+	void CBoundingBox3D::SetExtent(const sFloatPosition3D & MinimumPoint, const sFloatPosition3D & MaximumPoint)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_SetExtent(m_pHandle, &MinimumPoint, &MaximumPoint));
+	}
+	
+	/**
+	* CBoundingBox3D::GetExtents - Returns the extents of the team. Fails if Bounding box is empty.
+	* @param[out] dX - X Coordinate in mm
+	* @param[out] dY - Y Coordinate in mm
+	* @param[out] dZ - Z Coordinate in mm
+	*/
+	void CBoundingBox3D::GetExtents(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_GetExtents(m_pHandle, &dX, &dY, &dZ));
+	}
+	
+	/**
+	* CBoundingBox3D::AddPoint - Adds a new point to the boundary box.
+	* @param[in] Point - Position.
+	*/
+	void CBoundingBox3D::AddPoint(const sFloatPosition3D & Point)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_AddPoint(m_pHandle, &Point));
+	}
+	
+	/**
+	* CBoundingBox3D::AddPointCoordinates - Adds a new point to the boundary box.
+	* @param[in] dX - X Coordinate in mm
+	* @param[in] dY - Y Coordinate in mm
+	* @param[in] dZ - Z Coordinate in mm
+	*/
+	void CBoundingBox3D::AddPointCoordinates(const LibMCEnv_double dX, const LibMCEnv_double dY, const LibMCEnv_double dZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_AddPointCoordinates(m_pHandle, dX, dY, dZ));
+	}
+	
+	/**
+	* CBoundingBox3D::HasMinimumExtents - Returns, if the extents are of a minimum value in each axis. Returns false, if Bounding Box is empty.
+	* @param[in] dMinimumExtents - Minimum Extents value. MUST be larger than 0.
+	* @return True, if the bounding box is of the minimum extents.
+	*/
+	bool CBoundingBox3D::HasMinimumExtents(const LibMCEnv_double dMinimumExtents)
+	{
+		bool resultValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_HasMinimumExtents(m_pHandle, dMinimumExtents, &resultValue));
+		
+		return resultValue;
+	}
+	
+	/**
+	* CBoundingBox3D::GetMinimum - Returns the minimum point. Fails if Bounding box is empty.
+	* @return Minimum Position.
+	*/
+	sFloatPosition3D CBoundingBox3D::GetMinimum()
+	{
+		sFloatPosition3D resultMinimumPoint;
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_GetMinimum(m_pHandle, &resultMinimumPoint));
+		
+		return resultMinimumPoint;
+	}
+	
+	/**
+	* CBoundingBox3D::GetMaximum - Returns the maximum point. Fails if Bounding box is empty.
+	* @return Maximum Position.
+	*/
+	sFloatPosition3D CBoundingBox3D::GetMaximum()
+	{
+		sFloatPosition3D resultMaximumPoint;
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_GetMaximum(m_pHandle, &resultMaximumPoint));
+		
+		return resultMaximumPoint;
+	}
+	
+	/**
+	* CBoundingBox3D::GetMinimumCoordinates - Returns the minimum point coordinates. Fails if Bounding box is empty.
+	* @param[out] dX - X Coordinate in mm
+	* @param[out] dY - Y Coordinate in mm
+	* @param[out] dZ - Z Coordinate in mm
+	*/
+	void CBoundingBox3D::GetMinimumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_GetMinimumCoordinates(m_pHandle, &dX, &dY, &dZ));
+	}
+	
+	/**
+	* CBoundingBox3D::GetMaximumCoordinates - Returns the maximum point coordinates. Fails if Bounding box is empty.
+	* @param[out] dX - X Coordinate in mm
+	* @param[out] dY - Y Coordinate in mm
+	* @param[out] dZ - Z Coordinate in mm
+	*/
+	void CBoundingBox3D::GetMaximumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_GetMaximumCoordinates(m_pHandle, &dX, &dY, &dZ));
+	}
+	
+	/**
+	* CBoundingBox3D::Duplicate - Returns a duplicate of the bounding box.
+	* @return Returns a duplicate instance.
+	*/
+	PBoundingBox3D CBoundingBox3D::Duplicate()
+	{
+		LibMCEnvHandle hDuplicateInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_Duplicate(m_pHandle, &hDuplicateInstance));
+		
+		if (!hDuplicateInstance) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CBoundingBox3D>(m_pWrapper, hDuplicateInstance);
+	}
+	
+	/**
+	* CBoundingBox3D::Merge - Merges another Bounding box. Will copy the other instance if current instance is empty. Will do nothing if other instance is empty.
+	* @param[in] pAnotherInstance - Instance to merge into the Bounding box.
+	*/
+	void CBoundingBox3D::Merge(classParam<CBoundingBox3D> pAnotherInstance)
+	{
+		LibMCEnvHandle hAnotherInstance = pAnotherInstance.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_BoundingBox3D_Merge(m_pHandle, hAnotherInstance));
+	}
+	
+	/**
 	 * Method definitions for class CModelDataMeshInstance
 	 */
 	
@@ -18447,17 +19008,18 @@ public:
 	}
 	
 	/**
-	* CModelDataMeshInstance::CalculateOutbox - Calculates the outbox of the model.
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	* CModelDataMeshInstance::CalculateBoundingBox - Calculates the bounding box of the model.
+	* @return Bounding Box Instance.
 	*/
-	void CModelDataMeshInstance::CalculateOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
+	PBoundingBox3D CModelDataMeshInstance::CalculateBoundingBox()
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataMeshInstance_CalculateOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
+		LibMCEnvHandle hBoundingBoxInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataMeshInstance_CalculateBoundingBox(m_pHandle, &hBoundingBoxInstance));
+		
+		if (!hBoundingBoxInstance) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CBoundingBox3D>(m_pWrapper, hBoundingBoxInstance);
 	}
 	
 	/**
@@ -18603,45 +19165,18 @@ public:
 	}
 	
 	/**
-	* CModelDataComponentInstance::CalculateTotalOutbox - Calculates the outbox of the model (Solid and Support).
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	* CModelDataComponentInstance::CalculateBoundingBox - Calculates the bounding box of the model.
+	* @return Bounding Box Instance.
 	*/
-	void CModelDataComponentInstance::CalculateTotalOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
+	PBoundingBox3D CModelDataComponentInstance::CalculateBoundingBox()
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateTotalOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
-	}
-	
-	/**
-	* CModelDataComponentInstance::CalculateSolidOutbox - Calculates the outbox of the solid part of the model.
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
-	*/
-	void CModelDataComponentInstance::CalculateSolidOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
-	{
-		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateSolidOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
-	}
-	
-	/**
-	* CModelDataComponentInstance::CalculateSupportOutbox - Calculates the outbox of the support part of the model.
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
-	*/
-	void CModelDataComponentInstance::CalculateSupportOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ)
-	{
-		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateSupportOutbox(m_pHandle, &dMinX, &dMinY, &dMinZ, &dMaxX, &dMaxY, &dMaxZ));
+		LibMCEnvHandle hBoundingBoxInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataComponentInstance_CalculateBoundingBox(m_pHandle, &hBoundingBoxInstance));
+		
+		if (!hBoundingBoxInstance) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CBoundingBox3D>(m_pWrapper, hBoundingBoxInstance);
 	}
 	
 	/**
@@ -21316,6 +21851,124 @@ public:
 	}
 	
 	/**
+	 * Method definitions for class CWorkingFileWriter
+	 */
+	
+	/**
+	* CWorkingFileWriter::GetSize - Returns the current size of file.
+	* @return file size
+	*/
+	LibMCEnv_uint64 CWorkingFileWriter::GetSize()
+	{
+		LibMCEnv_uint64 resultFileSize = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_GetSize(m_pHandle, &resultFileSize));
+		
+		return resultFileSize;
+	}
+	
+	/**
+	* CWorkingFileWriter::GetAbsoluteFileName - Retrieves absolute file name of the working file on disk
+	* @return global path of the file
+	*/
+	std::string CWorkingFileWriter::GetAbsoluteFileName()
+	{
+		LibMCEnv_uint32 bytesNeededAbsoluteFileName = 0;
+		LibMCEnv_uint32 bytesWrittenAbsoluteFileName = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_GetAbsoluteFileName(m_pHandle, 0, &bytesNeededAbsoluteFileName, nullptr));
+		std::vector<char> bufferAbsoluteFileName(bytesNeededAbsoluteFileName);
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_GetAbsoluteFileName(m_pHandle, bytesNeededAbsoluteFileName, &bytesWrittenAbsoluteFileName, &bufferAbsoluteFileName[0]));
+		
+		return std::string(&bufferAbsoluteFileName[0]);
+	}
+	
+	/**
+	* CWorkingFileWriter::GetFileName - Retrieves relative file name of the working file in the directory (without path)
+	* @return local name of the file
+	*/
+	std::string CWorkingFileWriter::GetFileName()
+	{
+		LibMCEnv_uint32 bytesNeededLocalFileName = 0;
+		LibMCEnv_uint32 bytesWrittenLocalFileName = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_GetFileName(m_pHandle, 0, &bytesNeededLocalFileName, nullptr));
+		std::vector<char> bufferLocalFileName(bytesNeededLocalFileName);
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_GetFileName(m_pHandle, bytesNeededLocalFileName, &bytesWrittenLocalFileName, &bufferLocalFileName[0]));
+		
+		return std::string(&bufferLocalFileName[0]);
+	}
+	
+	/**
+	* CWorkingFileWriter::FlushBuffer - Writes all unwritten data to disk.
+	*/
+	void CWorkingFileWriter::FlushBuffer()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_FlushBuffer(m_pHandle));
+	}
+	
+	/**
+	* CWorkingFileWriter::Finish - Finishes the writing and returns the corresponding working file.
+	* @return returns the WorkingFile instance.
+	*/
+	PWorkingFile CWorkingFileWriter::Finish()
+	{
+		LibMCEnvHandle hWorkingFile = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_Finish(m_pHandle, &hWorkingFile));
+		
+		if (!hWorkingFile) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingFile>(m_pWrapper, hWorkingFile);
+	}
+	
+	/**
+	* CWorkingFileWriter::WriteData - Writes an array to the file.
+	* @param[in] BufferBuffer - Buffer that will be written.
+	*/
+	void CWorkingFileWriter::WriteData(const CInputVector<LibMCEnv_uint8> & BufferBuffer)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_WriteData(m_pHandle, (LibMCEnv_uint64)BufferBuffer.size(), BufferBuffer.data()));
+	}
+	
+	/**
+	* CWorkingFileWriter::WriteString - Writes a string to the file.
+	* @param[in] sValue - String that will be written.
+	*/
+	void CWorkingFileWriter::WriteString(const std::string & sValue)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_WriteString(m_pHandle, sValue.c_str()));
+	}
+	
+	/**
+	* CWorkingFileWriter::WriteLine - Writes a string to the file with line ending.
+	* @param[in] sValue - String that will be written.
+	* @param[in] bUnixLineEnding - If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10).
+	*/
+	void CWorkingFileWriter::WriteLine(const std::string & sValue, const bool bUnixLineEnding)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_WriteLine(m_pHandle, sValue.c_str(), bUnixLineEnding));
+	}
+	
+	/**
+	* CWorkingFileWriter::WriteFixedFloat - Writes a double to the file with fixed number of digits.
+	* @param[in] dValue - Double that will be written.
+	* @param[in] nDigits - Number of Digits to export to.. (in mm)
+	*/
+	void CWorkingFileWriter::WriteFixedFloat(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_WriteFixedFloat(m_pHandle, dValue, nDigits));
+	}
+	
+	/**
+	* CWorkingFileWriter::WriteFixedFloatLine - Writes a double to the file with fixed number of digits and a new line after.
+	* @param[in] dValue - Double that will be written.
+	* @param[in] nDigits - Number of Digits to export to.. (in mm)
+	* @param[in] bUnixLineEnding - If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10).
+	*/
+	void CWorkingFileWriter::WriteFixedFloatLine(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits, const bool bUnixLineEnding)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileWriter_WriteFixedFloatLine(m_pHandle, dValue, nDigits, bUnixLineEnding));
+	}
+	
+	/**
 	 * Method definitions for class CWorkingDirectory
 	 */
 	
@@ -21329,6 +21982,22 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_IsActive(m_pHandle, &resultIsActive));
 		
 		return resultIsActive;
+	}
+	
+	/**
+	* CWorkingDirectory::CreateSubDirectory - Creates a managed subdirectory in the directory.
+	* @param[in] sDirectoryName - Directory name to create. Can not include any path delimiters or ..
+	* @return Working directory instance.
+	*/
+	PWorkingDirectory CWorkingDirectory::CreateSubDirectory(const std::string & sDirectoryName)
+	{
+		LibMCEnvHandle hSubDirectory = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_CreateSubDirectory(m_pHandle, sDirectoryName.c_str(), &hSubDirectory));
+		
+		if (!hSubDirectory) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingDirectory>(m_pWrapper, hSubDirectory);
 	}
 	
 	/**
@@ -21581,6 +22250,40 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CWorkingFileIterator>(m_pWrapper, hIteratorInstance);
+	}
+	
+	/**
+	* CWorkingDirectory::AddBufferedWriter - Adds a buffered writer to the directory.
+	* @param[in] sFileName - Filename to manage. The file will be created.
+	* @param[in] nBufferSizeInkB - Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576.
+	* @return Working file writer instance.
+	*/
+	PWorkingFileWriter CWorkingDirectory::AddBufferedWriter(const std::string & sFileName, const LibMCEnv_uint32 nBufferSizeInkB)
+	{
+		LibMCEnvHandle hWriterInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_AddBufferedWriter(m_pHandle, sFileName.c_str(), nBufferSizeInkB, &hWriterInstance));
+		
+		if (!hWriterInstance) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingFileWriter>(m_pWrapper, hWriterInstance);
+	}
+	
+	/**
+	* CWorkingDirectory::AddBufferedWriterTempFile - Adds a buffered writer to the directory with a temporary file name.
+	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+	* @param[in] nBufferSizeInkB - Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576.
+	* @return Working file writer instance.
+	*/
+	PWorkingFileWriter CWorkingDirectory::AddBufferedWriterTempFile(const std::string & sExtension, const LibMCEnv_uint32 nBufferSizeInkB)
+	{
+		LibMCEnvHandle hWriterInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingDirectory_AddBufferedWriterTempFile(m_pHandle, sExtension.c_str(), nBufferSizeInkB, &hWriterInstance));
+		
+		if (!hWriterInstance) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CWorkingFileWriter>(m_pWrapper, hWriterInstance);
 	}
 	
 	/**

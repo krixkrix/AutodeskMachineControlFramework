@@ -37,8 +37,110 @@ Abstract: This is a stub class definition of CWorkingFile
 // Include custom headers here.
 #include "common_utils.hpp"
 #include "common_importstream_native.hpp"
+#include <cstring>
 
 using namespace LibMCEnv::Impl;
+
+#define WORKINGFILEBUFFER_MINIMUMSIZEINKB 1
+#define WORKINGFILEBUFFER_MAXIMUMSIZEINKB (1024 * 1024)
+
+CWorkingFileWriterInstance::CWorkingFileWriterInstance(const std::string& sLocalFileName, const std::string& sAbsoluteFileName, uint32_t nMemoryBufferSizeInKB)
+    : m_sLocalFileName(sLocalFileName), m_sAbsoluteFileName(sAbsoluteFileName), m_nPositionInBuffer(0), m_nBytesWritten(0)
+{
+    if ((nMemoryBufferSizeInKB < WORKINGFILEBUFFER_MINIMUMSIZEINKB) ||
+        (nMemoryBufferSizeInKB > WORKINGFILEBUFFER_MAXIMUMSIZEINKB)) {
+
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE, std::to_string (nMemoryBufferSizeInKB));
+    }
+
+    m_MemoryBuffer.resize(nMemoryBufferSizeInKB * 1024);
+
+    m_pExportStream = std::make_shared <AMCCommon::CExportStream_Native> (sAbsoluteFileName);
+
+}
+
+CWorkingFileWriterInstance::~CWorkingFileWriterInstance()
+{
+    finish();
+}
+
+std::string CWorkingFileWriterInstance::getAbsoluteFileName()
+{
+    return m_sAbsoluteFileName;
+}
+
+std::string CWorkingFileWriterInstance::getLocalFileName()
+{
+    return m_sLocalFileName;
+}
+
+void CWorkingFileWriterInstance::writeData(const uint8_t* pData, uint64_t nSize)
+{
+    uint64_t nBufferSize = m_MemoryBuffer.size();
+        
+    if (nSize == 0)
+        return;
+
+    if (pData == nullptr) 
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
+
+    const uint8_t* pSource = pData;
+
+    uint64_t nBytesLeft = nSize;
+    while (nBytesLeft > 0) {
+        if (m_nPositionInBuffer >= nBufferSize)
+            throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION, std::to_string(m_nPositionInBuffer));
+
+        uint64_t nBytesAvailable = nBufferSize - m_nPositionInBuffer;
+        uint64_t nBytesToCopy;
+
+        if (nBytesLeft > nBytesAvailable)
+            nBytesToCopy = nBytesAvailable;
+        else
+            nBytesToCopy = nBytesLeft;
+
+        memcpy((void*)&m_MemoryBuffer.at(m_nPositionInBuffer), (void*)pSource, nBytesToCopy);
+        pSource += nBytesToCopy;
+        m_nPositionInBuffer += nBytesToCopy;
+
+        if (m_nPositionInBuffer >= nBufferSize)
+            flushBuffer();
+
+        nBytesLeft -= nBytesToCopy;
+    }
+}
+
+void CWorkingFileWriterInstance::flushBuffer()
+{
+    if (m_nPositionInBuffer > 0) {
+        if (m_pExportStream.get() == nullptr)
+            throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE);
+
+        m_pExportStream->writeBuffer(m_MemoryBuffer.data(), m_nPositionInBuffer);
+    }
+
+    m_nPositionInBuffer = 0;
+}
+
+void CWorkingFileWriterInstance::finish()
+{
+    flushBuffer();
+
+    if (m_pExportStream.get() != nullptr) {
+        m_pExportStream = nullptr;
+    }
+}
+
+bool CWorkingFileWriterInstance::isFinished()
+{
+    return (m_pExportStream.get() == nullptr);
+}
+
+
+uint64_t CWorkingFileWriterInstance::getWrittenBytes()
+{
+    return m_nBytesWritten;
+}
 
 
 CWorkingFileMonitor::CWorkingFileMonitor(const std::string& sWorkingDirectory)
@@ -95,6 +197,22 @@ void CWorkingFileMonitor::addNewMonitoredFile(const std::string& sFileName)
     // Store file name
     m_MonitoredFileNames.insert(sFileName);
 }
+
+PWorkingFileWriterInstance CWorkingFileMonitor::addNewFileWriter(const std::string& sFileName, uint32_t nMemoryBufferSize)
+{
+    if (!m_bIsActive)
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYHASBEENCLEANED);
+
+    std::string sAbsoluteFileName = getAbsoluteFileName(sFileName);
+
+    auto pInstance = std::make_shared <CWorkingFileWriterInstance> (sFileName, sAbsoluteFileName, nMemoryBufferSize);
+    m_WriterInstances.insert (std::make_pair (sFileName, pInstance));
+
+    addNewMonitoredFile(sFileName);
+
+    return pInstance;
+}
+
 
 bool CWorkingFileMonitor::fileIsMonitored(const std::string& sFileName)
 {

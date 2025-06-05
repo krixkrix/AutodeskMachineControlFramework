@@ -79,6 +79,9 @@ public:
 
     bool IsActive() override;
 
+    IWorkingDirectory* CreateSubDirectory(const std::string& sDirectoryName) override;
+
+
 	std::string GetAbsoluteFilePath() override;
 
 	IWorkingFile * StoreCustomData(const std::string & sFileName, const LibMCEnv_uint64 nDataBufferBufferSize, const LibMCEnv_uint8 * pDataBufferBuffer) override;
@@ -110,6 +113,11 @@ public:
 	IWorkingFileIterator* RetrieveManagedFiles() override;
 
 	IWorkingFileIterator* RetrieveAllFiles() override;
+
+    IWorkingFileWriter* AddBufferedWriter(const std::string& sFileName, const LibMCEnv_uint32 nBufferSizeInkB) override;
+
+    IWorkingFileWriter* AddBufferedWriterTempFile(const std::string& sExtension, const LibMCEnv_uint32 nBufferSizeInkB) override;
+
 
 };
 

@@ -5857,6 +5857,357 @@ LibMCEnvResult libmcenv_persistentmeshobject_isboundtologinsession(LibMCEnv_Pers
 
 
 /*************************************************************************************************************************
+ Class implementation for BoundingBox3D
+**************************************************************************************************************************/
+LibMCEnvResult libmcenv_boundingbox3d_isempty(LibMCEnv_BoundingBox3D pBoundingBox3D, bool * pEmpty)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (pEmpty == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pEmpty = pIBoundingBox3D->IsEmpty();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_clear(LibMCEnv_BoundingBox3D pBoundingBox3D)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->Clear();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_setextent(LibMCEnv_BoundingBox3D pBoundingBox3D, const sLibMCEnvFloatPosition3D * pMinimumPoint, const sLibMCEnvFloatPosition3D * pMaximumPoint)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->SetExtent(*pMinimumPoint, *pMaximumPoint);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_getextents(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double * pX, LibMCEnv_double * pY, LibMCEnv_double * pZ)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (!pX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->GetExtents(*pX, *pY, *pZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_addpoint(LibMCEnv_BoundingBox3D pBoundingBox3D, const sLibMCEnvFloatPosition3D * pPoint)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->AddPoint(*pPoint);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_addpointcoordinates(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double dX, LibMCEnv_double dY, LibMCEnv_double dZ)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->AddPointCoordinates(dX, dY, dZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_hasminimumextents(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double dMinimumExtents, bool * pValue)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (pValue == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pValue = pIBoundingBox3D->HasMinimumExtents(dMinimumExtents);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_getminimum(LibMCEnv_BoundingBox3D pBoundingBox3D, sLibMCEnvFloatPosition3D * pMinimumPoint)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (pMinimumPoint == nullptr)
+		throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pMinimumPoint = pIBoundingBox3D->GetMinimum();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_getmaximum(LibMCEnv_BoundingBox3D pBoundingBox3D, sLibMCEnvFloatPosition3D * pMaximumPoint)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (pMaximumPoint == nullptr)
+		throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pMaximumPoint = pIBoundingBox3D->GetMaximum();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_getminimumcoordinates(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double * pX, LibMCEnv_double * pY, LibMCEnv_double * pZ)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (!pX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->GetMinimumCoordinates(*pX, *pY, *pZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_getmaximumcoordinates(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_double * pX, LibMCEnv_double * pY, LibMCEnv_double * pZ)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (!pX)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pY)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pZ)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->GetMaximumCoordinates(*pX, *pY, *pZ);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_duplicate(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_BoundingBox3D * pDuplicateInstance)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		if (pDuplicateInstance == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseDuplicateInstance(nullptr);
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseDuplicateInstance = pIBoundingBox3D->Duplicate();
+
+		*pDuplicateInstance = (IBase*)(pBaseDuplicateInstance);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_boundingbox3d_merge(LibMCEnv_BoundingBox3D pBoundingBox3D, LibMCEnv_BoundingBox3D pAnotherInstance)
+{
+	IBase* pIBaseClass = (IBase *)pBoundingBox3D;
+
+	try {
+		IBase* pIBaseClassAnotherInstance = (IBase *)pAnotherInstance;
+		IBoundingBox3D* pIAnotherInstance = dynamic_cast<IBoundingBox3D*>(pIBaseClassAnotherInstance);
+		if (!pIAnotherInstance)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDCAST);
+		
+		IBoundingBox3D* pIBoundingBox3D = dynamic_cast<IBoundingBox3D*>(pIBaseClass);
+		if (!pIBoundingBox3D)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBoundingBox3D->Merge(pIAnotherInstance);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+
+/*************************************************************************************************************************
  Class implementation for ModelDataMeshInstance
 **************************************************************************************************************************/
 LibMCEnvResult libmcenv_modeldatameshinstance_getname(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const LibMCEnv_uint32 nNameBufferSize, LibMCEnv_uint32* pNameNeededChars, char * pNameBuffer)
@@ -6063,29 +6414,21 @@ LibMCEnvResult libmcenv_modeldatameshinstance_createpersistentmesh(LibMCEnv_Mode
 	}
 }
 
-LibMCEnvResult libmcenv_modeldatameshinstance_calculateoutbox(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
+LibMCEnvResult libmcenv_modeldatameshinstance_calculateboundingbox(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_BoundingBox3D * pBoundingBoxInstance)
 {
 	IBase* pIBaseClass = (IBase *)pModelDataMeshInstance;
 
 	try {
-		if (!pMinX)
+		if (pBoundingBoxInstance == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxX)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseBoundingBoxInstance(nullptr);
 		IModelDataMeshInstance* pIModelDataMeshInstance = dynamic_cast<IModelDataMeshInstance*>(pIBaseClass);
 		if (!pIModelDataMeshInstance)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIModelDataMeshInstance->CalculateOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
+		pBaseBoundingBoxInstance = pIModelDataMeshInstance->CalculateBoundingBox();
 
+		*pBoundingBoxInstance = (IBase*)(pBaseBoundingBoxInstance);
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -6413,101 +6756,21 @@ LibMCEnvResult libmcenv_modeldatacomponentinstance_getsubcomponent(LibMCEnv_Mode
 	}
 }
 
-LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatetotaloutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
+LibMCEnvResult libmcenv_modeldatacomponentinstance_calculateboundingbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_BoundingBox3D * pBoundingBoxInstance)
 {
 	IBase* pIBaseClass = (IBase *)pModelDataComponentInstance;
 
 	try {
-		if (!pMinX)
+		if (pBoundingBoxInstance == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxX)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseBoundingBoxInstance(nullptr);
 		IModelDataComponentInstance* pIModelDataComponentInstance = dynamic_cast<IModelDataComponentInstance*>(pIBaseClass);
 		if (!pIModelDataComponentInstance)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIModelDataComponentInstance->CalculateTotalOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
+		pBaseBoundingBoxInstance = pIModelDataComponentInstance->CalculateBoundingBox();
 
-		return LIBMCENV_SUCCESS;
-	}
-	catch (ELibMCEnvInterfaceException & Exception) {
-		return handleLibMCEnvException(pIBaseClass, Exception);
-	}
-	catch (std::exception & StdException) {
-		return handleStdException(pIBaseClass, StdException);
-	}
-	catch (...) {
-		return handleUnhandledException(pIBaseClass);
-	}
-}
-
-LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatesolidoutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
-{
-	IBase* pIBaseClass = (IBase *)pModelDataComponentInstance;
-
-	try {
-		if (!pMinX)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxX)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		IModelDataComponentInstance* pIModelDataComponentInstance = dynamic_cast<IModelDataComponentInstance*>(pIBaseClass);
-		if (!pIModelDataComponentInstance)
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
-		
-		pIModelDataComponentInstance->CalculateSolidOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
-
-		return LIBMCENV_SUCCESS;
-	}
-	catch (ELibMCEnvInterfaceException & Exception) {
-		return handleLibMCEnvException(pIBaseClass, Exception);
-	}
-	catch (std::exception & StdException) {
-		return handleStdException(pIBaseClass, StdException);
-	}
-	catch (...) {
-		return handleUnhandledException(pIBaseClass);
-	}
-}
-
-LibMCEnvResult libmcenv_modeldatacomponentinstance_calculatesupportoutbox(LibMCEnv_ModelDataComponentInstance pModelDataComponentInstance, LibMCEnv_double * pMinX, LibMCEnv_double * pMinY, LibMCEnv_double * pMinZ, LibMCEnv_double * pMaxX, LibMCEnv_double * pMaxY, LibMCEnv_double * pMaxZ)
-{
-	IBase* pIBaseClass = (IBase *)pModelDataComponentInstance;
-
-	try {
-		if (!pMinX)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMinZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxX)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxY)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		if (!pMaxZ)
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		IModelDataComponentInstance* pIModelDataComponentInstance = dynamic_cast<IModelDataComponentInstance*>(pIBaseClass);
-		if (!pIModelDataComponentInstance)
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
-		
-		pIModelDataComponentInstance->CalculateSupportOutbox(*pMinX, *pMinY, *pMinZ, *pMaxX, *pMaxY, *pMaxZ);
-
+		*pBoundingBoxInstance = (IBase*)(pBaseBoundingBoxInstance);
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -12694,6 +12957,312 @@ LibMCEnvResult libmcenv_workingfileiterator_getcurrentfile(LibMCEnv_WorkingFileI
 
 
 /*************************************************************************************************************************
+ Class implementation for WorkingFileWriter
+**************************************************************************************************************************/
+LibMCEnvResult libmcenv_workingfilewriter_getsize(LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_uint64 * pFileSize)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if (pFileSize == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pFileSize = pIWorkingFileWriter->GetSize();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_getabsolutefilename(LibMCEnv_WorkingFileWriter pWorkingFileWriter, const LibMCEnv_uint32 nAbsoluteFileNameBufferSize, LibMCEnv_uint32* pAbsoluteFileNameNeededChars, char * pAbsoluteFileNameBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if ( (!pAbsoluteFileNameBuffer) && !(pAbsoluteFileNameNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sAbsoluteFileName("");
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pAbsoluteFileNameBuffer == nullptr);
+		if (isCacheCall) {
+			sAbsoluteFileName = pIWorkingFileWriter->GetAbsoluteFileName();
+
+			pIWorkingFileWriter->_setCache (new ParameterCache_1<std::string> (sAbsoluteFileName));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIWorkingFileWriter->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sAbsoluteFileName);
+			pIWorkingFileWriter->_setCache (nullptr);
+		}
+		
+		if (pAbsoluteFileNameNeededChars)
+			*pAbsoluteFileNameNeededChars = (LibMCEnv_uint32) (sAbsoluteFileName.size()+1);
+		if (pAbsoluteFileNameBuffer) {
+			if (sAbsoluteFileName.size() >= nAbsoluteFileNameBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iAbsoluteFileName = 0; iAbsoluteFileName < sAbsoluteFileName.size(); iAbsoluteFileName++)
+				pAbsoluteFileNameBuffer[iAbsoluteFileName] = sAbsoluteFileName[iAbsoluteFileName];
+			pAbsoluteFileNameBuffer[sAbsoluteFileName.size()] = 0;
+		}
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_getfilename(LibMCEnv_WorkingFileWriter pWorkingFileWriter, const LibMCEnv_uint32 nLocalFileNameBufferSize, LibMCEnv_uint32* pLocalFileNameNeededChars, char * pLocalFileNameBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if ( (!pLocalFileNameBuffer) && !(pLocalFileNameNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sLocalFileName("");
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pLocalFileNameBuffer == nullptr);
+		if (isCacheCall) {
+			sLocalFileName = pIWorkingFileWriter->GetFileName();
+
+			pIWorkingFileWriter->_setCache (new ParameterCache_1<std::string> (sLocalFileName));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIWorkingFileWriter->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sLocalFileName);
+			pIWorkingFileWriter->_setCache (nullptr);
+		}
+		
+		if (pLocalFileNameNeededChars)
+			*pLocalFileNameNeededChars = (LibMCEnv_uint32) (sLocalFileName.size()+1);
+		if (pLocalFileNameBuffer) {
+			if (sLocalFileName.size() >= nLocalFileNameBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iLocalFileName = 0; iLocalFileName < sLocalFileName.size(); iLocalFileName++)
+				pLocalFileNameBuffer[iLocalFileName] = sLocalFileName[iLocalFileName];
+			pLocalFileNameBuffer[sLocalFileName.size()] = 0;
+		}
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_flushbuffer(LibMCEnv_WorkingFileWriter pWorkingFileWriter)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileWriter->FlushBuffer();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_finish(LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_WorkingFile * pWorkingFile)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if (pWorkingFile == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseWorkingFile(nullptr);
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseWorkingFile = pIWorkingFileWriter->Finish();
+
+		*pWorkingFile = (IBase*)(pBaseWorkingFile);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_writedata(LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_uint64 nBufferBufferSize, const LibMCEnv_uint8 * pBufferBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if ( (!pBufferBuffer) && (nBufferBufferSize>0))
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileWriter->WriteData(nBufferBufferSize, pBufferBuffer);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_writestring(LibMCEnv_WorkingFileWriter pWorkingFileWriter, const char * pValue)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if (pValue == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sValue(pValue);
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileWriter->WriteString(sValue);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_writeline(LibMCEnv_WorkingFileWriter pWorkingFileWriter, const char * pValue, bool bUnixLineEnding)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		if (pValue == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sValue(pValue);
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileWriter->WriteLine(sValue, bUnixLineEnding);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_writefixedfloat(LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_double dValue, LibMCEnv_uint32 nDigits)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileWriter->WriteFixedFloat(dValue, nDigits);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfilewriter_writefixedfloatline(LibMCEnv_WorkingFileWriter pWorkingFileWriter, LibMCEnv_double dValue, LibMCEnv_uint32 nDigits, bool bUnixLineEnding)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileWriter;
+
+	try {
+		IWorkingFileWriter* pIWorkingFileWriter = dynamic_cast<IWorkingFileWriter*>(pIBaseClass);
+		if (!pIWorkingFileWriter)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileWriter->WriteFixedFloatLine(dValue, nDigits, bUnixLineEnding);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+
+/*************************************************************************************************************************
  Class implementation for WorkingDirectory
 **************************************************************************************************************************/
 LibMCEnvResult libmcenv_workingdirectory_isactive(LibMCEnv_WorkingDirectory pWorkingDirectory, bool * pIsActive)
@@ -12709,6 +13278,37 @@ LibMCEnvResult libmcenv_workingdirectory_isactive(LibMCEnv_WorkingDirectory pWor
 		
 		*pIsActive = pIWorkingDirectory->IsActive();
 
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingdirectory_createsubdirectory(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pDirectoryName, LibMCEnv_WorkingDirectory * pSubDirectory)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingDirectory;
+
+	try {
+		if (pDirectoryName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pSubDirectory == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sDirectoryName(pDirectoryName);
+		IBase* pBaseSubDirectory(nullptr);
+		IWorkingDirectory* pIWorkingDirectory = dynamic_cast<IWorkingDirectory*>(pIBaseClass);
+		if (!pIWorkingDirectory)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseSubDirectory = pIWorkingDirectory->CreateSubDirectory(sDirectoryName);
+
+		*pSubDirectory = (IBase*)(pBaseSubDirectory);
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -13225,6 +13825,68 @@ LibMCEnvResult libmcenv_workingdirectory_retrieveallfiles(LibMCEnv_WorkingDirect
 		pBaseIteratorInstance = pIWorkingDirectory->RetrieveAllFiles();
 
 		*pIteratorInstance = (IBase*)(pBaseIteratorInstance);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingdirectory_addbufferedwriter(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pFileName, LibMCEnv_uint32 nBufferSizeInkB, LibMCEnv_WorkingFileWriter * pWriterInstance)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingDirectory;
+
+	try {
+		if (pFileName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pWriterInstance == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sFileName(pFileName);
+		IBase* pBaseWriterInstance(nullptr);
+		IWorkingDirectory* pIWorkingDirectory = dynamic_cast<IWorkingDirectory*>(pIBaseClass);
+		if (!pIWorkingDirectory)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseWriterInstance = pIWorkingDirectory->AddBufferedWriter(sFileName, nBufferSizeInkB);
+
+		*pWriterInstance = (IBase*)(pBaseWriterInstance);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingdirectory_addbufferedwritertempfile(LibMCEnv_WorkingDirectory pWorkingDirectory, const char * pExtension, LibMCEnv_uint32 nBufferSizeInkB, LibMCEnv_WorkingFileWriter * pWriterInstance)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingDirectory;
+
+	try {
+		if (pExtension == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pWriterInstance == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sExtension(pExtension);
+		IBase* pBaseWriterInstance(nullptr);
+		IWorkingDirectory* pIWorkingDirectory = dynamic_cast<IWorkingDirectory*>(pIBaseClass);
+		if (!pIWorkingDirectory)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseWriterInstance = pIWorkingDirectory->AddBufferedWriterTempFile(sExtension, nBufferSizeInkB);
+
+		*pWriterInstance = (IBase*)(pBaseWriterInstance);
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -29610,6 +30272,32 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_meshobject_makepersistent;
 	if (sProcName == "libmcenv_persistentmeshobject_isboundtologinsession") 
 		*ppProcAddress = (void*) &libmcenv_persistentmeshobject_isboundtologinsession;
+	if (sProcName == "libmcenv_boundingbox3d_isempty") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_isempty;
+	if (sProcName == "libmcenv_boundingbox3d_clear") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_clear;
+	if (sProcName == "libmcenv_boundingbox3d_setextent") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_setextent;
+	if (sProcName == "libmcenv_boundingbox3d_getextents") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_getextents;
+	if (sProcName == "libmcenv_boundingbox3d_addpoint") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_addpoint;
+	if (sProcName == "libmcenv_boundingbox3d_addpointcoordinates") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_addpointcoordinates;
+	if (sProcName == "libmcenv_boundingbox3d_hasminimumextents") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_hasminimumextents;
+	if (sProcName == "libmcenv_boundingbox3d_getminimum") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_getminimum;
+	if (sProcName == "libmcenv_boundingbox3d_getmaximum") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_getmaximum;
+	if (sProcName == "libmcenv_boundingbox3d_getminimumcoordinates") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_getminimumcoordinates;
+	if (sProcName == "libmcenv_boundingbox3d_getmaximumcoordinates") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_getmaximumcoordinates;
+	if (sProcName == "libmcenv_boundingbox3d_duplicate") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_duplicate;
+	if (sProcName == "libmcenv_boundingbox3d_merge") 
+		*ppProcAddress = (void*) &libmcenv_boundingbox3d_merge;
 	if (sProcName == "libmcenv_modeldatameshinstance_getname") 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_getname;
 	if (sProcName == "libmcenv_modeldatameshinstance_getuuid") 
@@ -29622,8 +30310,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createcopiedmesh;
 	if (sProcName == "libmcenv_modeldatameshinstance_createpersistentmesh") 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createpersistentmesh;
-	if (sProcName == "libmcenv_modeldatameshinstance_calculateoutbox") 
-		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_calculateoutbox;
+	if (sProcName == "libmcenv_modeldatameshinstance_calculateboundingbox") 
+		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_calculateboundingbox;
 	if (sProcName == "libmcenv_modeldatacomponentinstance_getname") 
 		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_getname;
 	if (sProcName == "libmcenv_modeldatacomponentinstance_getuuid") 
@@ -29644,12 +30332,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_getsubcomponentcount;
 	if (sProcName == "libmcenv_modeldatacomponentinstance_getsubcomponent") 
 		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_getsubcomponent;
-	if (sProcName == "libmcenv_modeldatacomponentinstance_calculatetotaloutbox") 
-		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculatetotaloutbox;
-	if (sProcName == "libmcenv_modeldatacomponentinstance_calculatesolidoutbox") 
-		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculatesolidoutbox;
-	if (sProcName == "libmcenv_modeldatacomponentinstance_calculatesupportoutbox") 
-		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculatesupportoutbox;
+	if (sProcName == "libmcenv_modeldatacomponentinstance_calculateboundingbox") 
+		*ppProcAddress = (void*) &libmcenv_modeldatacomponentinstance_calculateboundingbox;
 	if (sProcName == "libmcenv_meshsceneitem_getitemuuid") 
 		*ppProcAddress = (void*) &libmcenv_meshsceneitem_getitemuuid;
 	if (sProcName == "libmcenv_meshsceneitem_getsceneuuid") 
@@ -30012,8 +30696,30 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_workingfile_deletefromdisk;
 	if (sProcName == "libmcenv_workingfileiterator_getcurrentfile") 
 		*ppProcAddress = (void*) &libmcenv_workingfileiterator_getcurrentfile;
+	if (sProcName == "libmcenv_workingfilewriter_getsize") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_getsize;
+	if (sProcName == "libmcenv_workingfilewriter_getabsolutefilename") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_getabsolutefilename;
+	if (sProcName == "libmcenv_workingfilewriter_getfilename") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_getfilename;
+	if (sProcName == "libmcenv_workingfilewriter_flushbuffer") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_flushbuffer;
+	if (sProcName == "libmcenv_workingfilewriter_finish") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_finish;
+	if (sProcName == "libmcenv_workingfilewriter_writedata") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_writedata;
+	if (sProcName == "libmcenv_workingfilewriter_writestring") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_writestring;
+	if (sProcName == "libmcenv_workingfilewriter_writeline") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_writeline;
+	if (sProcName == "libmcenv_workingfilewriter_writefixedfloat") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_writefixedfloat;
+	if (sProcName == "libmcenv_workingfilewriter_writefixedfloatline") 
+		*ppProcAddress = (void*) &libmcenv_workingfilewriter_writefixedfloatline;
 	if (sProcName == "libmcenv_workingdirectory_isactive") 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_isactive;
+	if (sProcName == "libmcenv_workingdirectory_createsubdirectory") 
+		*ppProcAddress = (void*) &libmcenv_workingdirectory_createsubdirectory;
 	if (sProcName == "libmcenv_workingdirectory_getabsolutefilepath") 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_getabsolutefilepath;
 	if (sProcName == "libmcenv_workingdirectory_storecustomdata") 
@@ -30046,6 +30752,10 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_retrievemanagedfiles;
 	if (sProcName == "libmcenv_workingdirectory_retrieveallfiles") 
 		*ppProcAddress = (void*) &libmcenv_workingdirectory_retrieveallfiles;
+	if (sProcName == "libmcenv_workingdirectory_addbufferedwriter") 
+		*ppProcAddress = (void*) &libmcenv_workingdirectory_addbufferedwriter;
+	if (sProcName == "libmcenv_workingdirectory_addbufferedwritertempfile") 
+		*ppProcAddress = (void*) &libmcenv_workingdirectory_addbufferedwritertempfile;
 	if (sProcName == "libmcenv_xmldocumentattribute_getnamespace") 
 		*ppProcAddress = (void*) &libmcenv_xmldocumentattribute_getnamespace;
 	if (sProcName == "libmcenv_xmldocumentattribute_getname") 

@@ -35,6 +35,7 @@ Abstract: This is a stub class definition of CWorkingDirectory
 #include "libmcenv_interfaceexception.hpp"
 #include "libmcenv_workingfile.hpp"
 #include "libmcenv_workingfileiterator.hpp"
+#include "libmcenv_workingfilewriter.hpp"
 
 // Include custom headers here.
 #include "common_utils.hpp"
@@ -89,6 +90,13 @@ std::string CWorkingDirectory::GetAbsoluteFilePath()
 {
     return m_pWorkingFileMonitor->getWorkingDirectory ();
 }
+
+IWorkingDirectory* CWorkingDirectory::CreateSubDirectory(const std::string& sDirectoryName)
+{
+    throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
+
+}
+
 
 IWorkingFile * CWorkingDirectory::StoreCustomData(const std::string & sFileName, const LibMCEnv_uint64 nDataBufferBufferSize, const LibMCEnv_uint8 * pDataBufferBuffer)
 {
@@ -283,5 +291,16 @@ IWorkingFileIterator* CWorkingDirectory::RetrieveAllFiles()
     return pIterator.release();
 }
 
+IWorkingFileWriter* CWorkingDirectory::AddBufferedWriter(const std::string& sFileName, const LibMCEnv_uint32 nBufferSizeInkB)
+{
+    auto pInstance = m_pWorkingFileMonitor->addNewFileWriter(sFileName, nBufferSizeInkB);
+    return new CWorkingFileWriter (pInstance, m_pWorkingFileMonitor);
+}
+
+IWorkingFileWriter* CWorkingDirectory::AddBufferedWriterTempFile(const std::string& sExtension, const LibMCEnv_uint32 nBufferSizeInkB)
+{
+    std::string sFileName = generateFileNameForExtension(sExtension);
+    return AddBufferedWriter(sFileName, nBufferSizeInkB);
+}
 
 

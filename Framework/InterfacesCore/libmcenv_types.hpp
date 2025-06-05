@@ -335,6 +335,11 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA 10238 /** Invalid hatch subinterpolation data. */
 #define LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW 10239 /** Hatch subinterpolation data overflow. */
 #define LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST 10240 /** Working file does not exist. */
+#define LIBMCENV_ERROR_ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX 10241 /** Attempted to access empty bounding box. */
+#define LIBMCENV_ERROR_MINIMUMEXTENTSARENOTPOSITIVE 10242 /** Minimum extents are not positive. */
+#define LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE 10243 /** Can not write to finished working file. */
+#define LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE 10244 /** Invalid write buffer size. */
+#define LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION 10245 /** Invalid write buffer position. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -582,6 +587,11 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_INVALIDHATCHSUBINTERPOLATIONDATA: return "Invalid hatch subinterpolation data.";
     case LIBMCENV_ERROR_HATCHSUBINTERPOLATIONDATAOVERFLOW: return "Hatch subinterpolation data overflow.";
     case LIBMCENV_ERROR_WORKINGFILEDOESNOTEXIST: return "Working file does not exist.";
+    case LIBMCENV_ERROR_ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX: return "Attempted to access empty bounding box.";
+    case LIBMCENV_ERROR_MINIMUMEXTENTSARENOTPOSITIVE: return "Minimum extents are not positive.";
+    case LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE: return "Can not write to finished working file.";
+    case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
+    case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
     default: return "unknown error";
   }
 }
@@ -613,6 +623,7 @@ typedef LibMCEnvHandle LibMCEnv_DateTimeDifference;
 typedef LibMCEnvHandle LibMCEnv_DateTime;
 typedef LibMCEnvHandle LibMCEnv_MeshObject;
 typedef LibMCEnvHandle LibMCEnv_PersistentMeshObject;
+typedef LibMCEnvHandle LibMCEnv_BoundingBox3D;
 typedef LibMCEnvHandle LibMCEnv_ModelDataMeshInstance;
 typedef LibMCEnvHandle LibMCEnv_ModelDataComponentInstance;
 typedef LibMCEnvHandle LibMCEnv_MeshSceneItem;
@@ -627,6 +638,7 @@ typedef LibMCEnvHandle LibMCEnv_Build;
 typedef LibMCEnvHandle LibMCEnv_WorkingFileExecution;
 typedef LibMCEnvHandle LibMCEnv_WorkingFile;
 typedef LibMCEnvHandle LibMCEnv_WorkingFileIterator;
+typedef LibMCEnvHandle LibMCEnv_WorkingFileWriter;
 typedef LibMCEnvHandle LibMCEnv_WorkingDirectory;
 typedef LibMCEnvHandle LibMCEnv_XMLDocumentAttribute;
 typedef LibMCEnvHandle LibMCEnv_JSONObject;
@@ -820,6 +832,10 @@ namespace LibMCEnv {
       LibMCEnv_double m_Coordinates[2];
   } sFloatPosition2D;
   
+  typedef struct sFloatPosition3D {
+      LibMCEnv_double m_Coordinates[3];
+  } sFloatPosition3D;
+  
   typedef struct sFieldData2DPoint {
       LibMCEnv_double m_Coordinates[2];
       LibMCEnv_double m_Value;
@@ -882,6 +898,7 @@ typedef LibMCEnv::sHatch2D sLibMCEnvHatch2D;
 typedef LibMCEnv::sMeshVertex3D sLibMCEnvMeshVertex3D;
 typedef LibMCEnv::sMeshTriangle3D sLibMCEnvMeshTriangle3D;
 typedef LibMCEnv::sFloatPosition2D sLibMCEnvFloatPosition2D;
+typedef LibMCEnv::sFloatPosition3D sLibMCEnvFloatPosition3D;
 typedef LibMCEnv::sFieldData2DPoint sLibMCEnvFieldData2DPoint;
 typedef LibMCEnv::sFieldData3DPoint sLibMCEnvFieldData3DPoint;
 typedef LibMCEnv::sFloatHatch2D sLibMCEnvFloatHatch2D;

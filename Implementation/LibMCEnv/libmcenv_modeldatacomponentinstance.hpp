@@ -63,7 +63,7 @@ private:
 
 	std::string m_sUUID;
 	std::string m_sName;
-	LibMCEnv::sModelDataTransform m_LocalTransform;
+	LibMCEnv::sModelDataTransform m_LocalTransform;	
 	LibMCEnv::sModelDataTransform m_ParentTransform;
 	Lib3MF::PModel m_pModel;
 	AMC::PMeshHandler m_pMeshHandler;
@@ -78,7 +78,7 @@ private:
 public:
 
 	// Creates a Component instance for a specific Object
-	CModelDataComponentInstance(Lib3MF::PModel pModel, Lib3MF::PObject p3MFObject, LibMCEnv::sModelDataTransform transform, AMC::PMeshHandler pMeshHandler);
+	CModelDataComponentInstance(Lib3MF::PModel pModel, Lib3MF::PObject p3MFObject, LibMCEnv::sModelDataTransform parentTransform, LibMCEnv::sModelDataTransform localTransform, AMC::PMeshHandler pMeshHandler);
 
 	// Creates a Component instance for a specific Build Item
 	CModelDataComponentInstance(Lib3MF::PModel pModel, Lib3MF::PBuildItem p3MFBuildItem, AMC::PMeshHandler pMeshHandler);
@@ -111,11 +111,8 @@ public:
 
 	IModelDataComponentInstance * GetSubComponent(const LibMCEnv_uint32 nIndex) override;
 
-	void CalculateTotalOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
-
-	void CalculateSolidOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
-
-	void CalculateSupportOutbox(LibMCEnv_double& dMinX, LibMCEnv_double& dMinY, LibMCEnv_double& dMinZ, LibMCEnv_double& dMaxX, LibMCEnv_double& dMaxY, LibMCEnv_double& dMaxZ) override;
+	IBoundingBox3D* CalculateBoundingBox() override;
+	
 
 };
 

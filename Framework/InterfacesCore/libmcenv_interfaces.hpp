@@ -77,6 +77,7 @@ class IDateTimeDifference;
 class IDateTime;
 class IMeshObject;
 class IPersistentMeshObject;
+class IBoundingBox3D;
 class IModelDataMeshInstance;
 class IModelDataComponentInstance;
 class IMeshSceneItem;
@@ -91,6 +92,7 @@ class IBuild;
 class IWorkingFileExecution;
 class IWorkingFile;
 class IWorkingFileIterator;
+class IWorkingFileWriter;
 class IWorkingDirectory;
 class IXMLDocumentAttribute;
 class IJSONObject;
@@ -226,31 +228,6 @@ template <class T1, class T2, class T3, class T4, class T5> class ParameterCache
 			param3 = m_param3;
 			param4 = m_param4;
 			param5 = m_param5;
-		}
-};
-
-template <class T1, class T2, class T3, class T4, class T5, class T6> class ParameterCache_6 : public ParameterCache {
-	private:
-		T1 m_param1;
-		T2 m_param2;
-		T3 m_param3;
-		T4 m_param4;
-		T5 m_param5;
-		T6 m_param6;
-	public:
-		ParameterCache_6 (const T1 & param1, const T2 & param2, const T3 & param3, const T4 & param4, const T5 & param5, const T6 & param6)
-			: m_param1 (param1), m_param2 (param2), m_param3 (param3), m_param4 (param4), m_param5 (param5), m_param6 (param6)
-		{
-		}
-
-		void retrieveData (T1 & param1, T2 & param2, T3 & param3, T4 & param4, T5 & param5, T6 & param6)
-		{
-			param1 = m_param1;
-			param2 = m_param2;
-			param3 = m_param3;
-			param4 = m_param4;
-			param5 = m_param5;
-			param6 = m_param6;
 		}
 };
 
@@ -1986,6 +1963,104 @@ typedef IBaseSharedPtr<IPersistentMeshObject> PIPersistentMeshObject;
 
 
 /*************************************************************************************************************************
+ Class interface for BoundingBox3D 
+**************************************************************************************************************************/
+
+class IBoundingBox3D : public virtual IBase {
+public:
+	/**
+	* IBoundingBox3D::IsEmpty - Returns if the bounding box is empty.
+	* @return Returns true if the Bounding box is empty.
+	*/
+	virtual bool IsEmpty() = 0;
+
+	/**
+	* IBoundingBox3D::Clear - Makes the bounding box empty.
+	*/
+	virtual void Clear() = 0;
+
+	/**
+	* IBoundingBox3D::SetExtent - Set Minimum and Maximum position. If coordinates are not ordered, they will be ordered.
+	* @param[in] MinimumPoint - Minimum Position.
+	* @param[in] MaximumPoint - Maximum Position.
+	*/
+	virtual void SetExtent(const LibMCEnv::sFloatPosition3D MinimumPoint, const LibMCEnv::sFloatPosition3D MaximumPoint) = 0;
+
+	/**
+	* IBoundingBox3D::GetExtents - Returns the extents of the team. Fails if Bounding box is empty.
+	* @param[out] dX - X Coordinate in mm
+	* @param[out] dY - Y Coordinate in mm
+	* @param[out] dZ - Z Coordinate in mm
+	*/
+	virtual void GetExtents(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ) = 0;
+
+	/**
+	* IBoundingBox3D::AddPoint - Adds a new point to the boundary box.
+	* @param[in] Point - Position.
+	*/
+	virtual void AddPoint(const LibMCEnv::sFloatPosition3D Point) = 0;
+
+	/**
+	* IBoundingBox3D::AddPointCoordinates - Adds a new point to the boundary box.
+	* @param[in] dX - X Coordinate in mm
+	* @param[in] dY - Y Coordinate in mm
+	* @param[in] dZ - Z Coordinate in mm
+	*/
+	virtual void AddPointCoordinates(const LibMCEnv_double dX, const LibMCEnv_double dY, const LibMCEnv_double dZ) = 0;
+
+	/**
+	* IBoundingBox3D::HasMinimumExtents - Returns, if the extents are of a minimum value in each axis. Returns false, if Bounding Box is empty.
+	* @param[in] dMinimumExtents - Minimum Extents value. MUST be larger than 0.
+	* @return True, if the bounding box is of the minimum extents.
+	*/
+	virtual bool HasMinimumExtents(const LibMCEnv_double dMinimumExtents) = 0;
+
+	/**
+	* IBoundingBox3D::GetMinimum - Returns the minimum point. Fails if Bounding box is empty.
+	* @return Minimum Position.
+	*/
+	virtual LibMCEnv::sFloatPosition3D GetMinimum() = 0;
+
+	/**
+	* IBoundingBox3D::GetMaximum - Returns the maximum point. Fails if Bounding box is empty.
+	* @return Maximum Position.
+	*/
+	virtual LibMCEnv::sFloatPosition3D GetMaximum() = 0;
+
+	/**
+	* IBoundingBox3D::GetMinimumCoordinates - Returns the minimum point coordinates. Fails if Bounding box is empty.
+	* @param[out] dX - X Coordinate in mm
+	* @param[out] dY - Y Coordinate in mm
+	* @param[out] dZ - Z Coordinate in mm
+	*/
+	virtual void GetMinimumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ) = 0;
+
+	/**
+	* IBoundingBox3D::GetMaximumCoordinates - Returns the maximum point coordinates. Fails if Bounding box is empty.
+	* @param[out] dX - X Coordinate in mm
+	* @param[out] dY - Y Coordinate in mm
+	* @param[out] dZ - Z Coordinate in mm
+	*/
+	virtual void GetMaximumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ) = 0;
+
+	/**
+	* IBoundingBox3D::Duplicate - Returns a duplicate of the bounding box.
+	* @return Returns a duplicate instance.
+	*/
+	virtual IBoundingBox3D * Duplicate() = 0;
+
+	/**
+	* IBoundingBox3D::Merge - Merges another Bounding box. Will copy the other instance if current instance is empty. Will do nothing if other instance is empty.
+	* @param[in] pAnotherInstance - Instance to merge into the Bounding box.
+	*/
+	virtual void Merge(IBoundingBox3D* pAnotherInstance) = 0;
+
+};
+
+typedef IBaseSharedPtr<IBoundingBox3D> PIBoundingBox3D;
+
+
+/*************************************************************************************************************************
  Class interface for ModelDataMeshInstance 
 **************************************************************************************************************************/
 
@@ -2029,15 +2104,10 @@ public:
 	virtual IPersistentMeshObject * CreatePersistentMesh(const bool bBoundToLoginSession) = 0;
 
 	/**
-	* IModelDataMeshInstance::CalculateOutbox - Calculates the outbox of the model.
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	* IModelDataMeshInstance::CalculateBoundingBox - Calculates the bounding box of the model.
+	* @return Bounding Box Instance.
 	*/
-	virtual void CalculateOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
+	virtual IBoundingBox3D * CalculateBoundingBox() = 0;
 
 };
 
@@ -2114,37 +2184,10 @@ public:
 	virtual IModelDataComponentInstance * GetSubComponent(const LibMCEnv_uint32 nIndex) = 0;
 
 	/**
-	* IModelDataComponentInstance::CalculateTotalOutbox - Calculates the outbox of the model (Solid and Support).
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
+	* IModelDataComponentInstance::CalculateBoundingBox - Calculates the bounding box of the model.
+	* @return Bounding Box Instance.
 	*/
-	virtual void CalculateTotalOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
-
-	/**
-	* IModelDataComponentInstance::CalculateSolidOutbox - Calculates the outbox of the solid part of the model.
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
-	*/
-	virtual void CalculateSolidOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
-
-	/**
-	* IModelDataComponentInstance::CalculateSupportOutbox - Calculates the outbox of the support part of the model.
-	* @param[out] dMinX - Minimum Coordinate in X in mm.
-	* @param[out] dMinY - Minimum Coordinate in Y in mm.
-	* @param[out] dMinZ - Minimum Coordinate in Z in mm.
-	* @param[out] dMaxX - Maximum Coordinate in X in mm.
-	* @param[out] dMaxY - Maximum Coordinate in Y in mm.
-	* @param[out] dMaxZ - Maximum Coordinate in Z in mm.
-	*/
-	virtual void CalculateSupportOutbox(LibMCEnv_double & dMinX, LibMCEnv_double & dMinY, LibMCEnv_double & dMinZ, LibMCEnv_double & dMaxX, LibMCEnv_double & dMaxY, LibMCEnv_double & dMaxZ) = 0;
+	virtual IBoundingBox3D * CalculateBoundingBox() = 0;
 
 };
 
@@ -3604,6 +3647,81 @@ typedef IBaseSharedPtr<IWorkingFileIterator> PIWorkingFileIterator;
 
 
 /*************************************************************************************************************************
+ Class interface for WorkingFileWriter 
+**************************************************************************************************************************/
+
+class IWorkingFileWriter : public virtual IBase {
+public:
+	/**
+	* IWorkingFileWriter::GetSize - Returns the current size of file.
+	* @return file size
+	*/
+	virtual LibMCEnv_uint64 GetSize() = 0;
+
+	/**
+	* IWorkingFileWriter::GetAbsoluteFileName - Retrieves absolute file name of the working file on disk
+	* @return global path of the file
+	*/
+	virtual std::string GetAbsoluteFileName() = 0;
+
+	/**
+	* IWorkingFileWriter::GetFileName - Retrieves relative file name of the working file in the directory (without path)
+	* @return local name of the file
+	*/
+	virtual std::string GetFileName() = 0;
+
+	/**
+	* IWorkingFileWriter::FlushBuffer - Writes all unwritten data to disk.
+	*/
+	virtual void FlushBuffer() = 0;
+
+	/**
+	* IWorkingFileWriter::Finish - Finishes the writing and returns the corresponding working file.
+	* @return returns the WorkingFile instance.
+	*/
+	virtual IWorkingFile * Finish() = 0;
+
+	/**
+	* IWorkingFileWriter::WriteData - Writes an array to the file.
+	* @param[in] nBufferBufferSize - Number of elements in buffer
+	* @param[in] pBufferBuffer - Buffer that will be written.
+	*/
+	virtual void WriteData(const LibMCEnv_uint64 nBufferBufferSize, const LibMCEnv_uint8 * pBufferBuffer) = 0;
+
+	/**
+	* IWorkingFileWriter::WriteString - Writes a string to the file.
+	* @param[in] sValue - String that will be written.
+	*/
+	virtual void WriteString(const std::string & sValue) = 0;
+
+	/**
+	* IWorkingFileWriter::WriteLine - Writes a string to the file with line ending.
+	* @param[in] sValue - String that will be written.
+	* @param[in] bUnixLineEnding - If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10).
+	*/
+	virtual void WriteLine(const std::string & sValue, const bool bUnixLineEnding) = 0;
+
+	/**
+	* IWorkingFileWriter::WriteFixedFloat - Writes a double to the file with fixed number of digits.
+	* @param[in] dValue - Double that will be written.
+	* @param[in] nDigits - Number of Digits to export to.. (in mm)
+	*/
+	virtual void WriteFixedFloat(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits) = 0;
+
+	/**
+	* IWorkingFileWriter::WriteFixedFloatLine - Writes a double to the file with fixed number of digits and a new line after.
+	* @param[in] dValue - Double that will be written.
+	* @param[in] nDigits - Number of Digits to export to.. (in mm)
+	* @param[in] bUnixLineEnding - If true, the line will end with a LF (10), if false, the line will end with a windows line ending CRLF (13 10).
+	*/
+	virtual void WriteFixedFloatLine(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits, const bool bUnixLineEnding) = 0;
+
+};
+
+typedef IBaseSharedPtr<IWorkingFileWriter> PIWorkingFileWriter;
+
+
+/*************************************************************************************************************************
  Class interface for WorkingDirectory 
 **************************************************************************************************************************/
 
@@ -3614,6 +3732,13 @@ public:
 	* @return returns true if files can be read and written to the directory.
 	*/
 	virtual bool IsActive() = 0;
+
+	/**
+	* IWorkingDirectory::CreateSubDirectory - Creates a managed subdirectory in the directory.
+	* @param[in] sDirectoryName - Directory name to create. Can not include any path delimiters or ..
+	* @return Working directory instance.
+	*/
+	virtual IWorkingDirectory * CreateSubDirectory(const std::string & sDirectoryName) = 0;
 
 	/**
 	* IWorkingDirectory::GetAbsoluteFilePath - Retrieves absolute file path.
@@ -3730,6 +3855,22 @@ public:
 	* @return working file iterator instance.
 	*/
 	virtual IWorkingFileIterator * RetrieveAllFiles() = 0;
+
+	/**
+	* IWorkingDirectory::AddBufferedWriter - Adds a buffered writer to the directory.
+	* @param[in] sFileName - Filename to manage. The file will be created.
+	* @param[in] nBufferSizeInkB - Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576.
+	* @return Working file writer instance.
+	*/
+	virtual IWorkingFileWriter * AddBufferedWriter(const std::string & sFileName, const LibMCEnv_uint32 nBufferSizeInkB) = 0;
+
+	/**
+	* IWorkingDirectory::AddBufferedWriterTempFile - Adds a buffered writer to the directory with a temporary file name.
+	* @param[in] sExtension - extension of the file to store. MAY be an empty string. MUST only include up to 64 alphanumeric characters.
+	* @param[in] nBufferSizeInkB - Memory buffer size in Bytes. MUST be larger than 0 and smaller than 1048576.
+	* @return Working file writer instance.
+	*/
+	virtual IWorkingFileWriter * AddBufferedWriterTempFile(const std::string & sExtension, const LibMCEnv_uint32 nBufferSizeInkB) = 0;
 
 };
 

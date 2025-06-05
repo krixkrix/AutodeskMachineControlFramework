@@ -27,13 +27,13 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-Abstract: This is the class declaration of CModelDataMeshInstance
+Abstract: This is the class declaration of CWorkingFileWriter
 
 */
 
 
-#ifndef __LIBMCENV_MODELDATAMESHINSTANCE
-#define __LIBMCENV_MODELDATAMESHINSTANCE
+#ifndef __LIBMCENV_WORKINGFILEWRITER
+#define __LIBMCENV_WORKINGFILEWRITER
 
 #include "libmcenv_interfaces.hpp"
 
@@ -45,49 +45,48 @@ Abstract: This is the class declaration of CModelDataMeshInstance
 #endif
 
 // Include custom headers here.
-#include "lib3mf/lib3mf_dynamic.hpp"
-#include "amc_meshhandler.hpp"
+#include "libmcenv_workingfile.hpp"
 
 namespace LibMCEnv {
 namespace Impl {
 
 
 /*************************************************************************************************************************
- Class declaration of CModelDataMeshInstance 
+ Class declaration of CWorkingFileWriter 
 **************************************************************************************************************************/
 
-class CModelDataMeshInstance : public virtual IModelDataMeshInstance, public virtual CBase {
+class CWorkingFileWriter : public virtual IWorkingFileWriter, public virtual CBase {
 private:
-    std::string m_sName;
-    std::string m_sUUID;
 
-    LibMCEnv::sModelDataTransform m_LocalTransform;
-    LibMCEnv::sModelDataTransform m_ParentTransform;
-    AMC::PMeshHandler m_pMeshHandler;
-    Lib3MF::PModel m_pModel;
-    Lib3MF::PMeshObject m_pMeshObject;
+    PWorkingFileWriterInstance m_pWriterInstance;
+    PWorkingFileMonitor m_pFileMonitor;
 
 
 public:
 
-    CModelDataMeshInstance(Lib3MF::PModel pModel, Lib3MF::PMeshObject p3MFObject, LibMCEnv::sModelDataTransform transform, AMC::PMeshHandler pMeshHandler);
+    CWorkingFileWriter(PWorkingFileWriterInstance pWriterInstance, PWorkingFileMonitor pFileMonitor);
 
-    virtual ~CModelDataMeshInstance();
+    virtual ~CWorkingFileWriter();
 
-	std::string GetName() override;
+	LibMCEnv_uint64 GetSize() override;
 
-	std::string GetUUID() override;
+    std::string GetFileName() override;
 
-	LibMCEnv::sModelDataTransform GetLocalTransform() override;
+    void FlushBuffer() override;
 
-    LibMCEnv::sModelDataTransform GetAbsoluteTransform() override;
+	std::string GetAbsoluteFileName() override;
 
-	IMeshObject * CreateCopiedMesh() override;
+	IWorkingFile * Finish() override;
 
-	IPersistentMeshObject * CreatePersistentMesh(const bool bBoundToLoginSession) override;
+	void WriteData(const LibMCEnv_uint64 nBufferBufferSize, const LibMCEnv_uint8 * pBufferBuffer) override;
 
-    IBoundingBox3D* CalculateBoundingBox() override;
-    
+	void WriteString(const std::string & sValue) override;
+
+	void WriteLine(const std::string & sValue, const bool bUnixLineEnding) override;
+
+    void WriteFixedFloat(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits) override;
+
+    void WriteFixedFloatLine(const LibMCEnv_double dValue, const LibMCEnv_uint32 nDigits, const bool bUnixLineEnding) override;
 
 };
 
@@ -97,4 +96,4 @@ public:
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#endif // __LIBMCENV_MODELDATAMESHINSTANCE
+#endif // __LIBMCENV_WORKINGFILEWRITER

@@ -27,13 +27,13 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-Abstract: This is the class declaration of CModelDataMeshInstance
+Abstract: This is the class declaration of CBoundingBox3D
 
 */
 
 
-#ifndef __LIBMCENV_MODELDATAMESHINSTANCE
-#define __LIBMCENV_MODELDATAMESHINSTANCE
+#ifndef __LIBMCENV_BOUNDINGBOX3D
+#define __LIBMCENV_BOUNDINGBOX3D
 
 #include "libmcenv_interfaces.hpp"
 
@@ -45,49 +45,57 @@ Abstract: This is the class declaration of CModelDataMeshInstance
 #endif
 
 // Include custom headers here.
-#include "lib3mf/lib3mf_dynamic.hpp"
-#include "amc_meshhandler.hpp"
+#include <array>
 
 namespace LibMCEnv {
 namespace Impl {
 
 
 /*************************************************************************************************************************
- Class declaration of CModelDataMeshInstance 
+ Class declaration of CBoundingBox3D 
 **************************************************************************************************************************/
 
-class CModelDataMeshInstance : public virtual IModelDataMeshInstance, public virtual CBase {
+class CBoundingBox3D : public virtual IBoundingBox3D, public virtual CBase {
 private:
-    std::string m_sName;
-    std::string m_sUUID;
 
-    LibMCEnv::sModelDataTransform m_LocalTransform;
-    LibMCEnv::sModelDataTransform m_ParentTransform;
-    AMC::PMeshHandler m_pMeshHandler;
-    Lib3MF::PModel m_pModel;
-    Lib3MF::PMeshObject m_pMeshObject;
+	std::array<double, 3> m_dMinimum;
+	std::array<double, 3> m_dMaximum;
 
+	bool m_bIsEmpty;
 
 public:
 
-    CModelDataMeshInstance(Lib3MF::PModel pModel, Lib3MF::PMeshObject p3MFObject, LibMCEnv::sModelDataTransform transform, AMC::PMeshHandler pMeshHandler);
+	CBoundingBox3D();
 
-    virtual ~CModelDataMeshInstance();
+	CBoundingBox3D(bool bIsEmpty, double dMinX, double dMinY, double dMinZ, double dMaxX, double dMaxY, double dMaxZ);
 
-	std::string GetName() override;
+	virtual ~CBoundingBox3D();
 
-	std::string GetUUID() override;
+	bool IsEmpty() override;
 
-	LibMCEnv::sModelDataTransform GetLocalTransform() override;
+	void Clear() override;
 
-    LibMCEnv::sModelDataTransform GetAbsoluteTransform() override;
+	void SetExtent(const LibMCEnv::sFloatPosition3D MinimumPoint, const LibMCEnv::sFloatPosition3D MaximumPoint) override;
 
-	IMeshObject * CreateCopiedMesh() override;
+	void GetExtents(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ) override;
 
-	IPersistentMeshObject * CreatePersistentMesh(const bool bBoundToLoginSession) override;
+	void AddPoint(const LibMCEnv::sFloatPosition3D Point) override;
 
-    IBoundingBox3D* CalculateBoundingBox() override;
-    
+	void AddPointCoordinates(const LibMCEnv_double dX, const LibMCEnv_double dY, const LibMCEnv_double dZ);
+
+	bool HasMinimumExtents(const LibMCEnv_double dMinimumExtents) override;
+
+	LibMCEnv::sFloatPosition3D GetMinimum() override;
+
+	LibMCEnv::sFloatPosition3D GetMaximum() override;
+
+	void GetMinimumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ) override;
+
+	void GetMaximumCoordinates(LibMCEnv_double & dX, LibMCEnv_double & dY, LibMCEnv_double & dZ) override;
+
+	IBoundingBox3D * Duplicate() override;
+
+	void Merge(IBoundingBox3D* pAnotherInstance) override;
 
 };
 
@@ -97,4 +105,4 @@ public:
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-#endif // __LIBMCENV_MODELDATAMESHINSTANCE
+#endif // __LIBMCENV_BOUNDINGBOX3D
