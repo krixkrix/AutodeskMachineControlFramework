@@ -68,6 +68,14 @@
 		<error name="MISSINGSURFACETYPE" code="26" description="Missing surface type" />
 		<error name="INVALIDSURFACEGROUP" code="27" description="Invalid surface group" />		
 		<error name="INVALIDSURFACETYPE" code="28" description="Invalid surface type" />		
+		<error name="INVALIDOPENFOAMDEFINITION" code="29" description="Invalid OpenFOAM Definition" />		
+		<error name="DUPLICATEOPENFOAMSURFACE" code="30" description="Duplicate OpenFOAM Surface" />		
+		<error name="OPENFOAMDEFINITIONMISSINGINBUILD" code="31" description="OpenFOAM Definition missing in build." />		
+		<error name="INVALIDKEYCHARLENGTH" code="32" description="Invalid key char length" />					
+		<error name="OPENFOAMDOMAINMUSTBECONNECTED" code="33" description="OpenFOAM Domain must be connected." />					
+		
+		
+		
 	
 	</errors>
 

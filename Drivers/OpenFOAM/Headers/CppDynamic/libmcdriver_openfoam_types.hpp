@@ -124,6 +124,11 @@ typedef void * LibMCDriver_OpenFOAM_pvoid;
 #define LIBMCDRIVER_OPENFOAM_ERROR_MISSINGSURFACETYPE 26 /** Missing surface type */
 #define LIBMCDRIVER_OPENFOAM_ERROR_INVALIDSURFACEGROUP 27 /** Invalid surface group */
 #define LIBMCDRIVER_OPENFOAM_ERROR_INVALIDSURFACETYPE 28 /** Invalid surface type */
+#define LIBMCDRIVER_OPENFOAM_ERROR_INVALIDOPENFOAMDEFINITION 29 /** Invalid OpenFOAM Definition */
+#define LIBMCDRIVER_OPENFOAM_ERROR_DUPLICATEOPENFOAMSURFACE 30 /** Duplicate OpenFOAM Surface */
+#define LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD 31 /** OpenFOAM Definition missing in build. */
+#define LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH 32 /** Invalid key char length */
+#define LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED 33 /** OpenFOAM Domain must be connected. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_OpenFOAM
@@ -160,6 +165,11 @@ inline const char * LIBMCDRIVER_OPENFOAM_GETERRORSTRING (LibMCDriver_OpenFOAMRes
     case LIBMCDRIVER_OPENFOAM_ERROR_MISSINGSURFACETYPE: return "Missing surface type";
     case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDSURFACEGROUP: return "Invalid surface group";
     case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDSURFACETYPE: return "Invalid surface type";
+    case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDOPENFOAMDEFINITION: return "Invalid OpenFOAM Definition";
+    case LIBMCDRIVER_OPENFOAM_ERROR_DUPLICATEOPENFOAMSURFACE: return "Duplicate OpenFOAM Surface";
+    case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD: return "OpenFOAM Definition missing in build.";
+    case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH: return "Invalid key char length";
+    case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED: return "OpenFOAM Domain must be connected.";
     default: return "unknown error";
   }
 }

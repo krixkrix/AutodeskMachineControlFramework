@@ -87,6 +87,10 @@ class COpenFOAMCaseDefinition {
 private:
 
 	double m_dGridSizeInMM;
+	std::string m_sBuildItemUUID;
+
+	std::map<std::string, POpenFOAMCaseSurfaceInstance> m_SurfaceMap;
+	std::vector<POpenFOAMCaseSurfaceInstance> m_Surfaces;
 
 public:
 
@@ -95,6 +99,11 @@ public:
 	virtual ~COpenFOAMCaseDefinition();
 
 	double getGridSizeInMM ();
+
+	std::string getBuildItemUUID ();
+
+	std::vector<POpenFOAMCaseSurfaceInstance> & getSurfaces();
+
 
 };
 
@@ -107,6 +116,7 @@ private:
 	
 	eCaseStatus m_Status;
 	std::string m_sIdentifier;
+	uint32_t m_nKeyCharLength;
 
 	POpenFOAMCaseDefinition m_pCaseDefinition;
 
@@ -130,10 +140,7 @@ private:
 	std::string m_sBuildUUID;
 
 	eOpenFOAMVersion m_OpenFOAMVersion;
-
-
-	std::map<std::string, POpenFOAMCaseSurfaceInstance> m_SurfaceMap;
-	std::vector<POpenFOAMCaseSurfaceInstance> m_Surfaces;
+	uint32_t m_nSTLWriteBufferSizeInKB;
 
 	POpenFOAMDictBuilder createBlockMeshDict();
 	POpenFOAMDictBuilder createControlDict();
@@ -146,11 +153,11 @@ private:
 	POpenFOAMDictBuilder createTransportPropertiesFile();
 	POpenFOAMDictBuilder createTurbulencePropertiesFile();
 
+	void writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface, LibMCEnv::CWorkingFileWriter* pWriterInstance);
+
 	void computeDomainOutbox (double & dMinXInMM, double & dMinYInMM, double & dMinZInMM, double & dMaxXInMM, double & dMaxYInMM, double & dMaxZInMM);
 
 	void computePointInDomainNotOnGrid (double& dXInMM, double& dYInMM, double& dZInMM);
-
-	LibMCEnv::PWorkingFile createSurfaceASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface);
 
 public:
 

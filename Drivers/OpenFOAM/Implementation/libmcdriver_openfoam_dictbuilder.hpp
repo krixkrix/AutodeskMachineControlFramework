@@ -63,6 +63,7 @@ private:
 	std::string m_sIdentString;
 
 	uint32_t m_nCurrentBlockDepth;
+	uint32_t m_nKeyCharLength;
 
 	void writeDictHeader (const std::string& sObjectType);
 
@@ -70,9 +71,11 @@ private:
 
 	void writeLineIndent ();
 
+	std::string extendKey (const std::string & sKey);
+
 public:
 
-	COpenFOAMDictBuilder(const std::string & sObjectType, eOpenFOAMVersion openFOAMVersion);
+	COpenFOAMDictBuilder(const std::string & sObjectType, eOpenFOAMVersion openFOAMVersion, uint32_t nKeyCharLength);
 
 	virtual ~COpenFOAMDictBuilder();
 

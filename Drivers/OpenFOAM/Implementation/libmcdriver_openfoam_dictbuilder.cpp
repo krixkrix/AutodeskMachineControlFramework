@@ -37,17 +37,21 @@ Abstract: This is a stub class definition of COpenFOAMDictBuilder
 
 using namespace LibMCDriver_OpenFOAM::Impl;
 
+#define OPENFOAM_MAXKEYCHARLENGTH 256
 
 
 
-COpenFOAMDictBuilder::COpenFOAMDictBuilder(const std::string& sObjectType, eOpenFOAMVersion openFOAMVersion)
-    : m_Version (openFOAMVersion), m_nCurrentBlockDepth (0)
+COpenFOAMDictBuilder::COpenFOAMDictBuilder(const std::string& sObjectType, eOpenFOAMVersion openFOAMVersion, uint32_t nKeyCharLength)
+    : m_Version (openFOAMVersion), m_nCurrentBlockDepth (0), m_nKeyCharLength (nKeyCharLength)
 {
 
     m_sFooterString = "\n// ************************************************************************* //\n\n";
     m_sIdentString = "    ";
 
     writeDictHeader(sObjectType);
+
+    if (nKeyCharLength > OPENFOAM_MAXKEYCHARLENGTH)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH);
 
 
 }
@@ -98,7 +102,7 @@ void COpenFOAMDictBuilder::writeDouble(const std::string& sKey, double dValue)
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << dValue << ";" << std::endl;
 }
 
@@ -107,7 +111,7 @@ void COpenFOAMDictBuilder::writeInteger(const std::string& sKey, int64_t nValue)
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << nValue << ";" << std::endl;
 
 }
@@ -118,8 +122,8 @@ void COpenFOAMDictBuilder::writeVec2d(const std::string& sKey, double dV1, doubl
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
-	m_Stream << "(" << dV1 << " " << dV2 << ")" << std::endl;
+        m_Stream << extendKey(sKey);
+    m_Stream << "(" << dV1 << " " << dV2 << ")" << std::endl;
 
 }
 
@@ -128,7 +132,7 @@ void COpenFOAMDictBuilder::writeVec3d(const std::string& sKey, double dV1, doubl
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << "(" << dV1 << " " << dV2 << " " << dV3 << ")" << std::endl;
 
 }
@@ -138,7 +142,7 @@ void COpenFOAMDictBuilder::writeVec4d(const std::string& sKey, double dV1, doubl
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << "(" << dV1 << " " << dV2 << " " << dV3 << " " << dV4 << ")" << std::endl;
 
 }
@@ -148,7 +152,7 @@ void COpenFOAMDictBuilder::writeVec2i(const std::string& sKey, int64_t nV1, int6
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << "(" << nV1 << " " << nV2 << ")" << std::endl;
 
 }
@@ -158,7 +162,7 @@ void COpenFOAMDictBuilder::writeVec3i(const std::string& sKey, int64_t nV1, int6
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << "(" << nV1 << " " << nV2 << " " << nV3 << ")" << std::endl;
 
 }
@@ -168,7 +172,7 @@ void COpenFOAMDictBuilder::writeVec4i(const std::string& sKey, int64_t nV1, int6
     writeLineIndent();
 
     if (!sKey.empty())
-        m_Stream << sKey << "    ";
+        m_Stream << extendKey(sKey);
     m_Stream << "(" << nV1 << " " << nV2 << " " << nV3 << " " << nV4 << ")" << std::endl;
 
 }
@@ -176,14 +180,14 @@ void COpenFOAMDictBuilder::writeVec4i(const std::string& sKey, int64_t nV1, int6
 void COpenFOAMDictBuilder::writeIncludeEtc(const std::string& sIncludePath)
 {
     writeLineIndent();
-    m_Stream << "#includeEtc " << sIncludePath << std::endl;
+    m_Stream << "#includeEtc \"" << sIncludePath << "\"" << std::endl;
 
 }
 
 void COpenFOAMDictBuilder::writeInclude(const std::string& sIncludePath)
 {
     writeLineIndent();
-    m_Stream << "#include " << sIncludePath << std::endl;
+    m_Stream << "#include \"" << sIncludePath << "\"" << std::endl;
 
 }
 
@@ -202,7 +206,7 @@ void COpenFOAMDictBuilder::writeString(const std::string& sKey, const std::strin
 {
     writeLineIndent();
 
-    m_Stream << sKey << "    " << sValue << ";" << std::endl;
+    m_Stream << extendKey (sKey) << sValue << ";" << std::endl;
     
 }
 
@@ -271,5 +275,16 @@ void COpenFOAMDictBuilder::writeLineIndent()
 
 }
 
+std::string COpenFOAMDictBuilder::extendKey(const std::string & sKey)
+{
+    
+    if (sKey.length() < m_nKeyCharLength) {
+        std::string sReturnKey = sKey;
+        sReturnKey.append(m_nKeyCharLength - sKey.length(), ' ');
+        return sReturnKey;
+    } 
+
+    return sKey;
+}
 
 
