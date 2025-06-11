@@ -2335,6 +2335,26 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_getabsolutetrans
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_createcopiedmesh(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_MeshObject * pMeshObjectCopy);
 
 /**
+* Loads a triangle set copy of the mesh geometry into memory. Might be inefficient to use for many identical copies of the mesh in the scene.
+*
+* @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
+* @param[in] pTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+* @param[out] pMeshObjectCopy - Returns the mesh object instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_createtrianglesetofmesh(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const char * pTriangleSetName, LibMCEnv_MeshObject * pMeshObjectCopy);
+
+/**
+* Returns if the mesh has a triangle set of a specific name.
+*
+* @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
+* @param[in] pTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+* @param[out] pTriangleSetExists - Returns true, if the triangle set name exists, false otherwise.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_modeldatameshinstance_hastriangleset(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const char * pTriangleSetName, bool * pTriangleSetExists);
+
+/**
 * Creates a persistent mesh of the geometry. Will not create a duplicate if the instance was already persisted before. The release of the memory should be handled with great care! 
 *
 * @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.

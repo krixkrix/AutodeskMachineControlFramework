@@ -6386,6 +6386,66 @@ LibMCEnvResult libmcenv_modeldatameshinstance_createcopiedmesh(LibMCEnv_ModelDat
 	}
 }
 
+LibMCEnvResult libmcenv_modeldatameshinstance_createtrianglesetofmesh(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const char * pTriangleSetName, LibMCEnv_MeshObject * pMeshObjectCopy)
+{
+	IBase* pIBaseClass = (IBase *)pModelDataMeshInstance;
+
+	try {
+		if (pTriangleSetName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pMeshObjectCopy == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sTriangleSetName(pTriangleSetName);
+		IBase* pBaseMeshObjectCopy(nullptr);
+		IModelDataMeshInstance* pIModelDataMeshInstance = dynamic_cast<IModelDataMeshInstance*>(pIBaseClass);
+		if (!pIModelDataMeshInstance)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseMeshObjectCopy = pIModelDataMeshInstance->CreateTriangleSetOfMesh(sTriangleSetName);
+
+		*pMeshObjectCopy = (IBase*)(pBaseMeshObjectCopy);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_modeldatameshinstance_hastriangleset(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const char * pTriangleSetName, bool * pTriangleSetExists)
+{
+	IBase* pIBaseClass = (IBase *)pModelDataMeshInstance;
+
+	try {
+		if (pTriangleSetName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pTriangleSetExists == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sTriangleSetName(pTriangleSetName);
+		IModelDataMeshInstance* pIModelDataMeshInstance = dynamic_cast<IModelDataMeshInstance*>(pIBaseClass);
+		if (!pIModelDataMeshInstance)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pTriangleSetExists = pIModelDataMeshInstance->HasTriangleSet(sTriangleSetName);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_modeldatameshinstance_createpersistentmesh(LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, bool bBoundToLoginSession, LibMCEnv_PersistentMeshObject * pPersistentMesh)
 {
 	IBase* pIBaseClass = (IBase *)pModelDataMeshInstance;
@@ -30308,6 +30368,10 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_getabsolutetransform;
 	if (sProcName == "libmcenv_modeldatameshinstance_createcopiedmesh") 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createcopiedmesh;
+	if (sProcName == "libmcenv_modeldatameshinstance_createtrianglesetofmesh") 
+		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createtrianglesetofmesh;
+	if (sProcName == "libmcenv_modeldatameshinstance_hastriangleset") 
+		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_hastriangleset;
 	if (sProcName == "libmcenv_modeldatameshinstance_createpersistentmesh") 
 		*ppProcAddress = (void*) &libmcenv_modeldatameshinstance_createpersistentmesh;
 	if (sProcName == "libmcenv_modeldatameshinstance_calculateboundingbox") 

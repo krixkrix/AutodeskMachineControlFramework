@@ -677,6 +677,7 @@ public:
 			case LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE: return "CANNOTWRITETOFINISHEDWORKINGFILE";
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "INVALIDWRITEBUFFERSIZE";
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "INVALIDWRITEBUFFFERPOSITION";
+			case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "TRIANGLESETNOTFOUND";
 		}
 		return "UNKNOWN";
 	}
@@ -929,6 +930,7 @@ public:
 			case LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE: return "Can not write to finished working file.";
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
+			case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "Triangle set not found.";
 		}
 		return "unknown error";
 	}
@@ -1772,6 +1774,8 @@ public:
 	inline sModelDataTransform GetLocalTransform();
 	inline sModelDataTransform GetAbsoluteTransform();
 	inline PMeshObject CreateCopiedMesh();
+	inline PMeshObject CreateTriangleSetOfMesh(const std::string & sTriangleSetName);
+	inline bool HasTriangleSet(const std::string & sTriangleSetName);
 	inline PPersistentMeshObject CreatePersistentMesh(const bool bBoundToLoginSession);
 	inline PBoundingBox3D CalculateBoundingBox();
 };
@@ -3495,6 +3499,8 @@ public:
 		pWrapperTable->m_ModelDataMeshInstance_GetLocalTransform = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_GetAbsoluteTransform = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CreateCopiedMesh = nullptr;
+		pWrapperTable->m_ModelDataMeshInstance_CreateTriangleSetOfMesh = nullptr;
+		pWrapperTable->m_ModelDataMeshInstance_HasTriangleSet = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh = nullptr;
 		pWrapperTable->m_ModelDataMeshInstance_CalculateBoundingBox = nullptr;
 		pWrapperTable->m_ModelDataComponentInstance_GetName = nullptr;
@@ -6188,6 +6194,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_ModelDataMeshInstance_CreateCopiedMesh == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ModelDataMeshInstance_CreateTriangleSetOfMesh = (PLibMCEnvModelDataMeshInstance_CreateTriangleSetOfMeshPtr) GetProcAddress(hLibrary, "libmcenv_modeldatameshinstance_createtrianglesetofmesh");
+		#else // _WIN32
+		pWrapperTable->m_ModelDataMeshInstance_CreateTriangleSetOfMesh = (PLibMCEnvModelDataMeshInstance_CreateTriangleSetOfMeshPtr) dlsym(hLibrary, "libmcenv_modeldatameshinstance_createtrianglesetofmesh");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ModelDataMeshInstance_CreateTriangleSetOfMesh == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_ModelDataMeshInstance_HasTriangleSet = (PLibMCEnvModelDataMeshInstance_HasTriangleSetPtr) GetProcAddress(hLibrary, "libmcenv_modeldatameshinstance_hastriangleset");
+		#else // _WIN32
+		pWrapperTable->m_ModelDataMeshInstance_HasTriangleSet = (PLibMCEnvModelDataMeshInstance_HasTriangleSetPtr) dlsym(hLibrary, "libmcenv_modeldatameshinstance_hastriangleset");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_ModelDataMeshInstance_HasTriangleSet == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13456,6 +13480,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CreateCopiedMesh == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_createtrianglesetofmesh", (void**)&(pWrapperTable->m_ModelDataMeshInstance_CreateTriangleSetOfMesh));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CreateTriangleSetOfMesh == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_hastriangleset", (void**)&(pWrapperTable->m_ModelDataMeshInstance_HasTriangleSet));
+		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_HasTriangleSet == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_modeldatameshinstance_createpersistentmesh", (void**)&(pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ModelDataMeshInstance_CreatePersistentMesh == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -18989,6 +19021,35 @@ public:
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CMeshObject>(m_pWrapper, hMeshObjectCopy);
+	}
+	
+	/**
+	* CModelDataMeshInstance::CreateTriangleSetOfMesh - Loads a triangle set copy of the mesh geometry into memory. Might be inefficient to use for many identical copies of the mesh in the scene.
+	* @param[in] sTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+	* @return Returns the mesh object instance.
+	*/
+	PMeshObject CModelDataMeshInstance::CreateTriangleSetOfMesh(const std::string & sTriangleSetName)
+	{
+		LibMCEnvHandle hMeshObjectCopy = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataMeshInstance_CreateTriangleSetOfMesh(m_pHandle, sTriangleSetName.c_str(), &hMeshObjectCopy));
+		
+		if (!hMeshObjectCopy) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CMeshObject>(m_pWrapper, hMeshObjectCopy);
+	}
+	
+	/**
+	* CModelDataMeshInstance::HasTriangleSet - Returns if the mesh has a triangle set of a specific name.
+	* @param[in] sTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+	* @return Returns true, if the triangle set name exists, false otherwise.
+	*/
+	bool CModelDataMeshInstance::HasTriangleSet(const std::string & sTriangleSetName)
+	{
+		bool resultTriangleSetExists = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_ModelDataMeshInstance_HasTriangleSet(m_pHandle, sTriangleSetName.c_str(), &resultTriangleSetExists));
+		
+		return resultTriangleSetExists;
 	}
 	
 	/**

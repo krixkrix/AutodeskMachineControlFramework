@@ -2322,6 +2322,26 @@ typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_GetAbsoluteTransformPtr)
 typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_CreateCopiedMeshPtr) (LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, LibMCEnv_MeshObject * pMeshObjectCopy);
 
 /**
+* Loads a triangle set copy of the mesh geometry into memory. Might be inefficient to use for many identical copies of the mesh in the scene.
+*
+* @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
+* @param[in] pTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+* @param[out] pMeshObjectCopy - Returns the mesh object instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_CreateTriangleSetOfMeshPtr) (LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const char * pTriangleSetName, LibMCEnv_MeshObject * pMeshObjectCopy);
+
+/**
+* Returns if the mesh has a triangle set of a specific name.
+*
+* @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
+* @param[in] pTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+* @param[out] pTriangleSetExists - Returns true, if the triangle set name exists, false otherwise.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvModelDataMeshInstance_HasTriangleSetPtr) (LibMCEnv_ModelDataMeshInstance pModelDataMeshInstance, const char * pTriangleSetName, bool * pTriangleSetExists);
+
+/**
 * Creates a persistent mesh of the geometry. Will not create a duplicate if the instance was already persisted before. The release of the memory should be handled with great care! 
 *
 * @param[in] pModelDataMeshInstance - ModelDataMeshInstance instance.
@@ -10203,6 +10223,8 @@ typedef struct {
 	PLibMCEnvModelDataMeshInstance_GetLocalTransformPtr m_ModelDataMeshInstance_GetLocalTransform;
 	PLibMCEnvModelDataMeshInstance_GetAbsoluteTransformPtr m_ModelDataMeshInstance_GetAbsoluteTransform;
 	PLibMCEnvModelDataMeshInstance_CreateCopiedMeshPtr m_ModelDataMeshInstance_CreateCopiedMesh;
+	PLibMCEnvModelDataMeshInstance_CreateTriangleSetOfMeshPtr m_ModelDataMeshInstance_CreateTriangleSetOfMesh;
+	PLibMCEnvModelDataMeshInstance_HasTriangleSetPtr m_ModelDataMeshInstance_HasTriangleSet;
 	PLibMCEnvModelDataMeshInstance_CreatePersistentMeshPtr m_ModelDataMeshInstance_CreatePersistentMesh;
 	PLibMCEnvModelDataMeshInstance_CalculateBoundingBoxPtr m_ModelDataMeshInstance_CalculateBoundingBox;
 	PLibMCEnvModelDataComponentInstance_GetNamePtr m_ModelDataComponentInstance_GetName;

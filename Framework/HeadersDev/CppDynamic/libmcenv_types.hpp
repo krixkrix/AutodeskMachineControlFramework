@@ -340,6 +340,7 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE 10243 /** Can not write to finished working file. */
 #define LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE 10244 /** Invalid write buffer size. */
 #define LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION 10245 /** Invalid write buffer position. */
+#define LIBMCENV_ERROR_TRIANGLESETNOTFOUND 10246 /** Triangle set not found. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -592,6 +593,7 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE: return "Can not write to finished working file.";
     case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
     case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
+    case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "Triangle set not found.";
     default: return "unknown error";
   }
 }

@@ -111,6 +111,29 @@ IMeshObject * CModelDataMeshInstance::CreateCopiedMesh()
     return new CMeshObject(m_pMeshHandler, pMeshEntity);
 }
 
+IMeshObject* CModelDataMeshInstance::CreateTriangleSetOfMesh(const std::string& sTriangleSetName)
+{
+    if (!m_pMeshObject->HasTriangleSet(sTriangleSetName))
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_TRIANGLESETNOTFOUND, sTriangleSetName);
+
+    std::string sUUID = AMCCommon::CUtils::createUUID();
+
+    auto pMeshEntity = std::make_shared<AMC::CMeshEntity>(sUUID, m_sName);
+
+    pMeshEntity->loadTriangleSetFrom3MF(m_pMeshObject.get(), sTriangleSetName);
+
+    return new CMeshObject(m_pMeshHandler, pMeshEntity);
+
+
+
+}
+
+bool CModelDataMeshInstance::HasTriangleSet(const std::string& sTriangleSetName)
+{
+    return m_pMeshObject->HasTriangleSet(sTriangleSetName);
+}
+
+
 IPersistentMeshObject * CModelDataMeshInstance::CreatePersistentMesh(const bool bBoundToLoginSession)
 {
     std::string sUUID = AMCCommon::CUtils::createUUID();

@@ -280,9 +280,11 @@
 		<error name="WORKINGFILEDOESNOTEXIST" code="10240" description="Working file does not exist." />
 		<error name="ATTEMPTEDTOACCESSEMPTYBOUNDINGBOX" code="10241" description="Attempted to access empty bounding box." />
 		<error name="MINIMUMEXTENTSARENOTPOSITIVE" code="10242" description="Minimum extents are not positive." />
-		<error name="CANNOTWRITETOFINISHEDWORKINGFILE" code="10243" description="Can not write to finished working file." />					
-		<error name="INVALIDWRITEBUFFERSIZE" code="10244" description="Invalid write buffer size." />					
-		<error name="INVALIDWRITEBUFFFERPOSITION" code="10245" description="Invalid write buffer position." />					
+		<error name="CANNOTWRITETOFINISHEDWORKINGFILE" code="10243" description="Can not write to finished working file." />
+		<error name="INVALIDWRITEBUFFERSIZE" code="10244" description="Invalid write buffer size." />		
+		<error name="INVALIDWRITEBUFFFERPOSITION" code="10245" description="Invalid write buffer position." />
+		<error name="TRIANGLESETNOTFOUND" code="10246" description="Triangle set not found." />	
+		
 		
 			
 	</errors>
@@ -1613,6 +1615,16 @@
 
 		<method name="CreateCopiedMesh" description="Loads a copy of the mesh geometry into memory. Might be inefficient to use for many identical copies of the mesh in the scene.">
 			<param name="MeshObjectCopy" type="class" class="MeshObject" pass="return" description="Returns the mesh object instance." />		
+		</method>
+
+		<method name="CreateTriangleSetOfMesh" description="Loads a triangle set copy of the mesh geometry into memory. Might be inefficient to use for many identical copies of the mesh in the scene.">
+			<param name="TriangleSetName" type="string" pass="in" description="Triangle Set Name. Fails if triangle set does not exist in mesh." />		
+			<param name="MeshObjectCopy" type="class" class="MeshObject" pass="return" description="Returns the mesh object instance." />		
+		</method>
+
+		<method name="HasTriangleSet" description="Returns if the mesh has a triangle set of a specific name.">
+			<param name="TriangleSetName" type="string" pass="in" description="Triangle Set Name. Fails if triangle set does not exist in mesh." />		
+			<param name="TriangleSetExists" type="bool" pass="return" description="Returns true, if the triangle set name exists, false otherwise." />		
 		</method>
 
 		<method name="CreatePersistentMesh" description="Creates a persistent mesh of the geometry. Will not create a duplicate if the instance was already persisted before. The release of the memory should be handled with great care! ">

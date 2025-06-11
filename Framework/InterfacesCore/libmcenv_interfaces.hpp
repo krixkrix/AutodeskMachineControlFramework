@@ -2097,6 +2097,20 @@ public:
 	virtual IMeshObject * CreateCopiedMesh() = 0;
 
 	/**
+	* IModelDataMeshInstance::CreateTriangleSetOfMesh - Loads a triangle set copy of the mesh geometry into memory. Might be inefficient to use for many identical copies of the mesh in the scene.
+	* @param[in] sTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+	* @return Returns the mesh object instance.
+	*/
+	virtual IMeshObject * CreateTriangleSetOfMesh(const std::string & sTriangleSetName) = 0;
+
+	/**
+	* IModelDataMeshInstance::HasTriangleSet - Returns if the mesh has a triangle set of a specific name.
+	* @param[in] sTriangleSetName - Triangle Set Name. Fails if triangle set does not exist in mesh.
+	* @return Returns true, if the triangle set name exists, false otherwise.
+	*/
+	virtual bool HasTriangleSet(const std::string & sTriangleSetName) = 0;
+
+	/**
 	* IModelDataMeshInstance::CreatePersistentMesh - Creates a persistent mesh of the geometry. Will not create a duplicate if the instance was already persisted before. The release of the memory should be handled with great care! 
 	* @param[in] bBoundToLoginSession - If true, the mesh will be freed once the client login session expires.
 	* @return Returns a persistent instance to the same mesh data.
