@@ -108,3 +108,9 @@ void COpenFOAMCase::StartComputation()
 	m_pInstance->startComputation();
 }
 
+void COpenFOAMCase::CreateOpenFOAMInputDeck(LibMCEnv::PZIPStreamWriter pZIPStream)
+{
+	m_pInstance->createOpenFOAMInputDeck(pZIPStream);
+
+}
+

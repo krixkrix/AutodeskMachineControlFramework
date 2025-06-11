@@ -211,6 +211,15 @@ typedef LibMCDriver_OpenFOAMResult (*PLibMCDriver_OpenFOAMOpenFOAMCase_GetBuildU
 */
 typedef LibMCDriver_OpenFOAMResult (*PLibMCDriver_OpenFOAMOpenFOAMCase_StartComputationPtr) (LibMCDriver_OpenFOAM_OpenFOAMCase pOpenFOAMCase);
 
+/**
+* Writes the OpenFOAM input deck into a ZIP file
+*
+* @param[in] pOpenFOAMCase - OpenFOAMCase instance.
+* @param[in] pZIPStream - ZIP Stream writer to add the input deck to.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_OpenFOAMResult (*PLibMCDriver_OpenFOAMOpenFOAMCase_CreateOpenFOAMInputDeckPtr) (LibMCDriver_OpenFOAM_OpenFOAMCase pOpenFOAMCase, LibMCEnv_ZIPStreamWriter pZIPStream);
+
 /*************************************************************************************************************************
  Class definition for Driver_OpenFOAM
 **************************************************************************************************************************/
@@ -346,6 +355,7 @@ typedef struct {
 	PLibMCDriver_OpenFOAMOpenFOAMCase_HasBuildPtr m_OpenFOAMCase_HasBuild;
 	PLibMCDriver_OpenFOAMOpenFOAMCase_GetBuildUUIDPtr m_OpenFOAMCase_GetBuildUUID;
 	PLibMCDriver_OpenFOAMOpenFOAMCase_StartComputationPtr m_OpenFOAMCase_StartComputation;
+	PLibMCDriver_OpenFOAMOpenFOAMCase_CreateOpenFOAMInputDeckPtr m_OpenFOAMCase_CreateOpenFOAMInputDeck;
 	PLibMCDriver_OpenFOAMDriver_OpenFOAM_CreateCasePtr m_Driver_OpenFOAM_CreateCase;
 	PLibMCDriver_OpenFOAMDriver_OpenFOAM_CaseExistsPtr m_Driver_OpenFOAM_CaseExists;
 	PLibMCDriver_OpenFOAMDriver_OpenFOAM_FindCasePtr m_Driver_OpenFOAM_FindCase;

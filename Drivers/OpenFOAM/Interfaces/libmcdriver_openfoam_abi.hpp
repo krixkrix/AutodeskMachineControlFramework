@@ -224,6 +224,15 @@ LIBMCDRIVER_OPENFOAM_DECLSPEC LibMCDriver_OpenFOAMResult libmcdriver_openfoam_op
 */
 LIBMCDRIVER_OPENFOAM_DECLSPEC LibMCDriver_OpenFOAMResult libmcdriver_openfoam_openfoamcase_startcomputation(LibMCDriver_OpenFOAM_OpenFOAMCase pOpenFOAMCase);
 
+/**
+* Writes the OpenFOAM input deck into a ZIP file
+*
+* @param[in] pOpenFOAMCase - OpenFOAMCase instance.
+* @param[in] pZIPStream - ZIP Stream writer to add the input deck to.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_OPENFOAM_DECLSPEC LibMCDriver_OpenFOAMResult libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck(LibMCDriver_OpenFOAM_OpenFOAMCase pOpenFOAMCase, LibMCEnv_ZIPStreamWriter pZIPStream);
+
 /*************************************************************************************************************************
  Class definition for Driver_OpenFOAM
 **************************************************************************************************************************/

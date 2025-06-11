@@ -87,6 +87,8 @@ public:
 
 	void StartComputation() override;
 
+	void CreateOpenFOAMInputDeck(LibMCEnv::PZIPStreamWriter pZIPStream) override;
+
 };
 
 } // namespace Impl

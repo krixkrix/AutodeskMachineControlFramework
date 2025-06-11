@@ -127,13 +127,23 @@ void COpenFOAMDictBuilder::writeVec2d(const std::string& sKey, double dV1, doubl
 
 }
 
-void COpenFOAMDictBuilder::writeVec3d(const std::string& sKey, double dV1, double dV2, double dV3)
+void COpenFOAMDictBuilder::writeVec3dEnum(const std::string& sKey, double dV1, double dV2, double dV3)
 {
     writeLineIndent();
 
     if (!sKey.empty())
         m_Stream << extendKey(sKey);
     m_Stream << "(" << dV1 << " " << dV2 << " " << dV3 << ")" << std::endl;
+
+}
+
+void COpenFOAMDictBuilder::writeVec3dValue(const std::string& sKey, double dV1, double dV2, double dV3)
+{
+    writeLineIndent();
+
+    if (!sKey.empty())
+        m_Stream << extendKey(sKey);
+    m_Stream << "(" << dV1 << " " << dV2 << " " << dV3 << ");" << std::endl;
 
 }
 
@@ -261,9 +271,16 @@ void COpenFOAMDictBuilder::endEnumBlock()
         m_nCurrentBlockDepth--;
         writeLineIndent();
 
-        m_Stream << ")" << std::endl;
+        m_Stream << ");" << std::endl;
         m_Stream << std::endl;
     }
+}
+
+void COpenFOAMDictBuilder::writeEnumString(const std::string& sValue)
+{
+    writeLineIndent();
+
+    m_Stream << sValue << " " << std::endl;
 }
 
 void COpenFOAMDictBuilder::writeLineIndent()

@@ -203,6 +203,7 @@ public:
 			case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD: return "OPENFOAMDEFINITIONMISSINGINBUILD";
 			case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH: return "INVALIDKEYCHARLENGTH";
 			case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED: return "OPENFOAMDOMAINMUSTBECONNECTED";
+			case LIBMCDRIVER_OPENFOAM_ERROR_SURFACESTLNOTFOUND: return "SURFACESTLNOTFOUND";
 		}
 		return "UNKNOWN";
 	}
@@ -244,6 +245,7 @@ public:
 			case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD: return "OpenFOAM Definition missing in build.";
 			case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH: return "Invalid key char length";
 			case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED: return "OpenFOAM Domain must be connected.";
+			case LIBMCDRIVER_OPENFOAM_ERROR_SURFACESTLNOTFOUND: return "Surface STL not found.";
 		}
 		return "unknown error";
 	}
@@ -475,6 +477,7 @@ public:
 	inline bool HasBuild();
 	inline std::string GetBuildUUID();
 	inline void StartComputation();
+	inline void CreateOpenFOAMInputDeck(classParam<LibMCEnv::CZIPStreamWriter> pZIPStream);
 };
 	
 /*************************************************************************************************************************
@@ -635,6 +638,7 @@ public:
 		pWrapperTable->m_OpenFOAMCase_HasBuild = nullptr;
 		pWrapperTable->m_OpenFOAMCase_GetBuildUUID = nullptr;
 		pWrapperTable->m_OpenFOAMCase_StartComputation = nullptr;
+		pWrapperTable->m_OpenFOAMCase_CreateOpenFOAMInputDeck = nullptr;
 		pWrapperTable->m_Driver_OpenFOAM_CreateCase = nullptr;
 		pWrapperTable->m_Driver_OpenFOAM_CaseExists = nullptr;
 		pWrapperTable->m_Driver_OpenFOAM_FindCase = nullptr;
@@ -841,6 +845,15 @@ public:
 			return LIBMCDRIVER_OPENFOAM_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_OpenFOAMCase_CreateOpenFOAMInputDeck = (PLibMCDriver_OpenFOAMOpenFOAMCase_CreateOpenFOAMInputDeckPtr) GetProcAddress(hLibrary, "libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck");
+		#else // _WIN32
+		pWrapperTable->m_OpenFOAMCase_CreateOpenFOAMInputDeck = (PLibMCDriver_OpenFOAMOpenFOAMCase_CreateOpenFOAMInputDeckPtr) dlsym(hLibrary, "libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_OpenFOAMCase_CreateOpenFOAMInputDeck == nullptr)
+			return LIBMCDRIVER_OPENFOAM_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_Driver_OpenFOAM_CreateCase = (PLibMCDriver_OpenFOAMDriver_OpenFOAM_CreateCasePtr) GetProcAddress(hLibrary, "libmcdriver_openfoam_driver_openfoam_createcase");
 		#else // _WIN32
 		pWrapperTable->m_Driver_OpenFOAM_CreateCase = (PLibMCDriver_OpenFOAMDriver_OpenFOAM_CreateCasePtr) dlsym(hLibrary, "libmcdriver_openfoam_driver_openfoam_createcase");
@@ -1017,6 +1030,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_openfoam_openfoamcase_startcomputation", (void**)&(pWrapperTable->m_OpenFOAMCase_StartComputation));
 		if ( (eLookupError != 0) || (pWrapperTable->m_OpenFOAMCase_StartComputation == nullptr) )
+			return LIBMCDRIVER_OPENFOAM_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck", (void**)&(pWrapperTable->m_OpenFOAMCase_CreateOpenFOAMInputDeck));
+		if ( (eLookupError != 0) || (pWrapperTable->m_OpenFOAMCase_CreateOpenFOAMInputDeck == nullptr) )
 			return LIBMCDRIVER_OPENFOAM_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_openfoam_driver_openfoam_createcase", (void**)&(pWrapperTable->m_Driver_OpenFOAM_CreateCase));
@@ -1272,6 +1289,16 @@ public:
 	void COpenFOAMCase::StartComputation()
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_OpenFOAMCase_StartComputation(m_pHandle));
+	}
+	
+	/**
+	* COpenFOAMCase::CreateOpenFOAMInputDeck - Writes the OpenFOAM input deck into a ZIP file
+	* @param[in] pZIPStream - ZIP Stream writer to add the input deck to.
+	*/
+	void COpenFOAMCase::CreateOpenFOAMInputDeck(classParam<LibMCEnv::CZIPStreamWriter> pZIPStream)
+	{
+		LibMCEnvHandle hZIPStream = pZIPStream.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_OpenFOAMCase_CreateOpenFOAMInputDeck(m_pHandle, hZIPStream));
 	}
 	
 	/**

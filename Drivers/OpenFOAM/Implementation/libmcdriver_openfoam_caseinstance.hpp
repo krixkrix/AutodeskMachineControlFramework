@@ -119,6 +119,7 @@ private:
 	uint32_t m_nKeyCharLength;
 
 	POpenFOAMCaseDefinition m_pCaseDefinition;
+	std::string m_sCaseDefinitionXML;
 
 	LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
 
@@ -134,7 +135,7 @@ private:
 	LibMCEnv::PWorkingFile m_pTurbulencePropertiesFile;
 	LibMCEnv::PWorkingFile m_pCaseFile;
 
-	std::vector<LibMCEnv::PWorkingFile> m_SurfaceASCIISTLs;
+	std::map<std::string, LibMCEnv::PWorkingFile> m_SurfaceASCIISTLs;
 
 
 	std::string m_sBuildUUID;
@@ -153,7 +154,7 @@ private:
 	POpenFOAMDictBuilder createTransportPropertiesFile();
 	POpenFOAMDictBuilder createTurbulencePropertiesFile();
 
-	void writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface, LibMCEnv::CWorkingFileWriter* pWriterInstance);
+	void writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface, LibMCEnv::CWorkingFileWriter* pWriterInstance, double dUnitFactorPerMM);
 
 	void computeDomainOutbox (double & dMinXInMM, double & dMinYInMM, double & dMinZInMM, double & dMaxXInMM, double & dMaxYInMM, double & dMaxZInMM);
 
@@ -186,6 +187,9 @@ public:
 	static bool checkIdentifier(const std::string& sIdentifier);
 
 	static bool checkUUID(const std::string& sUUID);
+
+	void createOpenFOAMInputDeck(LibMCEnv::PZIPStreamWriter pZIPStream);
+
 };
 
 typedef std::shared_ptr<COpenFOAMCaseInstance> POpenFOAMCaseInstance;

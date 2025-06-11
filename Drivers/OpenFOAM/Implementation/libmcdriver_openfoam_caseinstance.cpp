@@ -183,7 +183,7 @@ COpenFOAMCaseInstance::COpenFOAMCaseInstance(const std::string& sIdentifier, Lib
     m_sBuildUUID ("00000000-0000-0000-0000-000000000000"),
     m_Status (eCaseStatus::InPreparation),
     m_nKeyCharLength (32),
-    m_nSTLWriteBufferSizeInKB (1024)
+    m_nSTLWriteBufferSizeInKB (1024*32)
 {
     if (pDriverEnvironment.get() == nullptr)
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
@@ -230,8 +230,8 @@ void COpenFOAMCaseInstance::setBuild(LibMCEnv::PBuild pBuild)
     if (!pToolpath->HasBinaryMetaDataSchema(SCHEMA_OPENFOAMRELATIONSHIP_1_0))
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD, pBuild->GetBuildUUID ());
 
-    std::string sDefinition = pToolpath->GetBinaryMetaDataAsStringBySchema(SCHEMA_OPENFOAMRELATIONSHIP_1_0);
-    auto pXMLDocument = m_pDriverEnvironment->ParseXMLString(sDefinition);
+    m_sCaseDefinitionXML = pToolpath->GetBinaryMetaDataAsStringBySchema(SCHEMA_OPENFOAMRELATIONSHIP_1_0);
+    auto pXMLDocument = m_pDriverEnvironment->ParseXMLString(m_sCaseDefinitionXML);
     
     m_pCaseDefinition = std::make_shared<COpenFOAMCaseDefinition>(pXMLDocument->GetRootNode());
 
@@ -286,9 +286,9 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createBlockMeshDict()
     int64_t nMinXInBlocks = (int64_t)floor(dOutboxMinXinMM / dBlockSizeInMM) - 1;
     int64_t nMinYInBlocks = (int64_t)floor(dOutboxMinYinMM / dBlockSizeInMM) - 1;
     int64_t nMinZInBlocks = (int64_t)floor(dOutboxMinZinMM / dBlockSizeInMM) - 1;
-    int64_t nMaxXInBlocks = (int64_t)ceil(dOutboxMinXinMM / dBlockSizeInMM) + 1;
-    int64_t nMaxYInBlocks = (int64_t)ceil(dOutboxMinYinMM / dBlockSizeInMM) + 1;
-    int64_t nMaxZInBlocks = (int64_t)ceil(dOutboxMinZinMM / dBlockSizeInMM) + 1;
+    int64_t nMaxXInBlocks = (int64_t)ceil(dOutboxMaxXinMM / dBlockSizeInMM) + 1;
+    int64_t nMaxYInBlocks = (int64_t)ceil(dOutboxMaxYinMM / dBlockSizeInMM) + 1;
+    int64_t nMaxZInBlocks = (int64_t)ceil(dOutboxMaxZinMM / dBlockSizeInMM) + 1;
 
     if ((nMinXInBlocks >= nMaxXInBlocks) || (nMinYInBlocks >= nMaxYInBlocks) || (nMinZInBlocks >= nMaxZInBlocks))
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDBLOCKMESHOUTBOX, "invalid block mesh outbox: " + std::to_string (dOutboxMinXinMM) + "/" + std::to_string(dOutboxMinYinMM) + "/" + std::to_string(dOutboxMinZinMM) + " - " + std::to_string(dOutboxMaxXinMM) + "/" + std::to_string(dOutboxMaxYinMM) + "/" + std::to_string(dOutboxMaxZinMM));
@@ -308,14 +308,14 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createBlockMeshDict()
     blockMeshDict->writeDouble("scale", 1.0);
     blockMeshDict->beginEnumBlock("vertices");
 
-    blockMeshDict->writeVec3d("", dMinX, dMinY, dMinZ);
-    blockMeshDict->writeVec3d("", dMaxX, dMinY, dMinZ);
-    blockMeshDict->writeVec3d("", dMaxX, dMaxY, dMinZ);
-    blockMeshDict->writeVec3d("", dMinX, dMaxY, dMinZ);
-    blockMeshDict->writeVec3d("", dMinX, dMinY, dMaxZ);
-    blockMeshDict->writeVec3d("", dMaxX, dMinY, dMaxZ);
-    blockMeshDict->writeVec3d("", dMaxX, dMaxY, dMaxZ);
-    blockMeshDict->writeVec3d("", dMinX, dMaxY, dMaxZ);
+    blockMeshDict->writeVec3dEnum("", dMinX, dMinY, dMinZ);
+    blockMeshDict->writeVec3dEnum("", dMaxX, dMinY, dMinZ);
+    blockMeshDict->writeVec3dEnum("", dMaxX, dMaxY, dMinZ);
+    blockMeshDict->writeVec3dEnum("", dMinX, dMaxY, dMinZ);
+    blockMeshDict->writeVec3dEnum("", dMinX, dMinY, dMaxZ);
+    blockMeshDict->writeVec3dEnum("", dMaxX, dMinY, dMaxZ);
+    blockMeshDict->writeVec3dEnum("", dMaxX, dMaxY, dMaxZ);
+    blockMeshDict->writeVec3dEnum("", dMinX, dMaxY, dMaxZ);
 
     blockMeshDict->endEnumBlock();
 
@@ -418,16 +418,16 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
     snappyHexMeshDict->writeDouble("maxLoadUnbalance", 0.1);
     snappyHexMeshDict->writeInteger("nCellsBetweenLevels", 3);
 
-    snappyHexMeshDict->beginBlock("features");
-    snappyHexMeshDict->endBlock();
+    snappyHexMeshDict->beginEnumBlock("features");
+    snappyHexMeshDict->endEnumBlock();
 
     snappyHexMeshDict->beginBlock("refinementSurfaces");
 
     for (auto pSurface : surfaces) {
 
         snappyHexMeshDict->beginBlock(pSurface->getIdentifier());
-        snappyHexMeshDict->writeString("", "level(1 2)");
-        snappyHexMeshDict->beginBlock("patchinfo");
+        snappyHexMeshDict->writeString("", "level (1 2)");
+        snappyHexMeshDict->beginBlock("patchInfo");
 
         switch (pSurface->surfaceType()) {
             case eOpenFoamSurfaceType::ofstPatch:
@@ -467,7 +467,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
     double dPointInMeshXInM = dPointInMeshXInMM * 0.001;
     double dPointInMeshYInM = dPointInMeshYInMM * 0.001;
     double dPointInMeshZInM = dPointInMeshZInMM * 0.001;
-    snappyHexMeshDict->writeVec3d ("locationInMesh", dPointInMeshXInM, dPointInMeshYInM, dPointInMeshZInM);
+    snappyHexMeshDict->writeVec3dValue("locationInMesh", dPointInMeshXInM, dPointInMeshYInM, dPointInMeshZInM);
     snappyHexMeshDict->writeBool("allowFreeStandingZoneFaces", true);
 
     snappyHexMeshDict->endBlock();
@@ -483,7 +483,9 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
     snappyHexMeshDict->writeBool("multiRegionFeatureSnap", false);
     snappyHexMeshDict->endBlock();
 
-
+    snappyHexMeshDict->beginBlock("addLayersControls");
+    snappyHexMeshDict->endBlock();
+    
     snappyHexMeshDict->beginBlock("meshQualityControls");
     snappyHexMeshDict->writeInclude("meshQualityDict");
     snappyHexMeshDict->writeInteger("nSmoothScale", 4);
@@ -491,9 +493,9 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
     snappyHexMeshDict->endBlock();
 
     snappyHexMeshDict->beginEnumBlock("writeFlags");
-    snappyHexMeshDict->writeString("", "scalarLevels");
-    snappyHexMeshDict->writeString("", "layerSets");
-    snappyHexMeshDict->writeString("", "layerFields");
+    snappyHexMeshDict->writeEnumString("scalarLevels");
+    snappyHexMeshDict->writeEnumString("layerSets");
+    snappyHexMeshDict->writeEnumString("layerFields");
     snappyHexMeshDict->endEnumBlock();
 
     snappyHexMeshDict->writeDouble("mergeTolerance", 1e-6);
@@ -552,6 +554,8 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createFVSolutionDict()
     fvSolutionDict->writeInteger("nSweeps", 1);
     fvSolutionDict->endBlock();
 
+    fvSolutionDict->endBlock();
+
     fvSolutionDict->beginBlock("SIMPLE");
     fvSolutionDict->writeInteger("nNonOrthogonalCorrectors", 0);
     fvSolutionDict->writeString("consistent", "yes");
@@ -597,7 +601,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createFVSchemesDict()
     fvSchemesDict->writeString("turbulence", "bounded Gauss upwind");
     fvSchemesDict->writeString("div(phi,k)", "$turbulence");
     fvSchemesDict->writeString("div(phi,omega)", "$turbulence");
-    fvSchemesDict->writeString("div((nuEff* dev2(T(grad(U)))))", "Gauss linear");
+    fvSchemesDict->writeString("div((nuEff*dev2(T(grad(U)))))", "Gauss linear");
     fvSchemesDict->endBlock();
 
     fvSchemesDict->beginBlock("laplacianSchemes");
@@ -665,8 +669,8 @@ void COpenFOAMCaseInstance::startComputation()
     m_pFVSolutionFile = m_pOpenCaseDirectory->StoreCustomString("fvSolution", createFVSolutionDict()->getAsString());
     m_pFVSchemesFile = m_pOpenCaseDirectory->StoreCustomString("fvSchemes", createFVSchemesDict()->getAsString());
 
-    m_pTransportPropertiesFile = m_pOpenCaseDirectory->StoreCustomString("transportProperties", createFVSchemesDict()->getAsString());
-    m_pTurbulencePropertiesFile = m_pOpenCaseDirectory->StoreCustomString("turbulenceProperties", createFVSchemesDict()->getAsString());
+    m_pTransportPropertiesFile = m_pOpenCaseDirectory->StoreCustomString("transportProperties", createTransportPropertiesFile()->getAsString());
+    m_pTurbulencePropertiesFile = m_pOpenCaseDirectory->StoreCustomString("turbulenceProperties", createTurbulencePropertiesFile()->getAsString());
 
     m_pCaseFile = m_pOpenCaseDirectory->StoreCustomString(sCaseFileName, "");
 
@@ -677,10 +681,12 @@ void COpenFOAMCaseInstance::startComputation()
         for (auto pSurface : surfaces) {
 
             auto pBufferedWriter = m_pOpenCaseDirectory->AddBufferedWriter(pSurface->getSTLFileName(), m_nSTLWriteBufferSizeInKB);
+            std::string sIdentifier = pSurface->getIdentifier();
 
-            writeSurfaceAsASCIISTL (pSurface.get(), pBufferedWriter.get());
+            double dMMinM = 0.001;
+            writeSurfaceAsASCIISTL (pSurface.get(), pBufferedWriter.get(), dMMinM);
 
-            m_SurfaceASCIISTLs.push_back(pBufferedWriter->Finish());
+            m_SurfaceASCIISTLs.insert(std::make_pair (sIdentifier, pBufferedWriter->Finish()));
         }
     }
 }
@@ -690,6 +696,58 @@ void COpenFOAMCaseInstance::cancelComputation()
 
  
 }
+
+void addContentToOpenFOAMInputDeckZIP(LibMCEnv::PWorkingFile pWorkingFile, const std::string& sZIPPath, LibMCEnv::PZIPStreamWriter pZIPStream)
+{
+    if (pZIPStream.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+    if (pWorkingFile.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+
+    std::vector<uint8_t> contentBuffer;
+    pWorkingFile->ReadContent (contentBuffer);
+
+    auto pZIPEntry = pZIPStream->CreateZIPEntry(sZIPPath);
+    if (contentBuffer.size() > 0)
+        pZIPEntry->WriteData(contentBuffer);
+
+}
+
+void COpenFOAMCaseInstance::createOpenFOAMInputDeck(LibMCEnv::PZIPStreamWriter pZIPStream)
+{
+    if (pZIPStream.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+
+    addContentToOpenFOAMInputDeckZIP(m_pCaseFile, "case.foam", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pBlockMeshDictFile, "system/blockMeshDict", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pControlDictFile, "system/controlDict", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pDecomposeParDictFile, "system/decomposeParDict", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pSnappyHexMeshDictFile, "system/snappyHexMeshDict", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pMeshQualityDictFile, "system/meshQualityDict", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pFVSolutionFile, "system/fvSolution", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pFVSchemesFile, "system/fvSchemes", pZIPStream);
+
+    addContentToOpenFOAMInputDeckZIP(m_pTransportPropertiesFile, "constant/transportProperties", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pTurbulencePropertiesFile, "constant/turbulenceProperties", pZIPStream);
+
+    if (m_pCaseDefinition.get() != nullptr) {
+        auto& surfaces = m_pCaseDefinition->getSurfaces();
+
+        for (auto pSurface : surfaces) {
+            auto iIter = m_SurfaceASCIISTLs.find(pSurface->getIdentifier());
+            if (iIter == m_SurfaceASCIISTLs.end())
+                throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_SURFACESTLNOTFOUND);
+
+            addContentToOpenFOAMInputDeckZIP(iIter->second, "constant/triSurface/" + pSurface->getSTLFileName (), pZIPStream);
+        }
+
+    }
+
+    auto pCaseDefinitionEntry = pZIPStream->CreateZIPEntry("definition.xml");
+    pCaseDefinitionEntry->WriteString(m_sCaseDefinitionXML);
+
+}
+
 
 void COpenFOAMCaseInstance::releaseCase()
 {
@@ -800,7 +858,7 @@ void COpenFOAMCaseInstance::computePointInDomainNotOnGrid(double& dXInMM, double
 }
 
 
-void COpenFOAMCaseInstance::writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface, LibMCEnv::CWorkingFileWriter* pWriterInstance)
+void COpenFOAMCaseInstance::writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface, LibMCEnv::CWorkingFileWriter* pWriterInstance, double dUnitFactorPerMM)
 {
     if (pSurface == nullptr)
         throw ELibMCDriver_OpenFOAMInterfaceException (LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
@@ -823,7 +881,7 @@ void COpenFOAMCaseInstance::writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance*
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED);
 
     auto pSolidMesh = pRootComponent->GetSolidMesh(0);
-    auto pCopiedMesh = pSolidMesh->CreateCopiedMesh ();
+    auto pCopiedMesh = pSolidMesh->CreateTriangleSetOfMesh(pSurface->getIdentifier ());
 
     std::vector<LibMCEnv::sMeshVertex3D> Vertices;
     pCopiedMesh->GetAllVertices(Vertices);
@@ -841,27 +899,27 @@ void COpenFOAMCaseInstance::writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance*
         pWriterInstance->WriteLine (" facet normal 0 0 -1", true);
         pWriterInstance->WriteLine ("  outer loop", true);
         pWriterInstance->WriteString   ("  vertex ");
-        pWriterInstance->WriteFixedFloat(vertex1.m_Coordinates[0], 6);
+        pWriterInstance->WriteFixedFloat(vertex1.m_Coordinates[0] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteString(" ");
-        pWriterInstance->WriteFixedFloat(vertex1.m_Coordinates[1], 6);
+        pWriterInstance->WriteFixedFloat(vertex1.m_Coordinates[1] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteString(" ");
-        pWriterInstance->WriteFixedFloat(vertex1.m_Coordinates[2], 6);
+        pWriterInstance->WriteFixedFloat(vertex1.m_Coordinates[2] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteLine("", true);
 
         pWriterInstance->WriteString("  vertex ");
-        pWriterInstance->WriteFixedFloat(vertex2.m_Coordinates[0], 6);
+        pWriterInstance->WriteFixedFloat(vertex2.m_Coordinates[0] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteString(" ");
-        pWriterInstance->WriteFixedFloat(vertex2.m_Coordinates[1], 6);
+        pWriterInstance->WriteFixedFloat(vertex2.m_Coordinates[1] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteString(" ");
-        pWriterInstance->WriteFixedFloat(vertex2.m_Coordinates[2], 6);
+        pWriterInstance->WriteFixedFloat(vertex2.m_Coordinates[2] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteLine("", true);
 
         pWriterInstance->WriteString("  vertex ");
-        pWriterInstance->WriteFixedFloat(vertex3.m_Coordinates[0], 6);
+        pWriterInstance->WriteFixedFloat(vertex3.m_Coordinates[0] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteString(" ");
-        pWriterInstance->WriteFixedFloat(vertex3.m_Coordinates[1], 6);
+        pWriterInstance->WriteFixedFloat(vertex3.m_Coordinates[1] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteString(" ");
-        pWriterInstance->WriteFixedFloat(vertex3.m_Coordinates[2], 6);
+        pWriterInstance->WriteFixedFloat(vertex3.m_Coordinates[2] * dUnitFactorPerMM, 6);
         pWriterInstance->WriteLine("", true);
         pWriterInstance->WriteLine   ("  endloop", true);
         pWriterInstance->WriteLine   (" endfacet", true);
@@ -869,6 +927,5 @@ void COpenFOAMCaseInstance::writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance*
     }
 
     pWriterInstance->WriteLine("endsolid " + sSurfaceIdentifier, true);
-    pWriterInstance->Finish();
 }
 

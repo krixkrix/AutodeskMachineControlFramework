@@ -86,11 +86,13 @@ public:
 	void writeString (const std::string& sKey, const std::string & sValue);
 	void writeBool(const std::string& sKey, const bool bValue);
 	void writeVec2d(const std::string& sKey, double dV1, double dV2);
-	void writeVec3d(const std::string& sKey, double dV1, double dV2, double dV3);
 	void writeVec4d(const std::string& sKey, double dV1, double dV2, double dV3, double dV4);
 	void writeVec2i(const std::string& sKey, int64_t nV1, int64_t nV2);
 	void writeVec3i(const std::string& sKey, int64_t nV1, int64_t nV2, int64_t nV3);
 	void writeVec4i(const std::string& sKey, int64_t nV1, int64_t nV2, int64_t nV3, int64_t nV4);
+	void writeVec3dEnum(const std::string& sKey, double dV1, double dV2, double dV3);
+	void writeVec3dValue(const std::string& sKey, double dV1, double dV2, double dV3);
+
 
 	void writeIncludeEtc(const std::string & sIncludePath);
 	void writeInclude(const std::string& sIncludePath);
@@ -102,6 +104,9 @@ public:
 
 	void beginEnumBlock(const std::string& sKey);
 	void endEnumBlock();
+
+	// A Enum string is without ; at the en
+	void writeEnumString(const std::string& sValue);
 };
 
 typedef std::shared_ptr<COpenFOAMDictBuilder> POpenFOAMDictBuilder;

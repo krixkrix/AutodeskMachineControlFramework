@@ -374,6 +374,12 @@ public:
 	*/
 	virtual void StartComputation() = 0;
 
+	/**
+	* IOpenFOAMCase::CreateOpenFOAMInputDeck - Writes the OpenFOAM input deck into a ZIP file
+	* @param[in] pZIPStream - ZIP Stream writer to add the input deck to.
+	*/
+	virtual void CreateOpenFOAMInputDeck(LibMCEnv::PZIPStreamWriter pZIPStream) = 0;
+
 };
 
 typedef IBaseSharedPtr<IOpenFOAMCase> PIOpenFOAMCase;

@@ -622,6 +622,35 @@ LibMCDriver_OpenFOAMResult libmcdriver_openfoam_openfoamcase_startcomputation(Li
 	}
 }
 
+LibMCDriver_OpenFOAMResult libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck(LibMCDriver_OpenFOAM_OpenFOAMCase pOpenFOAMCase, LibMCEnv_ZIPStreamWriter pZIPStream)
+{
+	IBase* pIBaseClass = (IBase *)pOpenFOAMCase;
+
+	try {
+		LibMCEnv::PZIPStreamWriter pIZIPStream = std::make_shared<LibMCEnv::CZIPStreamWriter>(CWrapper::sPLibMCEnvWrapper.get(), pZIPStream);
+		CWrapper::sPLibMCEnvWrapper->AcquireInstance(pIZIPStream.get());
+		if (!pIZIPStream)
+			throw ELibMCDriver_OpenFOAMInterfaceException (LIBMCDRIVER_OPENFOAM_ERROR_INVALIDCAST);
+		
+		IOpenFOAMCase* pIOpenFOAMCase = dynamic_cast<IOpenFOAMCase*>(pIBaseClass);
+		if (!pIOpenFOAMCase)
+			throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDCAST);
+		
+		pIOpenFOAMCase->CreateOpenFOAMInputDeck(pIZIPStream);
+
+		return LIBMCDRIVER_OPENFOAM_SUCCESS;
+	}
+	catch (ELibMCDriver_OpenFOAMInterfaceException & Exception) {
+		return handleLibMCDriver_OpenFOAMException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for Driver_OpenFOAM
@@ -791,6 +820,8 @@ LibMCDriver_OpenFOAMResult LibMCDriver_OpenFOAM::Impl::LibMCDriver_OpenFOAM_GetP
 		*ppProcAddress = (void*) &libmcdriver_openfoam_openfoamcase_getbuilduuid;
 	if (sProcName == "libmcdriver_openfoam_openfoamcase_startcomputation") 
 		*ppProcAddress = (void*) &libmcdriver_openfoam_openfoamcase_startcomputation;
+	if (sProcName == "libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck") 
+		*ppProcAddress = (void*) &libmcdriver_openfoam_openfoamcase_createopenfoaminputdeck;
 	if (sProcName == "libmcdriver_openfoam_driver_openfoam_createcase") 
 		*ppProcAddress = (void*) &libmcdriver_openfoam_driver_openfoam_createcase;
 	if (sProcName == "libmcdriver_openfoam_driver_openfoam_caseexists") 

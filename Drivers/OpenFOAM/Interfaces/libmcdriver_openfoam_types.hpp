@@ -129,6 +129,7 @@ typedef void * LibMCDriver_OpenFOAM_pvoid;
 #define LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD 31 /** OpenFOAM Definition missing in build. */
 #define LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH 32 /** Invalid key char length */
 #define LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED 33 /** OpenFOAM Domain must be connected. */
+#define LIBMCDRIVER_OPENFOAM_ERROR_SURFACESTLNOTFOUND 34 /** Surface STL not found. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_OpenFOAM
@@ -170,6 +171,7 @@ inline const char * LIBMCDRIVER_OPENFOAM_GETERRORSTRING (LibMCDriver_OpenFOAMRes
     case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDEFINITIONMISSINGINBUILD: return "OpenFOAM Definition missing in build.";
     case LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH: return "Invalid key char length";
     case LIBMCDRIVER_OPENFOAM_ERROR_OPENFOAMDOMAINMUSTBECONNECTED: return "OpenFOAM Domain must be connected.";
+    case LIBMCDRIVER_OPENFOAM_ERROR_SURFACESTLNOTFOUND: return "Surface STL not found.";
     default: return "unknown error";
   }
 }

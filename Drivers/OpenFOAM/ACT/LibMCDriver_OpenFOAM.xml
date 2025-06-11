@@ -73,6 +73,8 @@
 		<error name="OPENFOAMDEFINITIONMISSINGINBUILD" code="31" description="OpenFOAM Definition missing in build." />		
 		<error name="INVALIDKEYCHARLENGTH" code="32" description="Invalid key char length" />					
 		<error name="OPENFOAMDOMAINMUSTBECONNECTED" code="33" description="OpenFOAM Domain must be connected." />					
+		<error name="SURFACESTLNOTFOUND" code="34" description="Surface STL not found." />					
+		
 		
 		
 		
@@ -185,6 +187,10 @@ Custom implementation
 		</method>
 
 		<method name="StartComputation" description="Starts the computation. Fails if CanRun would return false.">
+		</method>
+		
+		<method name="CreateOpenFOAMInputDeck" description="Writes the OpenFOAM input deck into a ZIP file">
+			<param name="ZIPStream" type="class" class="LibMCEnv:ZIPStreamWriter" pass="in" description="ZIP Stream writer to add the input deck to." />
 		</method>
 
 
