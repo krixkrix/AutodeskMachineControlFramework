@@ -316,7 +316,13 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
     newCorrectionFile = pWorkingDirectory->StoreCustomDataInTempFile("ct5", m_CorrectionFileData);
 
     pWorkingDirectory->StoreCustomData("RTC6RBF.rbf", m_FPGAData);
-    pWorkingDirectory->StoreCustomData("RTC6ETH.out", m_FirmwareData);
+    if (sRTCIPAddress.empty()) {
+        pWorkingDirectory->StoreCustomData("RTC6OUT.out", m_FirmwareData);
+    }
+    else {
+        pWorkingDirectory->StoreCustomData("RTC6ETH.out", m_FirmwareData);
+    }
+
     pWorkingDirectory->StoreCustomData("RTC6DAT.dat", m_AuxiliaryData);
 
     std::string sBaseDirectoryPath = pWorkingDirectory->GetAbsoluteFilePath();

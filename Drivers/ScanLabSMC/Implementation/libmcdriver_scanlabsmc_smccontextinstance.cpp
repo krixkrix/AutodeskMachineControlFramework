@@ -167,7 +167,7 @@ CSMCContextInstance::CSMCContextInstance(const std::string& sContextName, ISMCCo
 	slscHandle newHandle = 0;
 	m_pSDK->checkError(newHandle, m_pSDK->slsc_cfg_initialize_from_file(&newHandle, sConfigurationFilePath.c_str()));
 
-	m_pContextHandle = std::make_shared<CSMCContextHandle>(m_pSDK, newHandle);
+	m_pContextHandle = std::make_shared<CSMCContextHandle>(m_pSDK, newHandle, configVersion);
 
 	pConfigurationFile = nullptr;
 
