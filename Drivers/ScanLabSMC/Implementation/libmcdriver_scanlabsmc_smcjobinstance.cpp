@@ -44,6 +44,7 @@ Abstract: This is a stub class definition of CSMCJob
 #include <thread>
 #include <cmath>
 #include <iostream>
+#include <chrono>
 
 using namespace LibMCDriver_ScanLabSMC::Impl;
 

@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <charconv>
 #include <string_view>
+#include <ctime>
+
 #include <cctype> // for std::tolower
 #include <iostream>
 
