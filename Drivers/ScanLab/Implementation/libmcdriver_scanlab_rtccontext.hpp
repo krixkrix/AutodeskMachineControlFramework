@@ -295,7 +295,7 @@ public:
 
 	void ClearOIEMeasurementTags() override;
 
-	IOIEMeasurementTagMap* CRTCContext::RetrieveOIEMeasurementTags() override;
+	IOIEMeasurementTagMap* RetrieveOIEMeasurementTags() override;
 
 	LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag() override;
 
