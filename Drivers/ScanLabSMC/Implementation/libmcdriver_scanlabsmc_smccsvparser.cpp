@@ -5,6 +5,7 @@
 #include <charconv>
 #include <string_view>
 #include <ctime>
+#include <cmath>
 
 #include <cctype> // for std::tolower
 #include <iostream>
