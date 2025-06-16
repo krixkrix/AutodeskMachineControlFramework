@@ -53,6 +53,14 @@ enum class eOpenFOAMVersion : uint32_t
 	ofv2406 = 1
 };
 
+enum class eOpenFOAMDictType : uint32_t
+{
+	ofdInclude = 0,
+	ofdDictionary = 1,
+	ofdVolScalarField = 2,
+	ofdVolVectorField = 3
+};
+
 class COpenFOAMDictBuilder {
 private:
 
@@ -65,7 +73,7 @@ private:
 	uint32_t m_nCurrentBlockDepth;
 	uint32_t m_nKeyCharLength;
 
-	void writeDictHeader (const std::string& sObjectType);
+	void writeDictHeader (const std::string& sObjectType, eOpenFOAMDictType dictType);
 
 	std::string getVersionTagString();
 
@@ -75,7 +83,7 @@ private:
 
 public:
 
-	COpenFOAMDictBuilder(const std::string & sObjectType, eOpenFOAMVersion openFOAMVersion, uint32_t nKeyCharLength);
+	COpenFOAMDictBuilder(const std::string & sObjectType, eOpenFOAMVersion openFOAMVersion, uint32_t nKeyCharLength, eOpenFOAMDictType dictType);
 
 	virtual ~COpenFOAMDictBuilder();
 

@@ -47,7 +47,7 @@ using namespace LibMCDriver_OpenFOAM::Impl;
 
 
 COpenFOAMCaseSurfaceInstance::COpenFOAMCaseSurfaceInstance(LibMCEnv::PXMLDocumentNode pXMLNode)
-    : m_SurfaceType (eOpenFoamSurfaceType::ofstInvalid)
+    : m_SurfaceType(eOpenFoamSurfaceType::ofstInvalid), m_dFlowVelocity({ 0.0, 0.0, 0.0 })
 {
     if (pXMLNode.get() == nullptr)
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
@@ -78,8 +78,10 @@ COpenFOAMCaseSurfaceInstance::COpenFOAMCaseSurfaceInstance(LibMCEnv::PXMLDocumen
     if (sSurfaceType.empty())
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_MISSINGSURFACETYPE, m_sIdentifier);
 
-    if (sSurfaceType == "patch") {
-        m_SurfaceType = eOpenFoamSurfaceType::ofstPatch;
+    if (sSurfaceType == "inlet") { 
+        m_SurfaceType = eOpenFoamSurfaceType::ofstInletPatch;
+    } else if (sSurfaceType == "outlet") {
+        m_SurfaceType = eOpenFoamSurfaceType::ofstOutletPatch;
     } else if (sSurfaceType == "wall") {
         m_SurfaceType = eOpenFoamSurfaceType::ofstWall;
     }
@@ -153,6 +155,10 @@ COpenFOAMCaseDefinition::COpenFOAMCaseDefinition(LibMCEnv::PXMLDocumentNode pXML
         m_Surfaces.push_back(pSurfaceInstance);
     }
 
+	m_dTurbulentKE = 0.24; 
+    m_dTurbulentOmega = 1.78;
+    m_dPressure = 0.0;
+
 
 }
 
@@ -176,6 +182,20 @@ std::vector<POpenFOAMCaseSurfaceInstance>& COpenFOAMCaseDefinition::getSurfaces(
     return m_Surfaces;
 }
 
+double COpenFOAMCaseDefinition::getTurbulentKE()
+{
+    return m_dTurbulentKE;
+}
+
+double COpenFOAMCaseDefinition::getTurbulentOmega()
+{
+    return m_dTurbulentOmega;
+}
+
+double COpenFOAMCaseDefinition::getPressure()
+{
+    return m_dPressure;
+}
 
 
 COpenFOAMCaseInstance::COpenFOAMCaseInstance(const std::string& sIdentifier, LibMCEnv::PDriverEnvironment pDriverEnvironment)
@@ -304,7 +324,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createBlockMeshDict()
     int64_t nBlocksInY = nMaxYInBlocks - nMinYInBlocks;
     int64_t nBlocksInZ = nMaxZInBlocks - nMinZInBlocks;
 
-    auto blockMeshDict = std::make_shared<COpenFOAMDictBuilder> ("blockMeshDict", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto blockMeshDict = std::make_shared<COpenFOAMDictBuilder> ("blockMeshDict", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
     blockMeshDict->writeDouble("scale", 1.0);
     blockMeshDict->beginEnumBlock("vertices");
 
@@ -353,7 +373,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createControlDict()
     uint32_t nWritePrecision = 6;
     uint32_t nTimePrecision = 6;
 
-    auto controlDict = std::make_shared<COpenFOAMDictBuilder> ("controlDict", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto controlDict = std::make_shared<COpenFOAMDictBuilder> ("controlDict", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
     controlDict->writeString("application", "simpleFoam");
     controlDict->writeString("startFrom", "startTime");
     controlDict->writeInteger("startTime", 0);
@@ -375,7 +395,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createControlDict()
 
 POpenFOAMDictBuilder COpenFOAMCaseInstance::createDecomposeParDict()
 {
-    auto decomposeParDict = std::make_shared<COpenFOAMDictBuilder> ("decomposeParDict", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto decomposeParDict = std::make_shared<COpenFOAMDictBuilder> ("decomposeParDict", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
     decomposeParDict->writeInteger("numberOfSubdomains", 6);
     decomposeParDict->writeString("method", "hierarchical");
 
@@ -391,7 +411,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
     if (m_pCaseDefinition.get() == nullptr)
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_CASEDEFINITIONNOTINITIALIZED);
 
-    auto snappyHexMeshDict = std::make_shared<COpenFOAMDictBuilder> ("snappyHexMeshDict", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto snappyHexMeshDict = std::make_shared<COpenFOAMDictBuilder> ("snappyHexMeshDict", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
 
     snappyHexMeshDict->writeBool("castellatedMesh", true);
     snappyHexMeshDict->writeBool("snap", true);
@@ -430,7 +450,10 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
         snappyHexMeshDict->beginBlock("patchInfo");
 
         switch (pSurface->surfaceType()) {
-            case eOpenFoamSurfaceType::ofstPatch:
+            case eOpenFoamSurfaceType::ofstInletPatch:
+                snappyHexMeshDict->writeString("type", "patch");
+                break;
+            case eOpenFoamSurfaceType::ofstOutletPatch:
                 snappyHexMeshDict->writeString("type", "patch");
                 break;
             case eOpenFoamSurfaceType::ofstWall:
@@ -506,7 +529,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createSnappyHexMeshDict()
 
 POpenFOAMDictBuilder COpenFOAMCaseInstance::createMeshQualityDict()
 {
-    auto meshQualityDict = std::make_shared<COpenFOAMDictBuilder>("meshQualityDict", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto meshQualityDict = std::make_shared<COpenFOAMDictBuilder>("meshQualityDict", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
     meshQualityDict->writeIncludeEtc("caseDicts/meshQualityDict");
     meshQualityDict->writeDouble("minFaceWeight", 0.02);
 
@@ -515,7 +538,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createMeshQualityDict()
 
 POpenFOAMDictBuilder COpenFOAMCaseInstance::createFVSolutionDict()
 {
-    auto fvSolutionDict = std::make_shared<COpenFOAMDictBuilder> ("fvSolution", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto fvSolutionDict = std::make_shared<COpenFOAMDictBuilder> ("fvSolution", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
 
     fvSolutionDict->beginBlock("solvers");
     
@@ -584,7 +607,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createFVSolutionDict()
 
 POpenFOAMDictBuilder COpenFOAMCaseInstance::createFVSchemesDict()
 {
-    auto fvSchemesDict = std::make_shared<COpenFOAMDictBuilder> ("fvSchemes", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto fvSchemesDict = std::make_shared<COpenFOAMDictBuilder> ("fvSchemes", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
 
     fvSchemesDict->beginBlock("ddtSchemes");
     fvSchemesDict->writeString("default", "steadyState");
@@ -626,7 +649,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createFVSchemesDict()
 
 POpenFOAMDictBuilder COpenFOAMCaseInstance::createTransportPropertiesFile()
 {
-    auto transportProperties = std::make_shared<COpenFOAMDictBuilder>("transportProperties", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto transportProperties = std::make_shared<COpenFOAMDictBuilder>("transportProperties", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
 
     transportProperties->writeString("transportModel", "Newtonian");
     transportProperties->writeDouble("nu", 1.5e-05);
@@ -637,7 +660,7 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createTransportPropertiesFile()
 
 POpenFOAMDictBuilder COpenFOAMCaseInstance::createTurbulencePropertiesFile()
 {
-    auto turbulenceProperties = std::make_shared<COpenFOAMDictBuilder>("turbulenceProperties", m_OpenFOAMVersion, m_nKeyCharLength);
+    auto turbulenceProperties = std::make_shared<COpenFOAMDictBuilder>("turbulenceProperties", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdDictionary);
 
     turbulenceProperties->writeString("simulationType", "RAS");
     turbulenceProperties->beginBlock("RAS");
@@ -649,6 +672,259 @@ POpenFOAMDictBuilder COpenFOAMCaseInstance::createTurbulencePropertiesFile()
     return turbulenceProperties;
 
 }
+
+
+POpenFOAMDictBuilder COpenFOAMCaseInstance::createInitialCondition_K()
+{
+    if (m_pCaseDefinition.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_CASEDEFINITIONNOTINITIALIZED);
+
+    auto initialConditionK = std::make_shared<COpenFOAMDictBuilder>("k", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdVolScalarField);
+
+    initialConditionK->writeString("dimensions", "[0 2 -2 0 0 0 0]");
+    initialConditionK->writeString("internalField", "uniform " + std::to_string (m_pCaseDefinition->getTurbulentKE ()));
+
+	initialConditionK->beginBlock("boundaryField");
+    initialConditionK->writeIncludeEtc("caseDicts/setConstraintTypes");
+
+    auto& surfaces = m_pCaseDefinition->getSurfaces();
+
+    for (auto pSurface : surfaces) {
+        switch (pSurface->surfaceType()) {
+		case eOpenFoamSurfaceType::ofstInletPatch: {
+			initialConditionK->beginBlock(pSurface->getIdentifier());
+			initialConditionK->writeString("type", "fixedValue");
+			initialConditionK->writeString("value", "$internalField");
+			initialConditionK->endBlock();
+			break;
+		}
+		case eOpenFoamSurfaceType::ofstOutletPatch: {
+			initialConditionK->beginBlock(pSurface->getIdentifier());
+			initialConditionK->writeString("type", "inletOutlet");
+            initialConditionK->writeString("inletValue", "$internalField");
+            initialConditionK->writeString("value", "$internalField");
+            initialConditionK->endBlock();
+            break;
+        }
+		case eOpenFoamSurfaceType::ofstWall: {
+			initialConditionK->beginBlock(pSurface->getIdentifier());
+			initialConditionK->writeString("type", "kqRWallFunction");
+            initialConditionK->writeString("value", "$internalField");
+            initialConditionK->endBlock();
+			break;
+		}
+		default:
+			throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+        }
+
+    }
+
+    initialConditionK->endBlock();
+
+    return initialConditionK;
+
+}
+
+POpenFOAMDictBuilder COpenFOAMCaseInstance::createInitialCondition_Nut()
+{
+    if (m_pCaseDefinition.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_CASEDEFINITIONNOTINITIALIZED);
+
+    auto initialConditionNut = std::make_shared<COpenFOAMDictBuilder>("nut", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdVolScalarField);
+
+    initialConditionNut->writeString("dimensions", "[0 2 -1 0 0 0 0]");
+    initialConditionNut->writeString("internalField", "uniform 0");
+
+    initialConditionNut->beginBlock("boundaryField");
+    initialConditionNut->writeIncludeEtc("caseDicts/setConstraintTypes");
+
+    auto& surfaces = m_pCaseDefinition->getSurfaces();
+
+    for (auto pSurface : surfaces) {
+        switch (pSurface->surfaceType()) {
+        case eOpenFoamSurfaceType::ofstInletPatch: {
+            initialConditionNut->beginBlock(pSurface->getIdentifier());
+            initialConditionNut->writeString("type", "calculated");
+            initialConditionNut->writeString("value", "uniform 0");
+            initialConditionNut->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstOutletPatch: {
+            initialConditionNut->beginBlock(pSurface->getIdentifier());
+            initialConditionNut->writeString("type", "calculated");
+            initialConditionNut->writeString("value", "uniform 0");
+            initialConditionNut->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstWall: {
+            initialConditionNut->beginBlock(pSurface->getIdentifier());
+            initialConditionNut->writeString("type", "nutkWallFunction");
+            initialConditionNut->writeString("value", "uniform 0");
+            initialConditionNut->endBlock();
+            break;
+        }
+        default:
+            throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+        }
+
+    }
+
+    initialConditionNut->endBlock();
+
+    return initialConditionNut;
+
+}
+
+POpenFOAMDictBuilder COpenFOAMCaseInstance::createInitialCondition_Omega()
+{
+    if (m_pCaseDefinition.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_CASEDEFINITIONNOTINITIALIZED);
+
+    auto initialConditionOmega = std::make_shared<COpenFOAMDictBuilder>("omega", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdVolScalarField);
+
+    initialConditionOmega->writeString("dimensions", "[0 0 -1 0 0 0 0]");
+    initialConditionOmega->writeString("internalField", "uniform " + std::to_string(m_pCaseDefinition->getTurbulentOmega()));
+
+    initialConditionOmega->beginBlock("boundaryField");
+    initialConditionOmega->writeIncludeEtc("caseDicts/setConstraintTypes");
+
+    auto& surfaces = m_pCaseDefinition->getSurfaces();
+
+    for (auto pSurface : surfaces) {
+        switch (pSurface->surfaceType()) {
+        case eOpenFoamSurfaceType::ofstInletPatch: {
+            initialConditionOmega->beginBlock(pSurface->getIdentifier());
+            initialConditionOmega->writeString("type", "fixedValue");
+            initialConditionOmega->writeString("value", "$internalField");
+            initialConditionOmega->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstOutletPatch: {
+            initialConditionOmega->beginBlock(pSurface->getIdentifier());
+            initialConditionOmega->writeString("type", "inletOutlet");
+            initialConditionOmega->writeString("inletValue", "$internalField");
+            initialConditionOmega->writeString("value", "$internalField");
+            initialConditionOmega->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstWall: {
+            initialConditionOmega->beginBlock(pSurface->getIdentifier());
+            initialConditionOmega->writeString("type", "omegaWallFunction");
+            initialConditionOmega->writeString("value", "uniform " + std::to_string(m_pCaseDefinition->getTurbulentOmega()));
+            initialConditionOmega->endBlock();
+            break;
+        }
+        default:
+            throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+        }
+
+    }
+
+    initialConditionOmega->endBlock();
+
+    return initialConditionOmega;
+
+
+}
+
+POpenFOAMDictBuilder COpenFOAMCaseInstance::createInitialCondition_P()
+{
+    if (m_pCaseDefinition.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_CASEDEFINITIONNOTINITIALIZED);
+
+    auto initialConditionP = std::make_shared<COpenFOAMDictBuilder>("p", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdVolScalarField);
+
+    initialConditionP->writeString("dimensions", "[0 2 -2 0 0 0 0]");
+    initialConditionP->writeString("internalField", "uniform " + std::to_string (m_pCaseDefinition->getPressure ()));
+
+    initialConditionP->beginBlock("boundaryField");
+    initialConditionP->writeIncludeEtc("caseDicts/setConstraintTypes");
+
+    auto& surfaces = m_pCaseDefinition->getSurfaces();
+
+    for (auto pSurface : surfaces) {
+        switch (pSurface->surfaceType()) {
+        case eOpenFoamSurfaceType::ofstInletPatch: {
+            initialConditionP->beginBlock(pSurface->getIdentifier());
+            initialConditionP->writeString("type", "zeroGradient");
+            initialConditionP->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstOutletPatch: {
+            initialConditionP->beginBlock(pSurface->getIdentifier());
+            initialConditionP->writeString("type", "fixedValue");
+            initialConditionP->writeString("value", "$internalField");
+            initialConditionP->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstWall: {
+            initialConditionP->beginBlock(pSurface->getIdentifier());
+            initialConditionP->writeString("type", "zeroGradient");
+            initialConditionP->endBlock();
+            break;
+        }
+        default:
+            throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+        }
+
+    }
+
+    initialConditionP->endBlock();
+
+    return initialConditionP;
+
+}
+
+POpenFOAMDictBuilder COpenFOAMCaseInstance::createInitialCondition_U()
+{
+    if (m_pCaseDefinition.get() == nullptr)
+        throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_CASEDEFINITIONNOTINITIALIZED);
+
+    auto initialConditionU = std::make_shared<COpenFOAMDictBuilder>("U", m_OpenFOAMVersion, m_nKeyCharLength, eOpenFOAMDictType::ofdVolVectorField);
+
+    initialConditionU->writeString("dimensions", "[0 1 -1 0 0 0 0]");
+    initialConditionU->writeString("internalField", "uniform (0 0 0)");
+
+    initialConditionU->beginBlock("boundaryField");
+    initialConditionU->writeIncludeEtc("caseDicts/setConstraintTypes");
+
+    auto& surfaces = m_pCaseDefinition->getSurfaces();
+
+    for (auto pSurface : surfaces) {
+        switch (pSurface->surfaceType()) {
+        case eOpenFoamSurfaceType::ofstInletPatch: {
+            initialConditionU->beginBlock(pSurface->getIdentifier());
+            initialConditionU->writeString("type", "fixedValue");
+            initialConditionU->writeString("value", "uniform (-1 0 0)");
+            initialConditionU->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstOutletPatch: {
+            initialConditionU->beginBlock(pSurface->getIdentifier());
+            initialConditionU->writeString("type", "inletOutlet");
+            initialConditionU->writeString("inletValue", "uniform (0 0 0)");
+            initialConditionU->writeString("value", "$internalField");
+            initialConditionU->endBlock();
+            break;
+        }
+        case eOpenFoamSurfaceType::ofstWall: {
+            initialConditionU->beginBlock(pSurface->getIdentifier());
+            initialConditionU->writeString("type", "noSlip");
+            initialConditionU->endBlock();
+            break;
+        }
+        default:
+            throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDPARAM);
+        }
+
+    }
+
+    initialConditionU->endBlock();
+
+    return initialConditionU;
+
+}
+
 
 
 void COpenFOAMCaseInstance::startComputation()
@@ -672,6 +948,12 @@ void COpenFOAMCaseInstance::startComputation()
     m_pTransportPropertiesFile = m_pOpenCaseDirectory->StoreCustomString("transportProperties", createTransportPropertiesFile()->getAsString());
     m_pTurbulencePropertiesFile = m_pOpenCaseDirectory->StoreCustomString("turbulenceProperties", createTurbulencePropertiesFile()->getAsString());
 
+    m_pInitialCondition_K = m_pOpenCaseDirectory->StoreCustomString("k", createInitialCondition_K()->getAsString());
+    m_pInitialCondition_Nut = m_pOpenCaseDirectory->StoreCustomString("nut", createInitialCondition_Nut()->getAsString());
+    m_pInitialCondition_Omega = m_pOpenCaseDirectory->StoreCustomString("omega", createInitialCondition_Omega()->getAsString());
+    m_pInitialCondition_P = m_pOpenCaseDirectory->StoreCustomString("p", createInitialCondition_P()->getAsString());
+    m_pInitialCondition_U = m_pOpenCaseDirectory->StoreCustomString("U", createInitialCondition_U()->getAsString());
+
     m_pCaseFile = m_pOpenCaseDirectory->StoreCustomString(sCaseFileName, "");
 
     m_SurfaceASCIISTLs.clear();
@@ -689,6 +971,7 @@ void COpenFOAMCaseInstance::startComputation()
             m_SurfaceASCIISTLs.insert(std::make_pair (sIdentifier, pBufferedWriter->Finish()));
         }
     }
+
 }
 
 void COpenFOAMCaseInstance::cancelComputation()
@@ -729,6 +1012,12 @@ void COpenFOAMCaseInstance::createOpenFOAMInputDeck(LibMCEnv::PZIPStreamWriter p
 
     addContentToOpenFOAMInputDeckZIP(m_pTransportPropertiesFile, "constant/transportProperties", pZIPStream);
     addContentToOpenFOAMInputDeckZIP(m_pTurbulencePropertiesFile, "constant/turbulenceProperties", pZIPStream);
+
+    addContentToOpenFOAMInputDeckZIP(m_pInitialCondition_K, "0/k", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pInitialCondition_Nut, "0/nut", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pInitialCondition_Omega, "0/omega", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pInitialCondition_P, "0/p", pZIPStream);
+    addContentToOpenFOAMInputDeckZIP(m_pInitialCondition_U, "0/U", pZIPStream);
 
     if (m_pCaseDefinition.get() != nullptr) {
         auto& surfaces = m_pCaseDefinition->getSurfaces();

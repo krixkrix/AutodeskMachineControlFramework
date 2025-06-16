@@ -40,6 +40,7 @@ Abstract: This is the class declaration of COpenFOAMCaseInstance
 
 #include <map>
 #include <vector>
+#include <array>
 
 namespace LibMCDriver_OpenFOAM {
 namespace Impl {
@@ -51,9 +52,11 @@ namespace Impl {
 
 enum class eOpenFoamSurfaceType : uint32_t {
 	ofstInvalid = 0,
-	ofstPatch = 1,
-	ofstWall = 2
+	ofstInletPatch = 1,
+	ofstOutletPatch = 2,
+	ofstWall = 3
 };
+
 
 class COpenFOAMCaseSurfaceInstance {
 private:
@@ -61,6 +64,7 @@ private:
 	std::string m_s3MFUUID;
 	std::string m_sGroupName;
 	eOpenFoamSurfaceType m_SurfaceType;
+	std::array<double, 3> m_dFlowVelocity;
 
 public:	
 
@@ -89,6 +93,10 @@ private:
 	double m_dGridSizeInMM;
 	std::string m_sBuildItemUUID;
 
+	double m_dTurbulentKE;
+	double m_dTurbulentOmega;
+	double m_dPressure;
+
 	std::map<std::string, POpenFOAMCaseSurfaceInstance> m_SurfaceMap;
 	std::vector<POpenFOAMCaseSurfaceInstance> m_Surfaces;
 
@@ -103,6 +111,10 @@ public:
 	std::string getBuildItemUUID ();
 
 	std::vector<POpenFOAMCaseSurfaceInstance> & getSurfaces();
+
+	double getTurbulentKE ();
+	double getTurbulentOmega ();
+	double getPressure ();
 
 
 };
@@ -133,6 +145,13 @@ private:
 	LibMCEnv::PWorkingFile m_pFVSchemesFile;
 	LibMCEnv::PWorkingFile m_pTransportPropertiesFile;
 	LibMCEnv::PWorkingFile m_pTurbulencePropertiesFile;
+
+	LibMCEnv::PWorkingFile m_pInitialCondition_K;
+	LibMCEnv::PWorkingFile m_pInitialCondition_Nut;
+	LibMCEnv::PWorkingFile m_pInitialCondition_Omega;
+	LibMCEnv::PWorkingFile m_pInitialCondition_P;
+	LibMCEnv::PWorkingFile m_pInitialCondition_U;
+
 	LibMCEnv::PWorkingFile m_pCaseFile;
 
 	std::map<std::string, LibMCEnv::PWorkingFile> m_SurfaceASCIISTLs;
@@ -153,6 +172,12 @@ private:
 
 	POpenFOAMDictBuilder createTransportPropertiesFile();
 	POpenFOAMDictBuilder createTurbulencePropertiesFile();
+
+	POpenFOAMDictBuilder createInitialCondition_K();
+	POpenFOAMDictBuilder createInitialCondition_Nut();
+	POpenFOAMDictBuilder createInitialCondition_Omega();
+	POpenFOAMDictBuilder createInitialCondition_P();
+	POpenFOAMDictBuilder createInitialCondition_U();
 
 	void writeSurfaceAsASCIISTL(COpenFOAMCaseSurfaceInstance* pSurface, LibMCEnv::CWorkingFileWriter* pWriterInstance, double dUnitFactorPerMM);
 

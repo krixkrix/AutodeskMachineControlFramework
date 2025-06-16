@@ -41,14 +41,14 @@ using namespace LibMCDriver_OpenFOAM::Impl;
 
 
 
-COpenFOAMDictBuilder::COpenFOAMDictBuilder(const std::string& sObjectType, eOpenFOAMVersion openFOAMVersion, uint32_t nKeyCharLength)
+COpenFOAMDictBuilder::COpenFOAMDictBuilder(const std::string& sObjectType, eOpenFOAMVersion openFOAMVersion, uint32_t nKeyCharLength, eOpenFOAMDictType dictType)
     : m_Version (openFOAMVersion), m_nCurrentBlockDepth (0), m_nKeyCharLength (nKeyCharLength)
 {
 
     m_sFooterString = "\n// ************************************************************************* //\n\n";
     m_sIdentString = "    ";
 
-    writeDictHeader(sObjectType);
+    writeDictHeader(sObjectType, dictType);
 
     if (nKeyCharLength > OPENFOAM_MAXKEYCHARLENGTH)
         throw ELibMCDriver_OpenFOAMInterfaceException(LIBMCDRIVER_OPENFOAM_ERROR_INVALIDKEYCHARLENGTH);
@@ -66,7 +66,7 @@ std::string COpenFOAMDictBuilder::getAsString()
     return m_Stream.str() + m_sFooterString;
 }
 
-void COpenFOAMDictBuilder::writeDictHeader(const std::string& sObjectType)
+void COpenFOAMDictBuilder::writeDictHeader(const std::string& sObjectType, eOpenFOAMDictType dictType)
 {
     m_Stream << "/*--------------------------------*- C++ -*----------------------------------*\\" << std::endl;
     m_Stream << "| =========                 |                                                 |" << std::endl;
@@ -76,12 +76,31 @@ void COpenFOAMDictBuilder::writeDictHeader(const std::string& sObjectType)
     m_Stream << "|    \\\\/     M anipulation  |                                                 |" << std::endl;
     m_Stream << "\\*---------------------------------------------------------------------------*/" << std::endl;
     
-    beginBlock("FoamFile");
-    writeString("version", "2.0");
-    writeString("format", "ascii");
-    writeString("class", "dictionary");
-    writeString("object", sObjectType);
-    endBlock();
+    bool bWriteFoamFileBlock = (dictType != eOpenFOAMDictType::ofdInclude);
+
+
+    if (bWriteFoamFileBlock) {
+        beginBlock("FoamFile");
+        writeString("version", "2.0");
+        writeString("format", "ascii");
+        switch (dictType) {
+            case eOpenFOAMDictType::ofdDictionary:
+                writeString("class", "dictionary");
+                break;
+
+            case eOpenFOAMDictType::ofdVolScalarField:
+                writeString("class", "volScalarField");
+                break;
+
+            case eOpenFOAMDictType::ofdVolVectorField:
+                writeString("class", "volVectorField");
+                break;
+
+        }
+        writeString("object", sObjectType);
+        endBlock();
+    }
+
 
     m_Stream << "// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //" << std::endl;
     m_Stream << std::endl;
