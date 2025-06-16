@@ -89,7 +89,7 @@ class IToolpathAccessor;
 class IBuildExecution;
 class IBuildExecutionIterator;
 class IBuild;
-class IWorkingFileExecution;
+class IWorkingFileProcess;
 class IWorkingFile;
 class IWorkingFileIterator;
 class IWorkingFileWriter;
@@ -3556,25 +3556,83 @@ typedef IBaseSharedPtr<IBuild> PIBuild;
 
 
 /*************************************************************************************************************************
- Class interface for WorkingFileExecution 
+ Class interface for WorkingFileProcess 
 **************************************************************************************************************************/
 
-class IWorkingFileExecution : public virtual IBase {
+class IWorkingFileProcess : public virtual IBase {
 public:
 	/**
-	* IWorkingFileExecution::GetStatus - Returns the execution status
+	* IWorkingFileProcess::GetStatus - Returns the process status
+	* @return Status of Process.
 	*/
-	virtual void GetStatus() = 0;
+	virtual LibMCEnv::eWorkingFileProcessStatus GetStatus() = 0;
 
 	/**
-	* IWorkingFileExecution::ReturnStdOut - Returns the output of the executable as string buffer
-	* @return stdout buffer
+	* IWorkingFileProcess::GetRunTime - Returns the Run Time of the process. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
+	* @return Duration.
 	*/
-	virtual std::string ReturnStdOut() = 0;
+	virtual IDateTimeDifference * GetRunTime() = 0;
+
+	/**
+	* IWorkingFileProcess::GetRunTimeInMilliseconds - Returns the Run Time of the process in Milliseconds. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
+	* @return Duration in Milliseconds.
+	*/
+	virtual LibMCEnv_uint64 GetRunTimeInMilliseconds() = 0;
+
+	/**
+	* IWorkingFileProcess::SetWorkingDirectory - Sets the working directory. Default is the directory of the executable. Fails if Status is not ProcessInitializing.
+	* @param[in] pDirectory - Wo.
+	*/
+	virtual void SetWorkingDirectory(IWorkingDirectory* pDirectory) = 0;
+
+	/**
+	* IWorkingFileProcess::AddEnvironmentVariable - Adds an environment variable. Fails if Status is not ProcessInitializing.
+	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed. Fails if Variable already exists.
+	* @param[in] sValue - Value for variables.
+	*/
+	virtual void AddEnvironmentVariable(const std::string & sVariableName, const std::string & sValue) = 0;
+
+	/**
+	* IWorkingFileProcess::EnvironmentVariableExists - Checks if an environment variable exists.
+	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+	* @param[in] sVariableExists - Returns true if the variable exists, false otherwise.
+	*/
+	virtual void EnvironmentVariableExists(const std::string & sVariableName, const std::string & sVariableExists) = 0;
+
+	/**
+	* IWorkingFileProcess::RemoveEnvironmentVariable - Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
+	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+	*/
+	virtual void RemoveEnvironmentVariable(const std::string & sVariableName) = 0;
+
+	/**
+	* IWorkingFileProcess::GetEnvironmentVariableCount - Returns the number of environment variables.
+	* @param[in] nVariableCount - Number of environment variables.
+	*/
+	virtual void GetEnvironmentVariableCount(const LibMCEnv_uint32 nVariableCount) = 0;
+
+	/**
+	* IWorkingFileProcess::GetEnvironmentVariable - Returns the details of a environment variables.
+	* @param[in] nVariableIndex - Index of environment variables. 0-based.
+	* @param[out] sVariableName - Environment Variable name. Alphanumeric string with _ and -.
+	* @param[out] sValue - Value of variable.
+	*/
+	virtual void GetEnvironmentVariable(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue) = 0;
+
+	/**
+	* IWorkingFileProcess::StartProcess - Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
+	* @param[in] sArgumentString - Argumnet to pass on the process. May be empty.
+	*/
+	virtual void StartProcess(const std::string & sArgumentString) = 0;
+
+	/**
+	* IWorkingFileProcess::TerminateProcess - Terminates a process, if the process is running.
+	*/
+	virtual void TerminateProcess() = 0;
 
 };
 
-typedef IBaseSharedPtr<IWorkingFileExecution> PIWorkingFileExecution;
+typedef IBaseSharedPtr<IWorkingFileProcess> PIWorkingFileProcess;
 
 
 /*************************************************************************************************************************
@@ -3610,10 +3668,10 @@ public:
 	virtual std::string CalculateSHA2() = 0;
 
 	/**
-	* IWorkingFile::ExecuteFile - Executes the temporary file, if it is an executable.
-	* @return execution object
+	* IWorkingFile::ExecuteFile - Creates a file process object.
+	* @return process object
 	*/
-	virtual IWorkingFileExecution * ExecuteFile() = 0;
+	virtual IWorkingFileProcess * ExecuteFile() = 0;
 
 	/**
 	* IWorkingFile::IsManaged - Returns if the file is managed.

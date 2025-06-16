@@ -2713,8 +2713,8 @@
 			<param name="SHA2" type="string" pass="return" description="sha256 checksum" />
 		</method>
 
-		<method name="ExecuteFile" description = "Creates a file execution object.">
-			<param name="Execution" type="class" class="WorkingFileExecution" pass="return" description="execution object" />
+		<method name="ExecuteFile" description = "Creates a file process object.">
+			<param name="Execution" type="class" class="WorkingFileProcess" pass="return" description="process object" />
 		</method>
 
 		<method name="IsManaged" description = "Returns if the file is managed.">

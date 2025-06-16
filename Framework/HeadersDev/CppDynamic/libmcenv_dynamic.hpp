@@ -94,7 +94,7 @@ class CToolpathAccessor;
 class CBuildExecution;
 class CBuildExecutionIterator;
 class CBuild;
-class CWorkingFileExecution;
+class CWorkingFileProcess;
 class CWorkingFile;
 class CWorkingFileIterator;
 class CWorkingFileWriter;
@@ -169,7 +169,7 @@ typedef CToolpathAccessor CLibMCEnvToolpathAccessor;
 typedef CBuildExecution CLibMCEnvBuildExecution;
 typedef CBuildExecutionIterator CLibMCEnvBuildExecutionIterator;
 typedef CBuild CLibMCEnvBuild;
-typedef CWorkingFileExecution CLibMCEnvWorkingFileExecution;
+typedef CWorkingFileProcess CLibMCEnvWorkingFileProcess;
 typedef CWorkingFile CLibMCEnvWorkingFile;
 typedef CWorkingFileIterator CLibMCEnvWorkingFileIterator;
 typedef CWorkingFileWriter CLibMCEnvWorkingFileWriter;
@@ -244,7 +244,7 @@ typedef std::shared_ptr<CToolpathAccessor> PToolpathAccessor;
 typedef std::shared_ptr<CBuildExecution> PBuildExecution;
 typedef std::shared_ptr<CBuildExecutionIterator> PBuildExecutionIterator;
 typedef std::shared_ptr<CBuild> PBuild;
-typedef std::shared_ptr<CWorkingFileExecution> PWorkingFileExecution;
+typedef std::shared_ptr<CWorkingFileProcess> PWorkingFileProcess;
 typedef std::shared_ptr<CWorkingFile> PWorkingFile;
 typedef std::shared_ptr<CWorkingFileIterator> PWorkingFileIterator;
 typedef std::shared_ptr<CWorkingFileWriter> PWorkingFileWriter;
@@ -319,7 +319,7 @@ typedef PToolpathAccessor PLibMCEnvToolpathAccessor;
 typedef PBuildExecution PLibMCEnvBuildExecution;
 typedef PBuildExecutionIterator PLibMCEnvBuildExecutionIterator;
 typedef PBuild PLibMCEnvBuild;
-typedef PWorkingFileExecution PLibMCEnvWorkingFileExecution;
+typedef PWorkingFileProcess PLibMCEnvWorkingFileProcess;
 typedef PWorkingFile PLibMCEnvWorkingFile;
 typedef PWorkingFileIterator PLibMCEnvWorkingFileIterator;
 typedef PWorkingFileWriter PLibMCEnvWorkingFileWriter;
@@ -1082,7 +1082,7 @@ private:
 	friend class CBuildExecution;
 	friend class CBuildExecutionIterator;
 	friend class CBuild;
-	friend class CWorkingFileExecution;
+	friend class CWorkingFileProcess;
 	friend class CWorkingFile;
 	friend class CWorkingFileIterator;
 	friend class CWorkingFileWriter;
@@ -2121,21 +2121,30 @@ public:
 };
 	
 /*************************************************************************************************************************
- Class CWorkingFileExecution 
+ Class CWorkingFileProcess 
 **************************************************************************************************************************/
-class CWorkingFileExecution : public CBase {
+class CWorkingFileProcess : public CBase {
 public:
 	
 	/**
-	* CWorkingFileExecution::CWorkingFileExecution - Constructor for WorkingFileExecution class.
+	* CWorkingFileProcess::CWorkingFileProcess - Constructor for WorkingFileProcess class.
 	*/
-	CWorkingFileExecution(CWrapper* pWrapper, LibMCEnvHandle pHandle)
+	CWorkingFileProcess(CWrapper* pWrapper, LibMCEnvHandle pHandle)
 		: CBase(pWrapper, pHandle)
 	{
 	}
 	
-	inline void GetStatus();
-	inline std::string ReturnStdOut();
+	inline eWorkingFileProcessStatus GetStatus();
+	inline PDateTimeDifference GetRunTime();
+	inline LibMCEnv_uint64 GetRunTimeInMilliseconds();
+	inline void SetWorkingDirectory(classParam<CWorkingDirectory> pDirectory);
+	inline void AddEnvironmentVariable(const std::string & sVariableName, const std::string & sValue);
+	inline void EnvironmentVariableExists(const std::string & sVariableName, const std::string & sVariableExists);
+	inline void RemoveEnvironmentVariable(const std::string & sVariableName);
+	inline void GetEnvironmentVariableCount(const LibMCEnv_uint32 nVariableCount);
+	inline void GetEnvironmentVariable(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue);
+	inline void StartProcess(const std::string & sArgumentString);
+	inline void TerminateProcess();
 };
 	
 /*************************************************************************************************************************
@@ -2156,7 +2165,7 @@ public:
 	inline LibMCEnv_uint64 GetSize();
 	inline void ReadContent(std::vector<LibMCEnv_uint8> & FileContentBuffer);
 	inline std::string CalculateSHA2();
-	inline PWorkingFileExecution ExecuteFile();
+	inline PWorkingFileProcess ExecuteFile();
 	inline bool IsManaged();
 	inline void MakeManaged();
 	inline bool FileExists();
@@ -3683,8 +3692,17 @@ public:
 		pWrapperTable->m_Build_StoreMetaDataString = nullptr;
 		pWrapperTable->m_Build_HasMetaDataString = nullptr;
 		pWrapperTable->m_Build_GetMetaDataString = nullptr;
-		pWrapperTable->m_WorkingFileExecution_GetStatus = nullptr;
-		pWrapperTable->m_WorkingFileExecution_ReturnStdOut = nullptr;
+		pWrapperTable->m_WorkingFileProcess_GetStatus = nullptr;
+		pWrapperTable->m_WorkingFileProcess_GetRunTime = nullptr;
+		pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds = nullptr;
+		pWrapperTable->m_WorkingFileProcess_SetWorkingDirectory = nullptr;
+		pWrapperTable->m_WorkingFileProcess_AddEnvironmentVariable = nullptr;
+		pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists = nullptr;
+		pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable = nullptr;
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount = nullptr;
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable = nullptr;
+		pWrapperTable->m_WorkingFileProcess_StartProcess = nullptr;
+		pWrapperTable->m_WorkingFileProcess_TerminateProcess = nullptr;
 		pWrapperTable->m_WorkingFile_GetAbsoluteFileName = nullptr;
 		pWrapperTable->m_WorkingFile_GetSize = nullptr;
 		pWrapperTable->m_WorkingFile_ReadContent = nullptr;
@@ -7853,21 +7871,102 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_WorkingFileExecution_GetStatus = (PLibMCEnvWorkingFileExecution_GetStatusPtr) GetProcAddress(hLibrary, "libmcenv_workingfileexecution_getstatus");
+		pWrapperTable->m_WorkingFileProcess_GetStatus = (PLibMCEnvWorkingFileProcess_GetStatusPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getstatus");
 		#else // _WIN32
-		pWrapperTable->m_WorkingFileExecution_GetStatus = (PLibMCEnvWorkingFileExecution_GetStatusPtr) dlsym(hLibrary, "libmcenv_workingfileexecution_getstatus");
+		pWrapperTable->m_WorkingFileProcess_GetStatus = (PLibMCEnvWorkingFileProcess_GetStatusPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getstatus");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_WorkingFileExecution_GetStatus == nullptr)
+		if (pWrapperTable->m_WorkingFileProcess_GetStatus == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_WorkingFileExecution_ReturnStdOut = (PLibMCEnvWorkingFileExecution_ReturnStdOutPtr) GetProcAddress(hLibrary, "libmcenv_workingfileexecution_returnstdout");
+		pWrapperTable->m_WorkingFileProcess_GetRunTime = (PLibMCEnvWorkingFileProcess_GetRunTimePtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getruntime");
 		#else // _WIN32
-		pWrapperTable->m_WorkingFileExecution_ReturnStdOut = (PLibMCEnvWorkingFileExecution_ReturnStdOutPtr) dlsym(hLibrary, "libmcenv_workingfileexecution_returnstdout");
+		pWrapperTable->m_WorkingFileProcess_GetRunTime = (PLibMCEnvWorkingFileProcess_GetRunTimePtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getruntime");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_WorkingFileExecution_ReturnStdOut == nullptr)
+		if (pWrapperTable->m_WorkingFileProcess_GetRunTime == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds = (PLibMCEnvWorkingFileProcess_GetRunTimeInMillisecondsPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getruntimeinmilliseconds");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds = (PLibMCEnvWorkingFileProcess_GetRunTimeInMillisecondsPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getruntimeinmilliseconds");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_SetWorkingDirectory = (PLibMCEnvWorkingFileProcess_SetWorkingDirectoryPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_setworkingdirectory");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_SetWorkingDirectory = (PLibMCEnvWorkingFileProcess_SetWorkingDirectoryPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_setworkingdirectory");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_SetWorkingDirectory == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_AddEnvironmentVariable = (PLibMCEnvWorkingFileProcess_AddEnvironmentVariablePtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_addenvironmentvariable");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_AddEnvironmentVariable = (PLibMCEnvWorkingFileProcess_AddEnvironmentVariablePtr) dlsym(hLibrary, "libmcenv_workingfileprocess_addenvironmentvariable");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_AddEnvironmentVariable == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists = (PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_environmentvariableexists");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists = (PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_environmentvariableexists");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable = (PLibMCEnvWorkingFileProcess_RemoveEnvironmentVariablePtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_removeenvironmentvariable");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable = (PLibMCEnvWorkingFileProcess_RemoveEnvironmentVariablePtr) dlsym(hLibrary, "libmcenv_workingfileprocess_removeenvironmentvariable");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariablecount");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariablecount");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariable");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariable");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_StartProcess = (PLibMCEnvWorkingFileProcess_StartProcessPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_startprocess");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_StartProcess = (PLibMCEnvWorkingFileProcess_StartProcessPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_startprocess");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_StartProcess == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_TerminateProcess = (PLibMCEnvWorkingFileProcess_TerminateProcessPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_terminateprocess");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_TerminateProcess = (PLibMCEnvWorkingFileProcess_TerminateProcessPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_terminateprocess");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_TerminateProcess == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -14216,12 +14315,48 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_Build_GetMetaDataString == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_workingfileexecution_getstatus", (void**)&(pWrapperTable->m_WorkingFileExecution_GetStatus));
-		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileExecution_GetStatus == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getstatus", (void**)&(pWrapperTable->m_WorkingFileProcess_GetStatus));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetStatus == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_workingfileexecution_returnstdout", (void**)&(pWrapperTable->m_WorkingFileExecution_ReturnStdOut));
-		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileExecution_ReturnStdOut == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getruntime", (void**)&(pWrapperTable->m_WorkingFileProcess_GetRunTime));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetRunTime == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getruntimeinmilliseconds", (void**)&(pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_setworkingdirectory", (void**)&(pWrapperTable->m_WorkingFileProcess_SetWorkingDirectory));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_SetWorkingDirectory == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_addenvironmentvariable", (void**)&(pWrapperTable->m_WorkingFileProcess_AddEnvironmentVariable));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_AddEnvironmentVariable == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_environmentvariableexists", (void**)&(pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_removeenvironmentvariable", (void**)&(pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getenvironmentvariablecount", (void**)&(pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getenvironmentvariable", (void**)&(pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_startprocess", (void**)&(pWrapperTable->m_WorkingFileProcess_StartProcess));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_StartProcess == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_terminateprocess", (void**)&(pWrapperTable->m_WorkingFileProcess_TerminateProcess));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_TerminateProcess == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingfile_getabsolutefilename", (void**)&(pWrapperTable->m_WorkingFile_GetAbsoluteFileName));
@@ -21748,30 +21883,131 @@ public:
 	}
 	
 	/**
-	 * Method definitions for class CWorkingFileExecution
+	 * Method definitions for class CWorkingFileProcess
 	 */
 	
 	/**
-	* CWorkingFileExecution::GetStatus - Returns the execution status
+	* CWorkingFileProcess::GetStatus - Returns the process status
+	* @return Status of Process.
 	*/
-	void CWorkingFileExecution::GetStatus()
+	eWorkingFileProcessStatus CWorkingFileProcess::GetStatus()
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileExecution_GetStatus(m_pHandle));
+		eWorkingFileProcessStatus resultStatus = (eWorkingFileProcessStatus) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetStatus(m_pHandle, &resultStatus));
+		
+		return resultStatus;
 	}
 	
 	/**
-	* CWorkingFileExecution::ReturnStdOut - Returns the output of the executable as string buffer
-	* @return stdout buffer
+	* CWorkingFileProcess::GetRunTime - Returns the Run Time of the process. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
+	* @return Duration.
 	*/
-	std::string CWorkingFileExecution::ReturnStdOut()
+	PDateTimeDifference CWorkingFileProcess::GetRunTime()
 	{
-		LibMCEnv_uint32 bytesNeededStringBuffer = 0;
-		LibMCEnv_uint32 bytesWrittenStringBuffer = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileExecution_ReturnStdOut(m_pHandle, 0, &bytesNeededStringBuffer, nullptr));
-		std::vector<char> bufferStringBuffer(bytesNeededStringBuffer);
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileExecution_ReturnStdOut(m_pHandle, bytesNeededStringBuffer, &bytesWrittenStringBuffer, &bufferStringBuffer[0]));
+		LibMCEnvHandle hRuntime = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetRunTime(m_pHandle, &hRuntime));
 		
-		return std::string(&bufferStringBuffer[0]);
+		if (!hRuntime) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CDateTimeDifference>(m_pWrapper, hRuntime);
+	}
+	
+	/**
+	* CWorkingFileProcess::GetRunTimeInMilliseconds - Returns the Run Time of the process in Milliseconds. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
+	* @return Duration in Milliseconds.
+	*/
+	LibMCEnv_uint64 CWorkingFileProcess::GetRunTimeInMilliseconds()
+	{
+		LibMCEnv_uint64 resultRuntimeInMS = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetRunTimeInMilliseconds(m_pHandle, &resultRuntimeInMS));
+		
+		return resultRuntimeInMS;
+	}
+	
+	/**
+	* CWorkingFileProcess::SetWorkingDirectory - Sets the working directory. Default is the directory of the executable. Fails if Status is not ProcessInitializing.
+	* @param[in] pDirectory - Wo.
+	*/
+	void CWorkingFileProcess::SetWorkingDirectory(classParam<CWorkingDirectory> pDirectory)
+	{
+		LibMCEnvHandle hDirectory = pDirectory.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_SetWorkingDirectory(m_pHandle, hDirectory));
+	}
+	
+	/**
+	* CWorkingFileProcess::AddEnvironmentVariable - Adds an environment variable. Fails if Status is not ProcessInitializing.
+	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed. Fails if Variable already exists.
+	* @param[in] sValue - Value for variables.
+	*/
+	void CWorkingFileProcess::AddEnvironmentVariable(const std::string & sVariableName, const std::string & sValue)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_AddEnvironmentVariable(m_pHandle, sVariableName.c_str(), sValue.c_str()));
+	}
+	
+	/**
+	* CWorkingFileProcess::EnvironmentVariableExists - Checks if an environment variable exists.
+	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+	* @param[in] sVariableExists - Returns true if the variable exists, false otherwise.
+	*/
+	void CWorkingFileProcess::EnvironmentVariableExists(const std::string & sVariableName, const std::string & sVariableExists)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_EnvironmentVariableExists(m_pHandle, sVariableName.c_str(), sVariableExists.c_str()));
+	}
+	
+	/**
+	* CWorkingFileProcess::RemoveEnvironmentVariable - Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
+	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+	*/
+	void CWorkingFileProcess::RemoveEnvironmentVariable(const std::string & sVariableName)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_RemoveEnvironmentVariable(m_pHandle, sVariableName.c_str()));
+	}
+	
+	/**
+	* CWorkingFileProcess::GetEnvironmentVariableCount - Returns the number of environment variables.
+	* @param[in] nVariableCount - Number of environment variables.
+	*/
+	void CWorkingFileProcess::GetEnvironmentVariableCount(const LibMCEnv_uint32 nVariableCount)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariableCount(m_pHandle, nVariableCount));
+	}
+	
+	/**
+	* CWorkingFileProcess::GetEnvironmentVariable - Returns the details of a environment variables.
+	* @param[in] nVariableIndex - Index of environment variables. 0-based.
+	* @param[out] sVariableName - Environment Variable name. Alphanumeric string with _ and -.
+	* @param[out] sValue - Value of variable.
+	*/
+	void CWorkingFileProcess::GetEnvironmentVariable(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue)
+	{
+		LibMCEnv_uint32 bytesNeededVariableName = 0;
+		LibMCEnv_uint32 bytesWrittenVariableName = 0;
+		LibMCEnv_uint32 bytesNeededValue = 0;
+		LibMCEnv_uint32 bytesWrittenValue = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariable(m_pHandle, nVariableIndex, 0, &bytesNeededVariableName, nullptr, 0, &bytesNeededValue, nullptr));
+		std::vector<char> bufferVariableName(bytesNeededVariableName);
+		std::vector<char> bufferValue(bytesNeededValue);
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariable(m_pHandle, nVariableIndex, bytesNeededVariableName, &bytesWrittenVariableName, &bufferVariableName[0], bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
+		sVariableName = std::string(&bufferVariableName[0]);
+		sValue = std::string(&bufferValue[0]);
+	}
+	
+	/**
+	* CWorkingFileProcess::StartProcess - Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
+	* @param[in] sArgumentString - Argumnet to pass on the process. May be empty.
+	*/
+	void CWorkingFileProcess::StartProcess(const std::string & sArgumentString)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_StartProcess(m_pHandle, sArgumentString.c_str()));
+	}
+	
+	/**
+	* CWorkingFileProcess::TerminateProcess - Terminates a process, if the process is running.
+	*/
+	void CWorkingFileProcess::TerminateProcess()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_TerminateProcess(m_pHandle));
 	}
 	
 	/**
@@ -21834,10 +22070,10 @@ public:
 	}
 	
 	/**
-	* CWorkingFile::ExecuteFile - Executes the temporary file, if it is an executable.
-	* @return execution object
+	* CWorkingFile::ExecuteFile - Creates a file process object.
+	* @return process object
 	*/
-	PWorkingFileExecution CWorkingFile::ExecuteFile()
+	PWorkingFileProcess CWorkingFile::ExecuteFile()
 	{
 		LibMCEnvHandle hExecution = nullptr;
 		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFile_ExecuteFile(m_pHandle, &hExecution));
@@ -21845,7 +22081,7 @@ public:
 		if (!hExecution) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
 		}
-		return std::make_shared<CWorkingFileExecution>(m_pWrapper, hExecution);
+		return std::make_shared<CWorkingFileProcess>(m_pWrapper, hExecution);
 	}
 	
 	/**

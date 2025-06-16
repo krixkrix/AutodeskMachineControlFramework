@@ -12627,18 +12627,20 @@ LibMCEnvResult libmcenv_build_getmetadatastring(LibMCEnv_Build pBuild, const cha
 
 
 /*************************************************************************************************************************
- Class implementation for WorkingFileExecution
+ Class implementation for WorkingFileProcess
 **************************************************************************************************************************/
-LibMCEnvResult libmcenv_workingfileexecution_getstatus(LibMCEnv_WorkingFileExecution pWorkingFileExecution)
+LibMCEnvResult libmcenv_workingfileprocess_getstatus(LibMCEnv_WorkingFileProcess pWorkingFileProcess, eLibMCEnvWorkingFileProcessStatus * pStatus)
 {
-	IBase* pIBaseClass = (IBase *)pWorkingFileExecution;
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
 
 	try {
-		IWorkingFileExecution* pIWorkingFileExecution = dynamic_cast<IWorkingFileExecution*>(pIBaseClass);
-		if (!pIWorkingFileExecution)
+		if (pStatus == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		pIWorkingFileExecution->GetStatus();
+		*pStatus = pIWorkingFileProcess->GetStatus();
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -12653,41 +12655,298 @@ LibMCEnvResult libmcenv_workingfileexecution_getstatus(LibMCEnv_WorkingFileExecu
 	}
 }
 
-LibMCEnvResult libmcenv_workingfileexecution_returnstdout(LibMCEnv_WorkingFileExecution pWorkingFileExecution, const LibMCEnv_uint32 nStringBufferBufferSize, LibMCEnv_uint32* pStringBufferNeededChars, char * pStringBufferBuffer)
+LibMCEnvResult libmcenv_workingfileprocess_getruntime(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_DateTimeDifference * pRuntime)
 {
-	IBase* pIBaseClass = (IBase *)pWorkingFileExecution;
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
 
 	try {
-		if ( (!pStringBufferBuffer) && !(pStringBufferNeededChars) )
+		if (pRuntime == nullptr)
 			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		std::string sStringBuffer("");
-		IWorkingFileExecution* pIWorkingFileExecution = dynamic_cast<IWorkingFileExecution*>(pIBaseClass);
-		if (!pIWorkingFileExecution)
+		IBase* pBaseRuntime(nullptr);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		bool isCacheCall = (pStringBufferBuffer == nullptr);
-		if (isCacheCall) {
-			sStringBuffer = pIWorkingFileExecution->ReturnStdOut();
+		pBaseRuntime = pIWorkingFileProcess->GetRunTime();
 
-			pIWorkingFileExecution->_setCache (new ParameterCache_1<std::string> (sStringBuffer));
+		*pRuntime = (IBase*)(pBaseRuntime);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_getruntimeinmilliseconds(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint64 * pRuntimeInMS)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		if (pRuntimeInMS == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pRuntimeInMS = pIWorkingFileProcess->GetRunTimeInMilliseconds();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_setworkingdirectory(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_WorkingDirectory pDirectory)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		IBase* pIBaseClassDirectory = (IBase *)pDirectory;
+		IWorkingDirectory* pIDirectory = dynamic_cast<IWorkingDirectory*>(pIBaseClassDirectory);
+		if (!pIDirectory)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDCAST);
+		
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->SetWorkingDirectory(pIDirectory);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_addenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pValue)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		if (pVariableName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pValue == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sVariableName(pVariableName);
+		std::string sValue(pValue);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->AddEnvironmentVariable(sVariableName, sValue);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_environmentvariableexists(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pVariableExists)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		if (pVariableName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (pVariableExists == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sVariableName(pVariableName);
+		std::string sVariableExists(pVariableExists);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->EnvironmentVariableExists(sVariableName, sVariableExists);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_removeenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		if (pVariableName == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sVariableName(pVariableName);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->RemoveEnvironmentVariable(sVariableName);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariablecount(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableCount)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->GetEnvironmentVariableCount(nVariableCount);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		if ( (!pVariableNameBuffer) && !(pVariableNameNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if ( (!pValueBuffer) && !(pValueNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sVariableName("");
+		std::string sValue("");
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pVariableNameBuffer == nullptr) || (pValueBuffer == nullptr);
+		if (isCacheCall) {
+			pIWorkingFileProcess->GetEnvironmentVariable(nVariableIndex, sVariableName, sValue);
+
+			pIWorkingFileProcess->_setCache (new ParameterCache_2<std::string, std::string> (sVariableName, sValue));
 		}
 		else {
-			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIWorkingFileExecution->_getCache ());
+			auto cache = dynamic_cast<ParameterCache_2<std::string, std::string>*> (pIWorkingFileProcess->_getCache ());
 			if (cache == nullptr)
 				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
-			cache->retrieveData (sStringBuffer);
-			pIWorkingFileExecution->_setCache (nullptr);
+			cache->retrieveData (sVariableName, sValue);
+			pIWorkingFileProcess->_setCache (nullptr);
 		}
 		
-		if (pStringBufferNeededChars)
-			*pStringBufferNeededChars = (LibMCEnv_uint32) (sStringBuffer.size()+1);
-		if (pStringBufferBuffer) {
-			if (sStringBuffer.size() >= nStringBufferBufferSize)
+		if (pVariableNameNeededChars)
+			*pVariableNameNeededChars = (LibMCEnv_uint32) (sVariableName.size()+1);
+		if (pVariableNameBuffer) {
+			if (sVariableName.size() >= nVariableNameBufferSize)
 				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
-			for (size_t iStringBuffer = 0; iStringBuffer < sStringBuffer.size(); iStringBuffer++)
-				pStringBufferBuffer[iStringBuffer] = sStringBuffer[iStringBuffer];
-			pStringBufferBuffer[sStringBuffer.size()] = 0;
+			for (size_t iVariableName = 0; iVariableName < sVariableName.size(); iVariableName++)
+				pVariableNameBuffer[iVariableName] = sVariableName[iVariableName];
+			pVariableNameBuffer[sVariableName.size()] = 0;
 		}
+		if (pValueNeededChars)
+			*pValueNeededChars = (LibMCEnv_uint32) (sValue.size()+1);
+		if (pValueBuffer) {
+			if (sValue.size() >= nValueBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iValue = 0; iValue < sValue.size(); iValue++)
+				pValueBuffer[iValue] = sValue[iValue];
+			pValueBuffer[sValue.size()] = 0;
+		}
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_startprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		if (pArgumentString == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sArgumentString(pArgumentString);
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->StartProcess(sArgumentString);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_workingfileprocess_terminateprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->TerminateProcess();
+
 		return LIBMCENV_SUCCESS;
 	}
 	catch (ELibMCEnvInterfaceException & Exception) {
@@ -12853,7 +13112,7 @@ LibMCEnvResult libmcenv_workingfile_calculatesha2(LibMCEnv_WorkingFile pWorkingF
 	}
 }
 
-LibMCEnvResult libmcenv_workingfile_executefile(LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_WorkingFileExecution * pExecution)
+LibMCEnvResult libmcenv_workingfile_executefile(LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_WorkingFileProcess * pExecution)
 {
 	IBase* pIBaseClass = (IBase *)pWorkingFile;
 
@@ -30736,10 +30995,28 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_build_hasmetadatastring;
 	if (sProcName == "libmcenv_build_getmetadatastring") 
 		*ppProcAddress = (void*) &libmcenv_build_getmetadatastring;
-	if (sProcName == "libmcenv_workingfileexecution_getstatus") 
-		*ppProcAddress = (void*) &libmcenv_workingfileexecution_getstatus;
-	if (sProcName == "libmcenv_workingfileexecution_returnstdout") 
-		*ppProcAddress = (void*) &libmcenv_workingfileexecution_returnstdout;
+	if (sProcName == "libmcenv_workingfileprocess_getstatus") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getstatus;
+	if (sProcName == "libmcenv_workingfileprocess_getruntime") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getruntime;
+	if (sProcName == "libmcenv_workingfileprocess_getruntimeinmilliseconds") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getruntimeinmilliseconds;
+	if (sProcName == "libmcenv_workingfileprocess_setworkingdirectory") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_setworkingdirectory;
+	if (sProcName == "libmcenv_workingfileprocess_addenvironmentvariable") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_addenvironmentvariable;
+	if (sProcName == "libmcenv_workingfileprocess_environmentvariableexists") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_environmentvariableexists;
+	if (sProcName == "libmcenv_workingfileprocess_removeenvironmentvariable") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_removeenvironmentvariable;
+	if (sProcName == "libmcenv_workingfileprocess_getenvironmentvariablecount") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getenvironmentvariablecount;
+	if (sProcName == "libmcenv_workingfileprocess_getenvironmentvariable") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getenvironmentvariable;
+	if (sProcName == "libmcenv_workingfileprocess_startprocess") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_startprocess;
+	if (sProcName == "libmcenv_workingfileprocess_terminateprocess") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_terminateprocess;
 	if (sProcName == "libmcenv_workingfile_getabsolutefilename") 
 		*ppProcAddress = (void*) &libmcenv_workingfile_getabsolutefilename;
 	if (sProcName == "libmcenv_workingfile_getsize") 

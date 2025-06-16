@@ -4340,27 +4340,114 @@ typedef LibMCEnvResult (*PLibMCEnvBuild_HasMetaDataStringPtr) (LibMCEnv_Build pB
 typedef LibMCEnvResult (*PLibMCEnvBuild_GetMetaDataStringPtr) (LibMCEnv_Build pBuild, const char * pKey, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
 /*************************************************************************************************************************
- Class definition for WorkingFileExecution
+ Class definition for WorkingFileProcess
 **************************************************************************************************************************/
 
 /**
-* Returns the execution status
+* Returns the process status
 *
-* @param[in] pWorkingFileExecution - WorkingFileExecution instance.
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[out] pStatus - Status of Process.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFileExecution_GetStatusPtr) (LibMCEnv_WorkingFileExecution pWorkingFileExecution);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetStatusPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv::eWorkingFileProcessStatus * pStatus);
 
 /**
-* Returns the output of the executable as string buffer
+* Returns the Run Time of the process. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
 *
-* @param[in] pWorkingFileExecution - WorkingFileExecution instance.
-* @param[in] nStringBufferBufferSize - size of the buffer (including trailing 0)
-* @param[out] pStringBufferNeededChars - will be filled with the count of the written bytes, or needed buffer size.
-* @param[out] pStringBufferBuffer -  buffer of stdout buffer, may be NULL
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[out] pRuntime - Duration.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFileExecution_ReturnStdOutPtr) (LibMCEnv_WorkingFileExecution pWorkingFileExecution, const LibMCEnv_uint32 nStringBufferBufferSize, LibMCEnv_uint32* pStringBufferNeededChars, char * pStringBufferBuffer);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetRunTimePtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_DateTimeDifference * pRuntime);
+
+/**
+* Returns the Run Time of the process in Milliseconds. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[out] pRuntimeInMS - Duration in Milliseconds.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetRunTimeInMillisecondsPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint64 * pRuntimeInMS);
+
+/**
+* Sets the working directory. Default is the directory of the executable. Fails if Status is not ProcessInitializing.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pDirectory - Wo.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_SetWorkingDirectoryPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_WorkingDirectory pDirectory);
+
+/**
+* Adds an environment variable. Fails if Status is not ProcessInitializing.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed. Fails if Variable already exists.
+* @param[in] pValue - Value for variables.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_AddEnvironmentVariablePtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pValue);
+
+/**
+* Checks if an environment variable exists.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+* @param[in] pVariableExists - Returns true if the variable exists, false otherwise.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pVariableExists);
+
+/**
+* Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_RemoveEnvironmentVariablePtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName);
+
+/**
+* Returns the number of environment variables.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] nVariableCount - Number of environment variables.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableCount);
+
+/**
+* Returns the details of a environment variables.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] nVariableIndex - Index of environment variables. 0-based.
+* @param[in] nVariableNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pVariableNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pVariableNameBuffer -  buffer of Environment Variable name. Alphanumeric string with _ and -., may be NULL
+* @param[in] nValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pValueBuffer -  buffer of Value of variable., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pArgumentString - Argumnet to pass on the process. May be empty.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_StartProcessPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString);
+
+/**
+* Terminates a process, if the process is running.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_TerminateProcessPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess);
 
 /*************************************************************************************************************************
  Class definition for WorkingFile
@@ -4409,13 +4496,13 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFile_ReadContentPtr) (LibMCEnv_WorkingF
 typedef LibMCEnvResult (*PLibMCEnvWorkingFile_CalculateSHA2Ptr) (LibMCEnv_WorkingFile pWorkingFile, const LibMCEnv_uint32 nSHA2BufferSize, LibMCEnv_uint32* pSHA2NeededChars, char * pSHA2Buffer);
 
 /**
-* Executes the temporary file, if it is an executable.
+* Creates a file process object.
 *
 * @param[in] pWorkingFile - WorkingFile instance.
-* @param[out] pExecution - execution object
+* @param[out] pExecution - process object
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFile_ExecuteFilePtr) (LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_WorkingFileExecution * pExecution);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFile_ExecuteFilePtr) (LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_WorkingFileProcess * pExecution);
 
 /**
 * Returns if the file is managed.
@@ -10407,8 +10494,17 @@ typedef struct {
 	PLibMCEnvBuild_StoreMetaDataStringPtr m_Build_StoreMetaDataString;
 	PLibMCEnvBuild_HasMetaDataStringPtr m_Build_HasMetaDataString;
 	PLibMCEnvBuild_GetMetaDataStringPtr m_Build_GetMetaDataString;
-	PLibMCEnvWorkingFileExecution_GetStatusPtr m_WorkingFileExecution_GetStatus;
-	PLibMCEnvWorkingFileExecution_ReturnStdOutPtr m_WorkingFileExecution_ReturnStdOut;
+	PLibMCEnvWorkingFileProcess_GetStatusPtr m_WorkingFileProcess_GetStatus;
+	PLibMCEnvWorkingFileProcess_GetRunTimePtr m_WorkingFileProcess_GetRunTime;
+	PLibMCEnvWorkingFileProcess_GetRunTimeInMillisecondsPtr m_WorkingFileProcess_GetRunTimeInMilliseconds;
+	PLibMCEnvWorkingFileProcess_SetWorkingDirectoryPtr m_WorkingFileProcess_SetWorkingDirectory;
+	PLibMCEnvWorkingFileProcess_AddEnvironmentVariablePtr m_WorkingFileProcess_AddEnvironmentVariable;
+	PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr m_WorkingFileProcess_EnvironmentVariableExists;
+	PLibMCEnvWorkingFileProcess_RemoveEnvironmentVariablePtr m_WorkingFileProcess_RemoveEnvironmentVariable;
+	PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr m_WorkingFileProcess_GetEnvironmentVariableCount;
+	PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr m_WorkingFileProcess_GetEnvironmentVariable;
+	PLibMCEnvWorkingFileProcess_StartProcessPtr m_WorkingFileProcess_StartProcess;
+	PLibMCEnvWorkingFileProcess_TerminateProcessPtr m_WorkingFileProcess_TerminateProcess;
 	PLibMCEnvWorkingFile_GetAbsoluteFileNamePtr m_WorkingFile_GetAbsoluteFileName;
 	PLibMCEnvWorkingFile_GetSizePtr m_WorkingFile_GetSize;
 	PLibMCEnvWorkingFile_ReadContentPtr m_WorkingFile_ReadContent;

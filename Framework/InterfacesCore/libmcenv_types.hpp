@@ -637,7 +637,7 @@ typedef LibMCEnvHandle LibMCEnv_ToolpathAccessor;
 typedef LibMCEnvHandle LibMCEnv_BuildExecution;
 typedef LibMCEnvHandle LibMCEnv_BuildExecutionIterator;
 typedef LibMCEnvHandle LibMCEnv_Build;
-typedef LibMCEnvHandle LibMCEnv_WorkingFileExecution;
+typedef LibMCEnvHandle LibMCEnv_WorkingFileProcess;
 typedef LibMCEnvHandle LibMCEnv_WorkingFile;
 typedef LibMCEnvHandle LibMCEnv_WorkingFileIterator;
 typedef LibMCEnvHandle LibMCEnv_WorkingFileWriter;
@@ -787,6 +787,14 @@ namespace LibMCEnv {
     DialogYesNoCancel = 4
   };
   
+  enum class eWorkingFileProcessStatus : LibMCEnv_int32 {
+    Unknown = 0,
+    ProcessInitializing = 1,
+    ProcessStarted = 2,
+    ProcessFinished = 3,
+    ProcessKilled = 4
+  };
+  
   enum class eBuildExecutionStatus : LibMCEnv_int32 {
     Unknown = 0,
     InProcess = 1,
@@ -893,6 +901,7 @@ typedef LibMCEnv::eToolpathProfileValueType eLibMCEnvToolpathProfileValueType;
 typedef LibMCEnv::eToolpathProfileModificationType eLibMCEnvToolpathProfileModificationType;
 typedef LibMCEnv::eToolpathProfileModificationFactor eLibMCEnvToolpathProfileModificationFactor;
 typedef LibMCEnv::eMessageDialogType eLibMCEnvMessageDialogType;
+typedef LibMCEnv::eWorkingFileProcessStatus eLibMCEnvWorkingFileProcessStatus;
 typedef LibMCEnv::eBuildExecutionStatus eLibMCEnvBuildExecutionStatus;
 typedef LibMCEnv::eDataTableColumnType eLibMCEnvDataTableColumnType;
 typedef LibMCEnv::sPosition2D sLibMCEnvPosition2D;

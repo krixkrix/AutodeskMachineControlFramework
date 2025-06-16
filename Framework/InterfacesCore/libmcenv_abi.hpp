@@ -4353,27 +4353,114 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_hasmetadatastring(LibMCEnv_Build
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_getmetadatastring(LibMCEnv_Build pBuild, const char * pKey, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
 /*************************************************************************************************************************
- Class definition for WorkingFileExecution
+ Class definition for WorkingFileProcess
 **************************************************************************************************************************/
 
 /**
-* Returns the execution status
+* Returns the process status
 *
-* @param[in] pWorkingFileExecution - WorkingFileExecution instance.
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[out] pStatus - Status of Process.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileexecution_getstatus(LibMCEnv_WorkingFileExecution pWorkingFileExecution);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getstatus(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv::eWorkingFileProcessStatus * pStatus);
 
 /**
-* Returns the output of the executable as string buffer
+* Returns the Run Time of the process. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
 *
-* @param[in] pWorkingFileExecution - WorkingFileExecution instance.
-* @param[in] nStringBufferBufferSize - size of the buffer (including trailing 0)
-* @param[out] pStringBufferNeededChars - will be filled with the count of the written bytes, or needed buffer size.
-* @param[out] pStringBufferBuffer -  buffer of stdout buffer, may be NULL
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[out] pRuntime - Duration.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileexecution_returnstdout(LibMCEnv_WorkingFileExecution pWorkingFileExecution, const LibMCEnv_uint32 nStringBufferBufferSize, LibMCEnv_uint32* pStringBufferNeededChars, char * pStringBufferBuffer);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getruntime(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_DateTimeDifference * pRuntime);
+
+/**
+* Returns the Run Time of the process in Milliseconds. Will return 0 if Status is ProcessInitializing. Fails if Status is Unknown.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[out] pRuntimeInMS - Duration in Milliseconds.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getruntimeinmilliseconds(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint64 * pRuntimeInMS);
+
+/**
+* Sets the working directory. Default is the directory of the executable. Fails if Status is not ProcessInitializing.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pDirectory - Wo.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_setworkingdirectory(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_WorkingDirectory pDirectory);
+
+/**
+* Adds an environment variable. Fails if Status is not ProcessInitializing.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed. Fails if Variable already exists.
+* @param[in] pValue - Value for variables.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_addenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pValue);
+
+/**
+* Checks if an environment variable exists.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+* @param[in] pVariableExists - Returns true if the variable exists, false otherwise.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_environmentvariableexists(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pVariableExists);
+
+/**
+* Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_removeenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName);
+
+/**
+* Returns the number of environment variables.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] nVariableCount - Number of environment variables.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariablecount(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableCount);
+
+/**
+* Returns the details of a environment variables.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] nVariableIndex - Index of environment variables. 0-based.
+* @param[in] nVariableNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pVariableNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pVariableNameBuffer -  buffer of Environment Variable name. Alphanumeric string with _ and -., may be NULL
+* @param[in] nValueBufferSize - size of the buffer (including trailing 0)
+* @param[out] pValueNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pValueBuffer -  buffer of Value of variable., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] pArgumentString - Argumnet to pass on the process. May be empty.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_startprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString);
+
+/**
+* Terminates a process, if the process is running.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_terminateprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess);
 
 /*************************************************************************************************************************
  Class definition for WorkingFile
@@ -4422,13 +4509,13 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_readcontent(LibMCEnv_Worki
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_calculatesha2(LibMCEnv_WorkingFile pWorkingFile, const LibMCEnv_uint32 nSHA2BufferSize, LibMCEnv_uint32* pSHA2NeededChars, char * pSHA2Buffer);
 
 /**
-* Executes the temporary file, if it is an executable.
+* Creates a file process object.
 *
 * @param[in] pWorkingFile - WorkingFile instance.
-* @param[out] pExecution - execution object
+* @param[out] pExecution - process object
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_executefile(LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_WorkingFileExecution * pExecution);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfile_executefile(LibMCEnv_WorkingFile pWorkingFile, LibMCEnv_WorkingFileProcess * pExecution);
 
 /**
 * Returns if the file is managed.
