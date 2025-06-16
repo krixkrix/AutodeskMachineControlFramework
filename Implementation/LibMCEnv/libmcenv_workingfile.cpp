@@ -342,7 +342,7 @@ std::string CWorkingFile::CalculateSHA2()
 }
 
 
-IWorkingFileExecution * CWorkingFile::ExecuteFile()
+IWorkingFileProcess* CWorkingFile::ExecuteFile()
 {
 	throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
 }

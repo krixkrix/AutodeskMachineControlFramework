@@ -159,7 +159,7 @@ public:
 
 	std::string CalculateSHA2() override;
 
-	IWorkingFileExecution * ExecuteFile() override;
+	IWorkingFileProcess * ExecuteFile() override;
 
 	bool IsManaged() override;
 
