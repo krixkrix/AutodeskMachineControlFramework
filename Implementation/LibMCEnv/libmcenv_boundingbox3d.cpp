@@ -167,10 +167,11 @@ bool CBoundingBox3D::HasMinimumExtents(const LibMCEnv_double dMinimumExtents)
 		if (dZ < dMinimumExtents)
 			return false;
 
+		return true;
 	}
 	else {
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_MINIMUMEXTENTSARENOTPOSITIVE);
-
+		
 	}
 
 
