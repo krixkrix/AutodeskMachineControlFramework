@@ -52,14 +52,15 @@ using namespace LibMCDriver_ScanLabSMC::Impl;
  Class definition of CSMCJob
 **************************************************************************************************************************/
 
-CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStartPositionX, double dStartPositionY, LibMCEnv::PWorkingDirectory pWorkingDirectory, std::string sSimulationSubDirectory)
+CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStartPositionX, double dStartPositionY, LibMCEnv::PWorkingDirectory pWorkingDirectory, std::string sSimulationSubDirectory, bool bSendToHardware)
     : m_pContextHandle(pContextHandle), 
     m_JobID(0), 
     m_bIsFinalized(false), 
     m_pWorkingDirectory (pWorkingDirectory), 
     m_sSimulationSubDirectory (sSimulationSubDirectory),
     m_bHasJobDuration (false),
-    m_dJobDuration (0.0)
+    m_dJobDuration (0.0),
+    m_bSendToHardware (bSendToHardware)
 {
 
     if (m_pWorkingDirectory.get() == nullptr)
@@ -662,6 +663,32 @@ double CSMCJobInstance::GetJobDuration()
 
 void CSMCJobInstance::ReadSimulationFile(LibMCEnv::PDataTable pDataTable)
 {
+    slsc_VersionInfo version = m_pSDK->slsc_cfg_get_scanmotioncontrol_version();
+
+    if (version.m_nMajor == 0) {
+        if (version.m_nMinor == 8 || version.m_nMinor == 9) {
+            ReadSimulationFile_SMC_v0_8(pDataTable);
+        }
+        else {
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_SIMULATIONDATALOADINGISNOTSUPPORTED);
+        }
+    }
+    else if (version.m_nMajor == 1) {
+        if (version.m_nMinor == 0)
+        {
+            if (m_bSendToHardware)
+                ReadLogRecordFile(pDataTable);
+            else
+                ReadSimulationFile_SMC_v1_0(pDataTable);
+        }
+        else {
+            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_SIMULATIONDATALOADINGISNOTSUPPORTED);
+        }
+    }
+}
+
+void CSMCJobInstance::ReadSimulationFile_SMC_v0_8(LibMCEnv::PDataTable pDataTable)
+{
     if (pDataTable.get() == nullptr)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
 
@@ -707,7 +734,7 @@ void CSMCJobInstance::ReadSimulationFile(LibMCEnv::PDataTable pDataTable)
     m_bHasJobDuration = true;
 }
 
-void CSMCJobInstance::ReadSimulationFile_SMC_v1(LibMCEnv::PDataTable pDataTable)
+void CSMCJobInstance::ReadSimulationFile_SMC_v1_0(LibMCEnv::PDataTable pDataTable)
 {
     if (pDataTable.get() == nullptr)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
@@ -729,8 +756,8 @@ void CSMCJobInstance::ReadSimulationFile_SMC_v1(LibMCEnv::PDataTable pDataTable)
 
     std::vector<double>     scanheadX;            // DisplacedX_Galvo_1
     std::vector<double>     scanheadY;            // DisplacedY_Galvo_1
-    std::vector<bool>       laserSignal;        // LaserSignal
-    std::vector<bool>        laserToggle;        // LaserToggle
+    std::vector<uint32_t>   laserSignal;        // LaserSignal
+    std::vector<uint32_t>   laserToggle;        // LaserToggle
     std::vector<double>     activeChannel0;     // ActiveChannel0
     std::vector<double>     activeChannel1;     // ActiveChannel1
     std::vector<int>        cmdCount;           // CommandCount
@@ -742,7 +769,7 @@ void CSMCJobInstance::ReadSimulationFile_SMC_v1(LibMCEnv::PDataTable pDataTable)
         {{CSMCCSVParser::FieldParserType::Double, CSMCCSVParser::FieldProcessingStep::Extend | CSMCCSVParser::FieldProcessingStep::Interpolate }, &scanheadX},
         {{CSMCCSVParser::FieldParserType::Double, CSMCCSVParser::FieldProcessingStep::Extend | CSMCCSVParser::FieldProcessingStep::Interpolate }, &scanheadY},
         {{CSMCCSVParser::FieldParserType::LaserSignal,CSMCCSVParser::FieldProcessingStep::Nop}, &laserSignal},
-        {{CSMCCSVParser::FieldParserType::Bool,CSMCCSVParser::FieldProcessingStep::Nop}, &laserToggle},
+        {{CSMCCSVParser::FieldParserType::UInt32,CSMCCSVParser::FieldProcessingStep::Nop}, &laserToggle},
         {{CSMCCSVParser::FieldParserType::None,CSMCCSVParser::FieldProcessingStep::Nop}, nullptr},
         {{CSMCCSVParser::FieldParserType::None,CSMCCSVParser::FieldProcessingStep::Nop}, nullptr},
         {{CSMCCSVParser::FieldParserType::Int,CSMCCSVParser::FieldProcessingStep::Nop}, &cmdCount},
@@ -762,7 +789,7 @@ void CSMCJobInstance::ReadSimulationFile_SMC_v1(LibMCEnv::PDataTable pDataTable)
     pDataTable->AddColumn("timestamp", "Timestamp", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("x", "X", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("y", "Y", LibMCEnv::eDataTableColumnType::DoubleColumn);
-    pDataTable->AddColumn("laseron", "LaserOn", LibMCEnv::eDataTableColumnType::Int32Column);
+    pDataTable->AddColumn("laseron", "LaserOn", LibMCEnv::eDataTableColumnType::Uint32Column);
     pDataTable->AddColumn("active1", "Active Channel 1", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("active2", "Active Channel 2", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("cmdindex", "Command Index", LibMCEnv::eDataTableColumnType::Int32Column);
@@ -778,6 +805,9 @@ void CSMCJobInstance::ReadSimulationFile_SMC_v1(LibMCEnv::PDataTable pDataTable)
 
     pDataTable->SetDoubleColumnValues("y", scanheadY);
     scanheadY.resize(0);
+
+    pDataTable->SetUint32ColumnValues("laseron", laserSignal);
+    laserSignal.resize(0);
 }
 
 void CSMCJobInstance::ReadLogRecordFile(LibMCEnv::PDataTable pDataTable)
@@ -806,7 +836,7 @@ void CSMCJobInstance::ReadLogRecordFile(LibMCEnv::PDataTable pDataTable)
     std::vector<double> timestampValues;
     std::vector<double> scanheadX;
     std::vector<double> scanheadY;
-    std::vector<bool>   laserSignal;
+    std::vector<uint32_t> laserSignal;
 
     std::vector<CSMCCSVParser::FieldBinding> bindings = {
         {{CSMCCSVParser::FieldParserType::Double, CSMCCSVParser::FieldProcessingStep::Extend | CSMCCSVParser::FieldProcessingStep::Interpolate }, &scanheadX},
@@ -828,7 +858,7 @@ void CSMCJobInstance::ReadLogRecordFile(LibMCEnv::PDataTable pDataTable)
     pDataTable->AddColumn("timestamp", "Timestamp", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("x", "X", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("y", "Y", LibMCEnv::eDataTableColumnType::DoubleColumn);
-    pDataTable->AddColumn("laseron", "LaserOn", LibMCEnv::eDataTableColumnType::Int32Column);
+    pDataTable->AddColumn("laseron", "LaserOn", LibMCEnv::eDataTableColumnType::Uint32Column);
     pDataTable->AddColumn("active1", "Active Channel 1", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("active2", "Active Channel 2", LibMCEnv::eDataTableColumnType::DoubleColumn);
     pDataTable->AddColumn("cmdindex", "Command Index", LibMCEnv::eDataTableColumnType::Int32Column);
@@ -844,6 +874,9 @@ void CSMCJobInstance::ReadLogRecordFile(LibMCEnv::PDataTable pDataTable)
 
     pDataTable->SetDoubleColumnValues("y", scanheadY);
     scanheadY.resize(0);
+
+    pDataTable->SetUint32ColumnValues("laseron", laserSignal);
+    laserSignal.resize(0);
 }
 
 void CSMCJobInstance::AddLayerToList(LibMCEnv::PToolpathLayer pLayer)
