@@ -157,6 +157,10 @@ typedef void * LibMCDriver_ScanLabSMC_pvoid;
 #define LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCENAME 1049 /** Empty RTC Service DLL Resource Name. */
 #define LIBMCDRIVER_SCANLABSMC_ERROR_RTCSERVICERESOURCENOTFOUND 1050 /** RTC Service Resource not found. */
 #define LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCEDATA 1051 /** Empty RTC Service DLL Resource Data. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_SIMULATIONDATALOADINGISNOTSUPPORTED 1052 /** Simulation data loading is not supported for this version. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTREADSIMULATIONFILE 1053 /** Could not read simulation file. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERUNKNOWNFIELDPARSERTYPE 1054 /** Unknown Field Parser Type. */
+#define LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERINTERPOLATEINDEXOUTOFRANGE 1055 /** Index out of range in Interpolate. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLabSMC
@@ -226,6 +230,10 @@ inline const char * LIBMCDRIVER_SCANLABSMC_GETERRORSTRING (LibMCDriver_ScanLabSM
     case LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCENAME: return "Empty RTC Service DLL Resource Name.";
     case LIBMCDRIVER_SCANLABSMC_ERROR_RTCSERVICERESOURCENOTFOUND: return "RTC Service Resource not found.";
     case LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCEDATA: return "Empty RTC Service DLL Resource Data.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_SIMULATIONDATALOADINGISNOTSUPPORTED: return "Simulation data loading is not supported for this version.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTREADSIMULATIONFILE: return "Could not read simulation file.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERUNKNOWNFIELDPARSERTYPE: return "Unknown Field Parser Type.";
+    case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERINTERPOLATEINDEXOUTOFRANGE: return "Index out of range in Interpolate.";
     default: return "unknown error";
   }
 }
@@ -271,7 +279,8 @@ namespace LibMCDriver_ScanLabSMC {
     Unknown = 0,
     Version_0_8 = 8,
     Version_0_9 = 9,
-    Version_1_0 = 10
+    Version_1_0 = 10,
+    Version_1_1 = 11
   };
   
   enum class eJobCharacteristic : LibMCDriver_ScanLabSMC_int32 {
