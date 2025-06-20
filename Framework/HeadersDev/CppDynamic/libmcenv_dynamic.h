@@ -4394,10 +4394,10 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_AddEnvironmentVariablePtr) 
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
 * @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
-* @param[in] pVariableExists - Returns true if the variable exists, false otherwise.
+* @param[out] pVariableExists - Returns true if the variable exists, false otherwise.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pVariableExists);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, bool * pVariableExists);
 
 /**
 * Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
@@ -4412,10 +4412,10 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_RemoveEnvironmentVariablePt
 * Returns the number of environment variables.
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
-* @param[in] nVariableCount - Number of environment variables.
+* @param[out] pVariableCount - Number of environment variables.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableCount);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 * pVariableCount);
 
 /**
 * Returns the details of a environment variables.
@@ -4430,16 +4430,25 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCount
 * @param[out] pValueBuffer -  buffer of Value of variable., may be NULL
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariableByIndexPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Clears all environment variables.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_ClearEnvironmentVariablesPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess);
 
 /**
 * Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
 * @param[in] pArgumentString - Argumnet to pass on the process. May be empty.
+* @param[in] nTimeOut - Process Timeout in Milliseconds. 0 means no timeout.
 * @return error code or 0 (success)
 */
-typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_StartProcessPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString);
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_StartProcessPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString, LibMCEnv_uint32 nTimeOut);
 
 /**
 * Terminates a process, if the process is running.
@@ -10502,7 +10511,8 @@ typedef struct {
 	PLibMCEnvWorkingFileProcess_EnvironmentVariableExistsPtr m_WorkingFileProcess_EnvironmentVariableExists;
 	PLibMCEnvWorkingFileProcess_RemoveEnvironmentVariablePtr m_WorkingFileProcess_RemoveEnvironmentVariable;
 	PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr m_WorkingFileProcess_GetEnvironmentVariableCount;
-	PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr m_WorkingFileProcess_GetEnvironmentVariable;
+	PLibMCEnvWorkingFileProcess_GetEnvironmentVariableByIndexPtr m_WorkingFileProcess_GetEnvironmentVariableByIndex;
+	PLibMCEnvWorkingFileProcess_ClearEnvironmentVariablesPtr m_WorkingFileProcess_ClearEnvironmentVariables;
 	PLibMCEnvWorkingFileProcess_StartProcessPtr m_WorkingFileProcess_StartProcess;
 	PLibMCEnvWorkingFileProcess_TerminateProcessPtr m_WorkingFileProcess_TerminateProcess;
 	PLibMCEnvWorkingFile_GetAbsoluteFileNamePtr m_WorkingFile_GetAbsoluteFileName;

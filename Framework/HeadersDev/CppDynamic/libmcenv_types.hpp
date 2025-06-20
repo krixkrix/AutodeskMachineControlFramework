@@ -789,10 +789,11 @@ namespace LibMCEnv {
   
   enum class eWorkingFileProcessStatus : LibMCEnv_int32 {
     Unknown = 0,
-    ProcessInitializing = 1,
+    ProcessNotStarted = 1,
     ProcessStarted = 2,
     ProcessFinished = 3,
-    ProcessKilled = 4
+    ProcessTerminated = 4,
+    ProcessTimedOut = 5
   };
   
   enum class eBuildExecutionStatus : LibMCEnv_int32 {

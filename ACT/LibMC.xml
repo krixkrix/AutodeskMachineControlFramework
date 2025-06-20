@@ -660,9 +660,24 @@
 		<error name="SOURCEVARIABLENOTFOUND" code="634" description="Source variable not found" />
 		<error name="INVALIDEVENTRETURNVALUES" code="635" description="Invalid event return values" />
 		<error name="INVALIDMODIFIERINTERPOLATIONCOUNT" code="636" description="Invalid modifier interpolation count" />
-		<error name="INVALIDTOOLPATHMODIFIERTYPE" code="10234" description="Invalid toolpath modifier type." />		
-		<error name="INVALIDTOOLPATHMODIFIERFACTOR" code="10235" description="Invalid toolpath modifier factor." />				
-		<error name="BINARYMETADATARELATIONSHIPNOTFOUND" code="10236" description="Binary metadata relationship not found." />		
+		<error name="INVALIDTOOLPATHMODIFIERTYPE" code="637" description="Invalid toolpath modifier type." />		
+		<error name="INVALIDTOOLPATHMODIFIERFACTOR" code="638" description="Invalid toolpath modifier factor." />				
+		<error name="BINARYMETADATARELATIONSHIPNOTFOUND" code="639" description="Binary metadata relationship not found." />				
+		<error name="ENVIRONMENTVARIABLECHANGEAFTERSTART" code="640" description="Environment variable change after start." />	
+		<error name="INVALIDENVIRONMENTVARIABLENAME" code="641" description="Invalid environment variable name." />	
+		<error name="ENVIRONMENTVARIABLEALREADYEXISTS" code="642" description="Environment variable already exists." />	
+		<error name="REACHEDENVIRONMENTVARIABLELIMIT" code="643" description="Reached Environment variable limit." />	
+		<error name="ENVIRONMENTVARIABLENOTFOUND" code="644" description="Environment Variable not found." />	
+		<error name="INVALIDENVIRONMENTVARIABLEINDEX" code="645" description="Invalid environment variable index." />	
+		<error name="COULDNOTREADPROCESSPIPE" code="646" description="Could not read process pipe." />	
+		<error name="PROCESSEXECUTABLENOTFOUND" code="647" description="Process executable not found." />	
+		<error name="COULDNOTCREATEPROCESSPIPE" code="648" description="Could not create process pipe." />	
+		<error name="CREATEPROCESSFAILED" code="649" description="Create process failed." />	
+		<error name="PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST" code="650" description="Process executable directory does not exist." />	
+		<error name="PROCESSCONTROLTIMEISINVALID" code="651" description="Process control time is invalid." />	
+		<error name="PROCESSWORKINGDIRECTORYDOESNOTEXIST" code="652" description="Process working directory does not exist." />	
+		<error name="PROCESSHASALREADYBEENSTARTED" code="653" description="Process has already been started." />	
+		<error name="PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM" code="654" description="Process handling not implemented on Platform." />	
 		
 		
 					

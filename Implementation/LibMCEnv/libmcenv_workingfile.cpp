@@ -33,6 +33,7 @@ Abstract: This is a stub class definition of CWorkingFile
 
 #include "libmcenv_workingfile.hpp"
 #include "libmcenv_interfaceexception.hpp"
+#include "libmcenv_workingfileprocess.hpp"
 
 // Include custom headers here.
 #include "common_utils.hpp"
@@ -143,10 +144,14 @@ uint64_t CWorkingFileWriterInstance::getWrittenBytes()
 }
 
 
-CWorkingFileMonitor::CWorkingFileMonitor(const std::string& sWorkingDirectory)
-    : m_sWorkingDirectory (sWorkingDirectory), m_bIsActive (true)
+CWorkingFileMonitor::CWorkingFileMonitor(const std::string& sWorkingDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger)
+    : m_sWorkingDirectory (sWorkingDirectory), m_bIsActive (true), m_pLogger (pLogger), m_pGlobalChrono (pGlobalChrono)
 {
     if (sWorkingDirectory.empty())
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
+    if (pLogger.get () == nullptr)
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
+    if (pGlobalChrono.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
 }
 
@@ -272,6 +277,17 @@ std::set<std::string> CWorkingFileMonitor::getFileNames()
     return m_MonitoredFileNames;
 }
 
+
+AMCCommon::PChrono CWorkingFileMonitor::getGlobalChrono()
+{
+    return m_pGlobalChrono;
+}
+
+AMC::PLogger CWorkingFileMonitor::getLogger()
+{
+    return m_pLogger;
+}
+
 /*************************************************************************************************************************
  Class definition of CWorkingFile 
 **************************************************************************************************************************/
@@ -344,7 +360,7 @@ std::string CWorkingFile::CalculateSHA2()
 
 IWorkingFileProcess* CWorkingFile::ExecuteFile()
 {
-	throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
+	return new CWorkingFileProcess(m_sAbsolutePath, m_pWorkingFileMonitor);
 }
 
 

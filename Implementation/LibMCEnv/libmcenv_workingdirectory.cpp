@@ -47,10 +47,11 @@ using namespace LibMCEnv::Impl;
  Class definition of CWorkingDirectory 
 **************************************************************************************************************************/
 
-CWorkingDirectory::CWorkingDirectory(const std::string& sBasePath, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage)
+CWorkingDirectory::CWorkingDirectory(const std::string& sBasePath, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger)
     : m_pDriverResourcePackage (pDriverResourcePackage), 
     m_pMachineResourcePackage (pMachineResourcePackage),
     m_sTempFileNamePrefix ("amcf_")
+
 {
     if (pDriverResourcePackage.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
@@ -62,7 +63,7 @@ CWorkingDirectory::CWorkingDirectory(const std::string& sBasePath, AMC::PResourc
     auto sWorkingDirectoryPath = AMCCommon::CUtils::findTemporaryFileName(sBasePath, m_sTempFileNamePrefix, "", 1024);
     AMCCommon::CUtils::createDirectoryOnDisk(sWorkingDirectoryPath);
 
-    m_pWorkingFileMonitor = std::make_shared<CWorkingFileMonitor> (sWorkingDirectoryPath);
+    m_pWorkingFileMonitor = std::make_shared<CWorkingFileMonitor> (sWorkingDirectoryPath, pGlobalChrono, pLogger);
 
 }
 
@@ -90,6 +91,12 @@ std::string CWorkingDirectory::GetAbsoluteFilePath()
 {
     return m_pWorkingFileMonitor->getWorkingDirectory ();
 }
+
+PWorkingFileMonitor CWorkingDirectory::getWorkingFileMonitor()
+{
+    return m_pWorkingFileMonitor;
+}
+
 
 IWorkingDirectory* CWorkingDirectory::CreateSubDirectory(const std::string& sDirectoryName)
 {

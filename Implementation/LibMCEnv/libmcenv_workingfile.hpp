@@ -50,6 +50,7 @@ Abstract: This is the class declaration of CWorkingFile
 #include <map>
 
 #include "amc_logger.hpp"
+#include "amc_logger.hpp"
 #include "Common/common_exportstream_native.hpp"
 
 namespace LibMCEnv {
@@ -108,9 +109,13 @@ private:
 
     std::map<std::string, PWorkingFileWriterInstance> m_WriterInstances;
 
+    AMCCommon::PChrono m_pGlobalChrono;
+    AMC::PLogger m_pLogger;
+
+
 public:
 
-    CWorkingFileMonitor(const std::string & sWorkingDirectory);
+    CWorkingFileMonitor(const std::string & sWorkingDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger);
 
     std::string getWorkingDirectory();
 
@@ -127,6 +132,10 @@ public:
     bool isActive();
 
     std::set<std::string> getFileNames();
+
+    AMCCommon::PChrono getGlobalChrono();
+
+    AMC::PLogger getLogger();
 
 };
 

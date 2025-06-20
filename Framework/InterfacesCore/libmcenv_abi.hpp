@@ -4407,10 +4407,10 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_addenvironmentvaria
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
 * @param[in] pVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
-* @param[in] pVariableExists - Returns true if the variable exists, false otherwise.
+* @param[out] pVariableExists - Returns true if the variable exists, false otherwise.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_environmentvariableexists(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, const char * pVariableExists);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_environmentvariableexists(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pVariableName, bool * pVariableExists);
 
 /**
 * Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
@@ -4425,10 +4425,10 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_removeenvironmentva
 * Returns the number of environment variables.
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
-* @param[in] nVariableCount - Number of environment variables.
+* @param[out] pVariableCount - Number of environment variables.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariablecount(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableCount);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariablecount(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 * pVariableCount);
 
 /**
 * Returns the details of a environment variables.
@@ -4443,16 +4443,25 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvaria
 * @param[out] pValueBuffer -  buffer of Value of variable., may be NULL
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariable(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvariablebyindex(LibMCEnv_WorkingFileProcess pWorkingFileProcess, LibMCEnv_uint32 nVariableIndex, const LibMCEnv_uint32 nVariableNameBufferSize, LibMCEnv_uint32* pVariableNameNeededChars, char * pVariableNameBuffer, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
+
+/**
+* Clears all environment variables.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_clearenvironmentvariables(LibMCEnv_WorkingFileProcess pWorkingFileProcess);
 
 /**
 * Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
 * @param[in] pArgumentString - Argumnet to pass on the process. May be empty.
+* @param[in] nTimeOut - Process Timeout in Milliseconds. 0 means no timeout.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_startprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_startprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString, LibMCEnv_uint32 nTimeOut);
 
 /**
 * Terminates a process, if the process is running.

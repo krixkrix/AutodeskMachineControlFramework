@@ -2139,11 +2139,12 @@ public:
 	inline LibMCEnv_uint64 GetRunTimeInMilliseconds();
 	inline void SetWorkingDirectory(classParam<CWorkingDirectory> pDirectory);
 	inline void AddEnvironmentVariable(const std::string & sVariableName, const std::string & sValue);
-	inline void EnvironmentVariableExists(const std::string & sVariableName, const std::string & sVariableExists);
+	inline bool EnvironmentVariableExists(const std::string & sVariableName);
 	inline void RemoveEnvironmentVariable(const std::string & sVariableName);
-	inline void GetEnvironmentVariableCount(const LibMCEnv_uint32 nVariableCount);
-	inline void GetEnvironmentVariable(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue);
-	inline void StartProcess(const std::string & sArgumentString);
+	inline LibMCEnv_uint32 GetEnvironmentVariableCount();
+	inline void GetEnvironmentVariableByIndex(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue);
+	inline void ClearEnvironmentVariables();
+	inline void StartProcess(const std::string & sArgumentString, const LibMCEnv_uint32 nTimeOut);
 	inline void TerminateProcess();
 };
 	
@@ -3700,7 +3701,8 @@ public:
 		pWrapperTable->m_WorkingFileProcess_EnvironmentVariableExists = nullptr;
 		pWrapperTable->m_WorkingFileProcess_RemoveEnvironmentVariable = nullptr;
 		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount = nullptr;
-		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable = nullptr;
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex = nullptr;
+		pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables = nullptr;
 		pWrapperTable->m_WorkingFileProcess_StartProcess = nullptr;
 		pWrapperTable->m_WorkingFileProcess_TerminateProcess = nullptr;
 		pWrapperTable->m_WorkingFile_GetAbsoluteFileName = nullptr;
@@ -7943,12 +7945,21 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariable");
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariableByIndexPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariablebyindex");
 		#else // _WIN32
-		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariablePtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariable");
+		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex = (PLibMCEnvWorkingFileProcess_GetEnvironmentVariableByIndexPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_getenvironmentvariablebyindex");
 		dlerror();
 		#endif // _WIN32
-		if (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable == nullptr)
+		if (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables = (PLibMCEnvWorkingFileProcess_ClearEnvironmentVariablesPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_clearenvironmentvariables");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables = (PLibMCEnvWorkingFileProcess_ClearEnvironmentVariablesPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_clearenvironmentvariables");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -14347,8 +14358,12 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getenvironmentvariable", (void**)&(pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable));
-		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariable == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getenvironmentvariablebyindex", (void**)&(pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_clearenvironmentvariables", (void**)&(pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingfileprocess_startprocess", (void**)&(pWrapperTable->m_WorkingFileProcess_StartProcess));
@@ -21948,11 +21963,14 @@ public:
 	/**
 	* CWorkingFileProcess::EnvironmentVariableExists - Checks if an environment variable exists.
 	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
-	* @param[in] sVariableExists - Returns true if the variable exists, false otherwise.
+	* @return Returns true if the variable exists, false otherwise.
 	*/
-	void CWorkingFileProcess::EnvironmentVariableExists(const std::string & sVariableName, const std::string & sVariableExists)
+	bool CWorkingFileProcess::EnvironmentVariableExists(const std::string & sVariableName)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_EnvironmentVariableExists(m_pHandle, sVariableName.c_str(), sVariableExists.c_str()));
+		bool resultVariableExists = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_EnvironmentVariableExists(m_pHandle, sVariableName.c_str(), &resultVariableExists));
+		
+		return resultVariableExists;
 	}
 	
 	/**
@@ -21966,40 +21984,52 @@ public:
 	
 	/**
 	* CWorkingFileProcess::GetEnvironmentVariableCount - Returns the number of environment variables.
-	* @param[in] nVariableCount - Number of environment variables.
+	* @return Number of environment variables.
 	*/
-	void CWorkingFileProcess::GetEnvironmentVariableCount(const LibMCEnv_uint32 nVariableCount)
+	LibMCEnv_uint32 CWorkingFileProcess::GetEnvironmentVariableCount()
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariableCount(m_pHandle, nVariableCount));
+		LibMCEnv_uint32 resultVariableCount = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariableCount(m_pHandle, &resultVariableCount));
+		
+		return resultVariableCount;
 	}
 	
 	/**
-	* CWorkingFileProcess::GetEnvironmentVariable - Returns the details of a environment variables.
+	* CWorkingFileProcess::GetEnvironmentVariableByIndex - Returns the details of a environment variables.
 	* @param[in] nVariableIndex - Index of environment variables. 0-based.
 	* @param[out] sVariableName - Environment Variable name. Alphanumeric string with _ and -.
 	* @param[out] sValue - Value of variable.
 	*/
-	void CWorkingFileProcess::GetEnvironmentVariable(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue)
+	void CWorkingFileProcess::GetEnvironmentVariableByIndex(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue)
 	{
 		LibMCEnv_uint32 bytesNeededVariableName = 0;
 		LibMCEnv_uint32 bytesWrittenVariableName = 0;
 		LibMCEnv_uint32 bytesNeededValue = 0;
 		LibMCEnv_uint32 bytesWrittenValue = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariable(m_pHandle, nVariableIndex, 0, &bytesNeededVariableName, nullptr, 0, &bytesNeededValue, nullptr));
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariableByIndex(m_pHandle, nVariableIndex, 0, &bytesNeededVariableName, nullptr, 0, &bytesNeededValue, nullptr));
 		std::vector<char> bufferVariableName(bytesNeededVariableName);
 		std::vector<char> bufferValue(bytesNeededValue);
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariable(m_pHandle, nVariableIndex, bytesNeededVariableName, &bytesWrittenVariableName, &bufferVariableName[0], bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_GetEnvironmentVariableByIndex(m_pHandle, nVariableIndex, bytesNeededVariableName, &bytesWrittenVariableName, &bufferVariableName[0], bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
 		sVariableName = std::string(&bufferVariableName[0]);
 		sValue = std::string(&bufferValue[0]);
 	}
 	
 	/**
+	* CWorkingFileProcess::ClearEnvironmentVariables - Clears all environment variables.
+	*/
+	void CWorkingFileProcess::ClearEnvironmentVariables()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_ClearEnvironmentVariables(m_pHandle));
+	}
+	
+	/**
 	* CWorkingFileProcess::StartProcess - Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 	* @param[in] sArgumentString - Argumnet to pass on the process. May be empty.
+	* @param[in] nTimeOut - Process Timeout in Milliseconds. 0 means no timeout.
 	*/
-	void CWorkingFileProcess::StartProcess(const std::string & sArgumentString)
+	void CWorkingFileProcess::StartProcess(const std::string & sArgumentString, const LibMCEnv_uint32 nTimeOut)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_StartProcess(m_pHandle, sArgumentString.c_str()));
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_StartProcess(m_pHandle, sArgumentString.c_str(), nTimeOut));
 	}
 	
 	/**

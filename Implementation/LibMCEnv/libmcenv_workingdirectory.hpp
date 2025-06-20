@@ -48,6 +48,7 @@ Abstract: This is the class declaration of CWorkingDirectory
 // Include custom headers here.
 #include "amc_resourcepackage.hpp"
 #include "amc_logger.hpp"
+#include "Common/common_chrono.hpp"
 
 namespace LibMCEnv {
 namespace Impl {
@@ -73,7 +74,7 @@ protected:
 
 public:
 
-    CWorkingDirectory(const std::string & sBasePath, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage);
+    CWorkingDirectory(const std::string & sBasePath, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger);
 
     ~CWorkingDirectory();
 
@@ -81,6 +82,7 @@ public:
 
     IWorkingDirectory* CreateSubDirectory(const std::string& sDirectoryName) override;
 
+    PWorkingFileMonitor getWorkingFileMonitor ();
 
 	std::string GetAbsoluteFilePath() override;
 

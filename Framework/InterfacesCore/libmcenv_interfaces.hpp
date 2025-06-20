@@ -3595,9 +3595,9 @@ public:
 	/**
 	* IWorkingFileProcess::EnvironmentVariableExists - Checks if an environment variable exists.
 	* @param[in] sVariableName - Environment Variable name. Alphanumeric string with _ and - allowed.
-	* @param[in] sVariableExists - Returns true if the variable exists, false otherwise.
+	* @return Returns true if the variable exists, false otherwise.
 	*/
-	virtual void EnvironmentVariableExists(const std::string & sVariableName, const std::string & sVariableExists) = 0;
+	virtual bool EnvironmentVariableExists(const std::string & sVariableName) = 0;
 
 	/**
 	* IWorkingFileProcess::RemoveEnvironmentVariable - Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.
@@ -3607,23 +3607,29 @@ public:
 
 	/**
 	* IWorkingFileProcess::GetEnvironmentVariableCount - Returns the number of environment variables.
-	* @param[in] nVariableCount - Number of environment variables.
+	* @return Number of environment variables.
 	*/
-	virtual void GetEnvironmentVariableCount(const LibMCEnv_uint32 nVariableCount) = 0;
+	virtual LibMCEnv_uint32 GetEnvironmentVariableCount() = 0;
 
 	/**
-	* IWorkingFileProcess::GetEnvironmentVariable - Returns the details of a environment variables.
+	* IWorkingFileProcess::GetEnvironmentVariableByIndex - Returns the details of a environment variables.
 	* @param[in] nVariableIndex - Index of environment variables. 0-based.
 	* @param[out] sVariableName - Environment Variable name. Alphanumeric string with _ and -.
 	* @param[out] sValue - Value of variable.
 	*/
-	virtual void GetEnvironmentVariable(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue) = 0;
+	virtual void GetEnvironmentVariableByIndex(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue) = 0;
+
+	/**
+	* IWorkingFileProcess::ClearEnvironmentVariables - Clears all environment variables.
+	*/
+	virtual void ClearEnvironmentVariables() = 0;
 
 	/**
 	* IWorkingFileProcess::StartProcess - Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 	* @param[in] sArgumentString - Argumnet to pass on the process. May be empty.
+	* @param[in] nTimeOut - Process Timeout in Milliseconds. 0 means no timeout.
 	*/
-	virtual void StartProcess(const std::string & sArgumentString) = 0;
+	virtual void StartProcess(const std::string & sArgumentString, const LibMCEnv_uint32 nTimeOut) = 0;
 
 	/**
 	* IWorkingFileProcess::TerminateProcess - Terminates a process, if the process is running.

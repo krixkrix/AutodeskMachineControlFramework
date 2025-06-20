@@ -651,9 +651,24 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_SOURCEVARIABLENOTFOUND 634 /** Source variable not found */
 #define LIBMC_ERROR_INVALIDEVENTRETURNVALUES 635 /** Invalid event return values */
 #define LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT 636 /** Invalid modifier interpolation count */
-#define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE 10234 /** Invalid toolpath modifier type. */
-#define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR 10235 /** Invalid toolpath modifier factor. */
-#define LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND 10236 /** Binary metadata relationship not found. */
+#define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE 637 /** Invalid toolpath modifier type. */
+#define LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR 638 /** Invalid toolpath modifier factor. */
+#define LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND 639 /** Binary metadata relationship not found. */
+#define LIBMC_ERROR_ENVIRONMENTVARIABLECHANGEAFTERSTART 640 /** Environment variable change after start. */
+#define LIBMC_ERROR_INVALIDENVIRONMENTVARIABLENAME 641 /** Invalid environment variable name. */
+#define LIBMC_ERROR_ENVIRONMENTVARIABLEALREADYEXISTS 642 /** Environment variable already exists. */
+#define LIBMC_ERROR_REACHEDENVIRONMENTVARIABLELIMIT 643 /** Reached Environment variable limit. */
+#define LIBMC_ERROR_ENVIRONMENTVARIABLENOTFOUND 644 /** Environment Variable not found. */
+#define LIBMC_ERROR_INVALIDENVIRONMENTVARIABLEINDEX 645 /** Invalid environment variable index. */
+#define LIBMC_ERROR_COULDNOTREADPROCESSPIPE 646 /** Could not read process pipe. */
+#define LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND 647 /** Process executable not found. */
+#define LIBMC_ERROR_COULDNOTCREATEPROCESSPIPE 648 /** Could not create process pipe. */
+#define LIBMC_ERROR_CREATEPROCESSFAILED 649 /** Create process failed. */
+#define LIBMC_ERROR_PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST 650 /** Process executable directory does not exist. */
+#define LIBMC_ERROR_PROCESSCONTROLTIMEISINVALID 651 /** Process control time is invalid. */
+#define LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST 652 /** Process working directory does not exist. */
+#define LIBMC_ERROR_PROCESSHASALREADYBEENSTARTED 653 /** Process has already been started. */
+#define LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM 654 /** Process handling not implemented on Platform. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1220,6 +1235,21 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE: return "Invalid toolpath modifier type.";
     case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR: return "Invalid toolpath modifier factor.";
     case LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND: return "Binary metadata relationship not found.";
+    case LIBMC_ERROR_ENVIRONMENTVARIABLECHANGEAFTERSTART: return "Environment variable change after start.";
+    case LIBMC_ERROR_INVALIDENVIRONMENTVARIABLENAME: return "Invalid environment variable name.";
+    case LIBMC_ERROR_ENVIRONMENTVARIABLEALREADYEXISTS: return "Environment variable already exists.";
+    case LIBMC_ERROR_REACHEDENVIRONMENTVARIABLELIMIT: return "Reached Environment variable limit.";
+    case LIBMC_ERROR_ENVIRONMENTVARIABLENOTFOUND: return "Environment Variable not found.";
+    case LIBMC_ERROR_INVALIDENVIRONMENTVARIABLEINDEX: return "Invalid environment variable index.";
+    case LIBMC_ERROR_COULDNOTREADPROCESSPIPE: return "Could not read process pipe.";
+    case LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND: return "Process executable not found.";
+    case LIBMC_ERROR_COULDNOTCREATEPROCESSPIPE: return "Could not create process pipe.";
+    case LIBMC_ERROR_CREATEPROCESSFAILED: return "Create process failed.";
+    case LIBMC_ERROR_PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST: return "Process executable directory does not exist.";
+    case LIBMC_ERROR_PROCESSCONTROLTIMEISINVALID: return "Process control time is invalid.";
+    case LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST: return "Process working directory does not exist.";
+    case LIBMC_ERROR_PROCESSHASALREADYBEENSTARTED: return "Process has already been started.";
+    case LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM: return "Process handling not implemented on Platform.";
     default: return "unknown error";
   }
 }

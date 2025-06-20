@@ -284,9 +284,7 @@
 		<error name="INVALIDWRITEBUFFERSIZE" code="10244" description="Invalid write buffer size." />		
 		<error name="INVALIDWRITEBUFFFERPOSITION" code="10245" description="Invalid write buffer position." />
 		<error name="TRIANGLESETNOTFOUND" code="10246" description="Triangle set not found." />	
-		
-		
-			
+					
 	</errors>
 
 	<enum name="AlertLevel">
@@ -403,10 +401,11 @@
 
 	<enum name="WorkingFileProcessStatus">
 		<option name="Unknown" value="0" />
-		<option name="ProcessInitializing" value="1" />
+		<option name="ProcessNotStarted" value="1" />
 		<option name="ProcessStarted" value="2" />
 		<option name="ProcessFinished" value="3" />
-		<option name="ProcessKilled" value="4" />
+		<option name="ProcessTerminated" value="4" />
+		<option name="ProcessTimedOut" value="5" />
 	</enum>
 	
 	
@@ -2668,7 +2667,7 @@
 
 		<method name="EnvironmentVariableExists" description="Checks if an environment variable exists.">
 			<param name="VariableName" type="string" pass="in" description="Environment Variable name. Alphanumeric string with _ and - allowed." />
-			<param name="VariableExists" type="string" pass="in" description="Returns true if the variable exists, false otherwise." />
+			<param name="VariableExists" type="bool" pass="return" description="Returns true if the variable exists, false otherwise." />
 		</method>
 		
 		<method name="RemoveEnvironmentVariable" description="Removes an environment variable. Does nothing if variable does not exist. Fails if Status is not ProcessInitializing.">
@@ -2676,17 +2675,21 @@
 		</method>
 
 		<method name="GetEnvironmentVariableCount" description="Returns the number of environment variables.">
-			<param name="VariableCount" type="uint32" pass="in" description="Number of environment variables." />
+			<param name="VariableCount" type="uint32" pass="return" description="Number of environment variables." />
 		</method>
 
-		<method name="GetEnvironmentVariable" description="Returns the details of a environment variables.">
+		<method name="GetEnvironmentVariableByIndex" description="Returns the details of a environment variables.">
 			<param name="VariableIndex" type="uint32" pass="in" description="Index of environment variables. 0-based." />
 			<param name="VariableName" type="string" pass="out" description="Environment Variable name. Alphanumeric string with _ and -." />
 			<param name="Value" type="string" pass="out" description="Value of variable." />
 		</method>
 
+		<method name="ClearEnvironmentVariables" description="Clears all environment variables.">
+		</method>
+
 		<method name="StartProcess" description="Starts the process, if Status is ProcessInitializing. Does nothing otherwise.">
 			<param name="ArgumentString" type="string" pass="in" description="Argumnet to pass on the process. May be empty." />
+			<param name="TimeOut" type="uint32" pass="in" description="Process Timeout in Milliseconds. 0 means no timeout." />
 		</method>
 
 		<method name="TerminateProcess" description="Terminates a process, if the process is running.">
