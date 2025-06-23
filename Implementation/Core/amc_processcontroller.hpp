@@ -43,6 +43,7 @@ Abstract: This is the class declaration of CProcessController
 #include <vector>
 #include <thread>
 #include <atomic>
+#include <list>
 
 namespace AMC {
 
@@ -73,6 +74,9 @@ private:
 	std::atomic<int32_t> m_nExitCode;
 	std::atomic<uint32_t> m_nTimeoutInMs;
 	AMCCommon::PChrono m_pGlobalChrono;
+
+	std::list<std::string> m_StdOutBuffer;
+	std::list<std::string> m_StdErrBuffer;
 
 	uint64_t m_nSystemStartTime;
 
@@ -118,6 +122,12 @@ public:
 	void terminateProcess();
 
 	int32_t getExitCode();
+
+	void printToStdOut (const std::string & sLine);
+
+	void printToStdErr (const std::string & sLine);
+
+	void clearOutputBuffers();
 
 
 };

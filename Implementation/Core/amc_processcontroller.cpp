@@ -89,6 +89,10 @@ static void processControllerReadPipe(CProcessController* pController, HANDLE pi
 }
 
 void processControllerStdoutCallback(CProcessController* pController, const std::string& output) {
+
+    if (pController == nullptr)
+        return;
+
     std::string processed;
     processed.reserve(output.size());
 
@@ -96,13 +100,13 @@ void processControllerStdoutCallback(CProcessController* pController, const std:
         if (output[i] == '\r') {
             
             if (!processed.empty()) {
-                // Write Line
+				pController->printToStdOut(processed);
                 processed = "";
             }
         }
         else if (output[i] == '\n') {
             if (!processed.empty()) {
-                // Write Line
+                pController->printToStdOut(processed);
                 processed = "";
             }
         }
@@ -114,6 +118,10 @@ void processControllerStdoutCallback(CProcessController* pController, const std:
 }
 
 void processControllerStderrCallback(CProcessController* pController, const std::string& output) {
+    
+    if (pController == nullptr)
+        return;
+    
     std::string processed;
     processed.reserve(output.size());
 
@@ -121,13 +129,13 @@ void processControllerStderrCallback(CProcessController* pController, const std:
         if (output[i] == '\r') {
             // skip carriage return
             if (!processed.empty()) {
-                // Write Line
+                pController->printToStdOut(processed);
                 processed = "";
             }
         }
         else if (output[i] == '\n') {
             if (!processed.empty()) {
-                // Write Line
+                pController->printToStdOut(processed);
                 processed = "";
             }
         }
@@ -631,3 +639,21 @@ int32_t CProcessController::getExitCode()
 {
     return m_nExitCode;
 }
+
+
+void CProcessController::printToStdOut(const std::string& sLine)
+{
+	m_StdOutBuffer.push_back(sLine);
+}
+
+void CProcessController::printToStdErr(const std::string& sLine)
+{
+	m_StdErrBuffer.push_back(sLine);
+}
+
+void CProcessController::clearOutputBuffers()
+{
+	m_StdOutBuffer.clear();
+	m_StdErrBuffer.clear();
+}
+
