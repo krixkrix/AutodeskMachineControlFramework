@@ -67,27 +67,6 @@ using namespace AMC;
  Class definition of CWorkingFileProcess 
 **************************************************************************************************************************/
 
-#ifdef _WIN32
-
-static void processControllerReadPipe(CProcessController* pController, HANDLE pipeHandle, std::function<void(CProcessController* pController, const std::string&)> callback)
-{
-    std::array<char, AMC_PROCESSCONTROLLER_PIPEREADBUFFER> readBufferUTF8;
-    DWORD bytesRead = 0;
-
-    while (true) {
-        bool bSuccess = ReadFile(pipeHandle, readBufferUTF8.data (), (DWORD) (readBufferUTF8.size () - 1), &bytesRead, nullptr);
-        if (!bSuccess || bytesRead == 0)
-            break;
-
-        if (bytesRead >= AMC_PROCESSCONTROLLER_PIPEREADBUFFER)
-            throw ELibMCInterfaceException(LIBMC_ERROR_COULDNOTREADPROCESSPIPE);
-
-        readBufferUTF8.at (bytesRead) = '\0';
-
-        callback(pController, std::string (readBufferUTF8.data ()));
-    }
-}
-
 void processControllerStdoutCallback(CProcessController* pController, const std::string& output) {
 
     if (pController == nullptr)
@@ -98,9 +77,9 @@ void processControllerStdoutCallback(CProcessController* pController, const std:
 
     for (size_t i = 0; i < output.size(); ++i) {
         if (output[i] == '\r') {
-            
+
             if (!processed.empty()) {
-				pController->printToStdOut(processed);
+                pController->printToStdOut(processed);
                 processed = "";
             }
         }
@@ -118,10 +97,10 @@ void processControllerStdoutCallback(CProcessController* pController, const std:
 }
 
 void processControllerStderrCallback(CProcessController* pController, const std::string& output) {
-    
+
     if (pController == nullptr)
         return;
-    
+
     std::string processed;
     processed.reserve(output.size());
 
@@ -145,6 +124,29 @@ void processControllerStderrCallback(CProcessController* pController, const std:
     }
 
 }
+
+
+#ifdef _WIN32
+
+static void processControllerReadPipe(CProcessController* pController, HANDLE pipeHandle, std::function<void(CProcessController* pController, const std::string&)> callback)
+{
+    std::array<char, AMC_PROCESSCONTROLLER_PIPEREADBUFFER> readBufferUTF8;
+    DWORD bytesRead = 0;
+
+    while (true) {
+        bool bSuccess = ReadFile(pipeHandle, readBufferUTF8.data (), (DWORD) (readBufferUTF8.size () - 1), &bytesRead, nullptr);
+        if (!bSuccess || bytesRead == 0)
+            break;
+
+        if (bytesRead >= AMC_PROCESSCONTROLLER_PIPEREADBUFFER)
+            throw ELibMCInterfaceException(LIBMC_ERROR_COULDNOTREADPROCESSPIPE);
+
+        readBufferUTF8.at (bytesRead) = '\0';
+
+        callback(pController, std::string (readBufferUTF8.data ()));
+    }
+}
+
 
 
 
