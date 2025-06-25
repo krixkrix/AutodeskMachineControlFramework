@@ -182,6 +182,8 @@ public:
 
 	void SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB) override;
 
+	void SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ) override;
+
 	void ConfigureLists(const LibMCDriver_ScanLab_uint32 nSizeListA, const LibMCDriver_ScanLab_uint32 nSizeListB) override;
 
 	void SetLaserMode(const LibMCDriver_ScanLab::eLaserMode eLaserMode, const LibMCDriver_ScanLab::eLaserPort eLaserPort) override;
@@ -376,7 +378,6 @@ public:
 	void AddSetDigitalOut(const LibMCDriver_ScanLab::eLaserPort eLaserPort, const LibMCDriver_ScanLab_single fOutputValue) override;
 
 	void AddSetPowerForPIDControl(const LibMCDriver_ScanLab_single fPowerInPercent) override;
-
 
 	void AddSetJumpSpeed(const LibMCDriver_ScanLab_single fJumpSpeed) override;
 

@@ -257,6 +257,7 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE 1152 /** Skywriting nprev provided twice in profile. */
 #define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE 1153 /** Invalid or no skywriting npost provided in profile. */
 #define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE 1154 /** Skywriting npost provided twice in profile. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR 1155 /** Invalid correction factor. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -426,6 +427,7 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE: return "Skywriting nprev provided twice in profile.";
     case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "Invalid or no skywriting npost provided in profile.";
     case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "Skywriting npost provided twice in profile.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "Invalid correction factor.";
     default: return "unknown error";
   }
 }

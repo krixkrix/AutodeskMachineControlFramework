@@ -785,7 +785,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabNLightAFXProfileSelector
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_GetOIEMaxMeasurementTagPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 * pMeasurementTag);
 
 /**
-* Maps an OIE Measurement tag back to the original scan parameters. Depreciated! Use RetrieveOIEMeasurementTags instead.
+* Maps an OIE Measurement tag back to the original scan parameters.
 *
 * @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
 * @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
@@ -903,7 +903,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LoadFirmwareP
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LoadCorrectionFilePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, LibMCDriver_ScanLab_uint32 nTableNumber, LibMCDriver_ScanLab_uint32 nDimension);
 
 /**
-* Selects Correction Table on card.
+* Selects Correction Table on card. Reads the correction factorw out of the Table, if existent.
 *
 * @param[in] pRTCContext - RTCContext instance.
 * @param[in] nTableNumberHeadA - Table Number for HeadA (1..8) or off (0).
@@ -911,6 +911,16 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LoadCorrectio
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SelectCorrectionTablePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nTableNumberHeadA, LibMCDriver_ScanLab_uint32 nTableNumberHeadB);
+
+/**
+* Sets the correction factor manually.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] dCorrectionFactorXY - Scale correction factor in the XY plane. In bits per mm. MUST BE larger than 0.
+* @param[in] dCorrectionFactorZ - Scale correction factor in the Z axis. In bits per mm. Should be equal to CorrectionFactorXY for the RTC6 card. MUST BE larger than 0.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetCorrectionFactorsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dCorrectionFactorXY, LibMCDriver_ScanLab_double dCorrectionFactorZ);
 
 /**
 * Configures list buffer size.
@@ -3079,6 +3089,7 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_LoadFirmwarePtr m_RTCContext_LoadFirmware;
 	PLibMCDriver_ScanLabRTCContext_LoadCorrectionFilePtr m_RTCContext_LoadCorrectionFile;
 	PLibMCDriver_ScanLabRTCContext_SelectCorrectionTablePtr m_RTCContext_SelectCorrectionTable;
+	PLibMCDriver_ScanLabRTCContext_SetCorrectionFactorsPtr m_RTCContext_SetCorrectionFactors;
 	PLibMCDriver_ScanLabRTCContext_ConfigureListsPtr m_RTCContext_ConfigureLists;
 	PLibMCDriver_ScanLabRTCContext_SetLaserModePtr m_RTCContext_SetLaserMode;
 	PLibMCDriver_ScanLabRTCContext_DisableAutoLaserControlPtr m_RTCContext_DisableAutoLaserControl;

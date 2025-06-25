@@ -2364,6 +2364,30 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_selectcorrectiontable(L
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_setcorrectionfactors(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dCorrectionFactorXY, LibMCDriver_ScanLab_double dCorrectionFactorZ)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->SetCorrectionFactors(dCorrectionFactorXY, dCorrectionFactorZ);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_configurelists(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nSizeListA, LibMCDriver_ScanLab_uint32 nSizeListB)
 {
 	IBase* pIBaseClass = (IBase *)pRTCContext;
@@ -7774,6 +7798,8 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_loadcorrectionfile;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_selectcorrectiontable") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_selectcorrectiontable;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_setcorrectionfactors") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_setcorrectionfactors;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_configurelists") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_configurelists;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_setlasermode") 

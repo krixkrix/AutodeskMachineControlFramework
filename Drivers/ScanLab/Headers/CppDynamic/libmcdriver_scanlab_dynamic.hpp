@@ -367,6 +367,7 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE: return "SKYWRITINGNPREVPROVIDEDTWICEINPROFILE";
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE";
 			case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE";
+			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "INVALIDCORRECTIONFACTOR";
 		}
 		return "UNKNOWN";
 	}
@@ -536,6 +537,7 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE: return "Skywriting nprev provided twice in profile.";
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "Invalid or no skywriting npost provided in profile.";
 			case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "Skywriting npost provided twice in profile.";
+			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "Invalid correction factor.";
 		}
 		return "unknown error";
 	}
@@ -936,6 +938,7 @@ public:
 	inline void LoadFirmware(const CInputVector<LibMCDriver_ScanLab_uint8> & FirmwareDataBuffer, const CInputVector<LibMCDriver_ScanLab_uint8> & FPGADataBuffer, const CInputVector<LibMCDriver_ScanLab_uint8> & AuxiliaryDataBuffer);
 	inline void LoadCorrectionFile(const CInputVector<LibMCDriver_ScanLab_uint8> & CorrectionFileBuffer, const LibMCDriver_ScanLab_uint32 nTableNumber, const LibMCDriver_ScanLab_uint32 nDimension);
 	inline void SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB);
+	inline void SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ);
 	inline void ConfigureLists(const LibMCDriver_ScanLab_uint32 nSizeListA, const LibMCDriver_ScanLab_uint32 nSizeListB);
 	inline void SetLaserMode(const eLaserMode eLaserMode, const eLaserPort eLaserPort);
 	inline void DisableAutoLaserControl();
@@ -1400,6 +1403,7 @@ public:
 		pWrapperTable->m_RTCContext_LoadFirmware = nullptr;
 		pWrapperTable->m_RTCContext_LoadCorrectionFile = nullptr;
 		pWrapperTable->m_RTCContext_SelectCorrectionTable = nullptr;
+		pWrapperTable->m_RTCContext_SetCorrectionFactors = nullptr;
 		pWrapperTable->m_RTCContext_ConfigureLists = nullptr;
 		pWrapperTable->m_RTCContext_SetLaserMode = nullptr;
 		pWrapperTable->m_RTCContext_DisableAutoLaserControl = nullptr;
@@ -2371,6 +2375,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_SelectCorrectionTable == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_SetCorrectionFactors = (PLibMCDriver_ScanLabRTCContext_SetCorrectionFactorsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_setcorrectionfactors");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_SetCorrectionFactors = (PLibMCDriver_ScanLabRTCContext_SetCorrectionFactorsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_setcorrectionfactors");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_SetCorrectionFactors == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4536,6 +4549,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SelectCorrectionTable == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_setcorrectionfactors", (void**)&(pWrapperTable->m_RTCContext_SetCorrectionFactors));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SetCorrectionFactors == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_configurelists", (void**)&(pWrapperTable->m_RTCContext_ConfigureLists));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_ConfigureLists == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -6154,7 +6171,7 @@ public:
 	}
 	
 	/**
-	* COIEMeasurementTagMap::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters. Depreciated! Use RetrieveOIEMeasurementTags instead.
+	* COIEMeasurementTagMap::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters.
 	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
 	* @param[out] nPartID - ID of the part.
 	* @param[out] nProfileID - ID of the profile.
@@ -6276,13 +6293,23 @@ public:
 	}
 	
 	/**
-	* CRTCContext::SelectCorrectionTable - Selects Correction Table on card.
+	* CRTCContext::SelectCorrectionTable - Selects Correction Table on card. Reads the correction factorw out of the Table, if existent.
 	* @param[in] nTableNumberHeadA - Table Number for HeadA (1..8) or off (0).
 	* @param[in] nTableNumberHeadB - Table Number for HeadA (1..8) or off (0).
 	*/
 	void CRTCContext::SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SelectCorrectionTable(m_pHandle, nTableNumberHeadA, nTableNumberHeadB));
+	}
+	
+	/**
+	* CRTCContext::SetCorrectionFactors - Sets the correction factor manually.
+	* @param[in] dCorrectionFactorXY - Scale correction factor in the XY plane. In bits per mm. MUST BE larger than 0.
+	* @param[in] dCorrectionFactorZ - Scale correction factor in the Z axis. In bits per mm. Should be equal to CorrectionFactorXY for the RTC6 card. MUST BE larger than 0.
+	*/
+	void CRTCContext::SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetCorrectionFactors(m_pHandle, dCorrectionFactorXY, dCorrectionFactorZ));
 	}
 	
 	/**

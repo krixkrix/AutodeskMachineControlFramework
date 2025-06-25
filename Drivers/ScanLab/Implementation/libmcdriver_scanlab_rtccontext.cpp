@@ -309,6 +309,19 @@ void CRTCContext::SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableN
 
 }
 
+void CRTCContext::SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ)
+{
+	if (dCorrectionFactorXY > 0.0)
+		m_dCorrectionFactor = dCorrectionFactorXY;
+	else
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR);
+
+	if (dCorrectionFactorZ > 0.0)
+		m_dZCorrectionFactor = dCorrectionFactorZ;
+	else
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR);
+}
+
 void CRTCContext::ConfigureLists(const LibMCDriver_ScanLab_uint32 nSizeListA, const LibMCDriver_ScanLab_uint32 nSizeListB)
 {
 	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);

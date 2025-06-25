@@ -204,6 +204,7 @@
 		<error name="SKYWRITINGNPREVPROVIDEDTWICEINPROFILE" code="1152" description="Skywriting nprev provided twice in profile." />
 		<error name="INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE" code="1153" description="Invalid or no skywriting npost provided in profile." />
 		<error name="SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE" code="1154" description="Skywriting npost provided twice in profile." />
+		<error name="INVALIDCORRECTIONFACTOR" code="1155" description="Invalid correction factor." />
 			
 							
 	</errors>
@@ -791,11 +792,16 @@ Custom implementation
 			<param name="Dimension" type="uint32" pass="in" description="Is it a 2D or 3D correction file." />
 		</method>
 
-		<method name="SelectCorrectionTable" description="Selects Correction Table on card.">
+		<method name="SelectCorrectionTable" description="Selects Correction Table on card. Reads the correction factorw out of the Table, if existent.">
 			<param name="TableNumberHeadA" type="uint32" pass="in" description="Table Number for HeadA (1..8) or off (0)." />
 			<param name="TableNumberHeadB" type="uint32" pass="in" description="Table Number for HeadA (1..8) or off (0)." />
 		</method>
 		
+		<method name="SetCorrectionFactors" description="Sets the correction factor manually.">
+			<param name="CorrectionFactorXY" type="double" pass="in" description="Scale correction factor in the XY plane. In bits per mm. MUST BE larger than 0." />
+			<param name="CorrectionFactorZ" type="double" pass="in" description="Scale correction factor in the Z axis. In bits per mm. Should be equal to CorrectionFactorXY for the RTC6 card. MUST BE larger than 0." />
+		</method>
+
 		<method name="ConfigureLists" description="Configures list buffer size.">
 			<param name="SizeListA" type="uint32" pass="in" description="Size of List A" />
 			<param name="SizeListB" type="uint32" pass="in" description="Size of List B" />

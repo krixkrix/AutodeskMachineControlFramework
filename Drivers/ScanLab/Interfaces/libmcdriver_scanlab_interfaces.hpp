@@ -965,7 +965,7 @@ public:
 	virtual LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag() = 0;
 
 	/**
-	* IOIEMeasurementTagMap::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters. Depreciated! Use RetrieveOIEMeasurementTags instead.
+	* IOIEMeasurementTagMap::MapOIEMeasurementTag - Maps an OIE Measurement tag back to the original scan parameters.
 	* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
 	* @param[out] nPartID - ID of the part.
 	* @param[out] nProfileID - ID of the profile.
@@ -1063,11 +1063,18 @@ public:
 	virtual void LoadCorrectionFile(const LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, const LibMCDriver_ScanLab_uint32 nTableNumber, const LibMCDriver_ScanLab_uint32 nDimension) = 0;
 
 	/**
-	* IRTCContext::SelectCorrectionTable - Selects Correction Table on card.
+	* IRTCContext::SelectCorrectionTable - Selects Correction Table on card. Reads the correction factorw out of the Table, if existent.
 	* @param[in] nTableNumberHeadA - Table Number for HeadA (1..8) or off (0).
 	* @param[in] nTableNumberHeadB - Table Number for HeadA (1..8) or off (0).
 	*/
 	virtual void SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB) = 0;
+
+	/**
+	* IRTCContext::SetCorrectionFactors - Sets the correction factor manually.
+	* @param[in] dCorrectionFactorXY - Scale correction factor in the XY plane. In bits per mm. MUST BE larger than 0.
+	* @param[in] dCorrectionFactorZ - Scale correction factor in the Z axis. In bits per mm. Should be equal to CorrectionFactorXY for the RTC6 card. MUST BE larger than 0.
+	*/
+	virtual void SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ) = 0;
 
 	/**
 	* IRTCContext::ConfigureLists - Configures list buffer size.
