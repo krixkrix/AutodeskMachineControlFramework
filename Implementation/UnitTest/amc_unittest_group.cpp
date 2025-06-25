@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_unittest_group.hpp"
 #include "Common/common_utils.hpp"
+#include <list>
 
 
 using namespace AMCUnitTest;
