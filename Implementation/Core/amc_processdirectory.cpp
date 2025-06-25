@@ -159,7 +159,7 @@ CProcessDirectory::~CProcessDirectory()
     try {
         cleanUpDirectory(nullptr);
     }
-    catch (std::exception& E) {
+    catch (std::exception&) {
         // We do not throw exceptions in destructors, so we just ignore the error.
         // This is a best-effort cleanup.
     }
