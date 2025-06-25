@@ -325,15 +325,15 @@ void CProcessController::processControllerRunProcessWinAPI ()
         if (pExecutableDirectoryInstance.get() == nullptr)
             throw ELibMCInterfaceException(LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
 
-        std::string m_sWorkingDirectory = pExecutableDirectoryInstance->getWorkingDirectory();
+        std::string sWorkingDirectory = pExecutableDirectoryInstance->getWorkingDirectory();
 
         if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sAbsoluteExecutableName))
             throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND, m_sAbsoluteExecutableName);
-        if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sWorkingDirectory))
-            throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND, m_sAbsoluteExecutableName);
+        if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(sWorkingDirectory))
+            throw ELibMCInterfaceException(LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND, m_sAbsoluteExecutableName);
 
         std::wstring sExecutablePathW = AMCCommon::CUtils::UTF8toUTF16(m_sAbsoluteExecutableName);
-        std::wstring sWorkingDirectoryW = AMCCommon::CUtils::UTF8toUTF16(m_sWorkingDirectory);
+        std::wstring sWorkingDirectoryW = AMCCommon::CUtils::UTF8toUTF16(sWorkingDirectory);
         std::wstring sArgumentStringW = AMCCommon::CUtils::UTF8toUTF16(m_sArgumentString);
 
         SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
@@ -490,12 +490,25 @@ void CProcessController::processControllerRunProcessWinAPI ()
     }
 #else
     throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM);
-#endif _WIN32
+#endif //_WIN32
 
 }
 
 void CProcessController::processControllerRunProcessLinux() {
 #ifndef _WIN32
+
+    auto pExecutableDirectoryInstance = m_pExecutableDirectory.lock();
+    if (pExecutableDirectoryInstance.get() == nullptr)
+        throw ELibMCInterfaceException(LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
+
+    std::string sWorkingDirectory = pExecutableDirectoryInstance->getWorkingDirectory();
+
+    if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sAbsoluteExecutableName))
+        throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND, m_sAbsoluteExecutableName);
+    if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(sWorkingDirectory))
+        throw ELibMCInterfaceException(LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND, m_sAbsoluteExecutableName);
+
+
     int stdoutPipe[2];
     int stderrPipe[2];
 
@@ -521,7 +534,7 @@ void CProcessController::processControllerRunProcessLinux() {
         close(stderrPipe[1]);
 
         // Set working directory
-        if (chdir(m_sWorkingDirectory.c_str()) != 0) {
+        if (chdir(sWorkingDirectory.c_str()) != 0) {
             _exit(127);
         }
 

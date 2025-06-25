@@ -676,6 +676,7 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_INVALIDCHARACTERINFILENAME 660 /** Invalid character in filename. */
 #define LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST 661 /** Working directory ceased to exist. */
 #define LIBMC_ERROR_DIRECTORYALREADYEXISTS 662 /** Directory already exists. */
+#define LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND 663 /** Working Directory not found. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1264,6 +1265,7 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDCHARACTERINFILENAME: return "Invalid character in filename.";
     case LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
     case LIBMC_ERROR_DIRECTORYALREADYEXISTS: return "Directory already exists.";
+    case LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND: return "Working Directory not found.";
     default: return "unknown error";
   }
 }
