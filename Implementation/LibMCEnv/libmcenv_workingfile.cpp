@@ -42,264 +42,24 @@ Abstract: This is a stub class definition of CWorkingFile
 
 using namespace LibMCEnv::Impl;
 
-#define WORKINGFILEBUFFER_MINIMUMSIZEINKB 1
-#define WORKINGFILEBUFFER_MAXIMUMSIZEINKB (1024 * 1024)
-
-CWorkingFileWriterInstance::CWorkingFileWriterInstance(const std::string& sLocalFileName, const std::string& sAbsoluteFileName, uint32_t nMemoryBufferSizeInKB)
-    : m_sLocalFileName(sLocalFileName), m_sAbsoluteFileName(sAbsoluteFileName), m_nPositionInBuffer(0), m_nBytesWritten(0)
-{
-    if ((nMemoryBufferSizeInKB < WORKINGFILEBUFFER_MINIMUMSIZEINKB) ||
-        (nMemoryBufferSizeInKB > WORKINGFILEBUFFER_MAXIMUMSIZEINKB)) {
-
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE, std::to_string (nMemoryBufferSizeInKB));
-    }
-
-    m_MemoryBuffer.resize(nMemoryBufferSizeInKB * 1024);
-
-    m_pExportStream = std::make_shared <AMCCommon::CExportStream_Native> (sAbsoluteFileName);
-
-}
-
-CWorkingFileWriterInstance::~CWorkingFileWriterInstance()
-{
-    finish();
-}
-
-std::string CWorkingFileWriterInstance::getAbsoluteFileName()
-{
-    return m_sAbsoluteFileName;
-}
-
-std::string CWorkingFileWriterInstance::getLocalFileName()
-{
-    return m_sLocalFileName;
-}
-
-void CWorkingFileWriterInstance::writeData(const uint8_t* pData, uint64_t nSize)
-{
-    uint64_t nBufferSize = m_MemoryBuffer.size();
-        
-    if (nSize == 0)
-        return;
-
-    if (pData == nullptr) 
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-
-    const uint8_t* pSource = pData;
-
-    uint64_t nBytesLeft = nSize;
-    while (nBytesLeft > 0) {
-        if (m_nPositionInBuffer >= nBufferSize)
-            throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION, std::to_string(m_nPositionInBuffer));
-
-        uint64_t nBytesAvailable = nBufferSize - m_nPositionInBuffer;
-        uint64_t nBytesToCopy;
-
-        if (nBytesLeft > nBytesAvailable)
-            nBytesToCopy = nBytesAvailable;
-        else
-            nBytesToCopy = nBytesLeft;
-
-        memcpy((void*)&m_MemoryBuffer.at(m_nPositionInBuffer), (void*)pSource, nBytesToCopy);
-        pSource += nBytesToCopy;
-        m_nPositionInBuffer += nBytesToCopy;
-
-        if (m_nPositionInBuffer >= nBufferSize)
-            flushBuffer();
-
-        nBytesLeft -= nBytesToCopy;
-    }
-}
-
-void CWorkingFileWriterInstance::flushBuffer()
-{
-    if (m_nPositionInBuffer > 0) {
-        if (m_pExportStream.get() == nullptr)
-            throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_CANNOTWRITETOFINISHEDWORKINGFILE);
-
-        m_pExportStream->writeBuffer(m_MemoryBuffer.data(), m_nPositionInBuffer);
-    }
-
-    m_nPositionInBuffer = 0;
-}
-
-void CWorkingFileWriterInstance::finish()
-{
-    flushBuffer();
-
-    if (m_pExportStream.get() != nullptr) {
-        m_pExportStream = nullptr;
-    }
-}
-
-bool CWorkingFileWriterInstance::isFinished()
-{
-    return (m_pExportStream.get() == nullptr);
-}
 
 
-uint64_t CWorkingFileWriterInstance::getWrittenBytes()
-{
-    return m_nBytesWritten;
-}
 
-
-CWorkingFileMonitor::CWorkingFileMonitor(const std::string& sWorkingDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger)
-    : m_sWorkingDirectory (sWorkingDirectory), m_bIsActive (true), m_pLogger (pLogger), m_pGlobalChrono (pGlobalChrono)
-{
-    if (sWorkingDirectory.empty())
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-    if (pLogger.get () == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-    if (pGlobalChrono.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-}
-
-
-std::string CWorkingFileMonitor::getWorkingDirectory()
-{
-    return m_sWorkingDirectory;
-}
-
-
-std::string CWorkingFileMonitor::getAbsoluteFileName(const std::string& sFileName)
-{
-    if (!m_bIsActive)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYHASBEENCLEANED);
-
-    if (sFileName.find(":") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find(">") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("<") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("\"") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("/") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("\\") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("|") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("?") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("*") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-    if (sFileName.find("..") != std::string::npos)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCHARACTERINFILENAME);
-
-    return m_sWorkingDirectory + "/" + sFileName;
-}
-
-void CWorkingFileMonitor::addNewMonitoredFile(const std::string& sFileName)
-{
-    if (!m_bIsActive)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYHASBEENCLEANED);
-
-    // Check if file name has the right character set.
-    getAbsoluteFileName(sFileName);
-
-    // Store file name
-    m_MonitoredFileNames.insert(sFileName);
-}
-
-PWorkingFileWriterInstance CWorkingFileMonitor::addNewFileWriter(const std::string& sFileName, uint32_t nMemoryBufferSize)
-{
-    if (!m_bIsActive)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYHASBEENCLEANED);
-
-    std::string sAbsoluteFileName = getAbsoluteFileName(sFileName);
-
-    auto pInstance = std::make_shared <CWorkingFileWriterInstance> (sFileName, sAbsoluteFileName, nMemoryBufferSize);
-    m_WriterInstances.insert (std::make_pair (sFileName, pInstance));
-
-    addNewMonitoredFile(sFileName);
-
-    return pInstance;
-}
-
-
-bool CWorkingFileMonitor::fileIsMonitored(const std::string& sFileName)
-{
-    if (!m_bIsActive)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYHASBEENCLEANED);
-
-    auto iIter = m_MonitoredFileNames.find(sFileName);
-    return (iIter != m_MonitoredFileNames.end());
-}
-
-void CWorkingFileMonitor::cleanUpDirectory(AMC::CLogger* pLoggerForUnmanagedFileWarnings)
-{
-
-    if (AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sWorkingDirectory)) {
-        for (auto sFileName : m_MonitoredFileNames) {
-            auto sAbsoluteFileName = getAbsoluteFileName(sFileName);
-            if (AMCCommon::CUtils::fileOrPathExistsOnDisk(sAbsoluteFileName)) {
-                try
-                {
-                    AMCCommon::CUtils::deleteFileFromDisk(sAbsoluteFileName, true);
-                }
-                catch (std::exception& E)
-                {
-                    if (pLoggerForUnmanagedFileWarnings != nullptr)
-                        pLoggerForUnmanagedFileWarnings->logMessage("Could not delete temporary file: " + sAbsoluteFileName + "(" + E.what() + ")", LOG_SUBSYSTEM_WORKINGDIRECTORIES, AMC::eLogLevel::Warning);
-                }
-
-            }
-        }
-    }
-
-
-    try {
-        if (AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sWorkingDirectory)) {
-            AMCCommon::CUtils::deleteDirectoryFromDisk(m_sWorkingDirectory, true);
-        }
-    }
-    catch (std::exception& E)
-    {
-        if (pLoggerForUnmanagedFileWarnings != nullptr)
-            pLoggerForUnmanagedFileWarnings->logMessage("Could not delete working directory: " + m_sWorkingDirectory + "(" + E.what() + ")", LOG_SUBSYSTEM_WORKINGDIRECTORIES, AMC::eLogLevel::Warning);
-    }
-
-    m_MonitoredFileNames.clear();
-    m_bIsActive = false;
-
-}
-
-bool CWorkingFileMonitor::isActive()
-{
-    return m_bIsActive;
-}
-
-
-std::set<std::string> CWorkingFileMonitor::getFileNames()
-{
-    return m_MonitoredFileNames;
-}
-
-
-AMCCommon::PChrono CWorkingFileMonitor::getGlobalChrono()
-{
-    return m_pGlobalChrono;
-}
-
-AMC::PLogger CWorkingFileMonitor::getLogger()
-{
-    return m_pLogger;
-}
 
 /*************************************************************************************************************************
  Class definition of CWorkingFile 
 **************************************************************************************************************************/
 
-CWorkingFile::CWorkingFile(const std::string & sFileName, PWorkingFileMonitor pWorkingFileMonitor)
-    : m_pWorkingFileMonitor (pWorkingFileMonitor)
+CWorkingFile::CWorkingFile(const std::string & sFileName, AMC::WProcessDirectory pProcessDirectory)
+    : m_pProcessDirectory(pProcessDirectory)
 {
-    if (pWorkingFileMonitor.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
+
+    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
+    if (pProcessDirectoryInstance.get() == nullptr)
+        throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST);
 
     m_sFileName = sFileName;
-    m_sAbsolutePath = pWorkingFileMonitor->getAbsoluteFileName(sFileName);
+    m_sAbsolutePath = pProcessDirectoryInstance->getAbsoluteFileName(sFileName);
 }
 
 
@@ -308,7 +68,7 @@ CWorkingFile* CWorkingFile::makeFrom(CWorkingFile* pWorkingFile)
     if (pWorkingFile == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
 
-    return new CWorkingFile (pWorkingFile->m_sFileName, pWorkingFile->m_pWorkingFileMonitor);
+    return new CWorkingFile (pWorkingFile->m_sFileName, pWorkingFile->m_pProcessDirectory);
 }
 
 
@@ -360,18 +120,26 @@ std::string CWorkingFile::CalculateSHA2()
 
 IWorkingFileProcess* CWorkingFile::ExecuteFile()
 {
-	return new CWorkingFileProcess(m_sAbsolutePath, m_pWorkingFileMonitor);
+	return new CWorkingFileProcess(m_sAbsolutePath, m_pProcessDirectory);
 }
 
 
 bool CWorkingFile::IsManaged()
 {
-    return m_pWorkingFileMonitor->fileIsMonitored (m_sFileName);
+    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
+    if (pProcessDirectoryInstance.get() == nullptr)
+        return false;
+
+    return pProcessDirectoryInstance->fileIsMonitored (m_sFileName);
 }
 
 void CWorkingFile::MakeManaged()
 {
-    m_pWorkingFileMonitor->addNewMonitoredFile(m_sFileName);
+    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
+    if (pProcessDirectoryInstance.get() == nullptr)
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST);
+
+    pProcessDirectoryInstance->addNewMonitoredFile(m_sFileName);
 }
 
 bool CWorkingFile::FileExists()

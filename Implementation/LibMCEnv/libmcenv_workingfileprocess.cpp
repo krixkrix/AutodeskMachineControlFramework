@@ -52,15 +52,16 @@ using namespace LibMCEnv::Impl;
 
 
 
-CWorkingFileProcess::CWorkingFileProcess(const std::string& sAbsoluteExecutableName, PWorkingFileMonitor pExecutableDirectory)
+CWorkingFileProcess::CWorkingFileProcess(const std::string& sAbsoluteExecutableName, AMC::WProcessDirectory pExecutableDirectory)
 	: 
 	m_pExecutableDirectory(pExecutableDirectory),
 	m_pWorkingDirectory(pExecutableDirectory)
 {
-	if (pExecutableDirectory.get() == nullptr)
-		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-	
-	m_pProcessController = std::make_shared<AMC::CProcessController> (sAbsoluteExecutableName, m_pExecutableDirectory->getWorkingDirectory (), pExecutableDirectory->getGlobalChrono (), pExecutableDirectory->getLogger ());
+	auto pProcessDirectoryInstance = pExecutableDirectory.lock();
+	if (pProcessDirectoryInstance.get() == nullptr)
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
+
+	m_pProcessController = std::make_shared<AMC::CProcessController> (sAbsoluteExecutableName, pExecutableDirectory, pProcessDirectoryInstance->getGlobalChrono (), pProcessDirectoryInstance->getLogger ());
 }
 
 CWorkingFileProcess::~CWorkingFileProcess()
@@ -110,8 +111,8 @@ void CWorkingFileProcess::SetWorkingDirectory(IWorkingDirectory* pDirectory)
 	if (pDirectoryInstance == nullptr)
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
 	
-	m_pWorkingDirectory = pDirectoryInstance->getWorkingFileMonitor();
-	m_pProcessController->setWorkingDirectory(m_pWorkingDirectory->getWorkingDirectory());
+	m_pWorkingDirectory = pDirectoryInstance->getProcessDirectory();
+	m_pProcessController->setWorkingDirectory(m_pWorkingDirectory);
 
 }
 
@@ -157,4 +158,10 @@ void CWorkingFileProcess::TerminateProcess()
 {
 	m_pProcessController->terminateProcess();
 }
+
+void CWorkingFileProcess::SetVerboseLogging(const bool bVerboseLogging)
+{
+	m_pProcessController->setVerboseLogging(bVerboseLogging);
+}
+
 

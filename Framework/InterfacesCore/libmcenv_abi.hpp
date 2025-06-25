@@ -4454,6 +4454,15 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_getenvironmentvaria
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_clearenvironmentvariables(LibMCEnv_WorkingFileProcess pWorkingFileProcess);
 
 /**
+* Enables or disables the the verbose logging mode.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] bVerboseLogging - If true, all stdout messages of the process will be shown in the generic system log.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_workingfileprocess_setverboselogging(LibMCEnv_WorkingFileProcess pWorkingFileProcess, bool bVerboseLogging);
+
+/**
 * Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.

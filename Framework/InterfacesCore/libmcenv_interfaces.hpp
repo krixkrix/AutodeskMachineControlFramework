@@ -3625,6 +3625,12 @@ public:
 	virtual void ClearEnvironmentVariables() = 0;
 
 	/**
+	* IWorkingFileProcess::SetVerboseLogging - Enables or disables the the verbose logging mode.
+	* @param[in] bVerboseLogging - If true, all stdout messages of the process will be shown in the generic system log.
+	*/
+	virtual void SetVerboseLogging(const bool bVerboseLogging) = 0;
+
+	/**
 	* IWorkingFileProcess::StartProcess - Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 	* @param[in] sArgumentString - Argumnet to pass on the process. May be empty.
 	* @param[in] nTimeOut - Process Timeout in Milliseconds. 0 means no timeout.

@@ -58,13 +58,13 @@ namespace Impl {
 class CWorkingFileWriter : public virtual IWorkingFileWriter, public virtual CBase {
 private:
 
-    PWorkingFileWriterInstance m_pWriterInstance;
-    PWorkingFileMonitor m_pFileMonitor;
+    AMC::PProcessDirectoryWriter m_pWriterInstance;
+	AMC::WProcessDirectory m_pProcessDirectory;
 
 
 public:
 
-    CWorkingFileWriter(PWorkingFileWriterInstance pWriterInstance, PWorkingFileMonitor pFileMonitor);
+    CWorkingFileWriter(AMC::PProcessDirectoryWriter pWriterInstance, AMC::WProcessDirectory pProcessDirectory);
 
     virtual ~CWorkingFileWriter();
 

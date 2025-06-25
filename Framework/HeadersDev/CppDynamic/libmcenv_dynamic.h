@@ -4441,6 +4441,15 @@ typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_GetEnvironmentVariableByInd
 typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_ClearEnvironmentVariablesPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess);
 
 /**
+* Enables or disables the the verbose logging mode.
+*
+* @param[in] pWorkingFileProcess - WorkingFileProcess instance.
+* @param[in] bVerboseLogging - If true, all stdout messages of the process will be shown in the generic system log.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvWorkingFileProcess_SetVerboseLoggingPtr) (LibMCEnv_WorkingFileProcess pWorkingFileProcess, bool bVerboseLogging);
+
+/**
 * Starts the process, if Status is ProcessInitializing. Does nothing otherwise.
 *
 * @param[in] pWorkingFileProcess - WorkingFileProcess instance.
@@ -10513,6 +10522,7 @@ typedef struct {
 	PLibMCEnvWorkingFileProcess_GetEnvironmentVariableCountPtr m_WorkingFileProcess_GetEnvironmentVariableCount;
 	PLibMCEnvWorkingFileProcess_GetEnvironmentVariableByIndexPtr m_WorkingFileProcess_GetEnvironmentVariableByIndex;
 	PLibMCEnvWorkingFileProcess_ClearEnvironmentVariablesPtr m_WorkingFileProcess_ClearEnvironmentVariables;
+	PLibMCEnvWorkingFileProcess_SetVerboseLoggingPtr m_WorkingFileProcess_SetVerboseLogging;
 	PLibMCEnvWorkingFileProcess_StartProcessPtr m_WorkingFileProcess_StartProcess;
 	PLibMCEnvWorkingFileProcess_TerminateProcessPtr m_WorkingFileProcess_TerminateProcess;
 	PLibMCEnvWorkingFile_GetAbsoluteFileNamePtr m_WorkingFile_GetAbsoluteFileName;

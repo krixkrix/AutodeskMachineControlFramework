@@ -678,6 +678,8 @@ public:
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "INVALIDWRITEBUFFERSIZE";
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "INVALIDWRITEBUFFFERPOSITION";
 			case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "TRIANGLESETNOTFOUND";
+			case LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST: return "WORKINGFILECEASEDTOEXIST";
+			case LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "WORKINGDIRECTORYCEASEDTOEXIST";
 		}
 		return "UNKNOWN";
 	}
@@ -931,6 +933,8 @@ public:
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
 			case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
 			case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "Triangle set not found.";
+			case LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST: return "Working file ceased to exist.";
+			case LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
 		}
 		return "unknown error";
 	}
@@ -2144,6 +2148,7 @@ public:
 	inline LibMCEnv_uint32 GetEnvironmentVariableCount();
 	inline void GetEnvironmentVariableByIndex(const LibMCEnv_uint32 nVariableIndex, std::string & sVariableName, std::string & sValue);
 	inline void ClearEnvironmentVariables();
+	inline void SetVerboseLogging(const bool bVerboseLogging);
 	inline void StartProcess(const std::string & sArgumentString, const LibMCEnv_uint32 nTimeOut);
 	inline void TerminateProcess();
 };
@@ -3703,6 +3708,7 @@ public:
 		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableCount = nullptr;
 		pWrapperTable->m_WorkingFileProcess_GetEnvironmentVariableByIndex = nullptr;
 		pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables = nullptr;
+		pWrapperTable->m_WorkingFileProcess_SetVerboseLogging = nullptr;
 		pWrapperTable->m_WorkingFileProcess_StartProcess = nullptr;
 		pWrapperTable->m_WorkingFileProcess_TerminateProcess = nullptr;
 		pWrapperTable->m_WorkingFile_GetAbsoluteFileName = nullptr;
@@ -7960,6 +7966,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_WorkingFileProcess_SetVerboseLogging = (PLibMCEnvWorkingFileProcess_SetVerboseLoggingPtr) GetProcAddress(hLibrary, "libmcenv_workingfileprocess_setverboselogging");
+		#else // _WIN32
+		pWrapperTable->m_WorkingFileProcess_SetVerboseLogging = (PLibMCEnvWorkingFileProcess_SetVerboseLoggingPtr) dlsym(hLibrary, "libmcenv_workingfileprocess_setverboselogging");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_WorkingFileProcess_SetVerboseLogging == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -14364,6 +14379,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_workingfileprocess_clearenvironmentvariables", (void**)&(pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables));
 		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_ClearEnvironmentVariables == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_workingfileprocess_setverboselogging", (void**)&(pWrapperTable->m_WorkingFileProcess_SetVerboseLogging));
+		if ( (eLookupError != 0) || (pWrapperTable->m_WorkingFileProcess_SetVerboseLogging == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingfileprocess_startprocess", (void**)&(pWrapperTable->m_WorkingFileProcess_StartProcess));
@@ -22020,6 +22039,15 @@ public:
 	void CWorkingFileProcess::ClearEnvironmentVariables()
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_ClearEnvironmentVariables(m_pHandle));
+	}
+	
+	/**
+	* CWorkingFileProcess::SetVerboseLogging - Enables or disables the the verbose logging mode.
+	* @param[in] bVerboseLogging - If true, all stdout messages of the process will be shown in the generic system log.
+	*/
+	void CWorkingFileProcess::SetVerboseLogging(const bool bVerboseLogging)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_WorkingFileProcess_SetVerboseLogging(m_pHandle, bVerboseLogging));
 	}
 	
 	/**

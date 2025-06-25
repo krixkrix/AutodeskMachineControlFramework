@@ -678,9 +678,16 @@
 		<error name="PROCESSWORKINGDIRECTORYDOESNOTEXIST" code="652" description="Process working directory does not exist." />	
 		<error name="PROCESSHASALREADYBEENSTARTED" code="653" description="Process has already been started." />	
 		<error name="PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM" code="654" description="Process handling not implemented on Platform." />	
+		<error name="INVALIDWRITEBUFFFERPOSITION" code="655" description="Invalid write buffer position." />	
+		<error name="INVALIDWRITEBUFFERSIZE" code="656" description="Invalid write buffer size." />	
+		<error name="CANNOTWRITETOFINISHEDFILE" code="658" description="Cannot write to finished file." />	
+		<error name="WORKINGDIRECTORYHASBEENCLEANED" code="659" description="Working Directory has been cleaned." />	
+		<error name="INVALIDCHARACTERINFILENAME" code="660" description="Invalid character in filename." />	
+		<error name="WORKINGDIRECTORYCEASEDTOEXIST" code="661" description="Working directory ceased to exist." />	
+		<error name="DIRECTORYALREADYEXISTS" code="662" description="Directory already exists." />	
 		
-		
-					
+
+
 	</errors>
 	
 	

@@ -51,7 +51,7 @@ Abstract: This is the class declaration of CWorkingFileProcess
 #include "amc_logger.hpp"
 
 #include "amc_processcontroller.hpp"
-
+#include "amc_processdirectory.hpp"
 
 namespace LibMCEnv {
 namespace Impl {
@@ -64,15 +64,15 @@ namespace Impl {
 class CWorkingFileProcess : public virtual IWorkingFileProcess, public virtual CBase {
 private:
 
-	PWorkingFileMonitor m_pExecutableDirectory;
-	PWorkingFileMonitor m_pWorkingDirectory;
+	AMC::WProcessDirectory m_pExecutableDirectory;
+	AMC::WProcessDirectory m_pWorkingDirectory;
 
 	AMC::PProcessController m_pProcessController;
 
 public:
 
 
-	CWorkingFileProcess(const std::string & sAbsoluteExecutableName, PWorkingFileMonitor pExecutableDirectory);
+	CWorkingFileProcess(const std::string & sAbsoluteExecutableName, AMC::WProcessDirectory pExecutableDirectory);
 
 	virtual ~CWorkingFileProcess();
 
@@ -99,6 +99,8 @@ public:
 	void StartProcess(const std::string & sArgumentString, LibMCEnv_uint32 nTimeOut) override;
 
 	void TerminateProcess() override;
+
+	void SetVerboseLogging(const bool bVerboseLogging) override;
 
 
 

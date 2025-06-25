@@ -12934,6 +12934,30 @@ LibMCEnvResult libmcenv_workingfileprocess_clearenvironmentvariables(LibMCEnv_Wo
 	}
 }
 
+LibMCEnvResult libmcenv_workingfileprocess_setverboselogging(LibMCEnv_WorkingFileProcess pWorkingFileProcess, bool bVerboseLogging)
+{
+	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
+
+	try {
+		IWorkingFileProcess* pIWorkingFileProcess = dynamic_cast<IWorkingFileProcess*>(pIBaseClass);
+		if (!pIWorkingFileProcess)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIWorkingFileProcess->SetVerboseLogging(bVerboseLogging);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_workingfileprocess_startprocess(LibMCEnv_WorkingFileProcess pWorkingFileProcess, const char * pArgumentString, LibMCEnv_uint32 nTimeOut)
 {
 	IBase* pIBaseClass = (IBase *)pWorkingFileProcess;
@@ -31040,6 +31064,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getenvironmentvariablebyindex;
 	if (sProcName == "libmcenv_workingfileprocess_clearenvironmentvariables") 
 		*ppProcAddress = (void*) &libmcenv_workingfileprocess_clearenvironmentvariables;
+	if (sProcName == "libmcenv_workingfileprocess_setverboselogging") 
+		*ppProcAddress = (void*) &libmcenv_workingfileprocess_setverboselogging;
 	if (sProcName == "libmcenv_workingfileprocess_startprocess") 
 		*ppProcAddress = (void*) &libmcenv_workingfileprocess_startprocess;
 	if (sProcName == "libmcenv_workingfileprocess_terminateprocess") 

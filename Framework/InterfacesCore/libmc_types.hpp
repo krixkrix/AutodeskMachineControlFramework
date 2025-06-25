@@ -669,6 +669,13 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST 652 /** Process working directory does not exist. */
 #define LIBMC_ERROR_PROCESSHASALREADYBEENSTARTED 653 /** Process has already been started. */
 #define LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM 654 /** Process handling not implemented on Platform. */
+#define LIBMC_ERROR_INVALIDWRITEBUFFFERPOSITION 655 /** Invalid write buffer position. */
+#define LIBMC_ERROR_INVALIDWRITEBUFFERSIZE 656 /** Invalid write buffer size. */
+#define LIBMC_ERROR_CANNOTWRITETOFINISHEDFILE 658 /** Cannot write to finished file. */
+#define LIBMC_ERROR_WORKINGDIRECTORYHASBEENCLEANED 659 /** Working Directory has been cleaned. */
+#define LIBMC_ERROR_INVALIDCHARACTERINFILENAME 660 /** Invalid character in filename. */
+#define LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST 661 /** Working directory ceased to exist. */
+#define LIBMC_ERROR_DIRECTORYALREADYEXISTS 662 /** Directory already exists. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1250,6 +1257,13 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST: return "Process working directory does not exist.";
     case LIBMC_ERROR_PROCESSHASALREADYBEENSTARTED: return "Process has already been started.";
     case LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM: return "Process handling not implemented on Platform.";
+    case LIBMC_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
+    case LIBMC_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
+    case LIBMC_ERROR_CANNOTWRITETOFINISHEDFILE: return "Cannot write to finished file.";
+    case LIBMC_ERROR_WORKINGDIRECTORYHASBEENCLEANED: return "Working Directory has been cleaned.";
+    case LIBMC_ERROR_INVALIDCHARACTERINFILENAME: return "Invalid character in filename.";
+    case LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
+    case LIBMC_ERROR_DIRECTORYALREADYEXISTS: return "Directory already exists.";
     default: return "unknown error";
   }
 }

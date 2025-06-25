@@ -341,6 +341,8 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE 10244 /** Invalid write buffer size. */
 #define LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION 10245 /** Invalid write buffer position. */
 #define LIBMCENV_ERROR_TRIANGLESETNOTFOUND 10246 /** Triangle set not found. */
+#define LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST 10247 /** Working file ceased to exist. */
+#define LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST 10248 /** Working directory ceased to exist. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -594,6 +596,8 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
     case LIBMCENV_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
     case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "Triangle set not found.";
+    case LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST: return "Working file ceased to exist.";
+    case LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
     default: return "unknown error";
   }
 }

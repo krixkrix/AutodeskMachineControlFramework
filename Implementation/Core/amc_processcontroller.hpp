@@ -38,6 +38,7 @@ Abstract: This is the class declaration of CProcessController
 
 #include "Common/common_chrono.hpp"
 #include "amc_logger.hpp"
+#include "amc_processdirectory.hpp"
 
 #include <map>
 #include <vector>
@@ -65,11 +66,13 @@ class CProcessController  {
 private:
 
 	std::string m_sAbsoluteExecutableName;
-	std::string m_sExecutableDirectory;
-	std::string m_sWorkingDirectory; 
+	WProcessDirectory m_pExecutableDirectory;
+	WProcessDirectory m_pWorkingDirectory;
 	std::string m_sArgumentString;
+	std::string m_sProcessSubsystemName;
 
 	std::atomic<eProcessControllerStatus> m_Status;
+	std::atomic<bool> m_bVerboseLogging;
 	std::atomic<bool> m_bTerminateThread;
 	std::atomic<int32_t> m_nExitCode;
 	std::atomic<uint32_t> m_nTimeoutInMs;
@@ -93,7 +96,7 @@ private:
 public:
 
 
-	CProcessController(const std::string & sAbsoluteExecutableName, const std::string & sExecutableDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger);
+	CProcessController(const std::string & sAbsoluteExecutableName, WProcessDirectory sExecutableDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger);
 
 	virtual ~CProcessController();
 
@@ -103,7 +106,7 @@ public:
 
 	uint64_t getRunTimeInMicroseconds();
 
-	void setWorkingDirectory(const std::string & sDirectory);
+	void setWorkingDirectory(WProcessDirectory pDirectory);
 
 	void addEnvironmentVariable(const std::string & sVariableName, const std::string & sValue);
 
@@ -128,6 +131,8 @@ public:
 	void printToStdErr (const std::string & sLine);
 
 	void clearOutputBuffers();
+
+	void setVerboseLogging(bool bVerboseLogging);
 
 
 };

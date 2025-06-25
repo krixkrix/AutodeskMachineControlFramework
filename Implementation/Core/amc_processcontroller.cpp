@@ -63,9 +63,6 @@ Abstract: This is a stub class definition of CWorkingFileProcess
 
 using namespace AMC;
 
-/*************************************************************************************************************************
- Class definition of CWorkingFileProcess 
-**************************************************************************************************************************/
 
 void processControllerStdoutCallback(CProcessController* pController, const std::string& output) {
 
@@ -152,7 +149,7 @@ static void processControllerReadPipe(CProcessController* pController, HANDLE pi
 
 #endif // _WIN32
 
-CProcessController::CProcessController(const std::string& sAbsoluteExecutableName, const std::string& sExecutableDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger)
+CProcessController::CProcessController(const std::string& sAbsoluteExecutableName, WProcessDirectory pExecutableDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger)
 	: m_sAbsoluteExecutableName (sAbsoluteExecutableName),
 	m_nSystemStartTime(0),
 	m_pGlobalChrono (pGlobalChrono),
@@ -160,7 +157,8 @@ CProcessController::CProcessController(const std::string& sAbsoluteExecutableNam
     m_bTerminateThread (false),
     m_pLogger (pLogger),
     m_nExitCode (0),
-    m_nTimeoutInMs (0)
+    m_nTimeoutInMs (0),
+    m_bVerboseLogging (false)
 
 
 {
@@ -168,15 +166,12 @@ CProcessController::CProcessController(const std::string& sAbsoluteExecutableNam
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
     if (pLogger.get() == nullptr)
         throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-    if (sExecutableDirectory.empty ())
-        throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-    if (!AMCCommon::CUtils::fileOrPathExistsOnDisk (sExecutableDirectory))
-        throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST, sExecutableDirectory);
 
 	m_nSystemStartTime = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
-    m_sExecutableDirectory = AMCCommon::CUtils::includeTrailingPathDelimiter(sExecutableDirectory);
-    m_sWorkingDirectory = AMCCommon::CUtils::includeTrailingPathDelimiter (sExecutableDirectory);
+    m_pExecutableDirectory = pExecutableDirectory;
+    m_pWorkingDirectory = pExecutableDirectory;
+    m_sProcessSubsystemName = "process";
 
 }
 
@@ -210,16 +205,11 @@ uint64_t CProcessController::getRunTimeInMicroseconds()
 }
 
 
-void CProcessController::setWorkingDirectory(const std::string& sDirectory)
+void CProcessController::setWorkingDirectory(WProcessDirectory pDirectory)
 {
 
-    if (sDirectory.empty())
-        throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST);
-
-    if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(sDirectory))
-        throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST, sDirectory);
-
-    m_sWorkingDirectory = sDirectory;
+   
+    m_pWorkingDirectory = pDirectory;
 
 }
 
@@ -330,6 +320,12 @@ void CProcessController::processControllerRunProcessWinAPI ()
 
 #ifdef _WIN32
     try {
+
+        auto pExecutableDirectoryInstance = m_pExecutableDirectory.lock();
+        if (pExecutableDirectoryInstance.get() == nullptr)
+            throw ELibMCInterfaceException(LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
+
+        std::string m_sWorkingDirectory = pExecutableDirectoryInstance->getWorkingDirectory();
 
         if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(m_sAbsoluteExecutableName))
             throw ELibMCInterfaceException(LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND, m_sAbsoluteExecutableName);
@@ -471,7 +467,7 @@ void CProcessController::processControllerRunProcessWinAPI ()
 
 
         }
-        catch (std::exception & E)
+        catch (std::exception &)
         {
             if (hStdOutRead != nullptr)
                 CloseHandle(hStdOutRead);
@@ -489,7 +485,7 @@ void CProcessController::processControllerRunProcessWinAPI ()
 
         }
     }
-    catch (std::exception & E) {
+    catch (std::exception &) {
         m_Status = eProcessControllerStatus::ProcessTerminated;
     }
 #else
@@ -646,16 +642,25 @@ int32_t CProcessController::getExitCode()
 void CProcessController::printToStdOut(const std::string& sLine)
 {
 	m_StdOutBuffer.push_back(sLine);
+    if (m_bVerboseLogging)
+        m_pLogger->logMessage(sLine, m_sProcessSubsystemName, AMC::eLogLevel::Message);
 }
 
 void CProcessController::printToStdErr(const std::string& sLine)
 {
 	m_StdErrBuffer.push_back(sLine);
+    if (m_bVerboseLogging)
+        m_pLogger->logMessage(sLine, m_sProcessSubsystemName, AMC::eLogLevel::Warning);
 }
 
 void CProcessController::clearOutputBuffers()
 {
 	m_StdOutBuffer.clear();
 	m_StdErrBuffer.clear();
+}
+
+void CProcessController::setVerboseLogging(bool bVerboseLogging)
+{
+    m_bVerboseLogging = bVerboseLogging;
 }
 

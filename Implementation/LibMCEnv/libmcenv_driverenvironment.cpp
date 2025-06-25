@@ -120,7 +120,9 @@ IDriverStatusUpdateSession* CDriverEnvironment::CreateStatusUpdateSession()
 
 IWorkingDirectory* CDriverEnvironment::CreateWorkingDirectory()
 {
-    return new CWorkingDirectory(m_sBaseTempPath, m_pDriverResourcePackage, m_pMachineResourcePackage, m_pGlobalChrono, m_pLogger);
+	auto pProcessDirectoryStructure = std::make_shared<AMC::CProcessDirectoryStructure>(m_sBaseTempPath, m_pGlobalChrono, m_pLogger);
+
+    return new CWorkingDirectory(pProcessDirectoryStructure, pProcessDirectoryStructure->getRootDirectory (), m_pDriverResourcePackage, m_pMachineResourcePackage, m_pGlobalChrono, m_pLogger);
 }
 
 ITCPIPConnection* CDriverEnvironment::CreateTCPIPConnection(const std::string& sIPAddress, const LibMCEnv_uint32 nPort, const LibMCEnv_uint32 nTimeOutInMS)

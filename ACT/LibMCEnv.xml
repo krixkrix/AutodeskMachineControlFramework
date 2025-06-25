@@ -284,6 +284,10 @@
 		<error name="INVALIDWRITEBUFFERSIZE" code="10244" description="Invalid write buffer size." />		
 		<error name="INVALIDWRITEBUFFFERPOSITION" code="10245" description="Invalid write buffer position." />
 		<error name="TRIANGLESETNOTFOUND" code="10246" description="Triangle set not found." />	
+		<error name="WORKINGFILECEASEDTOEXIST" code="10247" description="Working file ceased to exist." />	
+		<error name="WORKINGDIRECTORYCEASEDTOEXIST" code="10248" description="Working directory ceased to exist." />	
+		
+		
 					
 	</errors>
 
@@ -2685,6 +2689,10 @@
 		</method>
 
 		<method name="ClearEnvironmentVariables" description="Clears all environment variables.">
+		</method>
+
+		<method name="SetVerboseLogging" description="Enables or disables the the verbose logging mode.">
+			<param name="VerboseLogging" type="bool" pass="in" description="If true, all stdout messages of the process will be shown in the generic system log." />
 		</method>
 
 		<method name="StartProcess" description="Starts the process, if Status is ProcessInitializing. Does nothing otherwise.">

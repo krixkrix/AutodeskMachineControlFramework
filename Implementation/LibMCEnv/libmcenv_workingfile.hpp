@@ -53,6 +53,8 @@ Abstract: This is the class declaration of CWorkingFile
 #include "amc_logger.hpp"
 #include "Common/common_exportstream_native.hpp"
 
+#include "amc_processdirectory.hpp"
+
 namespace LibMCEnv {
 namespace Impl {
 
@@ -61,86 +63,7 @@ namespace Impl {
  Class declaration of CWorkingFile 
 **************************************************************************************************************************/
 
-class CWorkingFileWriterInstance {
-private:
 
-    std::vector <uint8_t> m_MemoryBuffer;
-
-    uint64_t m_nBytesWritten;
-    uint64_t m_nPositionInBuffer;
-
-    AMCCommon::PExportStream_Native m_pExportStream;
-    std::string m_sLocalFileName;
-    std::string m_sAbsoluteFileName;
-
-public:
-
-    CWorkingFileWriterInstance (const std::string & sLocalFileName, const std::string & sAbsoluteFileName, uint32_t nMemoryBufferSize);
-
-    virtual ~CWorkingFileWriterInstance();
-
-    std::string getAbsoluteFileName();
-
-    std::string getLocalFileName();
-
-    void writeData (const uint8_t * pData, uint64_t nSize);
-
-    void flushBuffer ();
-
-    void finish ();
-
-    bool isFinished();
-
-    uint64_t getWrittenBytes();
-
-};
-
-typedef std::shared_ptr<CWorkingFileWriterInstance> PWorkingFileWriterInstance;
-
-
-class CWorkingFileMonitor {
-
-private:
-
-    bool m_bIsActive;
-
-    std::string m_sWorkingDirectory;
-    std::set<std::string> m_MonitoredFileNames;
-
-    std::map<std::string, PWorkingFileWriterInstance> m_WriterInstances;
-
-    AMCCommon::PChrono m_pGlobalChrono;
-    AMC::PLogger m_pLogger;
-
-
-public:
-
-    CWorkingFileMonitor(const std::string & sWorkingDirectory, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger);
-
-    std::string getWorkingDirectory();
-
-    std::string getAbsoluteFileName(const std::string& sFileName);
-
-    void addNewMonitoredFile(const std::string& sFileName);
-
-    PWorkingFileWriterInstance addNewFileWriter(const std::string& sFileName, uint32_t nMemoryBufferSize);
-
-    bool fileIsMonitored(const std::string& sFileName);
-
-    void cleanUpDirectory(AMC::CLogger* pLoggerForUnmanagedFileWarnings);
-
-    bool isActive();
-
-    std::set<std::string> getFileNames();
-
-    AMCCommon::PChrono getGlobalChrono();
-
-    AMC::PLogger getLogger();
-
-};
-
-
-typedef std::shared_ptr<CWorkingFileMonitor> PWorkingFileMonitor;
 
 
 class CWorkingFile : public virtual IWorkingFile, public virtual CBase {
@@ -150,7 +73,7 @@ protected:
     std::string m_sFileName;
     std::string m_sAbsolutePath;
 
-    PWorkingFileMonitor m_pWorkingFileMonitor;
+    AMC::WProcessDirectory m_pProcessDirectory;
 
 public:
 
@@ -158,7 +81,7 @@ public:
 
     static std::shared_ptr<CWorkingFile> makeSharedFrom(CWorkingFile* pWorkingFile);
 
-    CWorkingFile(const std::string& sFileName, PWorkingFileMonitor pWorkingFileMonitor);
+    CWorkingFile(const std::string& sFileName, AMC::WProcessDirectory pProcessDirectory);
 
 	std::string GetAbsoluteFileName() override;
 

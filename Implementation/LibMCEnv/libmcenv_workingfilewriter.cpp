@@ -42,13 +42,10 @@ using namespace LibMCEnv::Impl;
 /*************************************************************************************************************************
  Class definition of CWorkingFileWriter 
 **************************************************************************************************************************/
-
-CWorkingFileWriter::CWorkingFileWriter(PWorkingFileWriterInstance pWriterInstance, PWorkingFileMonitor pFileMonitor)
-    : m_pWriterInstance (pWriterInstance), m_pFileMonitor (pFileMonitor)
+CWorkingFileWriter::CWorkingFileWriter(AMC::PProcessDirectoryWriter pWriterInstance, AMC::WProcessDirectory pProcessDirectory)
+    : m_pWriterInstance (pWriterInstance), m_pProcessDirectory (pProcessDirectory)
 {
     if (pWriterInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-    if (pFileMonitor.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
 
 }
@@ -60,7 +57,6 @@ CWorkingFileWriter::~CWorkingFileWriter()
         m_pWriterInstance = nullptr;
     }
 
-    m_pFileMonitor = nullptr;
 }
 
 
@@ -92,7 +88,7 @@ IWorkingFile * CWorkingFileWriter::Finish()
 
     std::string sLocalFileName = m_pWriterInstance->getLocalFileName();
 
-    return new CWorkingFile(sLocalFileName, m_pFileMonitor);
+    return new CWorkingFile(sLocalFileName, m_pProcessDirectory);
 }
 
 void CWorkingFileWriter::WriteData(const LibMCEnv_uint64 nBufferBufferSize, const LibMCEnv_uint8 * pBufferBuffer)
