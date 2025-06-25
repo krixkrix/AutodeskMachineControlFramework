@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <stdexcept>
 #include <map>
-
+#include <list>
 
 namespace AMCUnitTest {
 
