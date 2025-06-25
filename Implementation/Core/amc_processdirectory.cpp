@@ -36,7 +36,7 @@ Abstract: This is a stub class definition of CWorkingFileProcess
 
 // Include custom headers here.
 #include "Common/common_utils.hpp"
-
+#include <cstring>
 
 #define WORKINGFILEBUFFER_MINIMUMSIZEINKB 1
 #define WORKINGFILEBUFFER_MAXIMUMSIZEINKB (1024 * 1024)
