@@ -937,22 +937,27 @@ void COpenFOAMCaseInstance::startComputation()
     std::string sCaseFileName = m_sIdentifier + ".foam";
 
     m_pOpenCaseDirectory = m_pDriverEnvironment->CreateWorkingDirectory();
-    m_pBlockMeshDictFile = m_pOpenCaseDirectory->StoreCustomString("blockMeshDict", createBlockMeshDict ()->getAsString());
-    m_pControlDictFile = m_pOpenCaseDirectory->StoreCustomString("controlDict", createControlDict ()->getAsString());
-    m_pDecomposeParDictFile = m_pOpenCaseDirectory->StoreCustomString("decomposeParDict", createDecomposeParDict()->getAsString());
-    m_pSnappyHexMeshDictFile = m_pOpenCaseDirectory->StoreCustomString("snappyHexMeshDict", createSnappyHexMeshDict()->getAsString());
-    m_pMeshQualityDictFile = m_pOpenCaseDirectory->StoreCustomString("meshQualityDict", createMeshQualityDict()->getAsString());
-    m_pFVSolutionFile = m_pOpenCaseDirectory->StoreCustomString("fvSolution", createFVSolutionDict()->getAsString());
-    m_pFVSchemesFile = m_pOpenCaseDirectory->StoreCustomString("fvSchemes", createFVSchemesDict()->getAsString());
+	m_pConstantDirectory = m_pOpenCaseDirectory->CreateSubDirectory("constant");
+    m_pSystemDirectory = m_pOpenCaseDirectory->CreateSubDirectory("system");
+	m_pTriSurfaceDirectory = m_pConstantDirectory->CreateSubDirectory("triSurface");
+    m_pInitialDirectory = m_pOpenCaseDirectory->CreateSubDirectory("0");
 
-    m_pTransportPropertiesFile = m_pOpenCaseDirectory->StoreCustomString("transportProperties", createTransportPropertiesFile()->getAsString());
-    m_pTurbulencePropertiesFile = m_pOpenCaseDirectory->StoreCustomString("turbulenceProperties", createTurbulencePropertiesFile()->getAsString());
+    m_pBlockMeshDictFile = m_pSystemDirectory->StoreCustomString("blockMeshDict", createBlockMeshDict ()->getAsString());
+    m_pControlDictFile = m_pSystemDirectory->StoreCustomString("controlDict", createControlDict ()->getAsString());
+    m_pDecomposeParDictFile = m_pSystemDirectory->StoreCustomString("decomposeParDict", createDecomposeParDict()->getAsString());
+    m_pSnappyHexMeshDictFile = m_pSystemDirectory->StoreCustomString("snappyHexMeshDict", createSnappyHexMeshDict()->getAsString());
+    m_pMeshQualityDictFile = m_pSystemDirectory->StoreCustomString("meshQualityDict", createMeshQualityDict()->getAsString());
+    m_pFVSolutionFile = m_pSystemDirectory->StoreCustomString("fvSolution", createFVSolutionDict()->getAsString());
+    m_pFVSchemesFile = m_pSystemDirectory->StoreCustomString("fvSchemes", createFVSchemesDict()->getAsString());
 
-    m_pInitialCondition_K = m_pOpenCaseDirectory->StoreCustomString("k", createInitialCondition_K()->getAsString());
-    m_pInitialCondition_Nut = m_pOpenCaseDirectory->StoreCustomString("nut", createInitialCondition_Nut()->getAsString());
-    m_pInitialCondition_Omega = m_pOpenCaseDirectory->StoreCustomString("omega", createInitialCondition_Omega()->getAsString());
-    m_pInitialCondition_P = m_pOpenCaseDirectory->StoreCustomString("p", createInitialCondition_P()->getAsString());
-    m_pInitialCondition_U = m_pOpenCaseDirectory->StoreCustomString("U", createInitialCondition_U()->getAsString());
+    m_pTransportPropertiesFile = m_pConstantDirectory->StoreCustomString("transportProperties", createTransportPropertiesFile()->getAsString());
+    m_pTurbulencePropertiesFile = m_pConstantDirectory->StoreCustomString("turbulenceProperties", createTurbulencePropertiesFile()->getAsString());
+
+    m_pInitialCondition_K = m_pInitialDirectory->StoreCustomString("k", createInitialCondition_K()->getAsString());
+    m_pInitialCondition_Nut = m_pInitialDirectory->StoreCustomString("nut", createInitialCondition_Nut()->getAsString());
+    m_pInitialCondition_Omega = m_pInitialDirectory->StoreCustomString("omega", createInitialCondition_Omega()->getAsString());
+    m_pInitialCondition_P = m_pInitialDirectory->StoreCustomString("p", createInitialCondition_P()->getAsString());
+    m_pInitialCondition_U = m_pInitialDirectory->StoreCustomString("U", createInitialCondition_U()->getAsString());
 
     m_pCaseFile = m_pOpenCaseDirectory->StoreCustomString(sCaseFileName, "");
 
@@ -962,7 +967,7 @@ void COpenFOAMCaseInstance::startComputation()
 
         for (auto pSurface : surfaces) {
 
-            auto pBufferedWriter = m_pOpenCaseDirectory->AddBufferedWriter(pSurface->getSTLFileName(), m_nSTLWriteBufferSizeInKB);
+            auto pBufferedWriter = m_pTriSurfaceDirectory->AddBufferedWriter(pSurface->getSTLFileName(), m_nSTLWriteBufferSizeInKB);
             std::string sIdentifier = pSurface->getIdentifier();
 
             double dMMinM = 0.001;
@@ -972,6 +977,12 @@ void COpenFOAMCaseInstance::startComputation()
         }
     }
 
+    /*auto pExecutable = m_pOpenCaseDirectory->StoreDriverData("blockMesh.exe", "blockmesh");
+    auto pProcess = pExecutable->ExecuteFile();
+    pProcess->SetVerboseLogging(true); 
+    pProcess->StartProcess("", 100000); */
+
+    m_pOpenCaseDirectory->CleanUp();
 }
 
 void COpenFOAMCaseInstance::cancelComputation()
@@ -1053,6 +1064,8 @@ void COpenFOAMCaseInstance::releaseCase()
     m_pTurbulencePropertiesFile = nullptr;
     m_pCaseFile = nullptr;
 
+    if (m_pOpenCaseDirectory.get () != nullptr)
+        m_pOpenCaseDirectory->CleanUp();
     m_pOpenCaseDirectory = nullptr;
 }
 

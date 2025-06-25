@@ -136,6 +136,11 @@ private:
 	LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
 
 	LibMCEnv::PWorkingDirectory m_pOpenCaseDirectory;
+	LibMCEnv::PWorkingDirectory m_pConstantDirectory;
+	LibMCEnv::PWorkingDirectory m_pSystemDirectory;	
+	LibMCEnv::PWorkingDirectory m_pTriSurfaceDirectory;
+	LibMCEnv::PWorkingDirectory m_pInitialDirectory;
+
 	LibMCEnv::PWorkingFile m_pBlockMeshDictFile;
 	LibMCEnv::PWorkingFile m_pControlDictFile;
 	LibMCEnv::PWorkingFile m_pDecomposeParDictFile;
