@@ -2580,6 +2580,118 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_setstandbyinmicrosecond
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getlaserpulsesinbits(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pHalfPeriod, LibMCDriver_ScanLab_uint32 * pPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if (!pHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->GetLaserPulsesInBits(*pHalfPeriod, *pPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pHalfPeriod, LibMCDriver_ScanLab_double * pPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if (!pHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->GetLaserPulsesInMicroSeconds(*pHalfPeriod, *pPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getstandbyinbits(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pHalfPeriod, LibMCDriver_ScanLab_uint32 * pPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if (!pHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->GetStandbyInBits(*pHalfPeriod, *pPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pHalfPeriod, LibMCDriver_ScanLab_double * pPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if (!pHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->GetStandbyInMicroSeconds(*pHalfPeriod, *pPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getipaddress(LibMCDriver_ScanLab_RTCContext pRTCContext, const LibMCDriver_ScanLab_uint32 nIPAddressBufferSize, LibMCDriver_ScanLab_uint32* pIPAddressNeededChars, char * pIPAddressBuffer)
 {
 	IBase* pIBaseClass = (IBase *)pRTCContext;
@@ -6228,6 +6340,62 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_initialisefrom
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double dLaserPulseLength, LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double dStandbyPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pDriver_ScanLab_RTC6;
+
+	try {
+		IDriver_ScanLab_RTC6* pIDriver_ScanLab_RTC6 = dynamic_cast<IDriver_ScanLab_RTC6*>(pIBaseClass);
+		if (!pIDriver_ScanLab_RTC6)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIDriver_ScanLab_RTC6->SetLaserSignalTimingDefaults(dLaserPulseHalfPeriod, dLaserPulseLength, dStandbyPulseHalfPeriod, dStandbyPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double * pLaserPulseHalfPeriod, LibMCDriver_ScanLab_double * pLaserPulseLength, LibMCDriver_ScanLab_double * pStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double * pStandbyPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pDriver_ScanLab_RTC6;
+
+	try {
+		if (!pLaserPulseHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pLaserPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pStandbyPulseHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pStandbyPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IDriver_ScanLab_RTC6* pIDriver_ScanLab_RTC6 = dynamic_cast<IDriver_ScanLab_RTC6*>(pIBaseClass);
+		if (!pIDriver_ScanLab_RTC6)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIDriver_ScanLab_RTC6->GetLaserSignalTimingDefaults(*pLaserPulseHalfPeriod, *pLaserPulseLength, *pStandbyPulseHalfPeriod, *pStandbyPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_setcommunicationtimeouts(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double dInitialTimeout, LibMCDriver_ScanLab_double dMaxTimeout, LibMCDriver_ScanLab_double dMultiplier)
 {
 	IBase* pIBaseClass = (IBase *)pDriver_ScanLab_RTC6;
@@ -6981,6 +7149,62 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisesc
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
 		
 		pIDriver_ScanLab_RTC6xN->InitialiseScannerFromConfiguration(nScannerIndex, sPresetName);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double dLaserPulseLength, LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double dStandbyPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pDriver_ScanLab_RTC6xN;
+
+	try {
+		IDriver_ScanLab_RTC6xN* pIDriver_ScanLab_RTC6xN = dynamic_cast<IDriver_ScanLab_RTC6xN*>(pIBaseClass);
+		if (!pIDriver_ScanLab_RTC6xN)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIDriver_ScanLab_RTC6xN->SetLaserSignalTimingDefaults(nScannerIndex, dLaserPulseHalfPeriod, dLaserPulseLength, dStandbyPulseHalfPeriod, dStandbyPulseLength);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double * pLaserPulseHalfPeriod, LibMCDriver_ScanLab_double * pLaserPulseLength, LibMCDriver_ScanLab_double * pStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double * pStandbyPulseLength)
+{
+	IBase* pIBaseClass = (IBase *)pDriver_ScanLab_RTC6xN;
+
+	try {
+		if (!pLaserPulseHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pLaserPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pStandbyPulseHalfPeriod)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (!pStandbyPulseLength)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		IDriver_ScanLab_RTC6xN* pIDriver_ScanLab_RTC6xN = dynamic_cast<IDriver_ScanLab_RTC6xN*>(pIBaseClass);
+		if (!pIDriver_ScanLab_RTC6xN)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIDriver_ScanLab_RTC6xN->GetLaserSignalTimingDefaults(nScannerIndex, *pLaserPulseHalfPeriod, *pLaserPulseLength, *pStandbyPulseHalfPeriod, *pStandbyPulseLength);
 
 		return LIBMCDRIVER_SCANLAB_SUCCESS;
 	}
@@ -7816,6 +8040,14 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_setstandbyinbits;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_setstandbyinmicroseconds") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_setstandbyinmicroseconds;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_getlaserpulsesinbits") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getlaserpulsesinbits;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_getstandbyinbits") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getstandbyinbits;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_getipaddress") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_getipaddress;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_getnetmask") 
@@ -8094,6 +8326,10 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6_initialise;
 	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6_initialisefromconfiguration") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6_initialisefromconfiguration;
+	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults;
+	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults;
 	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6_setcommunicationtimeouts") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6_setcommunicationtimeouts;
 	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6_getipaddress") 
@@ -8148,6 +8384,10 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisescanner;
 	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisescannerfromconfiguration") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisescannerfromconfiguration;
+	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults;
+	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults;
 	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6xn_getipaddress") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_driver_scanlab_rtc6xn_getipaddress;
 	if (sProcName == "libmcdriver_scanlab_driver_scanlab_rtc6xn_getnetmask") 

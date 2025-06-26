@@ -947,6 +947,10 @@ public:
 	inline void SetLaserPulsesInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength);
 	inline void SetStandbyInBits(const LibMCDriver_ScanLab_uint32 nHalfPeriod, const LibMCDriver_ScanLab_uint32 nPulseLength);
 	inline void SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength);
+	inline void GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32 & nHalfPeriod, LibMCDriver_ScanLab_uint32 & nPulseLength);
+	inline void GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double & dHalfPeriod, LibMCDriver_ScanLab_double & dPulseLength);
+	inline void GetStandbyInBits(LibMCDriver_ScanLab_uint32 & nHalfPeriod, LibMCDriver_ScanLab_uint32 & nPulseLength);
+	inline void GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double & dHalfPeriod, LibMCDriver_ScanLab_double & dPulseLength);
 	inline std::string GetIPAddress();
 	inline std::string GetNetmask();
 	inline LibMCDriver_ScanLab_uint32 GetSerialNumber();
@@ -1134,6 +1138,8 @@ public:
 	inline bool IsInitialized();
 	inline void Initialise(const std::string & sIP, const std::string & sNetmask, const LibMCDriver_ScanLab_uint32 nTimeout, const LibMCDriver_ScanLab_uint32 nSerialNumber);
 	inline void InitialiseFromConfiguration(const std::string & sPresetName);
+	inline void SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength);
+	inline void GetLaserSignalTimingDefaults(LibMCDriver_ScanLab_double & dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double & dLaserPulseLength, LibMCDriver_ScanLab_double & dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double & dStandbyPulseLength);
 	inline void SetCommunicationTimeouts(const LibMCDriver_ScanLab_double dInitialTimeout, const LibMCDriver_ScanLab_double dMaxTimeout, const LibMCDriver_ScanLab_double dMultiplier);
 	inline std::string GetIPAddress();
 	inline std::string GetNetmask();
@@ -1177,6 +1183,8 @@ public:
 	inline LibMCDriver_ScanLab_uint32 GetScannerCount();
 	inline void InitialiseScanner(const LibMCDriver_ScanLab_uint32 nScannerIndex, const std::string & sIP, const std::string & sNetmask, const LibMCDriver_ScanLab_uint32 nTimeout, const LibMCDriver_ScanLab_uint32 nSerialNumber, const LibMCDriver_ScanLab_uint32 nLaserIndex);
 	inline void InitialiseScannerFromConfiguration(const LibMCDriver_ScanLab_uint32 nScannerIndex, const std::string & sPresetName);
+	inline void SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength);
+	inline void GetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double & dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double & dLaserPulseLength, LibMCDriver_ScanLab_double & dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double & dStandbyPulseLength);
 	inline std::string GetIPAddress(const LibMCDriver_ScanLab_uint32 nScannerIndex);
 	inline std::string GetNetmask(const LibMCDriver_ScanLab_uint32 nScannerIndex);
 	inline LibMCDriver_ScanLab_uint32 GetSerialNumber(const LibMCDriver_ScanLab_uint32 nScannerIndex);
@@ -1412,6 +1420,10 @@ public:
 		pWrapperTable->m_RTCContext_SetLaserPulsesInMicroSeconds = nullptr;
 		pWrapperTable->m_RTCContext_SetStandbyInBits = nullptr;
 		pWrapperTable->m_RTCContext_SetStandbyInMicroSeconds = nullptr;
+		pWrapperTable->m_RTCContext_GetLaserPulsesInBits = nullptr;
+		pWrapperTable->m_RTCContext_GetLaserPulsesInMicroSeconds = nullptr;
+		pWrapperTable->m_RTCContext_GetStandbyInBits = nullptr;
+		pWrapperTable->m_RTCContext_GetStandbyInMicroSeconds = nullptr;
 		pWrapperTable->m_RTCContext_GetIPAddress = nullptr;
 		pWrapperTable->m_RTCContext_GetNetmask = nullptr;
 		pWrapperTable->m_RTCContext_GetSerialNumber = nullptr;
@@ -1551,6 +1563,8 @@ public:
 		pWrapperTable->m_Driver_ScanLab_RTC6_IsInitialized = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6_Initialise = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6_InitialiseFromConfiguration = nullptr;
+		pWrapperTable->m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults = nullptr;
+		pWrapperTable->m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6_SetCommunicationTimeouts = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6_GetIPAddress = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6_GetNetmask = nullptr;
@@ -1578,6 +1592,8 @@ public:
 		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetScannerCount = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6xN_InitialiseScanner = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6xN_InitialiseScannerFromConfiguration = nullptr;
+		pWrapperTable->m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults = nullptr;
+		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetIPAddress = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetNetmask = nullptr;
 		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetSerialNumber = nullptr;
@@ -2456,6 +2472,42 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_SetStandbyInMicroSeconds == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_GetLaserPulsesInBits = (PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInBitsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_getlaserpulsesinbits");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_GetLaserPulsesInBits = (PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInBitsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_getlaserpulsesinbits");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_GetLaserPulsesInBits == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_GetLaserPulsesInMicroSeconds = (PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInMicroSecondsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_GetLaserPulsesInMicroSeconds = (PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInMicroSecondsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_GetLaserPulsesInMicroSeconds == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_GetStandbyInBits = (PLibMCDriver_ScanLabRTCContext_GetStandbyInBitsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_getstandbyinbits");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_GetStandbyInBits = (PLibMCDriver_ScanLabRTCContext_GetStandbyInBitsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_getstandbyinbits");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_GetStandbyInBits == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_GetStandbyInMicroSeconds = (PLibMCDriver_ScanLabRTCContext_GetStandbyInMicroSecondsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_GetStandbyInMicroSeconds = (PLibMCDriver_ScanLabRTCContext_GetStandbyInMicroSecondsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_GetStandbyInMicroSeconds == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -3710,6 +3762,24 @@ public:
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetLaserSignalTimingDefaultsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults");
+		#else // _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetLaserSignalTimingDefaultsPtr) dlsym(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6_GetLaserSignalTimingDefaultsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults");
+		#else // _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6_GetLaserSignalTimingDefaultsPtr) dlsym(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_Driver_ScanLab_RTC6_SetCommunicationTimeouts = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetCommunicationTimeoutsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6_setcommunicationtimeouts");
 		#else // _WIN32
 		pWrapperTable->m_Driver_ScanLab_RTC6_SetCommunicationTimeouts = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetCommunicationTimeoutsPtr) dlsym(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6_setcommunicationtimeouts");
@@ -3950,6 +4020,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Driver_ScanLab_RTC6xN_InitialiseScannerFromConfiguration == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_SetLaserSignalTimingDefaultsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults");
+		#else // _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_SetLaserSignalTimingDefaultsPtr) dlsym(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetLaserSignalTimingDefaultsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults");
+		#else // _WIN32
+		pWrapperTable->m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults = (PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetLaserSignalTimingDefaultsPtr) dlsym(hLibrary, "libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4585,6 +4673,22 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SetStandbyInMicroSeconds == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getlaserpulsesinbits", (void**)&(pWrapperTable->m_RTCContext_GetLaserPulsesInBits));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_GetLaserPulsesInBits == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds", (void**)&(pWrapperTable->m_RTCContext_GetLaserPulsesInMicroSeconds));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_GetLaserPulsesInMicroSeconds == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getstandbyinbits", (void**)&(pWrapperTable->m_RTCContext_GetStandbyInBits));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_GetStandbyInBits == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds", (void**)&(pWrapperTable->m_RTCContext_GetStandbyInMicroSeconds));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_GetStandbyInMicroSeconds == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getipaddress", (void**)&(pWrapperTable->m_RTCContext_GetIPAddress));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_GetIPAddress == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -5141,6 +5245,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6_InitialiseFromConfiguration == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6_setcommunicationtimeouts", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6_SetCommunicationTimeouts));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6_SetCommunicationTimeouts == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -5247,6 +5359,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisescannerfromconfiguration", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6xN_InitialiseScannerFromConfiguration));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6xN_InitialiseScannerFromConfiguration == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_driver_scanlab_rtc6xn_getipaddress", (void**)&(pWrapperTable->m_Driver_ScanLab_RTC6xN_GetIPAddress));
@@ -6393,6 +6513,46 @@ public:
 	void CRTCContext::SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetStandbyInMicroSeconds(m_pHandle, dHalfPeriod, dPulseLength));
+	}
+	
+	/**
+	* CRTCContext::GetLaserPulsesInBits - Sets laser control pulse interval (in 1/64th microseconds)
+	* @param[out] nHalfPeriod - Half Output period in 1/64th microseconds
+	* @param[out] nPulseLength - Pulse Length in 1/64th microseconds
+	*/
+	void CRTCContext::GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32 & nHalfPeriod, LibMCDriver_ScanLab_uint32 & nPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetLaserPulsesInBits(m_pHandle, &nHalfPeriod, &nPulseLength));
+	}
+	
+	/**
+	* CRTCContext::GetLaserPulsesInMicroSeconds - Sets laser control pulse interval (in microseconds)
+	* @param[out] dHalfPeriod - Half Output period in microseconds
+	* @param[out] dPulseLength - Pulse Length in microseconds
+	*/
+	void CRTCContext::GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double & dHalfPeriod, LibMCDriver_ScanLab_double & dPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetLaserPulsesInMicroSeconds(m_pHandle, &dHalfPeriod, &dPulseLength));
+	}
+	
+	/**
+	* CRTCContext::GetStandbyInBits - Sets standby pulse interval (in 1/64th microseconds)
+	* @param[out] nHalfPeriod - Half Output period in 1/64th microseconds
+	* @param[out] nPulseLength - Pulse Length in 1/64th microseconds
+	*/
+	void CRTCContext::GetStandbyInBits(LibMCDriver_ScanLab_uint32 & nHalfPeriod, LibMCDriver_ScanLab_uint32 & nPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetStandbyInBits(m_pHandle, &nHalfPeriod, &nPulseLength));
+	}
+	
+	/**
+	* CRTCContext::GetStandbyInMicroSeconds - Sets laser control pulse interval (in microseconds)
+	* @param[out] dHalfPeriod - Half Output period in microseconds
+	* @param[out] dPulseLength - Pulse Length in microseconds
+	*/
+	void CRTCContext::GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double & dHalfPeriod, LibMCDriver_ScanLab_double & dPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetStandbyInMicroSeconds(m_pHandle, &dHalfPeriod, &dPulseLength));
 	}
 	
 	/**
@@ -7923,12 +8083,36 @@ public:
 	}
 	
 	/**
-	* CDriver_ScanLab_RTC6::InitialiseFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
+	* CDriver_ScanLab_RTC6::InitialiseFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserTimingDefaults.
 	* @param[in] sPresetName - Name of the configuration preset.
 	*/
 	void CDriver_ScanLab_RTC6::InitialiseFromConfiguration(const std::string & sPresetName)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLab_RTC6_InitialiseFromConfiguration(m_pHandle, sPresetName.c_str()));
+	}
+	
+	/**
+	* CDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	void CDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults(m_pHandle, dLaserPulseHalfPeriod, dLaserPulseLength, dStandbyPulseHalfPeriod, dStandbyPulseLength));
+	}
+	
+	/**
+	* CDriver_ScanLab_RTC6::GetLaserSignalTimingDefaults - Returns the laser timing defaults for CO2 lasers.
+	* @param[out] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[out] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[out] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[out] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	void CDriver_ScanLab_RTC6::GetLaserSignalTimingDefaults(LibMCDriver_ScanLab_double & dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double & dLaserPulseLength, LibMCDriver_ScanLab_double & dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double & dStandbyPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults(m_pHandle, &dLaserPulseHalfPeriod, &dLaserPulseLength, &dStandbyPulseHalfPeriod, &dStandbyPulseLength));
 	}
 	
 	/**
@@ -8245,13 +8429,39 @@ public:
 	}
 	
 	/**
-	* CDriver_ScanLab_RTC6xN::InitialiseScannerFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
+	* CDriver_ScanLab_RTC6xN::InitialiseScannerFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserSignalTimingDefaults.
 	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
 	* @param[in] sPresetName - Name of the configuration preset.
 	*/
 	void CDriver_ScanLab_RTC6xN::InitialiseScannerFromConfiguration(const LibMCDriver_ScanLab_uint32 nScannerIndex, const std::string & sPresetName)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLab_RTC6xN_InitialiseScannerFromConfiguration(m_pHandle, nScannerIndex, sPresetName.c_str()));
+	}
+	
+	/**
+	* CDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
+	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	void CDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults(m_pHandle, nScannerIndex, dLaserPulseHalfPeriod, dLaserPulseLength, dStandbyPulseHalfPeriod, dStandbyPulseLength));
+	}
+	
+	/**
+	* CDriver_ScanLab_RTC6xN::GetLaserSignalTimingDefaults - Returns the laser timing defaults for CO2 lasers.
+	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
+	* @param[out] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[out] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[out] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[out] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	void CDriver_ScanLab_RTC6xN::GetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double & dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double & dLaserPulseLength, LibMCDriver_ScanLab_double & dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double & dStandbyPulseLength)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults(m_pHandle, nScannerIndex, &dLaserPulseHalfPeriod, &dLaserPulseLength, &dStandbyPulseHalfPeriod, &dStandbyPulseLength));
 	}
 	
 	/**

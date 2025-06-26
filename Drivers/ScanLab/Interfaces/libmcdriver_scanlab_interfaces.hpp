@@ -1136,6 +1136,34 @@ public:
 	virtual void SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength) = 0;
 
 	/**
+	* IRTCContext::GetLaserPulsesInBits - Sets laser control pulse interval (in 1/64th microseconds)
+	* @param[out] nHalfPeriod - Half Output period in 1/64th microseconds
+	* @param[out] nPulseLength - Pulse Length in 1/64th microseconds
+	*/
+	virtual void GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32 & nHalfPeriod, LibMCDriver_ScanLab_uint32 & nPulseLength) = 0;
+
+	/**
+	* IRTCContext::GetLaserPulsesInMicroSeconds - Sets laser control pulse interval (in microseconds)
+	* @param[out] dHalfPeriod - Half Output period in microseconds
+	* @param[out] dPulseLength - Pulse Length in microseconds
+	*/
+	virtual void GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double & dHalfPeriod, LibMCDriver_ScanLab_double & dPulseLength) = 0;
+
+	/**
+	* IRTCContext::GetStandbyInBits - Sets standby pulse interval (in 1/64th microseconds)
+	* @param[out] nHalfPeriod - Half Output period in 1/64th microseconds
+	* @param[out] nPulseLength - Pulse Length in 1/64th microseconds
+	*/
+	virtual void GetStandbyInBits(LibMCDriver_ScanLab_uint32 & nHalfPeriod, LibMCDriver_ScanLab_uint32 & nPulseLength) = 0;
+
+	/**
+	* IRTCContext::GetStandbyInMicroSeconds - Sets laser control pulse interval (in microseconds)
+	* @param[out] dHalfPeriod - Half Output period in microseconds
+	* @param[out] dPulseLength - Pulse Length in microseconds
+	*/
+	virtual void GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double & dHalfPeriod, LibMCDriver_ScanLab_double & dPulseLength) = 0;
+
+	/**
 	* IRTCContext::GetIPAddress - Returns the IP Address of the RTC Card. Fails if driver has not been initialized.
 	* @return IP Address Value.
 	*/
@@ -2118,10 +2146,28 @@ public:
 	virtual void Initialise(const std::string & sIP, const std::string & sNetmask, const LibMCDriver_ScanLab_uint32 nTimeout, const LibMCDriver_ScanLab_uint32 nSerialNumber) = 0;
 
 	/**
-	* IDriver_ScanLab_RTC6::InitialiseFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
+	* IDriver_ScanLab_RTC6::InitialiseFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserTimingDefaults.
 	* @param[in] sPresetName - Name of the configuration preset.
 	*/
 	virtual void InitialiseFromConfiguration(const std::string & sPresetName) = 0;
+
+	/**
+	* IDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	virtual void SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength) = 0;
+
+	/**
+	* IDriver_ScanLab_RTC6::GetLaserSignalTimingDefaults - Returns the laser timing defaults for CO2 lasers.
+	* @param[out] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[out] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[out] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[out] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	virtual void GetLaserSignalTimingDefaults(LibMCDriver_ScanLab_double & dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double & dLaserPulseLength, LibMCDriver_ScanLab_double & dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double & dStandbyPulseLength) = 0;
 
 	/**
 	* IDriver_ScanLab_RTC6::SetCommunicationTimeouts - Set RTC Ethernet communication timeouts. The given values will be defaults for all subsequent connections.
@@ -2328,11 +2374,31 @@ public:
 	virtual void InitialiseScanner(const LibMCDriver_ScanLab_uint32 nScannerIndex, const std::string & sIP, const std::string & sNetmask, const LibMCDriver_ScanLab_uint32 nTimeout, const LibMCDriver_ScanLab_uint32 nSerialNumber, const LibMCDriver_ScanLab_uint32 nLaserIndex) = 0;
 
 	/**
-	* IDriver_ScanLab_RTC6xN::InitialiseScannerFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
+	* IDriver_ScanLab_RTC6xN::InitialiseScannerFromConfiguration - Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserSignalTimingDefaults.
 	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
 	* @param[in] sPresetName - Name of the configuration preset.
 	*/
 	virtual void InitialiseScannerFromConfiguration(const LibMCDriver_ScanLab_uint32 nScannerIndex, const std::string & sPresetName) = 0;
+
+	/**
+	* IDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
+	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	virtual void SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength) = 0;
+
+	/**
+	* IDriver_ScanLab_RTC6xN::GetLaserSignalTimingDefaults - Returns the laser timing defaults for CO2 lasers.
+	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
+	* @param[out] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+	* @param[out] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+	* @param[out] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+	* @param[out] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+	*/
+	virtual void GetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double & dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double & dLaserPulseLength, LibMCDriver_ScanLab_double & dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double & dStandbyPulseLength) = 0;
 
 	/**
 	* IDriver_ScanLab_RTC6xN::GetIPAddress - Returns the IP Address of the RTC Card. Fails if driver has not been initialized.

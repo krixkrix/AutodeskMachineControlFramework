@@ -152,7 +152,12 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 	m_pModulationCallbackUserData (nullptr),
 	m_bEnableLineSubdivision (false),
 	m_bMeasurementTagging (false),
-	m_dLineSubdivisionThreshold (RTCCONTEXT_MAX_LINESUBDIVISIONTHRESHOLD)
+	m_dLineSubdivisionThreshold (RTCCONTEXT_MAX_LINESUBDIVISIONTHRESHOLD),
+	m_dLaserPulseHalfPeriodInMS(RTC_TIMINGDEFAULT_LASERPULSEHALFPERIOD),
+    m_dLaserPulseLengthInMS(RTC_TIMINGDEFAULT_LASERPULSELENGTH),
+    m_dStandbyPulseHalfPeriodInMS(RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD),
+    m_dStandbyPulseLengthInMS(RTC_TIMINGDEFAULT_STANDBYPULSELENGTH)
+
 
 {
 	if (pOwnerData.get() == nullptr)
@@ -377,6 +382,9 @@ void CRTCContext::SetLaserPulsesInBits(const LibMCDriver_ScanLab_uint32 nHalfPer
 {
 	m_pScanLabSDK->n_set_laser_pulses_ctrl(m_CardNo, nHalfPeriod, nPulseLength);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
+
+	m_dLaserPulseHalfPeriodInMS = nHalfPeriod / 64.0;
+	m_dLaserPulseLengthInMS = nPulseLength / 64.0;
 }
 
 void CRTCContext::SetLaserPulsesInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength)
@@ -398,6 +406,9 @@ void CRTCContext::SetStandbyInBits(const LibMCDriver_ScanLab_uint32 nHalfPeriod,
 {
 	m_pScanLabSDK->n_set_standby(m_CardNo, nHalfPeriod, nPulseLength);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
+
+	m_dStandbyPulseHalfPeriodInMS = nHalfPeriod / 64.0;
+	m_dStandbyPulseLengthInMS = nPulseLength / 64.0;
 }
 
 void CRTCContext::SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength)
@@ -414,6 +425,39 @@ void CRTCContext::SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHal
 
 	SetStandbyInBits((uint32_t)HalfPeriodBits, (uint32_t)PulseLengthBits);
 }
+
+void CRTCContext::GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength)
+{
+	nHalfPeriod = (uint32_t)round(m_dLaserPulseHalfPeriodInMS * 64.0);
+	nPulseLength = (uint32_t)round(m_dLaserPulseLengthInMS * 64.0);
+}
+
+void CRTCContext::GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength)
+{
+	dHalfPeriod = m_dLaserPulseHalfPeriodInMS;
+	dPulseLength = m_dLaserPulseLengthInMS;
+}
+
+void CRTCContext::GetStandbyInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength)
+{
+	nHalfPeriod = (uint32_t)round(m_dStandbyPulseHalfPeriodInMS * 64.0);
+	nPulseLength = (uint32_t)round(m_dStandbyPulseLengthInMS * 64.0);
+
+}
+
+void CRTCContext::GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength)
+{
+	dHalfPeriod = m_dStandbyPulseHalfPeriodInMS;
+	dPulseLength = m_dStandbyPulseLengthInMS;
+}
+
+void CRTCContext::writeLaserTimingsToCard()
+{
+	SetLaserPulsesInMicroSeconds(m_dLaserPulseHalfPeriodInMS, m_dLaserPulseLengthInMS);
+	SetStandbyInMicroSeconds(m_dStandbyPulseHalfPeriodInMS, m_dStandbyPulseLengthInMS);
+}
+
+
 
 LibMCDriver_ScanLab_uint32 CRTCContext::GetSerialNumber()
 {

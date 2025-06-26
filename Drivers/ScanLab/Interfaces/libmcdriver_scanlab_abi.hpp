@@ -1019,6 +1019,46 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcco
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_setstandbyinmicroseconds(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dHalfPeriod, LibMCDriver_ScanLab_double dPulseLength);
 
 /**
+* Sets laser control pulse interval (in 1/64th microseconds)
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[out] pHalfPeriod - Half Output period in 1/64th microseconds
+* @param[out] pPulseLength - Pulse Length in 1/64th microseconds
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getlaserpulsesinbits(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pHalfPeriod, LibMCDriver_ScanLab_uint32 * pPulseLength);
+
+/**
+* Sets laser control pulse interval (in microseconds)
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[out] pHalfPeriod - Half Output period in microseconds
+* @param[out] pPulseLength - Pulse Length in microseconds
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getlaserpulsesinmicroseconds(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pHalfPeriod, LibMCDriver_ScanLab_double * pPulseLength);
+
+/**
+* Sets standby pulse interval (in 1/64th microseconds)
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[out] pHalfPeriod - Half Output period in 1/64th microseconds
+* @param[out] pPulseLength - Pulse Length in 1/64th microseconds
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getstandbyinbits(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pHalfPeriod, LibMCDriver_ScanLab_uint32 * pPulseLength);
+
+/**
+* Sets laser control pulse interval (in microseconds)
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[out] pHalfPeriod - Half Output period in microseconds
+* @param[out] pPulseLength - Pulse Length in microseconds
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_getstandbyinmicroseconds(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pHalfPeriod, LibMCDriver_ScanLab_double * pPulseLength);
+
+/**
 * Returns the IP Address of the RTC Card. Fails if driver has not been initialized.
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -2398,13 +2438,37 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_drive
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_initialise(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, const char * pIP, const char * pNetmask, LibMCDriver_ScanLab_uint32 nTimeout, LibMCDriver_ScanLab_uint32 nSerialNumber);
 
 /**
-* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
+* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserTimingDefaults.
 *
 * @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
 * @param[in] pPresetName - Name of the configuration preset.
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_initialisefromconfiguration(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, const char * pPresetName);
+
+/**
+* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+*
+* @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
+* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_setlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double dLaserPulseLength, LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double dStandbyPulseLength);
+
+/**
+* Returns the laser timing defaults for CO2 lasers.
+*
+* @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
+* @param[out] pLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+* @param[out] pLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+* @param[out] pStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+* @param[out] pStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6_getlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double * pLaserPulseHalfPeriod, LibMCDriver_ScanLab_double * pLaserPulseLength, LibMCDriver_ScanLab_double * pStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double * pStandbyPulseLength);
 
 /**
 * Set RTC Ethernet communication timeouts. The given values will be defaults for all subsequent connections.
@@ -2686,7 +2750,7 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_drive
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisescanner(LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, const char * pIP, const char * pNetmask, LibMCDriver_ScanLab_uint32 nTimeout, LibMCDriver_ScanLab_uint32 nSerialNumber, LibMCDriver_ScanLab_uint32 nLaserIndex);
 
 /**
-* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
+* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserSignalTimingDefaults.
 *
 * @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
 * @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
@@ -2694,6 +2758,32 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_drive
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_initialisescannerfromconfiguration(LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, const char * pPresetName);
+
+/**
+* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+*
+* @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
+* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
+* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_setlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double dLaserPulseLength, LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double dStandbyPulseLength);
+
+/**
+* Returns the laser timing defaults for CO2 lasers.
+*
+* @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
+* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
+* @param[out] pLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
+* @param[out] pLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
+* @param[out] pStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
+* @param[out] pStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_driver_scanlab_rtc6xn_getlasersignaltimingdefaults(LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double * pLaserPulseHalfPeriod, LibMCDriver_ScanLab_double * pLaserPulseLength, LibMCDriver_ScanLab_double * pStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double * pStandbyPulseLength);
 
 /**
 * Returns the IP Address of the RTC Card. Fails if driver has not been initialized.

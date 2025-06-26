@@ -19,6 +19,12 @@ Abstract: This is the class declaration of CRTCContext
 #include "libmcdriver_scanlab_gpiosequence.hpp"
 #include "libmcdriver_scanlab_measurementtagmapinstance.hpp"
 
+#define RTC_TIMINGDEFAULT_LASERPULSEHALFPERIOD 5.0
+#define RTC_TIMINGDEFAULT_LASERPULSELENGTH 5.0
+#define RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD 1.0
+#define RTC_TIMINGDEFAULT_STANDBYPULSELENGTH 1.0
+
+
 // Parent classes
 #include "libmcdriver_scanlab_base.hpp"
 #ifdef _MSC_VER
@@ -110,6 +116,10 @@ protected:
 	void* m_pModulationCallbackUserData;
 	bool m_bEnableLineSubdivision;
 	double m_dLineSubdivisionThreshold;
+	double m_dLaserPulseHalfPeriodInMS;
+	double m_dLaserPulseLengthInMS;
+	double m_dStandbyPulseHalfPeriodInMS;
+	double m_dStandbyPulseLengthInMS;
 
 	LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
 
@@ -199,6 +209,16 @@ public:
 	void SetStandbyInBits(const LibMCDriver_ScanLab_uint32 nHalfPeriod, const LibMCDriver_ScanLab_uint32 nPulseLength) override;
 
 	void SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength) override;
+
+	void GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength) override;
+
+	void GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength) override;
+
+	void GetStandbyInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength) override;
+	
+	void GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength) override;
+
+	void writeLaserTimingsToCard();
 
 	LibMCDriver_ScanLab_uint32 GetSerialNumber() override;
 

@@ -844,6 +844,27 @@ Custom implementation
 			<param name="HalfPeriod" type="double" pass="in" description="Half Output period in microseconds" />
 			<param name="PulseLength" type="double" pass="in" description="Pulse Length in microseconds" />
 		</method>
+		
+		<method name="GetLaserPulsesInBits" description="Sets laser control pulse interval (in 1/64th microseconds)">
+			<param name="HalfPeriod" type="uint32" pass="out" description="Half Output period in 1/64th microseconds" />
+			<param name="PulseLength" type="uint32" pass="out" description="Pulse Length in 1/64th microseconds" />
+		</method>
+		
+		<method name="GetLaserPulsesInMicroSeconds" description="Sets laser control pulse interval (in microseconds)">
+			<param name="HalfPeriod" type="double" pass="out" description="Half Output period in microseconds" />
+			<param name="PulseLength" type="double" pass="out" description="Pulse Length in microseconds" />
+		</method>
+
+		<method name="GetStandbyInBits" description="Sets standby pulse interval (in 1/64th microseconds)">
+			<param name="HalfPeriod" type="uint32" pass="out" description="Half Output period in 1/64th microseconds" />
+			<param name="PulseLength" type="uint32" pass="out" description="Pulse Length in 1/64th microseconds" />
+		</method>
+
+		<method name="GetStandbyInMicroSeconds" description="Sets laser control pulse interval (in microseconds)">
+			<param name="HalfPeriod" type="double" pass="out" description="Half Output period in microseconds" />
+			<param name="PulseLength" type="double" pass="out" description="Pulse Length in microseconds" />
+		</method>
+
 
 		<method name="GetIPAddress" description="Returns the IP Address of the RTC Card. Fails if driver has not been initialized.">		
 			<param name="IPAddress" type="string" pass="return" description="IP Address Value." />
@@ -1517,7 +1538,7 @@ Custom implementation
 		<method name="IsInitialized" description="Returns if the driver is initalized.">		
 			<param name="IsInitialized" type="bool" pass="return" description="Flag if driver is initialized." />
 		</method>		
-
+		
 		<method name="Initialise" description="Manually initializes the RTC6 Scanner Driver.">
 			<param name="IP" type="string" pass="in" description="IP Network Address. Empty string for local card." />
 			<param name="Netmask" type="string" pass="in" description="IP Netmask Address. Empty string for local card." />
@@ -1525,8 +1546,22 @@ Custom implementation
 			<param name="SerialNumber" type="uint32" pass="in" description="Desired Serial Number of card." />
 		</method>
 
-		<method name="InitialiseFromConfiguration" description="Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.">
+		<method name="InitialiseFromConfiguration" description="Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserTimingDefaults.">
 			<param name="PresetName" type="string" pass="in" description="Name of the configuration preset." />
+		</method>
+
+		<method name="SetLaserSignalTimingDefaults" description="Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.">
+			<param name="LaserPulseHalfPeriod" type="double" pass="in" description="Half Output period for laser pulses in microseconds. Default is 5." />
+			<param name="LaserPulseLength" type="double" pass="in" description="Pulse Length in microseconds for full laser power. Default is 5." />
+			<param name="StandbyPulseHalfPeriod" type="double" pass="in" description="Half Output period for standby pulses in microseconds. Default is 1." />
+			<param name="StandbyPulseLength" type="double" pass="in" description="Standby Pulse Length in microseconds. Default is 1." />
+		</method>
+
+		<method name="GetLaserSignalTimingDefaults" description="Returns the laser timing defaults for CO2 lasers.">
+			<param name="LaserPulseHalfPeriod" type="double" pass="out" description="Half Output period for laser pulses in microseconds. Default is 5." />
+			<param name="LaserPulseLength" type="double" pass="out" description="Pulse Length in microseconds for full laser power. Default is 5." />
+			<param name="StandbyPulseHalfPeriod" type="double" pass="out" description="Half Output period for standby pulses in microseconds. Default is 1." />
+			<param name="StandbyPulseLength" type="double" pass="out" description="Standby Pulse Length in microseconds. Default is 1." />
 		</method>
 
 		<method name="SetCommunicationTimeouts" description="Set RTC Ethernet communication timeouts. The given values will be defaults for all subsequent connections.">
@@ -1575,7 +1610,7 @@ Custom implementation
 			<param name="TableNumberHeadB" type="uint32" pass="in" description="Table number of Head B." />
 		</method>		
 
-		<method name="ConfigureLaserMode" description="Configures the laser mode. MUST be called before any exposure.">
+		<method name="ConfigureLaserMode" description="Configures the laser mode. MUST be called before any exposure. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.">
 			<param name="LaserMode" type="enum" class="LaserMode" pass="in" description="Laser Mode Enum" />
 			<param name="LaserPort" type="enum" class="LaserPort" pass="in" description="Laser Port Enum" />
 			<param name="MaxLaserPower" type="double" pass="in" description="Maximum laser power." />
@@ -1673,9 +1708,25 @@ Custom implementation
 			<param name="LaserIndex" type="uint32" pass="in" description="Associated Laser Index from the toolpath data. 1-based, MUST NOT be 0. Each Scanner MUST own a unique laser index." />
 		</method>
 
-		<method name="InitialiseScannerFromConfiguration" description="Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.">
+		<method name="InitialiseScannerFromConfiguration" description="Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserSignalTimingDefaults.">
 			<param name="ScannerIndex" type="uint32" pass="in" description="Index of the scanner (0-based). MUST be smaller than ScannerCount" />
 			<param name="PresetName" type="string" pass="in" description="Name of the configuration preset." />
+		</method>
+
+		<method name="SetLaserSignalTimingDefaults" description="Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.">
+			<param name="ScannerIndex" type="uint32" pass="in" description="Index of the scanner (0-based). MUST be smaller than ScannerCount" />
+			<param name="LaserPulseHalfPeriod" type="double" pass="in" description="Half Output period for laser pulses in microseconds. Default is 5." />
+			<param name="LaserPulseLength" type="double" pass="in" description="Pulse Length in microseconds for full laser power. Default is 5." />
+			<param name="StandbyPulseHalfPeriod" type="double" pass="in" description="Half Output period for standby pulses in microseconds. Default is 1." />
+			<param name="StandbyPulseLength" type="double" pass="in" description="Standby Pulse Length in microseconds. Default is 1." />
+		</method>
+
+		<method name="GetLaserSignalTimingDefaults" description="Returns the laser timing defaults for CO2 lasers.">
+			<param name="ScannerIndex" type="uint32" pass="in" description="Index of the scanner (0-based). MUST be smaller than ScannerCount" />
+			<param name="LaserPulseHalfPeriod" type="double" pass="out" description="Half Output period for laser pulses in microseconds. Default is 5." />
+			<param name="LaserPulseLength" type="double" pass="out" description="Pulse Length in microseconds for full laser power. Default is 5." />
+			<param name="StandbyPulseHalfPeriod" type="double" pass="out" description="Half Output period for standby pulses in microseconds. Default is 1." />
+			<param name="StandbyPulseLength" type="double" pass="out" description="Standby Pulse Length in microseconds. Default is 1." />
 		</method>
 
 		<method name="GetIPAddress" description="Returns the IP Address of the RTC Card. Fails if driver has not been initialized.">		
@@ -1730,7 +1781,7 @@ Custom implementation
 			<param name="TableNumberHeadB" type="uint32" pass="in" description="Table number of Head B." />
 		</method>		
 
-		<method name="ConfigureLaserMode" description="Configures the laser mode.">
+		<method name="ConfigureLaserMode" description="Configures the laser mode. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.">
 			<param name="ScannerIndex" type="uint32" pass="in" description="Index of the scanner (0-based). MUST be smaller than ScannerCount" />
 			<param name="LaserMode" type="enum" class="LaserMode" pass="in" description="Laser Mode Enum" />
 			<param name="LaserPort" type="enum" class="LaserPort" pass="in" description="Laser Port Enum" />
