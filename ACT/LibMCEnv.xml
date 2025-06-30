@@ -286,6 +286,12 @@
 		<error name="TRIANGLESETNOTFOUND" code="10246" description="Triangle set not found." />	
 		<error name="WORKINGFILECEASEDTOEXIST" code="10247" description="Working file ceased to exist." />	
 		<error name="WORKINGDIRECTORYCEASEDTOEXIST" code="10248" description="Working directory ceased to exist." />	
+		<error name="UNDEFINEDINTERNALSIGNALPHASE" code="10249" description="Undefined internal signal phase." />	
+		<error name="INVALIDREACTIONTIMEOUT" code="10250" description="Invalid reaction timeout." />	
+		<error name="COULDNOTSETREACTIONTIMEOUT" code="10251" description="Could not set reaction timeout." />	
+		
+		
+		
 		
 		
 					
@@ -499,6 +505,19 @@
 		<member name="TimestampInMicroSeconds" type="uint64" />
 		<member name="Value" type="double" />
 	</struct>
+
+	<enum name="SignalPhase">
+		<option name="Invalid" value="0" description="Invalid phase. Should not happen." />
+		<option name="InPreparation" value="10" description="Signal has not been triggered yet. Parameters can change." />
+		<option name="InQueue" value="20" description="Signal has been triggered but is not being processed. Parameters can not change anymore." />
+		<option name="InProcess" value="30" description="Signal is being processed. Results can change." />
+		<option name="Handled" value="40" description="Signal is has been handled to its specification." />
+		<option name="Failed" value="50" description="Signal is has not been handled to its specification. An error message is available." />
+		<option name="TimedOut" value="60" description="The signal timed out before being processed." />
+		<option name="Cleared" value="70" description="The signal queue has been cleared and the signal will not be processed anymore." />
+		<option name="Retracted" value="80" description="The sender has retracted the signal before it was processed." />
+		<option name="Archived" value="90" description="The signal has been archived." />
+	</enum>	
 
 	
 	<class name="Base">
@@ -4018,18 +4037,55 @@
 
 	<class name="SignalTrigger" parent="Base" description="Class for signal triggering">
 
-		<method name="CanTrigger" description="Returns, if signal channel is available.">
+		<method name="GetSignalUUID" description="Returns the signal uuid.">
+			<param name="SignalUUID" type="string" pass="return" description="Signal Identifier" />
+		</method>
+
+		<method name="CanTrigger" description="Returns, if a spot is available in the signal queue.">
 			<param name="ChannelIsAvailable" type="bool" pass="return" description="Returns true, if signal channel is available." />
 		</method>
-
-		<method name="Trigger" description="Triggers a signal, if signal channel is available.">
+		
+		<method name="GetAvailableSignalQueueSlots" description="Returns the number of slots available in the signal queue.">
+			<param name="NumberOfQueueSlots" type="uint32" pass="return" description="Number of Queue Slots available." />
 		</method>
 
-		<method name="WaitForHandling" description="Waits until the signal is reset.">
-			<param name="TimeOut" type="uint32" pass="in" description="Timeout in Milliseconds. 0 for Immediate return." />			
-			<param name="Success" type="bool" pass="return" description="Flag if signal handling has been handled." />
+		<method name="GetTotalSignalQueueSlots" description="Returns the total number of slots of the signal queue.">
+			<param name="NumberOfQueueSlots" type="uint32" pass="return" description="Total number of Queue Slots. If not specified in the config, default is 1." />
 		</method>
 		
+		<method name="GetSignalPhase" description="Returns the phase of the signal.">
+			<param name="Phase" type="enum" class="SignalPhase" pass="return" description="Returns the phase of the signal." />
+		</method>
+		
+		<method name="SetReactionTimeOut" description="Sets the signal reaction timeout to a specific value. Fails if Phase is not InPreparation. Default value is either set in the config file or 1 hour (3600000ms)">
+			<param name="ReactionTimeOutInMs" type="uint32" pass="in" description="Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms." />
+		</method>
+
+		<method name="GetReactionTimeOut" description="Gets the signal reaction timeout. Default value is either set in the config file or 1 hour (3600000ms)">
+			<param name="ReactionTimeOutInMs" type="uint32" pass="return" description="Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms." />
+		</method>
+
+		<method name="Trigger" description="Triggers a signal, if signal queue spot is available. Fails if Phase is not InPreparation. Fails if signal queue is full.">
+		</method>
+
+		<method name="TryTrigger" description="Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.">
+			<param name="Success" type="bool" pass="return" description="Returns true, if signal has been successfully put in the signal queue." />
+		</method>
+
+		<method name="TryTriggerWithTimeout" description="Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.">
+			<param name="ReactionTimeOutInMs" type="uint32" pass="in" description="Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms." />
+			<param name="Success" type="bool" pass="return" description="Returns true, if signal has been successfully put in the signal queue." />
+		</method>
+
+		<method name="WaitForHandling" description="Waits until the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted.">
+			<param name="WaitTime" type="uint32" pass="in" description="Time to wait in Milliseconds. 0 for Immediate return." />			
+			<param name="SignalHasBeenHandled" type="bool" pass="return" description="Flag if signal handling has been handled." />
+		</method>
+		
+		<method name="HasBeenHandled" description="Checks if the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted. Equivalent to WaitForHandling (0).">
+			<param name="SignalHasBeenHandled" type="bool" pass="return" description="Flag if signal handling has been handled." />
+		</method>
+
 		<method name="GetName" description="Returns the signal name.">
 			<param name="SignalName" type="string" pass="return" description="Name Of Signal" />
 		</method>
@@ -4094,18 +4150,25 @@
 
 	<class name="SignalHandler" parent="Base" description="Class for signal handling">
 
-		<method name="SignalHandled" description="Marks signal as handled and resets signal channel.">
+		<method name="GetSignalPhase" description="Returns the phase of the signal.">
+			<param name="Phase" type="enum" class="SignalPhase" pass="return" description="Returns the phase of the signal. Never will return InPreparation or Invalid." />
+		</method>
+
+		<method name="SignalHandled" description="Marks signal as Handled.. Fails if SignalPhase is not in InQueue or InProcess. if InQueue, the signal is automatically removed from its queue.">
 		</method>
 		
+		<method name="SignalInProcess" description="Marks signal as InProcess and it removes it from its Queue. Fails if SignalPhase is not InQueue.">
+		</method>
+
+		<method name="SignalFailed" description="Marks signal as Failed. Fails if SignalPhase is not in InQueue or InProcess.">
+			<param name="ErrorMessage" type="string" pass="in" description="Error Message describing the reason for the failure." />
+		</method>
+
 		<method name="GetName" description="Returns the signal name.">
 			<param name="SignalName" type="string" pass="return" description="Name Of Signal" />
 		</method>
-
-		<method name="GetSignalID" description="Returns the signal id. Depreciated.">
-			<param name="SignalID" type="string" pass="return" description="Signal Identifier" />
-		</method>
 		
-		<method name="GetSignalUUID" description="Returns the signal uuid. Identical to GetSignalID.">
+		<method name="GetSignalUUID" description="Returns the signal uuid.">
 			<param name="SignalUUID" type="string" pass="return" description="Signal Identifier" />
 		</method>
 
@@ -4122,7 +4185,6 @@
 			<param name="Name" type="string" pass="in" description="Name" />
 			<param name="Value" type="string" pass="return" description="Value" />
 		</method>
-
 
 		<method name="GetDouble" description="gets a double">
 			<param name="Name" type="string" pass="in" description="Name" />
@@ -4647,16 +4709,16 @@
 			<param name="Success" type="bool" pass="return" description="Signal has been triggered" />
 		</method>		
 
-		<method name="GetUnhandledSignal" description="Retrieves an unhandled signal By signal type name.">
+		<method name="GetUnhandledSignal" description="Retrieves an unhandled signal By signal type name. Only affects signals with Phase InQueue.">
 			<param name="SignalTypeName" type="string" pass="in" description="Name Of Signal to be returned" />
 			<param name="HandlerInstance" type="optionalclass" class="SignalHandler" pass="return" description="Signal object. If no signal has been found the signal handler object will be null." />
 		</method>		
 		
-		<method name="ClearUnhandledSignalsOfType" description="Clears all unhandled signals of a certain type and marks them invalid.">
+		<method name="ClearUnhandledSignalsOfType" description="Clears all unhandled signals of a certain type and marks them as Cleared. Only affects signals with Phase InQueue.">
 			<param name="SignalTypeName" type="string" pass="in" description="Name Of Signal to be cleared." />
 		</method>		
 
-		<method name="ClearAllUnhandledSignals" description="Clears all unhandled signals and marks them invalid.">
+		<method name="ClearAllUnhandledSignals" description="Clears all unhandled signals and marks them Cleared. Only affects signals in the specific queue (as well as with Phase InQueue.">
 		</method>		
 
 		<method name="GetUnhandledSignalByUUID" description="retrieves an unhandled signal from the current state machine by UUID.">

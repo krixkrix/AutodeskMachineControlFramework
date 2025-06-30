@@ -696,6 +696,9 @@ public:
 			case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "TRIANGLESETNOTFOUND";
 			case LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST: return "WORKINGFILECEASEDTOEXIST";
 			case LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "WORKINGDIRECTORYCEASEDTOEXIST";
+			case LIBMCENV_ERROR_UNDEFINEDINTERNALSIGNALPHASE: return "UNDEFINEDINTERNALSIGNALPHASE";
+			case LIBMCENV_ERROR_INVALIDREACTIONTIMEOUT: return "INVALIDREACTIONTIMEOUT";
+			case LIBMCENV_ERROR_COULDNOTSETREACTIONTIMEOUT: return "COULDNOTSETREACTIONTIMEOUT";
 		}
 		return "UNKNOWN";
 	}
@@ -951,6 +954,9 @@ public:
 			case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "Triangle set not found.";
 			case LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST: return "Working file ceased to exist.";
 			case LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
+			case LIBMCENV_ERROR_UNDEFINEDINTERNALSIGNALPHASE: return "Undefined internal signal phase.";
+			case LIBMCENV_ERROR_INVALIDREACTIONTIMEOUT: return "Invalid reaction timeout.";
+			case LIBMCENV_ERROR_COULDNOTSETREACTIONTIMEOUT: return "Could not set reaction timeout.";
 		}
 		return "unknown error";
 	}
@@ -2772,9 +2778,18 @@ public:
 	{
 	}
 	
+	inline std::string GetSignalUUID();
 	inline bool CanTrigger();
+	inline LibMCEnv_uint32 GetAvailableSignalQueueSlots();
+	inline LibMCEnv_uint32 GetTotalSignalQueueSlots();
+	inline eSignalPhase GetSignalPhase();
+	inline void SetReactionTimeOut(const LibMCEnv_uint32 nReactionTimeOutInMs);
+	inline LibMCEnv_uint32 GetReactionTimeOut();
 	inline void Trigger();
-	inline bool WaitForHandling(const LibMCEnv_uint32 nTimeOut);
+	inline bool TryTrigger();
+	inline bool TryTriggerWithTimeout(const LibMCEnv_uint32 nReactionTimeOutInMs);
+	inline bool WaitForHandling(const LibMCEnv_uint32 nWaitTime);
+	inline bool HasBeenHandled();
 	inline std::string GetName();
 	inline std::string GetStateMachine();
 	inline void SetString(const std::string & sName, const std::string & sValue);
@@ -2803,9 +2818,11 @@ public:
 	{
 	}
 	
+	inline eSignalPhase GetSignalPhase();
 	inline void SignalHandled();
+	inline void SignalInProcess();
+	inline void SignalFailed(const std::string & sErrorMessage);
 	inline std::string GetName();
-	inline std::string GetSignalID();
 	inline std::string GetSignalUUID();
 	inline std::string GetStateMachine();
 	inline std::string GetString(const std::string & sName);
@@ -4053,9 +4070,18 @@ public:
 		pWrapperTable->m_DriverEnvironment_GetCurrentDateTime = nullptr;
 		pWrapperTable->m_DriverEnvironment_GetCustomDateTime = nullptr;
 		pWrapperTable->m_DriverEnvironment_GetStartDateTime = nullptr;
+		pWrapperTable->m_SignalTrigger_GetSignalUUID = nullptr;
 		pWrapperTable->m_SignalTrigger_CanTrigger = nullptr;
+		pWrapperTable->m_SignalTrigger_GetAvailableSignalQueueSlots = nullptr;
+		pWrapperTable->m_SignalTrigger_GetTotalSignalQueueSlots = nullptr;
+		pWrapperTable->m_SignalTrigger_GetSignalPhase = nullptr;
+		pWrapperTable->m_SignalTrigger_SetReactionTimeOut = nullptr;
+		pWrapperTable->m_SignalTrigger_GetReactionTimeOut = nullptr;
 		pWrapperTable->m_SignalTrigger_Trigger = nullptr;
+		pWrapperTable->m_SignalTrigger_TryTrigger = nullptr;
+		pWrapperTable->m_SignalTrigger_TryTriggerWithTimeout = nullptr;
 		pWrapperTable->m_SignalTrigger_WaitForHandling = nullptr;
+		pWrapperTable->m_SignalTrigger_HasBeenHandled = nullptr;
 		pWrapperTable->m_SignalTrigger_GetName = nullptr;
 		pWrapperTable->m_SignalTrigger_GetStateMachine = nullptr;
 		pWrapperTable->m_SignalTrigger_SetString = nullptr;
@@ -4068,9 +4094,11 @@ public:
 		pWrapperTable->m_SignalTrigger_GetDoubleResult = nullptr;
 		pWrapperTable->m_SignalTrigger_GetIntegerResult = nullptr;
 		pWrapperTable->m_SignalTrigger_GetBoolResult = nullptr;
+		pWrapperTable->m_SignalHandler_GetSignalPhase = nullptr;
 		pWrapperTable->m_SignalHandler_SignalHandled = nullptr;
+		pWrapperTable->m_SignalHandler_SignalInProcess = nullptr;
+		pWrapperTable->m_SignalHandler_SignalFailed = nullptr;
 		pWrapperTable->m_SignalHandler_GetName = nullptr;
-		pWrapperTable->m_SignalHandler_GetSignalID = nullptr;
 		pWrapperTable->m_SignalHandler_GetSignalUUID = nullptr;
 		pWrapperTable->m_SignalHandler_GetStateMachine = nullptr;
 		pWrapperTable->m_SignalHandler_GetString = nullptr;
@@ -10339,12 +10367,66 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_GetSignalUUID = (PLibMCEnvSignalTrigger_GetSignalUUIDPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_getsignaluuid");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_GetSignalUUID = (PLibMCEnvSignalTrigger_GetSignalUUIDPtr) dlsym(hLibrary, "libmcenv_signaltrigger_getsignaluuid");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_GetSignalUUID == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_SignalTrigger_CanTrigger = (PLibMCEnvSignalTrigger_CanTriggerPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_cantrigger");
 		#else // _WIN32
 		pWrapperTable->m_SignalTrigger_CanTrigger = (PLibMCEnvSignalTrigger_CanTriggerPtr) dlsym(hLibrary, "libmcenv_signaltrigger_cantrigger");
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_SignalTrigger_CanTrigger == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_GetAvailableSignalQueueSlots = (PLibMCEnvSignalTrigger_GetAvailableSignalQueueSlotsPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_getavailablesignalqueueslots");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_GetAvailableSignalQueueSlots = (PLibMCEnvSignalTrigger_GetAvailableSignalQueueSlotsPtr) dlsym(hLibrary, "libmcenv_signaltrigger_getavailablesignalqueueslots");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_GetAvailableSignalQueueSlots == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_GetTotalSignalQueueSlots = (PLibMCEnvSignalTrigger_GetTotalSignalQueueSlotsPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_gettotalsignalqueueslots");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_GetTotalSignalQueueSlots = (PLibMCEnvSignalTrigger_GetTotalSignalQueueSlotsPtr) dlsym(hLibrary, "libmcenv_signaltrigger_gettotalsignalqueueslots");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_GetTotalSignalQueueSlots == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_GetSignalPhase = (PLibMCEnvSignalTrigger_GetSignalPhasePtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_getsignalphase");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_GetSignalPhase = (PLibMCEnvSignalTrigger_GetSignalPhasePtr) dlsym(hLibrary, "libmcenv_signaltrigger_getsignalphase");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_GetSignalPhase == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_SetReactionTimeOut = (PLibMCEnvSignalTrigger_SetReactionTimeOutPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_setreactiontimeout");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_SetReactionTimeOut = (PLibMCEnvSignalTrigger_SetReactionTimeOutPtr) dlsym(hLibrary, "libmcenv_signaltrigger_setreactiontimeout");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_SetReactionTimeOut == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_GetReactionTimeOut = (PLibMCEnvSignalTrigger_GetReactionTimeOutPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_getreactiontimeout");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_GetReactionTimeOut = (PLibMCEnvSignalTrigger_GetReactionTimeOutPtr) dlsym(hLibrary, "libmcenv_signaltrigger_getreactiontimeout");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_GetReactionTimeOut == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -10357,12 +10439,39 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_TryTrigger = (PLibMCEnvSignalTrigger_TryTriggerPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_trytrigger");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_TryTrigger = (PLibMCEnvSignalTrigger_TryTriggerPtr) dlsym(hLibrary, "libmcenv_signaltrigger_trytrigger");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_TryTrigger == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_TryTriggerWithTimeout = (PLibMCEnvSignalTrigger_TryTriggerWithTimeoutPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_trytriggerwithtimeout");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_TryTriggerWithTimeout = (PLibMCEnvSignalTrigger_TryTriggerWithTimeoutPtr) dlsym(hLibrary, "libmcenv_signaltrigger_trytriggerwithtimeout");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_TryTriggerWithTimeout == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_SignalTrigger_WaitForHandling = (PLibMCEnvSignalTrigger_WaitForHandlingPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_waitforhandling");
 		#else // _WIN32
 		pWrapperTable->m_SignalTrigger_WaitForHandling = (PLibMCEnvSignalTrigger_WaitForHandlingPtr) dlsym(hLibrary, "libmcenv_signaltrigger_waitforhandling");
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_SignalTrigger_WaitForHandling == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalTrigger_HasBeenHandled = (PLibMCEnvSignalTrigger_HasBeenHandledPtr) GetProcAddress(hLibrary, "libmcenv_signaltrigger_hasbeenhandled");
+		#else // _WIN32
+		pWrapperTable->m_SignalTrigger_HasBeenHandled = (PLibMCEnvSignalTrigger_HasBeenHandledPtr) dlsym(hLibrary, "libmcenv_signaltrigger_hasbeenhandled");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalTrigger_HasBeenHandled == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -10474,6 +10583,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_SignalHandler_GetSignalPhase = (PLibMCEnvSignalHandler_GetSignalPhasePtr) GetProcAddress(hLibrary, "libmcenv_signalhandler_getsignalphase");
+		#else // _WIN32
+		pWrapperTable->m_SignalHandler_GetSignalPhase = (PLibMCEnvSignalHandler_GetSignalPhasePtr) dlsym(hLibrary, "libmcenv_signalhandler_getsignalphase");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalHandler_GetSignalPhase == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_SignalHandler_SignalHandled = (PLibMCEnvSignalHandler_SignalHandledPtr) GetProcAddress(hLibrary, "libmcenv_signalhandler_signalhandled");
 		#else // _WIN32
 		pWrapperTable->m_SignalHandler_SignalHandled = (PLibMCEnvSignalHandler_SignalHandledPtr) dlsym(hLibrary, "libmcenv_signalhandler_signalhandled");
@@ -10483,21 +10601,30 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_SignalHandler_SignalInProcess = (PLibMCEnvSignalHandler_SignalInProcessPtr) GetProcAddress(hLibrary, "libmcenv_signalhandler_signalinprocess");
+		#else // _WIN32
+		pWrapperTable->m_SignalHandler_SignalInProcess = (PLibMCEnvSignalHandler_SignalInProcessPtr) dlsym(hLibrary, "libmcenv_signalhandler_signalinprocess");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalHandler_SignalInProcess == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SignalHandler_SignalFailed = (PLibMCEnvSignalHandler_SignalFailedPtr) GetProcAddress(hLibrary, "libmcenv_signalhandler_signalfailed");
+		#else // _WIN32
+		pWrapperTable->m_SignalHandler_SignalFailed = (PLibMCEnvSignalHandler_SignalFailedPtr) dlsym(hLibrary, "libmcenv_signalhandler_signalfailed");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SignalHandler_SignalFailed == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_SignalHandler_GetName = (PLibMCEnvSignalHandler_GetNamePtr) GetProcAddress(hLibrary, "libmcenv_signalhandler_getname");
 		#else // _WIN32
 		pWrapperTable->m_SignalHandler_GetName = (PLibMCEnvSignalHandler_GetNamePtr) dlsym(hLibrary, "libmcenv_signalhandler_getname");
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_SignalHandler_GetName == nullptr)
-			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
-		pWrapperTable->m_SignalHandler_GetSignalID = (PLibMCEnvSignalHandler_GetSignalIDPtr) GetProcAddress(hLibrary, "libmcenv_signalhandler_getsignalid");
-		#else // _WIN32
-		pWrapperTable->m_SignalHandler_GetSignalID = (PLibMCEnvSignalHandler_GetSignalIDPtr) dlsym(hLibrary, "libmcenv_signalhandler_getsignalid");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_SignalHandler_GetSignalID == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -15572,16 +15699,52 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_DriverEnvironment_GetStartDateTime == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_getsignaluuid", (void**)&(pWrapperTable->m_SignalTrigger_GetSignalUUID));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_GetSignalUUID == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_signaltrigger_cantrigger", (void**)&(pWrapperTable->m_SignalTrigger_CanTrigger));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_CanTrigger == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_getavailablesignalqueueslots", (void**)&(pWrapperTable->m_SignalTrigger_GetAvailableSignalQueueSlots));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_GetAvailableSignalQueueSlots == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_gettotalsignalqueueslots", (void**)&(pWrapperTable->m_SignalTrigger_GetTotalSignalQueueSlots));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_GetTotalSignalQueueSlots == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_getsignalphase", (void**)&(pWrapperTable->m_SignalTrigger_GetSignalPhase));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_GetSignalPhase == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_setreactiontimeout", (void**)&(pWrapperTable->m_SignalTrigger_SetReactionTimeOut));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_SetReactionTimeOut == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_getreactiontimeout", (void**)&(pWrapperTable->m_SignalTrigger_GetReactionTimeOut));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_GetReactionTimeOut == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_signaltrigger_trigger", (void**)&(pWrapperTable->m_SignalTrigger_Trigger));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_Trigger == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_trytrigger", (void**)&(pWrapperTable->m_SignalTrigger_TryTrigger));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_TryTrigger == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_trytriggerwithtimeout", (void**)&(pWrapperTable->m_SignalTrigger_TryTriggerWithTimeout));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_TryTriggerWithTimeout == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_signaltrigger_waitforhandling", (void**)&(pWrapperTable->m_SignalTrigger_WaitForHandling));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_WaitForHandling == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signaltrigger_hasbeenhandled", (void**)&(pWrapperTable->m_SignalTrigger_HasBeenHandled));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_HasBeenHandled == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_signaltrigger_getname", (void**)&(pWrapperTable->m_SignalTrigger_GetName));
@@ -15632,16 +15795,24 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_SignalTrigger_GetBoolResult == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_signalhandler_getsignalphase", (void**)&(pWrapperTable->m_SignalHandler_GetSignalPhase));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_GetSignalPhase == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_signalhandler_signalhandled", (void**)&(pWrapperTable->m_SignalHandler_SignalHandled));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_SignalHandled == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_signalhandler_getname", (void**)&(pWrapperTable->m_SignalHandler_GetName));
-		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_GetName == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_signalhandler_signalinprocess", (void**)&(pWrapperTable->m_SignalHandler_SignalInProcess));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_SignalInProcess == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcenv_signalhandler_getsignalid", (void**)&(pWrapperTable->m_SignalHandler_GetSignalID));
-		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_GetSignalID == nullptr) )
+		eLookupError = (*pLookup)("libmcenv_signalhandler_signalfailed", (void**)&(pWrapperTable->m_SignalHandler_SignalFailed));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_SignalFailed == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_signalhandler_getname", (void**)&(pWrapperTable->m_SignalHandler_GetName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SignalHandler_GetName == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_signalhandler_getsignaluuid", (void**)&(pWrapperTable->m_SignalHandler_GetSignalUUID));
@@ -25715,7 +25886,22 @@ public:
 	 */
 	
 	/**
-	* CSignalTrigger::CanTrigger - Returns, if signal channel is available.
+	* CSignalTrigger::GetSignalUUID - Returns the signal uuid.
+	* @return Signal Identifier
+	*/
+	std::string CSignalTrigger::GetSignalUUID()
+	{
+		LibMCEnv_uint32 bytesNeededSignalUUID = 0;
+		LibMCEnv_uint32 bytesWrittenSignalUUID = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_GetSignalUUID(m_pHandle, 0, &bytesNeededSignalUUID, nullptr));
+		std::vector<char> bufferSignalUUID(bytesNeededSignalUUID);
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_GetSignalUUID(m_pHandle, bytesNeededSignalUUID, &bytesWrittenSignalUUID, &bufferSignalUUID[0]));
+		
+		return std::string(&bufferSignalUUID[0]);
+	}
+	
+	/**
+	* CSignalTrigger::CanTrigger - Returns, if a spot is available in the signal queue.
 	* @return Returns true, if signal channel is available.
 	*/
 	bool CSignalTrigger::CanTrigger()
@@ -25727,7 +25913,64 @@ public:
 	}
 	
 	/**
-	* CSignalTrigger::Trigger - Triggers a signal, if signal channel is available.
+	* CSignalTrigger::GetAvailableSignalQueueSlots - Returns the number of slots available in the signal queue.
+	* @return Number of Queue Slots available.
+	*/
+	LibMCEnv_uint32 CSignalTrigger::GetAvailableSignalQueueSlots()
+	{
+		LibMCEnv_uint32 resultNumberOfQueueSlots = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_GetAvailableSignalQueueSlots(m_pHandle, &resultNumberOfQueueSlots));
+		
+		return resultNumberOfQueueSlots;
+	}
+	
+	/**
+	* CSignalTrigger::GetTotalSignalQueueSlots - Returns the total number of slots of the signal queue.
+	* @return Total number of Queue Slots. If not specified in the config, default is 1.
+	*/
+	LibMCEnv_uint32 CSignalTrigger::GetTotalSignalQueueSlots()
+	{
+		LibMCEnv_uint32 resultNumberOfQueueSlots = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_GetTotalSignalQueueSlots(m_pHandle, &resultNumberOfQueueSlots));
+		
+		return resultNumberOfQueueSlots;
+	}
+	
+	/**
+	* CSignalTrigger::GetSignalPhase - Returns the phase of the signal.
+	* @return Returns the phase of the signal.
+	*/
+	eSignalPhase CSignalTrigger::GetSignalPhase()
+	{
+		eSignalPhase resultPhase = (eSignalPhase) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_GetSignalPhase(m_pHandle, &resultPhase));
+		
+		return resultPhase;
+	}
+	
+	/**
+	* CSignalTrigger::SetReactionTimeOut - Sets the signal reaction timeout to a specific value. Fails if Phase is not InPreparation. Default value is either set in the config file or 1 hour (3600000ms)
+	* @param[in] nReactionTimeOutInMs - Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+	*/
+	void CSignalTrigger::SetReactionTimeOut(const LibMCEnv_uint32 nReactionTimeOutInMs)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_SetReactionTimeOut(m_pHandle, nReactionTimeOutInMs));
+	}
+	
+	/**
+	* CSignalTrigger::GetReactionTimeOut - Gets the signal reaction timeout. Default value is either set in the config file or 1 hour (3600000ms)
+	* @return Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+	*/
+	LibMCEnv_uint32 CSignalTrigger::GetReactionTimeOut()
+	{
+		LibMCEnv_uint32 resultReactionTimeOutInMs = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_GetReactionTimeOut(m_pHandle, &resultReactionTimeOutInMs));
+		
+		return resultReactionTimeOutInMs;
+	}
+	
+	/**
+	* CSignalTrigger::Trigger - Triggers a signal, if signal queue spot is available. Fails if Phase is not InPreparation. Fails if signal queue is full.
 	*/
 	void CSignalTrigger::Trigger()
 	{
@@ -25735,16 +25978,53 @@ public:
 	}
 	
 	/**
-	* CSignalTrigger::WaitForHandling - Waits until the signal is reset.
-	* @param[in] nTimeOut - Timeout in Milliseconds. 0 for Immediate return.
-	* @return Flag if signal handling has been handled.
+	* CSignalTrigger::TryTrigger - Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.
+	* @return Returns true, if signal has been successfully put in the signal queue.
 	*/
-	bool CSignalTrigger::WaitForHandling(const LibMCEnv_uint32 nTimeOut)
+	bool CSignalTrigger::TryTrigger()
 	{
 		bool resultSuccess = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_WaitForHandling(m_pHandle, nTimeOut, &resultSuccess));
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_TryTrigger(m_pHandle, &resultSuccess));
 		
 		return resultSuccess;
+	}
+	
+	/**
+	* CSignalTrigger::TryTriggerWithTimeout - Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.
+	* @param[in] nReactionTimeOutInMs - Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+	* @return Returns true, if signal has been successfully put in the signal queue.
+	*/
+	bool CSignalTrigger::TryTriggerWithTimeout(const LibMCEnv_uint32 nReactionTimeOutInMs)
+	{
+		bool resultSuccess = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_TryTriggerWithTimeout(m_pHandle, nReactionTimeOutInMs, &resultSuccess));
+		
+		return resultSuccess;
+	}
+	
+	/**
+	* CSignalTrigger::WaitForHandling - Waits until the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted.
+	* @param[in] nWaitTime - Time to wait in Milliseconds. 0 for Immediate return.
+	* @return Flag if signal handling has been handled.
+	*/
+	bool CSignalTrigger::WaitForHandling(const LibMCEnv_uint32 nWaitTime)
+	{
+		bool resultSignalHasBeenHandled = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_WaitForHandling(m_pHandle, nWaitTime, &resultSignalHasBeenHandled));
+		
+		return resultSignalHasBeenHandled;
+	}
+	
+	/**
+	* CSignalTrigger::HasBeenHandled - Checks if the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted. Equivalent to WaitForHandling (0).
+	* @return Flag if signal handling has been handled.
+	*/
+	bool CSignalTrigger::HasBeenHandled()
+	{
+		bool resultSignalHasBeenHandled = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalTrigger_HasBeenHandled(m_pHandle, &resultSignalHasBeenHandled));
+		
+		return resultSignalHasBeenHandled;
 	}
 	
 	/**
@@ -25903,11 +26183,40 @@ public:
 	 */
 	
 	/**
-	* CSignalHandler::SignalHandled - Marks signal as handled and resets signal channel.
+	* CSignalHandler::GetSignalPhase - Returns the phase of the signal.
+	* @return Returns the phase of the signal. Never will return InPreparation or Invalid.
+	*/
+	eSignalPhase CSignalHandler::GetSignalPhase()
+	{
+		eSignalPhase resultPhase = (eSignalPhase) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalHandler_GetSignalPhase(m_pHandle, &resultPhase));
+		
+		return resultPhase;
+	}
+	
+	/**
+	* CSignalHandler::SignalHandled - Marks signal as Handled.. Fails if SignalPhase is not in InQueue or InProcess. if InQueue, the signal is automatically removed from its queue.
 	*/
 	void CSignalHandler::SignalHandled()
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_SignalHandler_SignalHandled(m_pHandle));
+	}
+	
+	/**
+	* CSignalHandler::SignalInProcess - Marks signal as InProcess and it removes it from its Queue. Fails if SignalPhase is not InQueue.
+	*/
+	void CSignalHandler::SignalInProcess()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalHandler_SignalInProcess(m_pHandle));
+	}
+	
+	/**
+	* CSignalHandler::SignalFailed - Marks signal as Failed. Fails if SignalPhase is not in InQueue or InProcess.
+	* @param[in] sErrorMessage - Error Message describing the reason for the failure.
+	*/
+	void CSignalHandler::SignalFailed(const std::string & sErrorMessage)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SignalHandler_SignalFailed(m_pHandle, sErrorMessage.c_str()));
 	}
 	
 	/**
@@ -25926,22 +26235,7 @@ public:
 	}
 	
 	/**
-	* CSignalHandler::GetSignalID - Returns the signal id. Depreciated.
-	* @return Signal Identifier
-	*/
-	std::string CSignalHandler::GetSignalID()
-	{
-		LibMCEnv_uint32 bytesNeededSignalID = 0;
-		LibMCEnv_uint32 bytesWrittenSignalID = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_SignalHandler_GetSignalID(m_pHandle, 0, &bytesNeededSignalID, nullptr));
-		std::vector<char> bufferSignalID(bytesNeededSignalID);
-		CheckError(m_pWrapper->m_WrapperTable.m_SignalHandler_GetSignalID(m_pHandle, bytesNeededSignalID, &bytesWrittenSignalID, &bufferSignalID[0]));
-		
-		return std::string(&bufferSignalID[0]);
-	}
-	
-	/**
-	* CSignalHandler::GetSignalUUID - Returns the signal uuid. Identical to GetSignalID.
+	* CSignalHandler::GetSignalUUID - Returns the signal uuid.
 	* @return Signal Identifier
 	*/
 	std::string CSignalHandler::GetSignalUUID()
@@ -27419,7 +27713,7 @@ public:
 	}
 	
 	/**
-	* CStateEnvironment::GetUnhandledSignal - Retrieves an unhandled signal By signal type name.
+	* CStateEnvironment::GetUnhandledSignal - Retrieves an unhandled signal By signal type name. Only affects signals with Phase InQueue.
 	* @param[in] sSignalTypeName - Name Of Signal to be returned
 	* @return Signal object. If no signal has been found the signal handler object will be null.
 	*/
@@ -27436,7 +27730,7 @@ public:
 	}
 	
 	/**
-	* CStateEnvironment::ClearUnhandledSignalsOfType - Clears all unhandled signals of a certain type and marks them invalid.
+	* CStateEnvironment::ClearUnhandledSignalsOfType - Clears all unhandled signals of a certain type and marks them as Cleared. Only affects signals with Phase InQueue.
 	* @param[in] sSignalTypeName - Name Of Signal to be cleared.
 	*/
 	void CStateEnvironment::ClearUnhandledSignalsOfType(const std::string & sSignalTypeName)
@@ -27445,7 +27739,7 @@ public:
 	}
 	
 	/**
-	* CStateEnvironment::ClearAllUnhandledSignals - Clears all unhandled signals and marks them invalid.
+	* CStateEnvironment::ClearAllUnhandledSignals - Clears all unhandled signals and marks them Cleared. Only affects signals in the specific queue (as well as with Phase InQueue.
 	*/
 	void CStateEnvironment::ClearAllUnhandledSignals()
 	{

@@ -677,6 +677,9 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST 661 /** Working directory ceased to exist. */
 #define LIBMC_ERROR_DIRECTORYALREADYEXISTS 662 /** Directory already exists. */
 #define LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND 663 /** Working Directory not found. */
+#define LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT 664 /** Invalid Signal Reaction Timeout. */
+#define LIBMC_ERROR_INVALIDSIGNALQUEUESIZE 665 /** Invalid Signal queue size. */
+#define LIBMC_ERROR_SIGNALALREADYTRIGGERED 666 /** Signal has already been triggered. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1266,6 +1269,9 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
     case LIBMC_ERROR_DIRECTORYALREADYEXISTS: return "Directory already exists.";
     case LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND: return "Working Directory not found.";
+    case LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT: return "Invalid Signal Reaction Timeout.";
+    case LIBMC_ERROR_INVALIDSIGNALQUEUESIZE: return "Invalid Signal queue size.";
+    case LIBMC_ERROR_SIGNALALREADYTRIGGERED: return "Signal has already been triggered.";
     default: return "unknown error";
   }
 }

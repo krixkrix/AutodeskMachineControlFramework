@@ -20853,6 +20853,54 @@ LibMCEnvResult libmcenv_driverenvironment_getstartdatetime(LibMCEnv_DriverEnviro
 /*************************************************************************************************************************
  Class implementation for SignalTrigger
 **************************************************************************************************************************/
+LibMCEnvResult libmcenv_signaltrigger_getsignaluuid(LibMCEnv_SignalTrigger pSignalTrigger, const LibMCEnv_uint32 nSignalUUIDBufferSize, LibMCEnv_uint32* pSignalUUIDNeededChars, char * pSignalUUIDBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if ( (!pSignalUUIDBuffer) && !(pSignalUUIDNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sSignalUUID("");
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pSignalUUIDBuffer == nullptr);
+		if (isCacheCall) {
+			sSignalUUID = pISignalTrigger->GetSignalUUID();
+
+			pISignalTrigger->_setCache (new ParameterCache_1<std::string> (sSignalUUID));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pISignalTrigger->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sSignalUUID);
+			pISignalTrigger->_setCache (nullptr);
+		}
+		
+		if (pSignalUUIDNeededChars)
+			*pSignalUUIDNeededChars = (LibMCEnv_uint32) (sSignalUUID.size()+1);
+		if (pSignalUUIDBuffer) {
+			if (sSignalUUID.size() >= nSignalUUIDBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iSignalUUID = 0; iSignalUUID < sSignalUUID.size(); iSignalUUID++)
+				pSignalUUIDBuffer[iSignalUUID] = sSignalUUID[iSignalUUID];
+			pSignalUUIDBuffer[sSignalUUID.size()] = 0;
+		}
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_signaltrigger_cantrigger(LibMCEnv_SignalTrigger pSignalTrigger, bool * pChannelIsAvailable)
 {
 	IBase* pIBaseClass = (IBase *)pSignalTrigger;
@@ -20865,6 +20913,134 @@ LibMCEnvResult libmcenv_signaltrigger_cantrigger(LibMCEnv_SignalTrigger pSignalT
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
 		*pChannelIsAvailable = pISignalTrigger->CanTrigger();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_getavailablesignalqueueslots(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 * pNumberOfQueueSlots)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pNumberOfQueueSlots == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pNumberOfQueueSlots = pISignalTrigger->GetAvailableSignalQueueSlots();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_gettotalsignalqueueslots(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 * pNumberOfQueueSlots)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pNumberOfQueueSlots == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pNumberOfQueueSlots = pISignalTrigger->GetTotalSignalQueueSlots();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_getsignalphase(LibMCEnv_SignalTrigger pSignalTrigger, eLibMCEnvSignalPhase * pPhase)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pPhase == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pPhase = pISignalTrigger->GetSignalPhase();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_setreactiontimeout(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nReactionTimeOutInMs)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pISignalTrigger->SetReactionTimeOut(nReactionTimeOutInMs);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_getreactiontimeout(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 * pReactionTimeOutInMs)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pReactionTimeOutInMs == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pReactionTimeOutInMs = pISignalTrigger->GetReactionTimeOut();
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -20903,7 +21079,7 @@ LibMCEnvResult libmcenv_signaltrigger_trigger(LibMCEnv_SignalTrigger pSignalTrig
 	}
 }
 
-LibMCEnvResult libmcenv_signaltrigger_waitforhandling(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nTimeOut, bool * pSuccess)
+LibMCEnvResult libmcenv_signaltrigger_trytrigger(LibMCEnv_SignalTrigger pSignalTrigger, bool * pSuccess)
 {
 	IBase* pIBaseClass = (IBase *)pSignalTrigger;
 
@@ -20914,7 +21090,85 @@ LibMCEnvResult libmcenv_signaltrigger_waitforhandling(LibMCEnv_SignalTrigger pSi
 		if (!pISignalTrigger)
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
-		*pSuccess = pISignalTrigger->WaitForHandling(nTimeOut);
+		*pSuccess = pISignalTrigger->TryTrigger();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_trytriggerwithtimeout(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nReactionTimeOutInMs, bool * pSuccess)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pSuccess == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pSuccess = pISignalTrigger->TryTriggerWithTimeout(nReactionTimeOutInMs);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_waitforhandling(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nWaitTime, bool * pSignalHasBeenHandled)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pSignalHasBeenHandled == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pSignalHasBeenHandled = pISignalTrigger->WaitForHandling(nWaitTime);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signaltrigger_hasbeenhandled(LibMCEnv_SignalTrigger pSignalTrigger, bool * pSignalHasBeenHandled)
+{
+	IBase* pIBaseClass = (IBase *)pSignalTrigger;
+
+	try {
+		if (pSignalHasBeenHandled == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalTrigger* pISignalTrigger = dynamic_cast<ISignalTrigger*>(pIBaseClass);
+		if (!pISignalTrigger)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pSignalHasBeenHandled = pISignalTrigger->HasBeenHandled();
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -21359,6 +21613,32 @@ LibMCEnvResult libmcenv_signaltrigger_getboolresult(LibMCEnv_SignalTrigger pSign
 /*************************************************************************************************************************
  Class implementation for SignalHandler
 **************************************************************************************************************************/
+LibMCEnvResult libmcenv_signalhandler_getsignalphase(LibMCEnv_SignalHandler pSignalHandler, eLibMCEnvSignalPhase * pPhase)
+{
+	IBase* pIBaseClass = (IBase *)pSignalHandler;
+
+	try {
+		if (pPhase == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		ISignalHandler* pISignalHandler = dynamic_cast<ISignalHandler*>(pIBaseClass);
+		if (!pISignalHandler)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pPhase = pISignalHandler->GetSignalPhase();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_signalhandler_signalhandled(LibMCEnv_SignalHandler pSignalHandler)
 {
 	IBase* pIBaseClass = (IBase *)pSignalHandler;
@@ -21369,6 +21649,57 @@ LibMCEnvResult libmcenv_signalhandler_signalhandled(LibMCEnv_SignalHandler pSign
 			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
 		
 		pISignalHandler->SignalHandled();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signalhandler_signalinprocess(LibMCEnv_SignalHandler pSignalHandler)
+{
+	IBase* pIBaseClass = (IBase *)pSignalHandler;
+
+	try {
+		ISignalHandler* pISignalHandler = dynamic_cast<ISignalHandler*>(pIBaseClass);
+		if (!pISignalHandler)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pISignalHandler->SignalInProcess();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_signalhandler_signalfailed(LibMCEnv_SignalHandler pSignalHandler, const char * pErrorMessage)
+{
+	IBase* pIBaseClass = (IBase *)pSignalHandler;
+
+	try {
+		if (pErrorMessage == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sErrorMessage(pErrorMessage);
+		ISignalHandler* pISignalHandler = dynamic_cast<ISignalHandler*>(pIBaseClass);
+		if (!pISignalHandler)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pISignalHandler->SignalFailed(sErrorMessage);
 
 		return LIBMCENV_SUCCESS;
 	}
@@ -21417,54 +21748,6 @@ LibMCEnvResult libmcenv_signalhandler_getname(LibMCEnv_SignalHandler pSignalHand
 			for (size_t iSignalName = 0; iSignalName < sSignalName.size(); iSignalName++)
 				pSignalNameBuffer[iSignalName] = sSignalName[iSignalName];
 			pSignalNameBuffer[sSignalName.size()] = 0;
-		}
-		return LIBMCENV_SUCCESS;
-	}
-	catch (ELibMCEnvInterfaceException & Exception) {
-		return handleLibMCEnvException(pIBaseClass, Exception);
-	}
-	catch (std::exception & StdException) {
-		return handleStdException(pIBaseClass, StdException);
-	}
-	catch (...) {
-		return handleUnhandledException(pIBaseClass);
-	}
-}
-
-LibMCEnvResult libmcenv_signalhandler_getsignalid(LibMCEnv_SignalHandler pSignalHandler, const LibMCEnv_uint32 nSignalIDBufferSize, LibMCEnv_uint32* pSignalIDNeededChars, char * pSignalIDBuffer)
-{
-	IBase* pIBaseClass = (IBase *)pSignalHandler;
-
-	try {
-		if ( (!pSignalIDBuffer) && !(pSignalIDNeededChars) )
-			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
-		std::string sSignalID("");
-		ISignalHandler* pISignalHandler = dynamic_cast<ISignalHandler*>(pIBaseClass);
-		if (!pISignalHandler)
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
-		
-		bool isCacheCall = (pSignalIDBuffer == nullptr);
-		if (isCacheCall) {
-			sSignalID = pISignalHandler->GetSignalID();
-
-			pISignalHandler->_setCache (new ParameterCache_1<std::string> (sSignalID));
-		}
-		else {
-			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pISignalHandler->_getCache ());
-			if (cache == nullptr)
-				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
-			cache->retrieveData (sSignalID);
-			pISignalHandler->_setCache (nullptr);
-		}
-		
-		if (pSignalIDNeededChars)
-			*pSignalIDNeededChars = (LibMCEnv_uint32) (sSignalID.size()+1);
-		if (pSignalIDBuffer) {
-			if (sSignalID.size() >= nSignalIDBufferSize)
-				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
-			for (size_t iSignalID = 0; iSignalID < sSignalID.size(); iSignalID++)
-				pSignalIDBuffer[iSignalID] = sSignalID[iSignalID];
-			pSignalIDBuffer[sSignalID.size()] = 0;
 		}
 		return LIBMCENV_SUCCESS;
 	}
@@ -31873,12 +32156,30 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_driverenvironment_getcustomdatetime;
 	if (sProcName == "libmcenv_driverenvironment_getstartdatetime") 
 		*ppProcAddress = (void*) &libmcenv_driverenvironment_getstartdatetime;
+	if (sProcName == "libmcenv_signaltrigger_getsignaluuid") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_getsignaluuid;
 	if (sProcName == "libmcenv_signaltrigger_cantrigger") 
 		*ppProcAddress = (void*) &libmcenv_signaltrigger_cantrigger;
+	if (sProcName == "libmcenv_signaltrigger_getavailablesignalqueueslots") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_getavailablesignalqueueslots;
+	if (sProcName == "libmcenv_signaltrigger_gettotalsignalqueueslots") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_gettotalsignalqueueslots;
+	if (sProcName == "libmcenv_signaltrigger_getsignalphase") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_getsignalphase;
+	if (sProcName == "libmcenv_signaltrigger_setreactiontimeout") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_setreactiontimeout;
+	if (sProcName == "libmcenv_signaltrigger_getreactiontimeout") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_getreactiontimeout;
 	if (sProcName == "libmcenv_signaltrigger_trigger") 
 		*ppProcAddress = (void*) &libmcenv_signaltrigger_trigger;
+	if (sProcName == "libmcenv_signaltrigger_trytrigger") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_trytrigger;
+	if (sProcName == "libmcenv_signaltrigger_trytriggerwithtimeout") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_trytriggerwithtimeout;
 	if (sProcName == "libmcenv_signaltrigger_waitforhandling") 
 		*ppProcAddress = (void*) &libmcenv_signaltrigger_waitforhandling;
+	if (sProcName == "libmcenv_signaltrigger_hasbeenhandled") 
+		*ppProcAddress = (void*) &libmcenv_signaltrigger_hasbeenhandled;
 	if (sProcName == "libmcenv_signaltrigger_getname") 
 		*ppProcAddress = (void*) &libmcenv_signaltrigger_getname;
 	if (sProcName == "libmcenv_signaltrigger_getstatemachine") 
@@ -31903,12 +32204,16 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_signaltrigger_getintegerresult;
 	if (sProcName == "libmcenv_signaltrigger_getboolresult") 
 		*ppProcAddress = (void*) &libmcenv_signaltrigger_getboolresult;
+	if (sProcName == "libmcenv_signalhandler_getsignalphase") 
+		*ppProcAddress = (void*) &libmcenv_signalhandler_getsignalphase;
 	if (sProcName == "libmcenv_signalhandler_signalhandled") 
 		*ppProcAddress = (void*) &libmcenv_signalhandler_signalhandled;
+	if (sProcName == "libmcenv_signalhandler_signalinprocess") 
+		*ppProcAddress = (void*) &libmcenv_signalhandler_signalinprocess;
+	if (sProcName == "libmcenv_signalhandler_signalfailed") 
+		*ppProcAddress = (void*) &libmcenv_signalhandler_signalfailed;
 	if (sProcName == "libmcenv_signalhandler_getname") 
 		*ppProcAddress = (void*) &libmcenv_signalhandler_getname;
-	if (sProcName == "libmcenv_signalhandler_getsignalid") 
-		*ppProcAddress = (void*) &libmcenv_signalhandler_getsignalid;
 	if (sProcName == "libmcenv_signalhandler_getsignaluuid") 
 		*ppProcAddress = (void*) &libmcenv_signalhandler_getsignaluuid;
 	if (sProcName == "libmcenv_signalhandler_getstatemachine") 

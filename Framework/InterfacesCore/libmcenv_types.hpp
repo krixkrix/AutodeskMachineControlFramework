@@ -343,6 +343,9 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_TRIANGLESETNOTFOUND 10246 /** Triangle set not found. */
 #define LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST 10247 /** Working file ceased to exist. */
 #define LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST 10248 /** Working directory ceased to exist. */
+#define LIBMCENV_ERROR_UNDEFINEDINTERNALSIGNALPHASE 10249 /** Undefined internal signal phase. */
+#define LIBMCENV_ERROR_INVALIDREACTIONTIMEOUT 10250 /** Invalid reaction timeout. */
+#define LIBMCENV_ERROR_COULDNOTSETREACTIONTIMEOUT 10251 /** Could not set reaction timeout. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -598,6 +601,9 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_TRIANGLESETNOTFOUND: return "Triangle set not found.";
     case LIBMCENV_ERROR_WORKINGFILECEASEDTOEXIST: return "Working file ceased to exist.";
     case LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
+    case LIBMCENV_ERROR_UNDEFINEDINTERNALSIGNALPHASE: return "Undefined internal signal phase.";
+    case LIBMCENV_ERROR_INVALIDREACTIONTIMEOUT: return "Invalid reaction timeout.";
+    case LIBMCENV_ERROR_COULDNOTSETREACTIONTIMEOUT: return "Could not set reaction timeout.";
     default: return "unknown error";
   }
 }
@@ -820,6 +826,18 @@ namespace LibMCEnv {
     Uint64Column = 5
   };
   
+  enum class eSignalPhase : LibMCEnv_int32 {
+    Invalid = 0, /** Invalid phase. Should not happen. */
+    InPreparation = 10, /** Signal has not been triggered yet. Parameters can change. */
+    InQueue = 20, /** Signal has been triggered but is not being processed. Parameters can not change anymore. */
+    InProcess = 30, /** Signal is being processed. Results can change. */
+    Handled = 40, /** Signal is has been handled to its specification. */
+    Failed = 50, /** Signal is has not been handled to its specification. An error message is available. */
+    TimedOut = 60, /** The signal timed out before being processed. */
+    Cleared = 70, /** The signal queue has been cleared and the signal will not be processed anymore. */
+    Retracted = 80 /** The sender has retracted the signal before it was processed. */
+  };
+  
   /*************************************************************************************************************************
    Declaration of structs
   **************************************************************************************************************************/
@@ -913,6 +931,7 @@ typedef LibMCEnv::eMessageDialogType eLibMCEnvMessageDialogType;
 typedef LibMCEnv::eWorkingFileProcessStatus eLibMCEnvWorkingFileProcessStatus;
 typedef LibMCEnv::eBuildExecutionStatus eLibMCEnvBuildExecutionStatus;
 typedef LibMCEnv::eDataTableColumnType eLibMCEnvDataTableColumnType;
+typedef LibMCEnv::eSignalPhase eLibMCEnvSignalPhase;
 typedef LibMCEnv::sPosition2D sLibMCEnvPosition2D;
 typedef LibMCEnv::sHatch2D sLibMCEnvHatch2D;
 typedef LibMCEnv::sMeshVertex3D sLibMCEnvMeshVertex3D;

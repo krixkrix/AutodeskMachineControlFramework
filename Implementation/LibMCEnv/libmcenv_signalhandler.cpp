@@ -64,8 +64,51 @@ CSignalHandler::CSignalHandler(AMC::PStateSignalHandler pSignalHandler, std::str
 
 void CSignalHandler::SignalHandled()
 {
-	m_pSignalHandler->markSignalAsHandled(m_sSignalUUID, m_pResultGroup->serializeToJSON ());
+	m_pSignalHandler->changeSignalPhaseToHandled (m_sSignalUUID, m_pResultGroup->serializeToJSON ());
 }
+
+LibMCEnv::eSignalPhase CSignalHandler::GetSignalPhase()
+{
+	AMC::eAMCSignalPhase signalPhase = m_pSignalHandler->getSignalPhase(m_sSignalUUID);
+
+	switch (signalPhase) {
+		case AMC::eAMCSignalPhase::Invalid:
+			return LibMCEnv::eSignalPhase::Invalid;
+		case AMC::eAMCSignalPhase::InPreparation:
+			return LibMCEnv::eSignalPhase::InPreparation;
+		case AMC::eAMCSignalPhase::InQueue:
+			return LibMCEnv::eSignalPhase::InQueue;
+		case AMC::eAMCSignalPhase::InProcess:
+			return LibMCEnv::eSignalPhase::InProcess;
+		case AMC::eAMCSignalPhase::Handled:
+			return LibMCEnv::eSignalPhase::Handled;
+		case AMC::eAMCSignalPhase::Failed:
+			return LibMCEnv::eSignalPhase::Failed;
+		case AMC::eAMCSignalPhase::TimedOut:
+			return LibMCEnv::eSignalPhase::TimedOut;
+		case AMC::eAMCSignalPhase::Cleared:
+			return LibMCEnv::eSignalPhase::Cleared;
+		case AMC::eAMCSignalPhase::Retracted:
+			return LibMCEnv::eSignalPhase::Retracted;
+
+		default:
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_UNDEFINEDINTERNALSIGNALPHASE);
+
+	}
+	
+}
+
+
+void CSignalHandler::SignalInProcess()
+{
+	m_pSignalHandler->changeSignalPhaseToInProcess (m_sSignalUUID);
+}
+
+void CSignalHandler::SignalFailed(const std::string& sErrorMessage)
+{
+	m_pSignalHandler->changeSignalPhaseToFailed(m_sSignalUUID, m_pResultGroup->serializeToJSON(), sErrorMessage);
+}
+
 
 std::string CSignalHandler::GetName()
 {
@@ -75,11 +118,6 @@ std::string CSignalHandler::GetName()
 std::string CSignalHandler::GetStateMachine()
 {
 	return m_sInstanceName;
-}
-
-std::string CSignalHandler::GetSignalID()
-{
-	return m_sSignalUUID;
 }
 
 std::string CSignalHandler::GetSignalUUID()

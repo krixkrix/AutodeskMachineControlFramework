@@ -7129,7 +7129,18 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_getstartdatetime(Lib
 **************************************************************************************************************************/
 
 /**
-* Returns, if signal channel is available.
+* Returns the signal uuid.
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[in] nSignalUUIDBufferSize - size of the buffer (including trailing 0)
+* @param[out] pSignalUUIDNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pSignalUUIDBuffer -  buffer of Signal Identifier, may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_getsignaluuid(LibMCEnv_SignalTrigger pSignalTrigger, const LibMCEnv_uint32 nSignalUUIDBufferSize, LibMCEnv_uint32* pSignalUUIDNeededChars, char * pSignalUUIDBuffer);
+
+/**
+* Returns, if a spot is available in the signal queue.
 *
 * @param[in] pSignalTrigger - SignalTrigger instance.
 * @param[out] pChannelIsAvailable - Returns true, if signal channel is available.
@@ -7138,7 +7149,52 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_driverenvironment_getstartdatetime(Lib
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_cantrigger(LibMCEnv_SignalTrigger pSignalTrigger, bool * pChannelIsAvailable);
 
 /**
-* Triggers a signal, if signal channel is available.
+* Returns the number of slots available in the signal queue.
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[out] pNumberOfQueueSlots - Number of Queue Slots available.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_getavailablesignalqueueslots(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 * pNumberOfQueueSlots);
+
+/**
+* Returns the total number of slots of the signal queue.
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[out] pNumberOfQueueSlots - Total number of Queue Slots. If not specified in the config, default is 1.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_gettotalsignalqueueslots(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 * pNumberOfQueueSlots);
+
+/**
+* Returns the phase of the signal.
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[out] pPhase - Returns the phase of the signal.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_getsignalphase(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv::eSignalPhase * pPhase);
+
+/**
+* Sets the signal reaction timeout to a specific value. Fails if Phase is not InPreparation. Default value is either set in the config file or 1 hour (3600000ms)
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[in] nReactionTimeOutInMs - Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_setreactiontimeout(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nReactionTimeOutInMs);
+
+/**
+* Gets the signal reaction timeout. Default value is either set in the config file or 1 hour (3600000ms)
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[out] pReactionTimeOutInMs - Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_getreactiontimeout(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 * pReactionTimeOutInMs);
+
+/**
+* Triggers a signal, if signal queue spot is available. Fails if Phase is not InPreparation. Fails if signal queue is full.
 *
 * @param[in] pSignalTrigger - SignalTrigger instance.
 * @return error code or 0 (success)
@@ -7146,14 +7202,42 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_cantrigger(LibMCEnv_Sign
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_trigger(LibMCEnv_SignalTrigger pSignalTrigger);
 
 /**
-* Waits until the signal is reset.
+* Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.
 *
 * @param[in] pSignalTrigger - SignalTrigger instance.
-* @param[in] nTimeOut - Timeout in Milliseconds. 0 for Immediate return.
-* @param[out] pSuccess - Flag if signal handling has been handled.
+* @param[out] pSuccess - Returns true, if signal has been successfully put in the signal queue.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_waitforhandling(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nTimeOut, bool * pSuccess);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_trytrigger(LibMCEnv_SignalTrigger pSignalTrigger, bool * pSuccess);
+
+/**
+* Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[in] nReactionTimeOutInMs - Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+* @param[out] pSuccess - Returns true, if signal has been successfully put in the signal queue.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_trytriggerwithtimeout(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nReactionTimeOutInMs, bool * pSuccess);
+
+/**
+* Waits until the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted.
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[in] nWaitTime - Time to wait in Milliseconds. 0 for Immediate return.
+* @param[out] pSignalHasBeenHandled - Flag if signal handling has been handled.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_waitforhandling(LibMCEnv_SignalTrigger pSignalTrigger, LibMCEnv_uint32 nWaitTime, bool * pSignalHasBeenHandled);
+
+/**
+* Checks if the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted. Equivalent to WaitForHandling (0).
+*
+* @param[in] pSignalTrigger - SignalTrigger instance.
+* @param[out] pSignalHasBeenHandled - Flag if signal handling has been handled.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_hasbeenhandled(LibMCEnv_SignalTrigger pSignalTrigger, bool * pSignalHasBeenHandled);
 
 /**
 * Returns the signal name.
@@ -7286,12 +7370,38 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signaltrigger_getboolresult(LibMCEnv_S
 **************************************************************************************************************************/
 
 /**
-* Marks signal as handled and resets signal channel.
+* Returns the phase of the signal.
+*
+* @param[in] pSignalHandler - SignalHandler instance.
+* @param[out] pPhase - Returns the phase of the signal. Never will return InPreparation or Invalid.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_getsignalphase(LibMCEnv_SignalHandler pSignalHandler, LibMCEnv::eSignalPhase * pPhase);
+
+/**
+* Marks signal as Handled.. Fails if SignalPhase is not in InQueue or InProcess. if InQueue, the signal is automatically removed from its queue.
 *
 * @param[in] pSignalHandler - SignalHandler instance.
 * @return error code or 0 (success)
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_signalhandled(LibMCEnv_SignalHandler pSignalHandler);
+
+/**
+* Marks signal as InProcess and it removes it from its Queue. Fails if SignalPhase is not InQueue.
+*
+* @param[in] pSignalHandler - SignalHandler instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_signalinprocess(LibMCEnv_SignalHandler pSignalHandler);
+
+/**
+* Marks signal as Failed. Fails if SignalPhase is not in InQueue or InProcess.
+*
+* @param[in] pSignalHandler - SignalHandler instance.
+* @param[in] pErrorMessage - Error Message describing the reason for the failure.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_signalfailed(LibMCEnv_SignalHandler pSignalHandler, const char * pErrorMessage);
 
 /**
 * Returns the signal name.
@@ -7305,18 +7415,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_signalhandled(LibMCEnv_S
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_getname(LibMCEnv_SignalHandler pSignalHandler, const LibMCEnv_uint32 nSignalNameBufferSize, LibMCEnv_uint32* pSignalNameNeededChars, char * pSignalNameBuffer);
 
 /**
-* Returns the signal id. Depreciated.
-*
-* @param[in] pSignalHandler - SignalHandler instance.
-* @param[in] nSignalIDBufferSize - size of the buffer (including trailing 0)
-* @param[out] pSignalIDNeededChars - will be filled with the count of the written bytes, or needed buffer size.
-* @param[out] pSignalIDBuffer -  buffer of Signal Identifier, may be NULL
-* @return error code or 0 (success)
-*/
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_signalhandler_getsignalid(LibMCEnv_SignalHandler pSignalHandler, const LibMCEnv_uint32 nSignalIDBufferSize, LibMCEnv_uint32* pSignalIDNeededChars, char * pSignalIDBuffer);
-
-/**
-* Returns the signal uuid. Identical to GetSignalID.
+* Returns the signal uuid.
 *
 * @param[in] pSignalHandler - SignalHandler instance.
 * @param[in] nSignalUUIDBufferSize - size of the buffer (including trailing 0)
@@ -8463,7 +8562,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_preparesignal(LibMCEn
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_waitforsignal(LibMCEnv_StateEnvironment pStateEnvironment, const char * pSignalName, LibMCEnv_uint32 nTimeOut, LibMCEnv_SignalHandler * pHandlerInstance, bool * pSuccess);
 
 /**
-* Retrieves an unhandled signal By signal type name.
+* Retrieves an unhandled signal By signal type name. Only affects signals with Phase InQueue.
 *
 * @param[in] pStateEnvironment - StateEnvironment instance.
 * @param[in] pSignalTypeName - Name Of Signal to be returned
@@ -8473,7 +8572,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_waitforsignal(LibMCEn
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_getunhandledsignal(LibMCEnv_StateEnvironment pStateEnvironment, const char * pSignalTypeName, LibMCEnv_SignalHandler * pHandlerInstance);
 
 /**
-* Clears all unhandled signals of a certain type and marks them invalid.
+* Clears all unhandled signals of a certain type and marks them as Cleared. Only affects signals with Phase InQueue.
 *
 * @param[in] pStateEnvironment - StateEnvironment instance.
 * @param[in] pSignalTypeName - Name Of Signal to be cleared.
@@ -8482,7 +8581,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_getunhandledsignal(Li
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_stateenvironment_clearunhandledsignalsoftype(LibMCEnv_StateEnvironment pStateEnvironment, const char * pSignalTypeName);
 
 /**
-* Clears all unhandled signals and marks them invalid.
+* Clears all unhandled signals and marks them Cleared. Only affects signals in the specific queue (as well as with Phase InQueue.
 *
 * @param[in] pStateEnvironment - StateEnvironment instance.
 * @return error code or 0 (success)

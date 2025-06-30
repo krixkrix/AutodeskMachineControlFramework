@@ -685,7 +685,12 @@
 		<error name="INVALIDCHARACTERINFILENAME" code="660" description="Invalid character in filename." />	
 		<error name="WORKINGDIRECTORYCEASEDTOEXIST" code="661" description="Working directory ceased to exist." />	
 		<error name="DIRECTORYALREADYEXISTS" code="662" description="Directory already exists." />	
-		<error name="WORKINGDIRECTORYNOTFOUND" code="663" description="Working Directory not found." />			
+		<error name="WORKINGDIRECTORYNOTFOUND" code="663" description="Working Directory not found." />		
+		<error name="INVALIDSIGNALREACTIONTIMEOUT" code="664" description="Invalid Signal Reaction Timeout." />		
+		<error name="INVALIDSIGNALQUEUESIZE" code="665" description="Invalid Signal queue size." />		
+		<error name="SIGNALALREADYTRIGGERED" code="666" description="Signal has already been triggered." />		
+		
+		
 
 	</errors>
 	

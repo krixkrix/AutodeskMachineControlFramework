@@ -5634,22 +5634,77 @@ typedef IBaseSharedPtr<IDriverEnvironment> PIDriverEnvironment;
 class ISignalTrigger : public virtual IBase {
 public:
 	/**
-	* ISignalTrigger::CanTrigger - Returns, if signal channel is available.
+	* ISignalTrigger::GetSignalUUID - Returns the signal uuid.
+	* @return Signal Identifier
+	*/
+	virtual std::string GetSignalUUID() = 0;
+
+	/**
+	* ISignalTrigger::CanTrigger - Returns, if a spot is available in the signal queue.
 	* @return Returns true, if signal channel is available.
 	*/
 	virtual bool CanTrigger() = 0;
 
 	/**
-	* ISignalTrigger::Trigger - Triggers a signal, if signal channel is available.
+	* ISignalTrigger::GetAvailableSignalQueueSlots - Returns the number of slots available in the signal queue.
+	* @return Number of Queue Slots available.
+	*/
+	virtual LibMCEnv_uint32 GetAvailableSignalQueueSlots() = 0;
+
+	/**
+	* ISignalTrigger::GetTotalSignalQueueSlots - Returns the total number of slots of the signal queue.
+	* @return Total number of Queue Slots. If not specified in the config, default is 1.
+	*/
+	virtual LibMCEnv_uint32 GetTotalSignalQueueSlots() = 0;
+
+	/**
+	* ISignalTrigger::GetSignalPhase - Returns the phase of the signal.
+	* @return Returns the phase of the signal.
+	*/
+	virtual LibMCEnv::eSignalPhase GetSignalPhase() = 0;
+
+	/**
+	* ISignalTrigger::SetReactionTimeOut - Sets the signal reaction timeout to a specific value. Fails if Phase is not InPreparation. Default value is either set in the config file or 1 hour (3600000ms)
+	* @param[in] nReactionTimeOutInMs - Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+	*/
+	virtual void SetReactionTimeOut(const LibMCEnv_uint32 nReactionTimeOutInMs) = 0;
+
+	/**
+	* ISignalTrigger::GetReactionTimeOut - Gets the signal reaction timeout. Default value is either set in the config file or 1 hour (3600000ms)
+	* @return Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+	*/
+	virtual LibMCEnv_uint32 GetReactionTimeOut() = 0;
+
+	/**
+	* ISignalTrigger::Trigger - Triggers a signal, if signal queue spot is available. Fails if Phase is not InPreparation. Fails if signal queue is full.
 	*/
 	virtual void Trigger() = 0;
 
 	/**
-	* ISignalTrigger::WaitForHandling - Waits until the signal is reset.
-	* @param[in] nTimeOut - Timeout in Milliseconds. 0 for Immediate return.
+	* ISignalTrigger::TryTrigger - Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.
+	* @return Returns true, if signal has been successfully put in the signal queue.
+	*/
+	virtual bool TryTrigger() = 0;
+
+	/**
+	* ISignalTrigger::TryTriggerWithTimeout - Tries to triggers the signal, if signal queue spot is available. Returns false, if Phase is not InPreparation. Returns false, if signal queue is full.
+	* @param[in] nReactionTimeOutInMs - Sets the Reaction timeout in Milliseconds. MUST be larger than 0ms and not larger than 3600000ms.
+	* @return Returns true, if signal has been successfully put in the signal queue.
+	*/
+	virtual bool TryTriggerWithTimeout(const LibMCEnv_uint32 nReactionTimeOutInMs) = 0;
+
+	/**
+	* ISignalTrigger::WaitForHandling - Waits until the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted.
+	* @param[in] nWaitTime - Time to wait in Milliseconds. 0 for Immediate return.
 	* @return Flag if signal handling has been handled.
 	*/
-	virtual bool WaitForHandling(const LibMCEnv_uint32 nTimeOut) = 0;
+	virtual bool WaitForHandling(const LibMCEnv_uint32 nWaitTime) = 0;
+
+	/**
+	* ISignalTrigger::HasBeenHandled - Checks if the signal has been handled, meaning has reached the Phase Handled, Failed, TimedOut, Cleared or Retracted. Equivalent to WaitForHandling (0).
+	* @return Flag if signal handling has been handled.
+	*/
+	virtual bool HasBeenHandled() = 0;
 
 	/**
 	* ISignalTrigger::GetName - Returns the signal name.
@@ -5745,9 +5800,26 @@ typedef IBaseSharedPtr<ISignalTrigger> PISignalTrigger;
 class ISignalHandler : public virtual IBase {
 public:
 	/**
-	* ISignalHandler::SignalHandled - Marks signal as handled and resets signal channel.
+	* ISignalHandler::GetSignalPhase - Returns the phase of the signal.
+	* @return Returns the phase of the signal. Never will return InPreparation or Invalid.
+	*/
+	virtual LibMCEnv::eSignalPhase GetSignalPhase() = 0;
+
+	/**
+	* ISignalHandler::SignalHandled - Marks signal as Handled.. Fails if SignalPhase is not in InQueue or InProcess. if InQueue, the signal is automatically removed from its queue.
 	*/
 	virtual void SignalHandled() = 0;
+
+	/**
+	* ISignalHandler::SignalInProcess - Marks signal as InProcess and it removes it from its Queue. Fails if SignalPhase is not InQueue.
+	*/
+	virtual void SignalInProcess() = 0;
+
+	/**
+	* ISignalHandler::SignalFailed - Marks signal as Failed. Fails if SignalPhase is not in InQueue or InProcess.
+	* @param[in] sErrorMessage - Error Message describing the reason for the failure.
+	*/
+	virtual void SignalFailed(const std::string & sErrorMessage) = 0;
 
 	/**
 	* ISignalHandler::GetName - Returns the signal name.
@@ -5756,13 +5828,7 @@ public:
 	virtual std::string GetName() = 0;
 
 	/**
-	* ISignalHandler::GetSignalID - Returns the signal id. Depreciated.
-	* @return Signal Identifier
-	*/
-	virtual std::string GetSignalID() = 0;
-
-	/**
-	* ISignalHandler::GetSignalUUID - Returns the signal uuid. Identical to GetSignalID.
+	* ISignalHandler::GetSignalUUID - Returns the signal uuid.
 	* @return Signal Identifier
 	*/
 	virtual std::string GetSignalUUID() = 0;
@@ -6599,20 +6665,20 @@ public:
 	virtual bool WaitForSignal(const std::string & sSignalName, const LibMCEnv_uint32 nTimeOut, ISignalHandler*& pHandlerInstance) = 0;
 
 	/**
-	* IStateEnvironment::GetUnhandledSignal - Retrieves an unhandled signal By signal type name.
+	* IStateEnvironment::GetUnhandledSignal - Retrieves an unhandled signal By signal type name. Only affects signals with Phase InQueue.
 	* @param[in] sSignalTypeName - Name Of Signal to be returned
 	* @return Signal object. If no signal has been found the signal handler object will be null.
 	*/
 	virtual ISignalHandler * GetUnhandledSignal(const std::string & sSignalTypeName) = 0;
 
 	/**
-	* IStateEnvironment::ClearUnhandledSignalsOfType - Clears all unhandled signals of a certain type and marks them invalid.
+	* IStateEnvironment::ClearUnhandledSignalsOfType - Clears all unhandled signals of a certain type and marks them as Cleared. Only affects signals with Phase InQueue.
 	* @param[in] sSignalTypeName - Name Of Signal to be cleared.
 	*/
 	virtual void ClearUnhandledSignalsOfType(const std::string & sSignalTypeName) = 0;
 
 	/**
-	* IStateEnvironment::ClearAllUnhandledSignals - Clears all unhandled signals and marks them invalid.
+	* IStateEnvironment::ClearAllUnhandledSignals - Clears all unhandled signals and marks them Cleared. Only affects signals in the specific queue (as well as with Phase InQueue.
 	*/
 	virtual void ClearAllUnhandledSignals() = 0;
 
