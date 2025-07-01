@@ -128,10 +128,15 @@ namespace AMC {
 	}
 
 
+	bool CStateSignalSlot::queueIsFullNoMutex()
+	{
+		return (m_Queue.size() >= m_nSignalQueueSize);
+	}
+
 	bool CStateSignalSlot::queueIsFull()
 	{
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
-		return (m_Queue.size() >= m_nSignalQueueSize);
+		return queueIsFullNoMutex();
 	}
 
 	uint32_t CStateSignalSlot::getAvailableSignalQueueEntriesInternal()
@@ -170,7 +175,7 @@ namespace AMC {
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
 
 		std::string sNormalizedUUID = AMCCommon::CUtils::normalizeUUIDString(sSignalUUID);
-		if (queueIsFull()) {
+		if (queueIsFullNoMutex()) {
 			// Queue is full, cannot add new signal
 			return false;
 		}
@@ -184,6 +189,7 @@ namespace AMC {
 		auto pMessage = std::make_shared<CStateSignalMessage>(sNormalizedUUID, nReactionTimeoutInMS, eAMCSignalPhase::InQueue);
 		m_Queue.push_back(pMessage);
 		m_QueueMap.insert(std::make_pair(sNormalizedUUID, std::prev(m_Queue.end())));
+		m_MessageMap.insert(std::make_pair (sNormalizedUUID, pMessage));
 
 		pMessage->setParameterDataJSON(sParameterData);
 

@@ -124,6 +124,7 @@ namespace AMC {
 		std::mutex m_Mutex;
 
 		CStateSignalMessage* getMessageByUUIDNoMutex (const std::string& sSignalUUID);
+		bool queueIsFullNoMutex();
 
 
 	public:
@@ -136,7 +137,7 @@ namespace AMC {
 		std::string getNameInternal() const;
 		std::string getInstanceNameInternal() const;
 
-		bool queueIsFull ();
+		bool queueIsFull();
 		void clearQueueInternal();
 
 		bool addNewInQueueSignalInternal(const std::string& sSignalUUID, const std::string& sParameterData, uint32_t nReactionTimeoutInMS);
