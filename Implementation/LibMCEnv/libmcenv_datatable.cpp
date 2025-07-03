@@ -478,7 +478,7 @@ public:
 				columnEntries[sColumn] = std::vector<double>();
 			else {
 				std::string sException = "The channel = " + sChannel + " with the column = " + sColumn + " already exists";
-				throw std::exception(sException.c_str());
+				throw std::runtime_error(sException.c_str());
 			}
 		}
 
