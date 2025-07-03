@@ -13,8 +13,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-        fetch-depth: 0      
-        
+
     - name: Show current Git branch
       run: git branch --show-current
       
