@@ -13,7 +13,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
+      
+    - name: Show current Git branch
+      run: git branch --show-current
+      
     - name: Install dependencies
       run: |
         sudo apt-get update
