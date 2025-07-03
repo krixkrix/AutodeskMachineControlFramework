@@ -52,36 +52,69 @@ void CUnitTestStdIO::logMessageString(const std::string& sMessage)
 	std::cout << sMessage << std::endl;
 }
 
-void CUnitTestStdIO::startTest(const std::string& sGroupName, const std::string& sTestName, uint32_t nTestIndex, uint32_t nTestCount)
+void CUnitTestStdIO::writeFixedLengthStringLeftAligned(const std::string& sString, size_t nLength)
 {
-	std::cout << "  " << nTestIndex << "/" << nTestCount << " " << sTestName << std::endl;
-}
-
-void CUnitTestStdIO::writeTestResult(const std::string& sGroupName, const std::string& sTestName, bool bTestSuccess)
-{
-	if (bTestSuccess) {
-		std::cout << "    [ SUCCESS ]" << std::endl;
+	if (sString.length() > nLength) {
+		std::cout << sString.substr(0, nLength);
 	}
 	else {
-		std::cout << "    [ FAILURE ]" << std::endl;
+		std::cout << sString << std::string(nLength - sString.length(), ' ');
+	}
+
+}
+
+void CUnitTestStdIO::writeFixedLengthStringRightAligned(const std::string& sString, size_t nLength)
+{
+	if (sString.length() > nLength) {
+		std::cout << sString.substr(0, nLength);
+	}
+	else {
+		std::cout << std::string(nLength - sString.length(), ' ') << sString;
+	}
+
+}
+
+
+void CUnitTestStdIO::writeTestResult(const std::string& sGroupName, const std::string& sTestName, uint32_t nTestIndex, uint32_t nTestCount, bool bTestSuccess)
+{
+	writeFixedLengthStringRightAligned(std::to_string(nTestIndex), 4);
+	std::cout << " | ";
+	writeFixedLengthStringLeftAligned(sGroupName, 22);
+	std::cout << " | ";
+	writeFixedLengthStringLeftAligned(sTestName, 33);
+	std::cout << "   ";
+
+	if (bTestSuccess) {
+		std::cout << "[ SUCCESS ]" << std::endl;
+	}
+	else {
+		std::cout << "[ FAILURE ]" << std::endl;
 	}
 	
-	std::cout << std::endl;
 
 }
 
 
 void CUnitTestStdIO::writeTestInfo(const std::string& sMessage)
 {
-	std::cout << "    [ INFO    ] " << sMessage << std::endl;
+	std::cout << "       ";
+	writeFixedLengthStringLeftAligned(sMessage, 58);
+	std::cout << "   ";
+	std::cout << "[ INFO    ] " << std::endl;
 }
 
 void CUnitTestStdIO::writeTestWarning(const std::string& sMessage)
 {
-	std::cout << "    [ WARNING ] " << sMessage << std::endl;
+	std::cout << "       ";
+	writeFixedLengthStringLeftAligned(sMessage, 58);
+	std::cout << "   ";
+	std::cout << "[ WARNING ] " << std::endl;
 }
 
 void CUnitTestStdIO::writeTestError(const std::string& sMessage)
 {
-	std::cout << "    [ ERROR   ] " << sMessage << std::endl;
+	std::cout << "       ";
+	writeFixedLengthStringLeftAligned(sMessage, 58);
+	std::cout << "   ";
+	std::cout << "[ ERROR   ] " << std::endl;
 }

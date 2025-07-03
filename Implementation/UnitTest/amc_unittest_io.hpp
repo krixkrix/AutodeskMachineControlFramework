@@ -42,8 +42,7 @@ namespace AMCUnitTest {
 	class CUnitTestIO {		
 		public:
 			virtual void logMessageString (const std::string & sMessage) = 0;		
-			virtual void startTest (const std::string& sGroupName, const std::string& sTestName, uint32_t nTestIndex, uint32_t nTestCount) = 0;
-			virtual void writeTestResult (const std::string& sGroupName, const std::string& sTestName, bool bTestSuccess) = 0;
+			virtual void writeTestResult(const std::string& sGroupName, const std::string& sTestName, uint32_t nTestIndex, uint32_t nTestCount, bool bTestSuccess) = 0;
 			virtual void writeTestInfo(const std::string& sMessage) = 0;
 			virtual void writeTestWarning(const std::string& sMessage) = 0;
 			virtual void writeTestError(const std::string& sMessage) = 0;
@@ -56,9 +55,11 @@ namespace AMCUnitTest {
 		CUnitTestStdIO();
 		virtual ~CUnitTestStdIO();
 
+		void writeFixedLengthStringLeftAligned(const std::string& sString, size_t nLength);
+		void writeFixedLengthStringRightAligned(const std::string& sString, size_t nLength);
+
 		virtual void logMessageString(const std::string& sMessage) override;
-		virtual void startTest(const std::string& sGroupName, const std::string& sTestName, uint32_t nTestIndex, uint32_t nTestCount) override;
-		virtual void writeTestResult(const std::string& sGroupName, const std::string& sTestName, bool bTestSuccess) override;
+		virtual void writeTestResult(const std::string& sGroupName, const std::string& sTestName, uint32_t nTestIndex, uint32_t nTestCount, bool bTestSuccess) override;
 		virtual void writeTestInfo (const std::string& sMessage) override;
 		virtual void writeTestWarning (const std::string& sMessage) override;
 		virtual void writeTestError (const std::string& sMessage) override;

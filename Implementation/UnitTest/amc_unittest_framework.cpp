@@ -84,23 +84,22 @@ uint32_t CUnitTestFramework::runAllTests()
 
 	for (auto pTestGroup : m_TestGroupList) {
 
-		m_pIO->logMessageString("Running test group: " + pTestGroup->getTestGroupName());
+		//m_pIO->logMessageString("Running test group: " + pTestGroup->getTestGroupName());
 		pTestGroup->initializeTests();
 
 		auto testNames = pTestGroup->getTestNames();
 		for (auto testName : testNames) {
 			try {
 				nTestIndex++;
-
-				m_pIO->startTest(pTestGroup->getTestGroupName(), testName, nTestIndex, nTestCount);
+				
 				pTestGroup->runTest(testName);
 
-				m_pIO->writeTestResult(pTestGroup->getTestGroupName(), testName, true);
+				m_pIO->writeTestResult(pTestGroup->getTestGroupName(), testName, nTestIndex, nTestCount, true);
 				nSucessfulTests++;
 			}
 			catch (const std::exception& e) {
 				m_pIO->writeTestError(e.what());
-				m_pIO->writeTestResult(pTestGroup->getTestGroupName(), testName, false);
+				m_pIO->writeTestResult(pTestGroup->getTestGroupName(), testName, nTestIndex, nTestCount, false);
 			}
 		}
 
