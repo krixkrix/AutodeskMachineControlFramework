@@ -4109,6 +4109,14 @@ typedef LibMCEnvResult (*PLibMCEnvBuild_GetStorageUUIDPtr) (LibMCEnv_Build pBuil
 typedef LibMCEnvResult (*PLibMCEnvBuild_GetStorageSHA256Ptr) (LibMCEnv_Build pBuild, const LibMCEnv_uint32 nSHA256BufferSize, LibMCEnv_uint32* pSHA256NeededChars, char * pSHA256Buffer);
 
 /**
+* Ensures that the build stream has not been modified on disk.
+*
+* @param[in] pBuild - Build instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvBuild_EnsureStorageSHA256IsValidPtr) (LibMCEnv_Build pBuild);
+
+/**
 * Returns cached layer count of the toolpath.
 *
 * @param[in] pBuild - Build instance.
@@ -10691,6 +10699,7 @@ typedef struct {
 	PLibMCEnvBuild_GetBuildUUIDPtr m_Build_GetBuildUUID;
 	PLibMCEnvBuild_GetStorageUUIDPtr m_Build_GetStorageUUID;
 	PLibMCEnvBuild_GetStorageSHA256Ptr m_Build_GetStorageSHA256;
+	PLibMCEnvBuild_EnsureStorageSHA256IsValidPtr m_Build_EnsureStorageSHA256IsValid;
 	PLibMCEnvBuild_GetLayerCountPtr m_Build_GetLayerCount;
 	PLibMCEnvBuild_GetBuildHeightInMMPtr m_Build_GetBuildHeightInMM;
 	PLibMCEnvBuild_GetZValueInMMPtr m_Build_GetZValueInMM;

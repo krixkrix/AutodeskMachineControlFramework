@@ -286,3 +286,18 @@ void CDataModel::TriggerLogCallback(const std::string& sLogMessage, const std::s
 
     m_pLogCallback(sLogMessage.c_str(), sSubSystem.c_str(), eLogLevel, sTimestamp.c_str (), m_pLogUserData);
 }
+
+IMachineConfigurationType* CDataModel::FindConfigurationTypeBySchema(const std::string& sSchemaType)
+{
+    throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_NOTIMPLEMENTED);
+}
+
+IMachineConfigurationType* CDataModel::FindConfigurationTypeByUUID(const std::string& sUUID)
+{
+    throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_NOTIMPLEMENTED);
+}
+
+IMachineConfigurationType* CDataModel::CreateConfigurationType(const std::string& sSchemaType, const std::string& sName)
+{
+    throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_NOTIMPLEMENTED);
+}

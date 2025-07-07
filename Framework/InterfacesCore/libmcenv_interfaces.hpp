@@ -3423,6 +3423,11 @@ public:
 	virtual std::string GetStorageSHA256() = 0;
 
 	/**
+	* IBuild::EnsureStorageSHA256IsValid - Ensures that the build stream has not been modified on disk.
+	*/
+	virtual void EnsureStorageSHA256IsValid() = 0;
+
+	/**
 	* IBuild::GetLayerCount - Returns cached layer count of the toolpath.
 	* @return Returns layer count.
 	*/

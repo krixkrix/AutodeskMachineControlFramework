@@ -110,6 +110,15 @@ std::string CBuild::GetStorageSHA256()
 
 }
 
+void CBuild::EnsureStorageSHA256IsValid()
+{
+	auto pBuildJobHandler = m_pDataModel->CreateBuildJobHandler();
+	auto pBuildJob = pBuildJobHandler->RetrieveJob(m_sBuildJobUUID);
+	pBuildJob->GetStorageStream()->EnsureSHA256IsValid();
+
+}
+
+
 
 LibMCEnv_double CBuild::GetBuildHeightInMM()
 {

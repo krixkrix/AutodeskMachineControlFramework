@@ -2529,6 +2529,9 @@
 			<param name="SHA256" type="string" pass="return" description="SHA256 of the build stream." />
 		</method>
 
+		<method name="EnsureStorageSHA256IsValid" description="Ensures that the build stream has not been modified on disk.">
+		</method>
+
 		<method name="GetLayerCount" description="Returns cached layer count of the toolpath.">
 			<param name="LayerCount" type="uint32" pass="return" description="Returns layer count." />
 		</method>

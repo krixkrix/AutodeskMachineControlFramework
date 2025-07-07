@@ -11868,6 +11868,30 @@ LibMCEnvResult libmcenv_build_getstoragesha256(LibMCEnv_Build pBuild, const LibM
 	}
 }
 
+LibMCEnvResult libmcenv_build_ensurestoragesha256isvalid(LibMCEnv_Build pBuild)
+{
+	IBase* pIBaseClass = (IBase *)pBuild;
+
+	try {
+		IBuild* pIBuild = dynamic_cast<IBuild*>(pIBaseClass);
+		if (!pIBuild)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBuild->EnsureStorageSHA256IsValid();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCEnvResult libmcenv_build_getlayercount(LibMCEnv_Build pBuild, LibMCEnv_uint32 * pLayerCount)
 {
 	IBase* pIBaseClass = (IBase *)pBuild;
@@ -31590,6 +31614,8 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_build_getstorageuuid;
 	if (sProcName == "libmcenv_build_getstoragesha256") 
 		*ppProcAddress = (void*) &libmcenv_build_getstoragesha256;
+	if (sProcName == "libmcenv_build_ensurestoragesha256isvalid") 
+		*ppProcAddress = (void*) &libmcenv_build_ensurestoragesha256isvalid;
 	if (sProcName == "libmcenv_build_getlayercount") 
 		*ppProcAddress = (void*) &libmcenv_build_getlayercount;
 	if (sProcName == "libmcenv_build_getbuildheightinmm") 

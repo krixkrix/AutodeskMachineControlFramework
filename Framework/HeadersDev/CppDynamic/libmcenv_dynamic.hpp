@@ -2191,6 +2191,7 @@ public:
 	inline std::string GetBuildUUID();
 	inline std::string GetStorageUUID();
 	inline std::string GetStorageSHA256();
+	inline void EnsureStorageSHA256IsValid();
 	inline LibMCEnv_uint32 GetLayerCount();
 	inline LibMCEnv_double GetBuildHeightInMM();
 	inline LibMCEnv_double GetZValueInMM(const LibMCEnv_uint32 nLayerIndex);
@@ -3787,6 +3788,7 @@ public:
 		pWrapperTable->m_Build_GetBuildUUID = nullptr;
 		pWrapperTable->m_Build_GetStorageUUID = nullptr;
 		pWrapperTable->m_Build_GetStorageSHA256 = nullptr;
+		pWrapperTable->m_Build_EnsureStorageSHA256IsValid = nullptr;
 		pWrapperTable->m_Build_GetLayerCount = nullptr;
 		pWrapperTable->m_Build_GetBuildHeightInMM = nullptr;
 		pWrapperTable->m_Build_GetZValueInMM = nullptr;
@@ -7817,6 +7819,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Build_GetStorageSHA256 == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Build_EnsureStorageSHA256IsValid = (PLibMCEnvBuild_EnsureStorageSHA256IsValidPtr) GetProcAddress(hLibrary, "libmcenv_build_ensurestoragesha256isvalid");
+		#else // _WIN32
+		pWrapperTable->m_Build_EnsureStorageSHA256IsValid = (PLibMCEnvBuild_EnsureStorageSHA256IsValidPtr) dlsym(hLibrary, "libmcenv_build_ensurestoragesha256isvalid");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Build_EnsureStorageSHA256IsValid == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -14565,6 +14576,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_build_getstoragesha256", (void**)&(pWrapperTable->m_Build_GetStorageSHA256));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Build_GetStorageSHA256 == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_build_ensurestoragesha256isvalid", (void**)&(pWrapperTable->m_Build_EnsureStorageSHA256IsValid));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Build_EnsureStorageSHA256IsValid == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_build_getlayercount", (void**)&(pWrapperTable->m_Build_GetLayerCount));
@@ -21980,6 +21995,14 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_Build_GetStorageSHA256(m_pHandle, bytesNeededSHA256, &bytesWrittenSHA256, &bufferSHA256[0]));
 		
 		return std::string(&bufferSHA256[0]);
+	}
+	
+	/**
+	* CBuild::EnsureStorageSHA256IsValid - Ensures that the build stream has not been modified on disk.
+	*/
+	void CBuild::EnsureStorageSHA256IsValid()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Build_EnsureStorageSHA256IsValid(m_pHandle));
 	}
 	
 	/**

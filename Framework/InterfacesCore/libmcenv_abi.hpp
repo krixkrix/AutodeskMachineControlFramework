@@ -4122,6 +4122,14 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_getstorageuuid(LibMCEnv_Build pB
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_getstoragesha256(LibMCEnv_Build pBuild, const LibMCEnv_uint32 nSHA256BufferSize, LibMCEnv_uint32* pSHA256NeededChars, char * pSHA256Buffer);
 
 /**
+* Ensures that the build stream has not been modified on disk.
+*
+* @param[in] pBuild - Build instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_ensurestoragesha256isvalid(LibMCEnv_Build pBuild);
+
+/**
 * Returns cached layer count of the toolpath.
 *
 * @param[in] pBuild - Build instance.
