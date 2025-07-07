@@ -727,6 +727,37 @@ public:
 			case LIBMC_ERROR_INVALIDCONTENTSTATEID: return "INVALIDCONTENTSTATEID";
 			case LIBMC_ERROR_INVALIDWIDGETREQUEST: return "INVALIDWIDGETREQUEST";
 			case LIBMC_ERROR_SOURCEVARIABLENOTFOUND: return "SOURCEVARIABLENOTFOUND";
+			case LIBMC_ERROR_INVALIDEVENTRETURNVALUES: return "INVALIDEVENTRETURNVALUES";
+			case LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT: return "INVALIDMODIFIERINTERPOLATIONCOUNT";
+			case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE: return "INVALIDTOOLPATHMODIFIERTYPE";
+			case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR: return "INVALIDTOOLPATHMODIFIERFACTOR";
+			case LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND: return "BINARYMETADATARELATIONSHIPNOTFOUND";
+			case LIBMC_ERROR_ENVIRONMENTVARIABLECHANGEAFTERSTART: return "ENVIRONMENTVARIABLECHANGEAFTERSTART";
+			case LIBMC_ERROR_INVALIDENVIRONMENTVARIABLENAME: return "INVALIDENVIRONMENTVARIABLENAME";
+			case LIBMC_ERROR_ENVIRONMENTVARIABLEALREADYEXISTS: return "ENVIRONMENTVARIABLEALREADYEXISTS";
+			case LIBMC_ERROR_REACHEDENVIRONMENTVARIABLELIMIT: return "REACHEDENVIRONMENTVARIABLELIMIT";
+			case LIBMC_ERROR_ENVIRONMENTVARIABLENOTFOUND: return "ENVIRONMENTVARIABLENOTFOUND";
+			case LIBMC_ERROR_INVALIDENVIRONMENTVARIABLEINDEX: return "INVALIDENVIRONMENTVARIABLEINDEX";
+			case LIBMC_ERROR_COULDNOTREADPROCESSPIPE: return "COULDNOTREADPROCESSPIPE";
+			case LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND: return "PROCESSEXECUTABLENOTFOUND";
+			case LIBMC_ERROR_COULDNOTCREATEPROCESSPIPE: return "COULDNOTCREATEPROCESSPIPE";
+			case LIBMC_ERROR_CREATEPROCESSFAILED: return "CREATEPROCESSFAILED";
+			case LIBMC_ERROR_PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST: return "PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST";
+			case LIBMC_ERROR_PROCESSCONTROLTIMEISINVALID: return "PROCESSCONTROLTIMEISINVALID";
+			case LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST: return "PROCESSWORKINGDIRECTORYDOESNOTEXIST";
+			case LIBMC_ERROR_PROCESSHASALREADYBEENSTARTED: return "PROCESSHASALREADYBEENSTARTED";
+			case LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM: return "PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM";
+			case LIBMC_ERROR_INVALIDWRITEBUFFFERPOSITION: return "INVALIDWRITEBUFFFERPOSITION";
+			case LIBMC_ERROR_INVALIDWRITEBUFFERSIZE: return "INVALIDWRITEBUFFERSIZE";
+			case LIBMC_ERROR_CANNOTWRITETOFINISHEDFILE: return "CANNOTWRITETOFINISHEDFILE";
+			case LIBMC_ERROR_WORKINGDIRECTORYHASBEENCLEANED: return "WORKINGDIRECTORYHASBEENCLEANED";
+			case LIBMC_ERROR_INVALIDCHARACTERINFILENAME: return "INVALIDCHARACTERINFILENAME";
+			case LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "WORKINGDIRECTORYCEASEDTOEXIST";
+			case LIBMC_ERROR_DIRECTORYALREADYEXISTS: return "DIRECTORYALREADYEXISTS";
+			case LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND: return "WORKINGDIRECTORYNOTFOUND";
+			case LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT: return "INVALIDSIGNALREACTIONTIMEOUT";
+			case LIBMC_ERROR_INVALIDSIGNALQUEUESIZE: return "INVALIDSIGNALQUEUESIZE";
+			case LIBMC_ERROR_SIGNALALREADYTRIGGERED: return "SIGNALALREADYTRIGGERED";
 		}
 		return "UNKNOWN";
 	}
@@ -1288,6 +1319,37 @@ public:
 			case LIBMC_ERROR_INVALIDCONTENTSTATEID: return "Invalid content state ID";
 			case LIBMC_ERROR_INVALIDWIDGETREQUEST: return "Invalid widget request";
 			case LIBMC_ERROR_SOURCEVARIABLENOTFOUND: return "Source variable not found";
+			case LIBMC_ERROR_INVALIDEVENTRETURNVALUES: return "Invalid event return values";
+			case LIBMC_ERROR_INVALIDMODIFIERINTERPOLATIONCOUNT: return "Invalid modifier interpolation count";
+			case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERTYPE: return "Invalid toolpath modifier type.";
+			case LIBMC_ERROR_INVALIDTOOLPATHMODIFIERFACTOR: return "Invalid toolpath modifier factor.";
+			case LIBMC_ERROR_BINARYMETADATARELATIONSHIPNOTFOUND: return "Binary metadata relationship not found.";
+			case LIBMC_ERROR_ENVIRONMENTVARIABLECHANGEAFTERSTART: return "Environment variable change after start.";
+			case LIBMC_ERROR_INVALIDENVIRONMENTVARIABLENAME: return "Invalid environment variable name.";
+			case LIBMC_ERROR_ENVIRONMENTVARIABLEALREADYEXISTS: return "Environment variable already exists.";
+			case LIBMC_ERROR_REACHEDENVIRONMENTVARIABLELIMIT: return "Reached Environment variable limit.";
+			case LIBMC_ERROR_ENVIRONMENTVARIABLENOTFOUND: return "Environment Variable not found.";
+			case LIBMC_ERROR_INVALIDENVIRONMENTVARIABLEINDEX: return "Invalid environment variable index.";
+			case LIBMC_ERROR_COULDNOTREADPROCESSPIPE: return "Could not read process pipe.";
+			case LIBMC_ERROR_PROCESSEXECUTABLENOTFOUND: return "Process executable not found.";
+			case LIBMC_ERROR_COULDNOTCREATEPROCESSPIPE: return "Could not create process pipe.";
+			case LIBMC_ERROR_CREATEPROCESSFAILED: return "Create process failed.";
+			case LIBMC_ERROR_PROCESSEXECUTABLEDIRECTORYDOESNOTEXIST: return "Process executable directory does not exist.";
+			case LIBMC_ERROR_PROCESSCONTROLTIMEISINVALID: return "Process control time is invalid.";
+			case LIBMC_ERROR_PROCESSWORKINGDIRECTORYDOESNOTEXIST: return "Process working directory does not exist.";
+			case LIBMC_ERROR_PROCESSHASALREADYBEENSTARTED: return "Process has already been started.";
+			case LIBMC_ERROR_PROCESSHANDLINGNOTIMPLEMENTEDONPLATFORM: return "Process handling not implemented on Platform.";
+			case LIBMC_ERROR_INVALIDWRITEBUFFFERPOSITION: return "Invalid write buffer position.";
+			case LIBMC_ERROR_INVALIDWRITEBUFFERSIZE: return "Invalid write buffer size.";
+			case LIBMC_ERROR_CANNOTWRITETOFINISHEDFILE: return "Cannot write to finished file.";
+			case LIBMC_ERROR_WORKINGDIRECTORYHASBEENCLEANED: return "Working Directory has been cleaned.";
+			case LIBMC_ERROR_INVALIDCHARACTERINFILENAME: return "Invalid character in filename.";
+			case LIBMC_ERROR_WORKINGDIRECTORYCEASEDTOEXIST: return "Working directory ceased to exist.";
+			case LIBMC_ERROR_DIRECTORYALREADYEXISTS: return "Directory already exists.";
+			case LIBMC_ERROR_WORKINGDIRECTORYNOTFOUND: return "Working Directory not found.";
+			case LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT: return "Invalid Signal Reaction Timeout.";
+			case LIBMC_ERROR_INVALIDSIGNALQUEUESIZE: return "Invalid Signal queue size.";
+			case LIBMC_ERROR_SIGNALALREADYTRIGGERED: return "Signal has already been triggered.";
 		}
 		return "unknown error";
 	}
@@ -1507,6 +1569,7 @@ public:
 	
 	inline PStreamData GetNewContent();
 	inline LibMC_uint32 GetIdleDelay();
+	inline eStreamConnectionType GetStreamType();
 };
 	
 /*************************************************************************************************************************
@@ -1673,6 +1736,7 @@ public:
 		pWrapperTable->m_StreamData_GetMIMEType = nullptr;
 		pWrapperTable->m_StreamConnection_GetNewContent = nullptr;
 		pWrapperTable->m_StreamConnection_GetIdleDelay = nullptr;
+		pWrapperTable->m_StreamConnection_GetStreamType = nullptr;
 		pWrapperTable->m_APIRequestHandler_ExpectsRawBody = nullptr;
 		pWrapperTable->m_APIRequestHandler_ExpectsFormData = nullptr;
 		pWrapperTable->m_APIRequestHandler_GetFormDataDetails = nullptr;
@@ -1784,6 +1848,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_StreamConnection_GetIdleDelay == nullptr)
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StreamConnection_GetStreamType = (PLibMCStreamConnection_GetStreamTypePtr) GetProcAddress(hLibrary, "libmc_streamconnection_getstreamtype");
+		#else // _WIN32
+		pWrapperTable->m_StreamConnection_GetStreamType = (PLibMCStreamConnection_GetStreamTypePtr) dlsym(hLibrary, "libmc_streamconnection_getstreamtype");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StreamConnection_GetStreamType == nullptr)
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -2061,6 +2134,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_GetIdleDelay == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmc_streamconnection_getstreamtype", (void**)&(pWrapperTable->m_StreamConnection_GetStreamType));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_GetStreamType == nullptr) )
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmc_apirequesthandler_expectsrawbody", (void**)&(pWrapperTable->m_APIRequestHandler_ExpectsRawBody));
 		if ( (eLookupError != 0) || (pWrapperTable->m_APIRequestHandler_ExpectsRawBody == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -2240,6 +2317,18 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_GetIdleDelay(m_pHandle, &resultIdleDelay));
 		
 		return resultIdleDelay;
+	}
+	
+	/**
+	* CStreamConnection::GetStreamType - Returns the stream type.
+	* @return Content type of the stream.
+	*/
+	eStreamConnectionType CStreamConnection::GetStreamType()
+	{
+		eStreamConnectionType resultStreamType = (eStreamConnectionType) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_GetStreamType(m_pHandle, &resultStreamType));
+		
+		return resultStreamType;
 	}
 	
 	/**

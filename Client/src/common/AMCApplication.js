@@ -1026,6 +1026,10 @@ export default class AMCApplication extends Common.AMCObject {
 	pageIsActive (page)
 	{
 		if (page) {
+					
+			if (page.isAlwaysActive)
+				return true;
+					
 			return page.name === this.AppState.activePage;
 		}
 		

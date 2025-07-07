@@ -283,6 +283,12 @@ public:
 	*/
 	virtual LibMC_uint32 GetIdleDelay() = 0;
 
+	/**
+	* IStreamConnection::GetStreamType - Returns the stream type.
+	* @return Content type of the stream.
+	*/
+	virtual LibMC::eStreamConnectionType GetStreamType() = 0;
+
 };
 
 typedef IBaseSharedPtr<IStreamConnection> PIStreamConnection;

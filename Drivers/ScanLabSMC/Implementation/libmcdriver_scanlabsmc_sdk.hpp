@@ -70,6 +70,13 @@ namespace LibMCDriver_ScanLabSMC {
 									
 		};
 
+		enum class slsc_BlendModes : uint32_t
+		{
+			slsc_BlendModes_Deactivated = 0,
+			slsc_BlendModes_SwiftBlending = 1,
+			slsc_BlendModes_MaxAccuracy = 2
+		};
+
 		struct _slsc_PolylineOptions
 		{
 			slsc_PolylineGeometry Geometry;
@@ -82,6 +89,23 @@ namespace LibMCDriver_ScanLabSMC {
 			uint32_t m_nMinor;
 			uint32_t m_nRevision;
 		};
+
+
+		struct _slsc_ParaSection
+		{
+			double m_dS;
+			double m_dParaTargetFactor;
+		};
+
+		typedef struct _slsc_ParaSection slsc_ParaSection;
+
+		struct _slsc_MultiParaTarget
+		{
+			slsc_ParaSection* m_pTargets;
+			size_t m_nNumTargets;
+		};
+
+		typedef struct _slsc_MultiParaTarget slsc_MultiParaTarget;
 
 		enum class slsc_ExecState : int32_t
 		{
@@ -152,6 +176,23 @@ namespace LibMCDriver_ScanLabSMC {
 
 		};
 
+		enum class slsc_RecordSet : uint8_t
+		{
+			slsc_RecordSet_HeadAPosition = 0,
+			slsc_RecordSet_HeadBPosition = 1,
+			slsc_RecordSet_LaserSwitches = 2,
+			slsc_RecordSet_SetPositions = 3,
+			slsc_RecordSet_ActPositions = 4,
+			slsc_RecordSet_Empty = 5,
+		};
+
+		enum class slsc_TransformationStep : uint8_t
+		{
+			slsc_TransformationStep_Workspace = 0,
+			slsc_TransformationStep_Aligned = 1,
+			slsc_TransformationStep_Corrected = 2,
+			slsc_TransformationStep_Rtc = 3,
+		};
 
 		typedef struct _slsc_PolylineOptions slsc_PolylineOptions;
 		typedef struct _slsc_VersionInfo slsc_VersionInfo;
@@ -160,6 +201,7 @@ namespace LibMCDriver_ScanLabSMC {
 
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION *PScanLabSMCPtr_slsc_cfg_initialize_from_file) (slscHandle * Handle, const char* XmlConfigFileName);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_cfg_delete) (size_t Handle);
+
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_begin) (size_t Handle, size_t* JobID);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_end) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_jump) (size_t Handle, const double* Target);
@@ -167,6 +209,11 @@ namespace LibMCDriver_ScanLabSMC {
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_begin_polyline) (size_t Handle, const slsc_PolylineOptions Options);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_slsc_job_end_polyline) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_line) (size_t Handle, const double* Target);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_para_enable) (size_t Handle, double * dParaTargetDefault);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_para_disable) (size_t Handle);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_para_line) (size_t Handle, const double* Target, const double * ParaTarget);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_multi_para_line) (size_t Handle, const double* Target, const slsc_MultiParaTarget* pParaTarget);
+
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_start_execution) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_stop) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_stop_controlled) (size_t Handle);
@@ -181,7 +228,14 @@ namespace LibMCDriver_ScanLabSMC {
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_set_corner_tolerance) (size_t Handle, const double* Target, double dCornerTolerance);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_get_simulation_filename) (size_t Handle, size_t nJobID, char * pszBuffer, size_t nBufferSize);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_get_job_characteristic) (size_t Handle, size_t nJobID, slsc_JobCharacteristic eKey, double * pdValue);
-		
+
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_cfg_get_blend_mode) (size_t Handle, slsc_BlendModes* BlendMode);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_cfg_set_blend_mode) (size_t Handle, slsc_BlendModes BlendMode);
+
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_start_record) (size_t Handle, slsc_RecordSet RecordSetA, slsc_RecordSet RecordSetB);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_stop_record) (size_t Handle);
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_log_record) (size_t Handle, const char* DatasetPath, slsc_TransformationStep Step);
+
 		class CScanLabSMCSDK_DLLDirectoryCache {
 		private:
 #ifdef _WIN32
@@ -231,6 +285,15 @@ namespace LibMCDriver_ScanLabSMC {
 			PScanLabSMCPtr_slsc_ctrl_get_error_count slsc_ctrl_get_error_count = nullptr;
 			PScanLabSMCPtr_slsc_ctrl_get_simulation_filename slsc_ctrl_get_simulation_filename = nullptr;
 			PScanLabSMCPtr_slsc_ctrl_get_job_characteristic slsc_ctrl_get_job_characteristic = nullptr;
+			PScanLabSMCPtr_slsc_cfg_get_blend_mode slsc_cfg_get_blend_mode = nullptr;
+			PScanLabSMCPtr_slsc_cfg_set_blend_mode slsc_cfg_set_blend_mode = nullptr;
+			PScanLabSMCPtr_slsc_job_para_enable slsc_job_para_enable = nullptr;
+			PScanLabSMCPtr_slsc_job_para_disable slsc_job_para_disable = nullptr;
+			PScanLabSMCPtr_slsc_job_para_line slsc_job_para_line = nullptr;
+			PScanLabSMCPtr_slsc_job_multi_para_line slsc_job_multi_para_line = nullptr;
+			PScanLabSMCPtr_slsc_job_start_record slsc_job_start_record = nullptr;
+			PScanLabSMCPtr_slsc_job_stop_record slsc_job_stop_record = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_log_record slsc_ctrl_log_record  = nullptr;
 
 			CScanLabSMCSDK(const std::string & sDLLNameUTF8, const std::string& sDLLDirectoryUTF8);
 			~CScanLabSMCSDK();

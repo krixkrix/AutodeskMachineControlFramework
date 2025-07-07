@@ -109,6 +109,15 @@ LIBMC_DECLSPEC LibMCResult libmc_streamconnection_getnewcontent(LibMC_StreamConn
 */
 LIBMC_DECLSPEC LibMCResult libmc_streamconnection_getidledelay(LibMC_StreamConnection pStreamConnection, LibMC_uint32 * pIdleDelay);
 
+/**
+* Returns the stream type.
+*
+* @param[in] pStreamConnection - StreamConnection instance.
+* @param[out] pStreamType - Content type of the stream.
+* @return error code or 0 (success)
+*/
+LIBMC_DECLSPEC LibMCResult libmc_streamconnection_getstreamtype(LibMC_StreamConnection pStreamConnection, LibMC::eStreamConnectionType * pStreamType);
+
 /*************************************************************************************************************************
  Class definition for APIRequestHandler
 **************************************************************************************************************************/

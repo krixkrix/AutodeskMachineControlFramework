@@ -144,6 +144,12 @@ CScanLabSMCSDK::CScanLabSMCSDK(const std::string& sDLLNameUTF8, const std::strin
 	this->slsc_job_begin_polyline = (PScanLabSMCPtr_slsc_job_begin_polyline)_loadScanLabSMCAddress(hLibrary, "slsc_job_begin_polyline");
 	this->slsc_job_end_polyline = (PScanLabSMCPtr_slsc_slsc_job_end_polyline)_loadScanLabSMCAddress(hLibrary, "slsc_job_end_polyline");
 	this->slsc_job_line = (PScanLabSMCPtr_slsc_job_line)_loadScanLabSMCAddress(hLibrary, "slsc_job_line");
+
+	this->slsc_job_para_enable = (PScanLabSMCPtr_slsc_job_para_enable)_loadScanLabSMCAddress(hLibrary, "slsc_job_para_enable");
+	this->slsc_job_para_disable = (PScanLabSMCPtr_slsc_job_para_disable)_loadScanLabSMCAddress(hLibrary, "slsc_job_para_disable");
+	this->slsc_job_para_line = (PScanLabSMCPtr_slsc_job_para_line)_loadScanLabSMCAddress(hLibrary, "slsc_job_para_line");
+	this->slsc_job_multi_para_line = (PScanLabSMCPtr_slsc_job_multi_para_line)_loadScanLabSMCAddress(hLibrary, "slsc_job_multi_para_line");
+
 	this->slsc_ctrl_start_execution = (PScanLabSMCPtr_slsc_ctrl_start_execution)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_start_execution");
 	this->slsc_ctrl_stop = (PScanLabSMCPtr_slsc_ctrl_stop)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_stop");
 	this->slsc_ctrl_stop_controlled = (PScanLabSMCPtr_slsc_ctrl_stop_controlled)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_stop_controlled");
@@ -157,6 +163,12 @@ CScanLabSMCSDK::CScanLabSMCSDK(const std::string& sDLLNameUTF8, const std::strin
 	this->slsc_ctrl_get_error_count = (PScanLabSMCPtr_slsc_ctrl_get_error_count)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_get_error_count");
 	this->slsc_ctrl_get_simulation_filename = (PScanLabSMCPtr_slsc_ctrl_get_simulation_filename)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_get_simulation_filename");
 	this->slsc_ctrl_get_job_characteristic = (PScanLabSMCPtr_slsc_ctrl_get_job_characteristic)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_get_job_characteristic");
+	this->slsc_cfg_get_blend_mode = (PScanLabSMCPtr_slsc_cfg_get_blend_mode)_loadScanLabSMCAddress(hLibrary, "slsc_cfg_get_blend_mode");
+	this->slsc_cfg_set_blend_mode = (PScanLabSMCPtr_slsc_cfg_set_blend_mode)_loadScanLabSMCAddress(hLibrary, "slsc_cfg_set_blend_mode");
+
+	this->slsc_job_start_record = (PScanLabSMCPtr_slsc_job_start_record)_loadScanLabSMCAddress(hLibrary, "slsc_job_start_record");
+	this->slsc_job_stop_record = (PScanLabSMCPtr_slsc_job_stop_record)_loadScanLabSMCAddress(hLibrary, "slsc_job_stop_record");
+	this->slsc_ctrl_log_record = (PScanLabSMCPtr_slsc_ctrl_log_record)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_log_record");
 
 	m_LibraryHandle = (void*) hLibrary;
 }
@@ -252,6 +264,11 @@ void CScanLabSMCSDK::resetFunctionPtrs()
 	slsc_job_begin_polyline = nullptr;
 	slsc_job_end_polyline = nullptr;
 	slsc_job_line = nullptr;
+	slsc_job_para_enable = nullptr;
+	slsc_job_para_disable = nullptr;
+	slsc_job_para_line = nullptr;
+	slsc_job_multi_para_line = nullptr;
+
 	slsc_ctrl_start_execution = nullptr;
 	slsc_ctrl_stop = nullptr;
 	slsc_ctrl_stop_controlled = nullptr;
@@ -265,8 +282,12 @@ void CScanLabSMCSDK::resetFunctionPtrs()
 	slsc_ctrl_get_error_count = nullptr;
 	slsc_ctrl_get_simulation_filename = nullptr;
 	slsc_ctrl_get_job_characteristic = nullptr;
+	slsc_cfg_get_blend_mode = nullptr;
+	slsc_cfg_set_blend_mode = nullptr;
 
-
+	slsc_job_start_record = nullptr;
+	slsc_job_stop_record = nullptr;
+	slsc_ctrl_log_record = nullptr;
 }
 
 

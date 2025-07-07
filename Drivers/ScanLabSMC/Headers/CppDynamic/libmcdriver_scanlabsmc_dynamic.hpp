@@ -230,6 +230,19 @@ public:
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTGETJOBCHARACTERISTIC: return "COULDNOTGETJOBCHARACTERISTIC";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_JOBDURATIONHASNOTBEENPARSED: return "JOBDURATIONHASNOTBEENPARSED";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSTOPJOBEXECUTION: return "COULDNOTSTOPJOBEXECUTION";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE: return "COULDNOTSETBLENDMODE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE: return "INVALIDBLENDMODE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL: return "INVALIDWARNINGLEVEL";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "LINEARPOWERVALUESAREINCOMPLETE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "NONLINEARPOWERVALUESAREINCOMPLETE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "INTERPOLATIONDATAISNOTINCREASING";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCENAME: return "EMPTYRTCSERVICEDLLRESOURCENAME";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_RTCSERVICERESOURCENOTFOUND: return "RTCSERVICERESOURCENOTFOUND";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCEDATA: return "EMPTYRTCSERVICEDLLRESOURCEDATA";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_SIMULATIONDATALOADINGISNOTSUPPORTED: return "SIMULATIONDATALOADINGISNOTSUPPORTED";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTREADSIMULATIONFILE: return "COULDNOTREADSIMULATIONFILE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERUNKNOWNFIELDPARSERTYPE: return "CSVPARSERUNKNOWNFIELDPARSERTYPE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERINTERPOLATEINDEXOUTOFRANGE: return "CSVPARSERINTERPOLATEINDEXOUTOFRANGE";
 		}
 		return "UNKNOWN";
 	}
@@ -290,6 +303,19 @@ public:
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTGETJOBCHARACTERISTIC: return "Could not get job characteristic.";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_JOBDURATIONHASNOTBEENPARSED: return "Job duration has not been parsed.";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSTOPJOBEXECUTION: return "Could not stop job execution.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE: return "Could not set blend mode.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE: return "Invalid blend mode.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDWARNINGLEVEL: return "Invalid warning level.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_LINEARPOWERVALUESAREINCOMPLETE: return "Linear power values are incomplete.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_NONLINEARPOWERVALUESAREINCOMPLETE: return "Nonlinear power values are incomplete.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INTERPOLATIONDATAISNOTINCREASING: return "Interpolation data is not increasing.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCENAME: return "Empty RTC Service DLL Resource Name.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_RTCSERVICERESOURCENOTFOUND: return "RTC Service Resource not found.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCSERVICEDLLRESOURCEDATA: return "Empty RTC Service DLL Resource Data.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_SIMULATIONDATALOADINGISNOTSUPPORTED: return "Simulation data loading is not supported for this version.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTREADSIMULATIONFILE: return "Could not read simulation file.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERUNKNOWNFIELDPARSERTYPE: return "Unknown Field Parser Type.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERINTERPOLATEINDEXOUTOFRANGE: return "Index out of range in Interpolate.";
 		}
 		return "unknown error";
 	}
@@ -548,6 +574,10 @@ public:
 	inline eDynamicViolationReaction GetDynamicViolationReaction();
 	inline void SetWarnLevel(const eWarnLevel eValue);
 	inline eWarnLevel GetWarnLevel();
+	inline void SetBlendMode(const eBlendMode eBlendMode);
+	inline eBlendMode GetBlendMode();
+	inline void SetSendToHardware(const bool bSendToHardware);
+	inline bool GetSendToHardware();
 	inline void SetSerialNumber(const LibMCDriver_ScanLabSMC_uint32 nValue);
 	inline LibMCDriver_ScanLabSMC_uint32 GetSerialNumber();
 	inline void SetIPAddress(const std::string & sValue);
@@ -581,7 +611,6 @@ public:
 	inline bool IsSimulationMode();
 	inline void ReinitializeInstance();
 	inline std::string GetIPAddress();
-	inline std::string GetNetmask();
 	inline LibMCDriver_ScanLabSMC_uint32 GetSerialNumber();
 	inline std::string GetSimulationSubDirectory();
 	inline LibMCDriver_ScanLabSMC_uint32 GetLaserIndex();
@@ -590,7 +619,7 @@ public:
 	inline void SetLaserField(const LibMCDriver_ScanLabSMC_double dMinX, const LibMCDriver_ScanLabSMC_double dMinY, const LibMCDriver_ScanLabSMC_double dMaxX, const LibMCDriver_ScanLabSMC_double dMaxY);
 	inline void ResetLaserField();
 	inline bool GetLaserField(LibMCDriver_ScanLabSMC_double & dMinX, LibMCDriver_ScanLabSMC_double & dMinY, LibMCDriver_ScanLabSMC_double & dMaxX, LibMCDriver_ScanLabSMC_double & dMaxY);
-	inline PSMCJob BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const eBlendMode eBlendMode);
+	inline PSMCJob BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY);
 	inline PSMCJob GetUnfinishedJob();
 	inline void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex);
 };
@@ -610,8 +639,10 @@ public:
 	}
 	
 	inline void SetDLLResources(const std::string & sSMCDLLResourceName, const std::string & sRTCDLLResourceName);
+	inline void SetRTCServiceDLLResourceName(const std::string & sRTCServiceDLLResourceName);
 	inline void SetXercesDLLResource(const std::string & sXercesDLLResourceName);
 	inline void SetCustomDLLData(const CInputVector<LibMCDriver_ScanLabSMC_uint8> & SMCDLLResourceDataBuffer, const CInputVector<LibMCDriver_ScanLabSMC_uint8> & RTCDLLResourceDataBuffer);
+	inline void SetRTCServiceDLLResourceData(const CInputVector<LibMCDriver_ScanLabSMC_uint8> & RTCServiceDLLResourceDataBuffer);
 	inline void SetCustomXercesDLLData(const CInputVector<LibMCDriver_ScanLabSMC_uint8> & XercesDLLResourceDataBuffer);
 	inline void LoadSDK();
 	inline PSMCContext CreateContext(const std::string & sContextName, classParam<CSMCConfiguration> pSMCConfiguration);
@@ -769,6 +800,10 @@ public:
 		pWrapperTable->m_SMCConfiguration_GetDynamicViolationReaction = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetWarnLevel = nullptr;
 		pWrapperTable->m_SMCConfiguration_GetWarnLevel = nullptr;
+		pWrapperTable->m_SMCConfiguration_SetBlendMode = nullptr;
+		pWrapperTable->m_SMCConfiguration_GetBlendMode = nullptr;
+		pWrapperTable->m_SMCConfiguration_SetSendToHardware = nullptr;
+		pWrapperTable->m_SMCConfiguration_GetSendToHardware = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetSerialNumber = nullptr;
 		pWrapperTable->m_SMCConfiguration_GetSerialNumber = nullptr;
 		pWrapperTable->m_SMCConfiguration_SetIPAddress = nullptr;
@@ -786,7 +821,6 @@ public:
 		pWrapperTable->m_SMCContext_IsSimulationMode = nullptr;
 		pWrapperTable->m_SMCContext_ReinitializeInstance = nullptr;
 		pWrapperTable->m_SMCContext_GetIPAddress = nullptr;
-		pWrapperTable->m_SMCContext_GetNetmask = nullptr;
 		pWrapperTable->m_SMCContext_GetSerialNumber = nullptr;
 		pWrapperTable->m_SMCContext_GetSimulationSubDirectory = nullptr;
 		pWrapperTable->m_SMCContext_GetLaserIndex = nullptr;
@@ -799,8 +833,10 @@ public:
 		pWrapperTable->m_SMCContext_GetUnfinishedJob = nullptr;
 		pWrapperTable->m_SMCContext_DrawLayer = nullptr;
 		pWrapperTable->m_Driver_ScanLabSMC_SetDLLResources = nullptr;
+		pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName = nullptr;
 		pWrapperTable->m_Driver_ScanLabSMC_SetXercesDLLResource = nullptr;
 		pWrapperTable->m_Driver_ScanLabSMC_SetCustomDLLData = nullptr;
+		pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData = nullptr;
 		pWrapperTable->m_Driver_ScanLabSMC_SetCustomXercesDLLData = nullptr;
 		pWrapperTable->m_Driver_ScanLabSMC_LoadSDK = nullptr;
 		pWrapperTable->m_Driver_ScanLabSMC_CreateContext = nullptr;
@@ -1092,6 +1128,42 @@ public:
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_SetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setblendmode");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_SetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetBlendModePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setblendmode");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_SetBlendMode == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_GetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getblendmode");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_GetBlendMode = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetBlendModePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getblendmode");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_GetBlendMode == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_SetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetSendToHardwarePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_SetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetSendToHardwarePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_SetSendToHardware == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_SMCConfiguration_GetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetSendToHardwarePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware");
+		#else // _WIN32
+		pWrapperTable->m_SMCConfiguration_GetSendToHardware = (PLibMCDriver_ScanLabSMCSMCConfiguration_GetSendToHardwarePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SMCConfiguration_GetSendToHardware == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_SMCConfiguration_SetSerialNumber = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetSerialNumberPtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setserialnumber");
 		#else // _WIN32
 		pWrapperTable->m_SMCConfiguration_SetSerialNumber = (PLibMCDriver_ScanLabSMCSMCConfiguration_SetSerialNumberPtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smcconfiguration_setserialnumber");
@@ -1245,15 +1317,6 @@ public:
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_SMCContext_GetNetmask = (PLibMCDriver_ScanLabSMCSMCContext_GetNetmaskPtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smccontext_getnetmask");
-		#else // _WIN32
-		pWrapperTable->m_SMCContext_GetNetmask = (PLibMCDriver_ScanLabSMCSMCContext_GetNetmaskPtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smccontext_getnetmask");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_SMCContext_GetNetmask == nullptr)
-			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
 		pWrapperTable->m_SMCContext_GetSerialNumber = (PLibMCDriver_ScanLabSMCSMCContext_GetSerialNumberPtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_smccontext_getserialnumber");
 		#else // _WIN32
 		pWrapperTable->m_SMCContext_GetSerialNumber = (PLibMCDriver_ScanLabSMCSMCContext_GetSerialNumberPtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_smccontext_getserialnumber");
@@ -1362,6 +1425,15 @@ public:
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName = (PLibMCDriver_ScanLabSMCDriver_ScanLabSMC_SetRTCServiceDLLResourceNamePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcename");
+		#else // _WIN32
+		pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName = (PLibMCDriver_ScanLabSMCDriver_ScanLabSMC_SetRTCServiceDLLResourceNamePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcename");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_Driver_ScanLabSMC_SetXercesDLLResource = (PLibMCDriver_ScanLabSMCDriver_ScanLabSMC_SetXercesDLLResourcePtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_driver_scanlabsmc_setxercesdllresource");
 		#else // _WIN32
 		pWrapperTable->m_Driver_ScanLabSMC_SetXercesDLLResource = (PLibMCDriver_ScanLabSMCDriver_ScanLabSMC_SetXercesDLLResourcePtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_driver_scanlabsmc_setxercesdllresource");
@@ -1377,6 +1449,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Driver_ScanLabSMC_SetCustomDLLData == nullptr)
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData = (PLibMCDriver_ScanLabSMCDriver_ScanLabSMC_SetRTCServiceDLLResourceDataPtr) GetProcAddress(hLibrary, "libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcedata");
+		#else // _WIN32
+		pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData = (PLibMCDriver_ScanLabSMCDriver_ScanLabSMC_SetRTCServiceDLLResourceDataPtr) dlsym(hLibrary, "libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcedata");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData == nullptr)
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -1630,6 +1711,22 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetWarnLevel == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setblendmode", (void**)&(pWrapperTable->m_SMCConfiguration_SetBlendMode));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetBlendMode == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_getblendmode", (void**)&(pWrapperTable->m_SMCConfiguration_GetBlendMode));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetBlendMode == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setsendtohardware", (void**)&(pWrapperTable->m_SMCConfiguration_SetSendToHardware));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetSendToHardware == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_getsendtohardware", (void**)&(pWrapperTable->m_SMCConfiguration_GetSendToHardware));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_GetSendToHardware == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smcconfiguration_setserialnumber", (void**)&(pWrapperTable->m_SMCConfiguration_SetSerialNumber));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCConfiguration_SetSerialNumber == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -1698,10 +1795,6 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCContext_GetIPAddress == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smccontext_getnetmask", (void**)&(pWrapperTable->m_SMCContext_GetNetmask));
-		if ( (eLookupError != 0) || (pWrapperTable->m_SMCContext_GetNetmask == nullptr) )
-			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_smccontext_getserialnumber", (void**)&(pWrapperTable->m_SMCContext_GetSerialNumber));
 		if ( (eLookupError != 0) || (pWrapperTable->m_SMCContext_GetSerialNumber == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -1750,12 +1843,20 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLabSMC_SetDLLResources == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcename", (void**)&(pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_driver_scanlabsmc_setxercesdllresource", (void**)&(pWrapperTable->m_Driver_ScanLabSMC_SetXercesDLLResource));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLabSMC_SetXercesDLLResource == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomdlldata", (void**)&(pWrapperTable->m_Driver_ScanLabSMC_SetCustomDLLData));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLabSMC_SetCustomDLLData == nullptr) )
+			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_driver_scanlabsmc_setrtcservicedllresourcedata", (void**)&(pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData == nullptr) )
 			return LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlabsmc_driver_scanlabsmc_setcustomxercesdlldata", (void**)&(pWrapperTable->m_Driver_ScanLabSMC_SetCustomXercesDLLData));
@@ -2126,6 +2227,48 @@ public:
 	}
 	
 	/**
+	* CSMCConfiguration::SetBlendMode - Sets the blend mode.
+	* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
+	*/
+	void CSMCConfiguration::SetBlendMode(const eBlendMode eBlendMode)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_SetBlendMode(m_pHandle, eBlendMode));
+	}
+	
+	/**
+	* CSMCConfiguration::GetBlendMode - Returns the blend mode.
+	* @return Blend Mode that the job shall be drawn in.
+	*/
+	eBlendMode CSMCConfiguration::GetBlendMode()
+	{
+		eBlendMode resultBlendMode = (eBlendMode) 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_GetBlendMode(m_pHandle, &resultBlendMode));
+		
+		return resultBlendMode;
+	}
+	
+	/**
+	* CSMCConfiguration::SetSendToHardware - Sets if the computation shall be sent to the hardware.
+	* @param[in] bSendToHardware - Flag, if the computation shall be sent to the hardware.
+	*/
+	void CSMCConfiguration::SetSendToHardware(const bool bSendToHardware)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_SetSendToHardware(m_pHandle, bSendToHardware));
+	}
+	
+	/**
+	* CSMCConfiguration::GetSendToHardware - Returns if the computation shall be sent to the hardware.
+	* @return Flag, if the computation shall be sent to the hardware.
+	*/
+	bool CSMCConfiguration::GetSendToHardware()
+	{
+		bool resultSendToHardware = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCConfiguration_GetSendToHardware(m_pHandle, &resultSendToHardware));
+		
+		return resultSendToHardware;
+	}
+	
+	/**
 	* CSMCConfiguration::SetSerialNumber - Sets the RTC Serial number. MUST be larger than 0.
 	* @param[in] nValue - Value to set.
 	*/
@@ -2315,21 +2458,6 @@ public:
 	}
 	
 	/**
-	* CSMCContext::GetNetmask - Returns the Netmask of the RTC Card. Fails if driver has not been initialized.
-	* @return Netmask Value.
-	*/
-	std::string CSMCContext::GetNetmask()
-	{
-		LibMCDriver_ScanLabSMC_uint32 bytesNeededNetmask = 0;
-		LibMCDriver_ScanLabSMC_uint32 bytesWrittenNetmask = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_GetNetmask(m_pHandle, 0, &bytesNeededNetmask, nullptr));
-		std::vector<char> bufferNetmask(bytesNeededNetmask);
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_GetNetmask(m_pHandle, bytesNeededNetmask, &bytesWrittenNetmask, &bufferNetmask[0]));
-		
-		return std::string(&bufferNetmask[0]);
-	}
-	
-	/**
 	* CSMCContext::GetSerialNumber - Returns serial number of card
 	* @return Returns serial number of board.
 	*/
@@ -2428,13 +2556,12 @@ public:
 	* CSMCContext::BeginJob - Starts a new job definition. Fails if another job is not finalized yet.
 	* @param[in] dStartPositionX - Start position in X.
 	* @param[in] dStartPositionY - Start position in Y.
-	* @param[in] eBlendMode - Blend Mode that the job shall be drawn in.
 	* @return SMC Job Instance.
 	*/
-	PSMCJob CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const eBlendMode eBlendMode)
+	PSMCJob CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY)
 	{
 		LibMCDriver_ScanLabSMCHandle hJobInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_BeginJob(m_pHandle, dStartPositionX, dStartPositionY, eBlendMode, &hJobInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_BeginJob(m_pHandle, dStartPositionX, dStartPositionY, &hJobInstance));
 		
 		if (!hJobInstance) {
 			CheckError(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
@@ -2483,6 +2610,15 @@ public:
 	}
 	
 	/**
+	* CDriver_ScanLabSMC::SetRTCServiceDLLResourceName - Sets the default resource name of the RTC Service DLL. Overrides custom resource data if set before.
+	* @param[in] sRTCServiceDLLResourceName - Resource name of RTC Service DLL
+	*/
+	void CDriver_ScanLabSMC::SetRTCServiceDLLResourceName(const std::string & sRTCServiceDLLResourceName)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLabSMC_SetRTCServiceDLLResourceName(m_pHandle, sRTCServiceDLLResourceName.c_str()));
+	}
+	
+	/**
 	* CDriver_ScanLabSMC::SetXercesDLLResource - Sets the default resource name of auxiliary resource DLLs. Overrides custom resource data if set before.
 	* @param[in] sXercesDLLResourceName - Resource name of the Xerces dependency DLL
 	*/
@@ -2499,6 +2635,15 @@ public:
 	void CDriver_ScanLabSMC::SetCustomDLLData(const CInputVector<LibMCDriver_ScanLabSMC_uint8> & SMCDLLResourceDataBuffer, const CInputVector<LibMCDriver_ScanLabSMC_uint8> & RTCDLLResourceDataBuffer)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLabSMC_SetCustomDLLData(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)SMCDLLResourceDataBuffer.size(), SMCDLLResourceDataBuffer.data(), (LibMCDriver_ScanLabSMC_uint64)RTCDLLResourceDataBuffer.size(), RTCDLLResourceDataBuffer.data()));
+	}
+	
+	/**
+	* CDriver_ScanLabSMC::SetRTCServiceDLLResourceData - Sets custom binaries for the needed RTC Service DLLs. Overrides custom resource data if set before.
+	* @param[in] RTCServiceDLLResourceDataBuffer - Resource data of RTC Service DLL
+	*/
+	void CDriver_ScanLabSMC::SetRTCServiceDLLResourceData(const CInputVector<LibMCDriver_ScanLabSMC_uint8> & RTCServiceDLLResourceDataBuffer)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Driver_ScanLabSMC_SetRTCServiceDLLResourceData(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)RTCServiceDLLResourceDataBuffer.size(), RTCServiceDLLResourceDataBuffer.data()));
 	}
 	
 	/**
