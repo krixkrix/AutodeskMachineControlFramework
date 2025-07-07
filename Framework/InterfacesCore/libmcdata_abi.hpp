@@ -2615,6 +2615,31 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationversion_getxsds
 */
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationversion_getconfigurationxmlstring(LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCData_uint32 nXMLStringBufferSize, LibMCData_uint32* pXMLStringNeededChars, char * pXMLStringBuffer);
 
+/**
+* Creates a new configuration version from this version with the same XSD.
+*
+* @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
+* @param[in] pXMLString - New XML Configuration String. MUST conform to current XSD.
+* @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pTimeStampUTC - Current time in UTC.
+* @param[out] pCurrentInstance - returns the MachineConfigurationVersion instance.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationversion_createnewversion(LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const char * pXMLString, const char * pUserUUID, const char * pTimeStampUTC, LibMCData_MachineConfigurationVersion * pCurrentInstance);
+
+/**
+* Creates a new configuration version from this version with another XSD.
+*
+* @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
+* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
+* @param[in] pXMLString - New XML Configuration String. MUST conform to new XSD.
+* @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pTimeStampUTC - Current time in UTC.
+* @param[out] pCurrentInstance - returns the MachineConfigurationVersion instance.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationversion_migratetonewxsd(LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, LibMCData_MachineConfigurationXSD pNewXSD, const char * pXMLString, const char * pUserUUID, const char * pTimeStampUTC, LibMCData_MachineConfigurationVersion * pCurrentInstance);
+
 /*************************************************************************************************************************
  Class definition for MachineConfigurationVersionIterator
 **************************************************************************************************************************/
@@ -2684,6 +2709,15 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationxsd_getxsdversi
 * @return error code or 0 (success)
 */
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationxsd_getxsdstring(LibMCData_MachineConfigurationXSD pMachineConfigurationXSD, const LibMCData_uint32 nXSDStringBufferSize, LibMCData_uint32* pXSDStringNeededChars, char * pXSDStringBuffer);
+
+/**
+* Lists all known Configuration version of the current XSD.
+*
+* @param[in] pMachineConfigurationXSD - MachineConfigurationXSD instance.
+* @param[out] pVersionIterator - Returns a list of versions.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationxsd_listversions(LibMCData_MachineConfigurationXSD pMachineConfigurationXSD, LibMCData_MachineConfigurationVersionIterator * pVersionIterator);
 
 /*************************************************************************************************************************
  Class definition for MachineConfigurationType
@@ -2756,10 +2790,11 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationtype_findxsdbyu
 * @param[in] pMachineConfigurationType - MachineConfigurationType instance.
 * @param[in] pXSDString - XSD String of the version. MUST be incremental.
 * @param[in] nXSDVersion - New Version to add. MUST be larger than GetLatestXSDVersion.
+* @param[in] pDefaultConfigurationXML - Default configuration XML to use for this XSD. MUST conform to XSD in question.
 * @param[out] pXSDInstance - Returns the new XSD of the configuration type.
 * @return error code or 0 (success)
 */
-LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationtype_createnewxsd(LibMCData_MachineConfigurationType pMachineConfigurationType, const char * pXSDString, LibMCData_uint32 nXSDVersion, LibMCData_MachineConfigurationXSD * pXSDInstance);
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_machineconfigurationtype_createnewxsd(LibMCData_MachineConfigurationType pMachineConfigurationType, const char * pXSDString, LibMCData_uint32 nXSDVersion, const char * pDefaultConfigurationXML, LibMCData_MachineConfigurationXSD * pXSDInstance);
 
 /**
 * Returns an Configuration XSD Version.

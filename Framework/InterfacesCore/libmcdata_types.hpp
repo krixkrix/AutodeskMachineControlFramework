@@ -462,6 +462,7 @@ typedef void * LibMCData_pvoid;
 #define LIBMCDATA_ERROR_JOURNALVARIABLEALIASALREADYEXISTS 435 /** Journal variable alias already exists. */
 #define LIBMCDATA_ERROR_INVALIDALIASINDEX 436 /** Invalid alias index */
 #define LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND 437 /** Source of Journal Alias not found */
+#define LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE 438 /** Could not find machine configuration type. */
 
 /*************************************************************************************************************************
  Error strings for LibMCData
@@ -836,6 +837,7 @@ inline const char * LIBMCDATA_GETERRORSTRING (LibMCDataResult nErrorCode) {
     case LIBMCDATA_ERROR_JOURNALVARIABLEALIASALREADYEXISTS: return "Journal variable alias already exists.";
     case LIBMCDATA_ERROR_INVALIDALIASINDEX: return "Invalid alias index";
     case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "Source of Journal Alias not found";
+    case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "Could not find machine configuration type.";
     default: return "unknown error";
   }
 }

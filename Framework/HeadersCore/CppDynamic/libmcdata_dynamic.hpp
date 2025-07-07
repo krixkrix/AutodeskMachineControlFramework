@@ -647,6 +647,7 @@ public:
 			case LIBMCDATA_ERROR_JOURNALVARIABLEALIASALREADYEXISTS: return "JOURNALVARIABLEALIASALREADYEXISTS";
 			case LIBMCDATA_ERROR_INVALIDALIASINDEX: return "INVALIDALIASINDEX";
 			case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "SOURCEOFJOURNALALIASNOTFOUND";
+			case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "COULDNOTFINDMACHINECONFIGURATIONTYPE";
 		}
 		return "UNKNOWN";
 	}
@@ -1021,6 +1022,7 @@ public:
 			case LIBMCDATA_ERROR_JOURNALVARIABLEALIASALREADYEXISTS: return "Journal variable alias already exists.";
 			case LIBMCDATA_ERROR_INVALIDALIASINDEX: return "Invalid alias index";
 			case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "Source of Journal Alias not found";
+			case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "Could not find machine configuration type.";
 		}
 		return "unknown error";
 	}
@@ -1869,6 +1871,8 @@ public:
 	inline LibMCData_uint32 GetXSDVersion();
 	inline std::string GetXSDString();
 	inline std::string GetConfigurationXMLString();
+	inline PMachineConfigurationVersion CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sTimeStampUTC);
+	inline PMachineConfigurationVersion MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sTimeStampUTC);
 };
 	
 /*************************************************************************************************************************
@@ -1907,6 +1911,7 @@ public:
 	inline std::string GetSchemaType();
 	inline LibMCData_uint32 GetXSDVersion();
 	inline std::string GetXSDString();
+	inline PMachineConfigurationVersionIterator ListVersions();
 };
 	
 /*************************************************************************************************************************
@@ -1929,7 +1934,7 @@ public:
 	inline PMachineConfigurationXSD GetLatestXSD();
 	inline LibMCData_uint32 GetLatestXSDVersion();
 	inline PMachineConfigurationXSD FindXSDByUUID(const std::string & sXSDUUID);
-	inline PMachineConfigurationXSD CreateNewXSD(const std::string & sXSDString, const LibMCData_uint32 nXSDVersion);
+	inline PMachineConfigurationXSD CreateNewXSD(const std::string & sXSDString, const LibMCData_uint32 nXSDVersion, const std::string & sDefaultConfigurationXML);
 	inline PMachineConfigurationXSD GetXSDVersion(const LibMCData_uint32 nXSDVersion);
 	inline PMachineConfigurationVersionIterator ListVersions();
 	inline PMachineConfigurationVersion FindVersionByUUID(const std::string & sVersionUUID);
@@ -2314,12 +2319,15 @@ public:
 		pWrapperTable->m_MachineConfigurationVersion_GetXSDVersion = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetXSDString = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = nullptr;
+		pWrapperTable->m_MachineConfigurationVersion_CreateNewVersion = nullptr;
+		pWrapperTable->m_MachineConfigurationVersion_MigrateToNewXSD = nullptr;
 		pWrapperTable->m_MachineConfigurationVersionIterator_GetCurrentVersion = nullptr;
 		pWrapperTable->m_MachineConfigurationXSD_GetUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationXSD_GetTypeUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationXSD_GetSchemaType = nullptr;
 		pWrapperTable->m_MachineConfigurationXSD_GetXSDVersion = nullptr;
 		pWrapperTable->m_MachineConfigurationXSD_GetXSDString = nullptr;
+		pWrapperTable->m_MachineConfigurationXSD_ListVersions = nullptr;
 		pWrapperTable->m_MachineConfigurationType_GetUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationType_GetName = nullptr;
 		pWrapperTable->m_MachineConfigurationType_GetSchemaType = nullptr;
@@ -4438,6 +4446,24 @@ public:
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_CreateNewVersion = (PLibMCDataMachineConfigurationVersion_CreateNewVersionPtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationversion_createnewversion");
+		#else // _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_CreateNewVersion = (PLibMCDataMachineConfigurationVersion_CreateNewVersionPtr) dlsym(hLibrary, "libmcdata_machineconfigurationversion_createnewversion");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_MachineConfigurationVersion_CreateNewVersion == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_MigrateToNewXSD = (PLibMCDataMachineConfigurationVersion_MigrateToNewXSDPtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationversion_migratetonewxsd");
+		#else // _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_MigrateToNewXSD = (PLibMCDataMachineConfigurationVersion_MigrateToNewXSDPtr) dlsym(hLibrary, "libmcdata_machineconfigurationversion_migratetonewxsd");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_MachineConfigurationVersion_MigrateToNewXSD == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_MachineConfigurationVersionIterator_GetCurrentVersion = (PLibMCDataMachineConfigurationVersionIterator_GetCurrentVersionPtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationversioniterator_getcurrentversion");
 		#else // _WIN32
 		pWrapperTable->m_MachineConfigurationVersionIterator_GetCurrentVersion = (PLibMCDataMachineConfigurationVersionIterator_GetCurrentVersionPtr) dlsym(hLibrary, "libmcdata_machineconfigurationversioniterator_getcurrentversion");
@@ -4489,6 +4515,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_MachineConfigurationXSD_GetXSDString == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_MachineConfigurationXSD_ListVersions = (PLibMCDataMachineConfigurationXSD_ListVersionsPtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationxsd_listversions");
+		#else // _WIN32
+		pWrapperTable->m_MachineConfigurationXSD_ListVersions = (PLibMCDataMachineConfigurationXSD_ListVersionsPtr) dlsym(hLibrary, "libmcdata_machineconfigurationxsd_listversions");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_MachineConfigurationXSD_ListVersions == nullptr)
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -5785,6 +5820,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdata_machineconfigurationversion_createnewversion", (void**)&(pWrapperTable->m_MachineConfigurationVersion_CreateNewVersion));
+		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_CreateNewVersion == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_machineconfigurationversion_migratetonewxsd", (void**)&(pWrapperTable->m_MachineConfigurationVersion_MigrateToNewXSD));
+		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_MigrateToNewXSD == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdata_machineconfigurationversioniterator_getcurrentversion", (void**)&(pWrapperTable->m_MachineConfigurationVersionIterator_GetCurrentVersion));
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersionIterator_GetCurrentVersion == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -5807,6 +5850,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_machineconfigurationxsd_getxsdstring", (void**)&(pWrapperTable->m_MachineConfigurationXSD_GetXSDString));
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationXSD_GetXSDString == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_machineconfigurationxsd_listversions", (void**)&(pWrapperTable->m_MachineConfigurationXSD_ListVersions));
+		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationXSD_ListVersions == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_machineconfigurationtype_getuuid", (void**)&(pWrapperTable->m_MachineConfigurationType_GetUUID));
@@ -9291,6 +9338,44 @@ public:
 	}
 	
 	/**
+	* CMachineConfigurationVersion::CreateNewVersion - Creates a new configuration version from this version with the same XSD.
+	* @param[in] sXMLString - New XML Configuration String. MUST conform to current XSD.
+	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sTimeStampUTC - Current time in UTC.
+	* @return returns the MachineConfigurationVersion instance.
+	*/
+	PMachineConfigurationVersion CMachineConfigurationVersion::CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sTimeStampUTC)
+	{
+		LibMCDataHandle hCurrentInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_CreateNewVersion(m_pHandle, sXMLString.c_str(), sUserUUID.c_str(), sTimeStampUTC.c_str(), &hCurrentInstance));
+		
+		if (!hCurrentInstance) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CMachineConfigurationVersion>(m_pWrapper, hCurrentInstance);
+	}
+	
+	/**
+	* CMachineConfigurationVersion::MigrateToNewXSD - Creates a new configuration version from this version with another XSD.
+	* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
+	* @param[in] sXMLString - New XML Configuration String. MUST conform to new XSD.
+	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sTimeStampUTC - Current time in UTC.
+	* @return returns the MachineConfigurationVersion instance.
+	*/
+	PMachineConfigurationVersion CMachineConfigurationVersion::MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sTimeStampUTC)
+	{
+		LibMCDataHandle hNewXSD = pNewXSD.GetHandle();
+		LibMCDataHandle hCurrentInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_MigrateToNewXSD(m_pHandle, hNewXSD, sXMLString.c_str(), sUserUUID.c_str(), sTimeStampUTC.c_str(), &hCurrentInstance));
+		
+		if (!hCurrentInstance) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CMachineConfigurationVersion>(m_pWrapper, hCurrentInstance);
+	}
+	
+	/**
 	 * Method definitions for class CMachineConfigurationVersionIterator
 	 */
 	
@@ -9383,6 +9468,21 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationXSD_GetXSDString(m_pHandle, bytesNeededXSDString, &bytesWrittenXSDString, &bufferXSDString[0]));
 		
 		return std::string(&bufferXSDString[0]);
+	}
+	
+	/**
+	* CMachineConfigurationXSD::ListVersions - Lists all known Configuration version of the current XSD.
+	* @return Returns a list of versions.
+	*/
+	PMachineConfigurationVersionIterator CMachineConfigurationXSD::ListVersions()
+	{
+		LibMCDataHandle hVersionIterator = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationXSD_ListVersions(m_pHandle, &hVersionIterator));
+		
+		if (!hVersionIterator) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CMachineConfigurationVersionIterator>(m_pWrapper, hVersionIterator);
 	}
 	
 	/**
@@ -9481,12 +9581,13 @@ public:
 	* CMachineConfigurationType::CreateNewXSD - Creates a new XSD Version. Fails if version already exists or is not incrementing.
 	* @param[in] sXSDString - XSD String of the version. MUST be incremental.
 	* @param[in] nXSDVersion - New Version to add. MUST be larger than GetLatestXSDVersion.
+	* @param[in] sDefaultConfigurationXML - Default configuration XML to use for this XSD. MUST conform to XSD in question.
 	* @return Returns the new XSD of the configuration type.
 	*/
-	PMachineConfigurationXSD CMachineConfigurationType::CreateNewXSD(const std::string & sXSDString, const LibMCData_uint32 nXSDVersion)
+	PMachineConfigurationXSD CMachineConfigurationType::CreateNewXSD(const std::string & sXSDString, const LibMCData_uint32 nXSDVersion, const std::string & sDefaultConfigurationXML)
 	{
 		LibMCDataHandle hXSDInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationType_CreateNewXSD(m_pHandle, sXSDString.c_str(), nXSDVersion, &hXSDInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationType_CreateNewXSD(m_pHandle, sXSDString.c_str(), nXSDVersion, sDefaultConfigurationXML.c_str(), &hXSDInstance));
 		
 		if (!hXSDInstance) {
 			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);

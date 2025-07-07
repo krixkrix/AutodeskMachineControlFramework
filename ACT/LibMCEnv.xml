@@ -2300,6 +2300,8 @@
 	</class>
 
 
+
+
 	<class name="BuildExecution" parent="Base" description="A build execution is a physical run of a build.">
 
 		<method name="GetUUID" description="Returns uuid of the build execution.">
@@ -4688,6 +4690,110 @@
 
 	</class>	
 
+
+	<class name="MachineConfigurationVersion" parent="Base" description="Type class of machine configuration data!">
+
+		<method name="GetSchemaType" description="Returns the schema type.">
+			<param name="SchemaType" type="string" pass="return" description="Schema Type String." />					
+		</method>
+
+		<method name="GetTypeName" description="Returns the Name the type.">
+			<param name="Name" type="string" pass="return" description="Type Name." />	
+		</method>
+
+		<method name="GetTypeUUID" description="Returns the UUID the type.">
+			<param name="UUID" type="string" pass="return" description="Type UUID." />	
+		</method>
+		
+		<method name="GetXSDVersion" description="Returns the XSD Version Number of this configuration.">
+			<param name="XSDVersion" type="uint32" pass="return" description="Returns XSD version number." />	
+		</method>				
+		
+		<method name="GetXSDString" description="Returns the XSD String that this configuration uses.">
+			<param name="XSDString" type="string" pass="return" description="Returns XSD string." />	
+		</method>					
+
+		<method name="GetConfigurationXMLString" description="Returns the configuration as XML String.">
+			<param name="XMLString" type="string" pass="return" description="Returns XML string." />	
+		</method>					
+
+		<method name="GetConfigurationXMLDocument" description="Returns the configuration as XML Document class.">
+			<param name="DocumentInstance" type="class" class="XMLDocument" pass="return" description="Returns XML document." />	
+		</method>					
+
+		<method name="MakeActive" description="Makes the current configuration the active one.">
+		</method>					
+
+	</class>
+
+	<class name="MachineConfigurationType" parent="Base" description="Type class of machine configuration data!">
+
+		<method name="GetSchemaType" description="Returns the schema type.">
+			<param name="SchemaType" type="string" pass="return" description="Schema Type String." />					
+		</method>
+
+		<method name="GetTypeName" description="Returns the Name the type.">
+			<param name="Name" type="string" pass="return" description="Type Name." />	
+		</method>
+
+		<method name="GetTypeUUID" description="Returns the UUID the type.">
+			<param name="UUID" type="string" pass="return" description="Type UUID." />	
+		</method>
+		
+		<method name="GetLatestXSDVersion" description="Returns the latest Machine Configuration XSD Version.">
+			<param name="XSDVersion" type="uint32" pass="return" description="Returns the latest XSD version, or 0 if no XSD exists." />	
+		</method>		
+		
+		<method name="RegisterConfigurationXSD" description="Registers a new configuration XSD.">
+			<param name="XSDString" type="string" pass="in" description="XSD String of the version. MUST be incremental." />	
+			<param name="XSDVersion" type="uint32" pass="in" description="New Version to add. MUST be larger than GetLatestXSDVersion." />	
+			<param name="DefaultConfigurationXML" type="string" pass="in" description="Default configuration XML to use for this XSD. MUST conform to XSD in question." />	
+		</method>
+		
+		<method name="RegisterConfigurationXSDFromResource" description="Registers a new configuration XSD from machine resource files.">
+			<param name="XSDResourceName" type="string" pass="in" description="Resource identifier of the XSD file of the version. MUST be incremental." />	
+			<param name="XSDVersion" type="uint32" pass="in" description="New Version to add. MUST be larger than GetLatestXSDVersion." />	
+			<param name="DefaultConfigurationResourceName" type="string" pass="in" description="Resource identifier of the configuration XML to use for this XSD. MUST conform to XSD in question." />	
+		</method>
+	
+		<method name="GetLatestConfiguration" description="Returns the latest Machine Configuration of this configuration type. Returns the default XML of the newest XSD if no configuration exists.">
+			<param name="ConfigurationInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Configuration Version instance." />	
+		</method>		
+	
+		<method name="GetActiveConfiguration" description="Returns the active Machine Configuration of this configuration type.">
+			<param name="FallBackToDefault" type="bool" pass="in" description="If true, the default configuration is returned, if no active configuration exists. Otherwise null is returned." />	
+			<param name="ConfigurationInstance" type="optionalclass" class="MachineConfigurationVersion" pass="return" description="Configuration Version instance." />	
+		</method>		
+	
+	</class>
+
+	<class name="MachineConfigurationHandler" parent="Base" description="Handler class for managing machine configuration data!">
+
+		<method name="RegisterMachineConfigurationType" description="Registers a new machine configuration type, or returns the unique existing one with the same schema type.">
+			<param name="SchemaType" type="string" pass="in" description="Schema Type String. MUST not be empty." />		
+			<param name="Name" type="string" pass="in" description="Type Name. MUST not be empty. If the configuration type already exists, the name will be checked for identity!" />		
+			<param name="TypeInstance" type="class" class="MachineConfigurationType" pass="return" description="Instance of machine configuration type." />		
+		</method>
+
+		<method name="HasMachineConfigurationType" description="Checks if a certain configuration schema type has been registered.">
+			<param name="SchemaType" type="string" pass="in" description="Schema Type String. MUST not be empty." />		
+			<param name="HasBeenRegistered" type="bool" pass="return" description="Returns true, if the system knows about a configuration schema type." />		
+		</method>
+
+		<method name="GetLatestConfiguration" description="Returns the latest Machine Configuration for a specific configuration type. Returns the default XML of the newest XSD if no configuration exists.">
+			<param name="SchemaType" type="string" pass="in" description="Schema Type String. Fails if configuration schema type is not known." />		
+			<param name="ConfigurationInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Configuration Version instance." />	
+		</method>		
+	
+		<method name="GetActiveConfiguration" description="Returns the active Machine Configuration for a specific configuration type.">
+			<param name="SchemaType" type="string" pass="in" description="Schema Type String. Fails if configuration schema type is not known." />		
+			<param name="FallBackToDefault" type="bool" pass="in" description="If true, the default configuration is returned, if no active configuration exists. Otherwise null is returned." />	
+			<param name="ConfigurationInstance" type="optionalclass" class="MachineConfigurationVersion" pass="return" description="Configuration Version instance." />	
+		</method>	
+
+	</class>
+
+
 	<class name="StateEnvironment" parent="Base" description="Environment of the state">
 
 		<method name="GetMachineState" description="Retrieves the machine state">
@@ -4892,6 +4998,10 @@
 		
 		<method name="CreateImageLoader" description="creates an image loader object.">			
 			<param name="ImageLoaderInstance" type="class" class="ImageLoader" pass="return" description="Image loader instance." />
+		</method>		
+
+		<method name="CreateMachineConfigurationHandler" description="creates a machine configuration handler, dealing with all persistent machine settings that the user will store in the local database.">			
+			<param name="MachineConfigurationHandlerInstance" type="class" class="MachineConfigurationHandler" pass="return" description="MachineConfigurationHandler instance." />
 		</method>		
 
 		<method name="CreateDiscreteField2D" description="Creates an empty discrete field.">

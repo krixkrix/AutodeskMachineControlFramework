@@ -55,6 +55,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcenv_zipstreamwriter.hpp"
 #include "libmcenv_streamreader.hpp"
 #include "libmcenv_datatable.hpp"
+#include "libmcenv_machineconfigurationhandler.hpp"
 #include "libmcenv_modeldatacomponentinstance.hpp"
 #include "libmcenv_imageloader.hpp"
 #include "libmcenv_jsonobject.hpp"
@@ -646,6 +647,11 @@ IJSONObject* CStateEnvironment::ParseJSONString(const std::string& sJSONString)
 IJSONObject* CStateEnvironment::ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8* pJSONDataBuffer)
 {
 	return new CJSONObject(pJSONDataBuffer, nJSONDataBufferSize);
+}
+
+IMachineConfigurationHandler* CStateEnvironment::CreateMachineConfigurationHandler()
+{
+	return new CMachineConfigurationHandler(m_pSystemState->getDataModelInstance ());
 }
 
 

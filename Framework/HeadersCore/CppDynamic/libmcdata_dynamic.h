@@ -2602,6 +2602,31 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_GetXSDStringPtr)
 */
 typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_GetConfigurationXMLStringPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCData_uint32 nXMLStringBufferSize, LibMCData_uint32* pXMLStringNeededChars, char * pXMLStringBuffer);
 
+/**
+* Creates a new configuration version from this version with the same XSD.
+*
+* @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
+* @param[in] pXMLString - New XML Configuration String. MUST conform to current XSD.
+* @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pTimeStampUTC - Current time in UTC.
+* @param[out] pCurrentInstance - returns the MachineConfigurationVersion instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_CreateNewVersionPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const char * pXMLString, const char * pUserUUID, const char * pTimeStampUTC, LibMCData_MachineConfigurationVersion * pCurrentInstance);
+
+/**
+* Creates a new configuration version from this version with another XSD.
+*
+* @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
+* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
+* @param[in] pXMLString - New XML Configuration String. MUST conform to new XSD.
+* @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pTimeStampUTC - Current time in UTC.
+* @param[out] pCurrentInstance - returns the MachineConfigurationVersion instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_MigrateToNewXSDPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, LibMCData_MachineConfigurationXSD pNewXSD, const char * pXMLString, const char * pUserUUID, const char * pTimeStampUTC, LibMCData_MachineConfigurationVersion * pCurrentInstance);
+
 /*************************************************************************************************************************
  Class definition for MachineConfigurationVersionIterator
 **************************************************************************************************************************/
@@ -2671,6 +2696,15 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationXSD_GetXSDVersionPtr) (L
 * @return error code or 0 (success)
 */
 typedef LibMCDataResult (*PLibMCDataMachineConfigurationXSD_GetXSDStringPtr) (LibMCData_MachineConfigurationXSD pMachineConfigurationXSD, const LibMCData_uint32 nXSDStringBufferSize, LibMCData_uint32* pXSDStringNeededChars, char * pXSDStringBuffer);
+
+/**
+* Lists all known Configuration version of the current XSD.
+*
+* @param[in] pMachineConfigurationXSD - MachineConfigurationXSD instance.
+* @param[out] pVersionIterator - Returns a list of versions.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationXSD_ListVersionsPtr) (LibMCData_MachineConfigurationXSD pMachineConfigurationXSD, LibMCData_MachineConfigurationVersionIterator * pVersionIterator);
 
 /*************************************************************************************************************************
  Class definition for MachineConfigurationType
@@ -2743,10 +2777,11 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationType_FindXSDByUUIDPtr) (
 * @param[in] pMachineConfigurationType - MachineConfigurationType instance.
 * @param[in] pXSDString - XSD String of the version. MUST be incremental.
 * @param[in] nXSDVersion - New Version to add. MUST be larger than GetLatestXSDVersion.
+* @param[in] pDefaultConfigurationXML - Default configuration XML to use for this XSD. MUST conform to XSD in question.
 * @param[out] pXSDInstance - Returns the new XSD of the configuration type.
 * @return error code or 0 (success)
 */
-typedef LibMCDataResult (*PLibMCDataMachineConfigurationType_CreateNewXSDPtr) (LibMCData_MachineConfigurationType pMachineConfigurationType, const char * pXSDString, LibMCData_uint32 nXSDVersion, LibMCData_MachineConfigurationXSD * pXSDInstance);
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationType_CreateNewXSDPtr) (LibMCData_MachineConfigurationType pMachineConfigurationType, const char * pXSDString, LibMCData_uint32 nXSDVersion, const char * pDefaultConfigurationXML, LibMCData_MachineConfigurationXSD * pXSDInstance);
 
 /**
 * Returns an Configuration XSD Version.
@@ -3332,12 +3367,15 @@ typedef struct {
 	PLibMCDataMachineConfigurationVersion_GetXSDVersionPtr m_MachineConfigurationVersion_GetXSDVersion;
 	PLibMCDataMachineConfigurationVersion_GetXSDStringPtr m_MachineConfigurationVersion_GetXSDString;
 	PLibMCDataMachineConfigurationVersion_GetConfigurationXMLStringPtr m_MachineConfigurationVersion_GetConfigurationXMLString;
+	PLibMCDataMachineConfigurationVersion_CreateNewVersionPtr m_MachineConfigurationVersion_CreateNewVersion;
+	PLibMCDataMachineConfigurationVersion_MigrateToNewXSDPtr m_MachineConfigurationVersion_MigrateToNewXSD;
 	PLibMCDataMachineConfigurationVersionIterator_GetCurrentVersionPtr m_MachineConfigurationVersionIterator_GetCurrentVersion;
 	PLibMCDataMachineConfigurationXSD_GetUUIDPtr m_MachineConfigurationXSD_GetUUID;
 	PLibMCDataMachineConfigurationXSD_GetTypeUUIDPtr m_MachineConfigurationXSD_GetTypeUUID;
 	PLibMCDataMachineConfigurationXSD_GetSchemaTypePtr m_MachineConfigurationXSD_GetSchemaType;
 	PLibMCDataMachineConfigurationXSD_GetXSDVersionPtr m_MachineConfigurationXSD_GetXSDVersion;
 	PLibMCDataMachineConfigurationXSD_GetXSDStringPtr m_MachineConfigurationXSD_GetXSDString;
+	PLibMCDataMachineConfigurationXSD_ListVersionsPtr m_MachineConfigurationXSD_ListVersions;
 	PLibMCDataMachineConfigurationType_GetUUIDPtr m_MachineConfigurationType_GetUUID;
 	PLibMCDataMachineConfigurationType_GetNamePtr m_MachineConfigurationType_GetName;
 	PLibMCDataMachineConfigurationType_GetSchemaTypePtr m_MachineConfigurationType_GetSchemaType;

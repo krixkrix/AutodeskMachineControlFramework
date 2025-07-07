@@ -125,6 +125,9 @@ class ILogEntryList;
 class IJournalHandler;
 class IUserDetailList;
 class IUserManagementHandler;
+class IMachineConfigurationVersion;
+class IMachineConfigurationType;
+class IMachineConfigurationHandler;
 class IStateEnvironment;
 class IUIItem;
 class IUIEnvironment;
@@ -6634,6 +6637,169 @@ typedef IBaseSharedPtr<IUserManagementHandler> PIUserManagementHandler;
 
 
 /*************************************************************************************************************************
+ Class interface for MachineConfigurationVersion 
+**************************************************************************************************************************/
+
+class IMachineConfigurationVersion : public virtual IBase {
+public:
+	/**
+	* IMachineConfigurationVersion::GetSchemaType - Returns the schema type.
+	* @return Schema Type String.
+	*/
+	virtual std::string GetSchemaType() = 0;
+
+	/**
+	* IMachineConfigurationVersion::GetTypeName - Returns the Name the type.
+	* @return Type Name.
+	*/
+	virtual std::string GetTypeName() = 0;
+
+	/**
+	* IMachineConfigurationVersion::GetTypeUUID - Returns the UUID the type.
+	* @return Type UUID.
+	*/
+	virtual std::string GetTypeUUID() = 0;
+
+	/**
+	* IMachineConfigurationVersion::GetXSDVersion - Returns the XSD Version Number of this configuration.
+	* @return Returns XSD version number.
+	*/
+	virtual LibMCEnv_uint32 GetXSDVersion() = 0;
+
+	/**
+	* IMachineConfigurationVersion::GetXSDString - Returns the XSD String that this configuration uses.
+	* @return Returns XSD string.
+	*/
+	virtual std::string GetXSDString() = 0;
+
+	/**
+	* IMachineConfigurationVersion::GetConfigurationXMLString - Returns the configuration as XML String.
+	* @return Returns XML string.
+	*/
+	virtual std::string GetConfigurationXMLString() = 0;
+
+	/**
+	* IMachineConfigurationVersion::GetConfigurationXMLDocument - Returns the configuration as XML Document class.
+	* @return Returns XML document.
+	*/
+	virtual IXMLDocument * GetConfigurationXMLDocument() = 0;
+
+	/**
+	* IMachineConfigurationVersion::MakeActive - Makes the current configuration the active one.
+	*/
+	virtual void MakeActive() = 0;
+
+};
+
+typedef IBaseSharedPtr<IMachineConfigurationVersion> PIMachineConfigurationVersion;
+
+
+/*************************************************************************************************************************
+ Class interface for MachineConfigurationType 
+**************************************************************************************************************************/
+
+class IMachineConfigurationType : public virtual IBase {
+public:
+	/**
+	* IMachineConfigurationType::GetSchemaType - Returns the schema type.
+	* @return Schema Type String.
+	*/
+	virtual std::string GetSchemaType() = 0;
+
+	/**
+	* IMachineConfigurationType::GetTypeName - Returns the Name the type.
+	* @return Type Name.
+	*/
+	virtual std::string GetTypeName() = 0;
+
+	/**
+	* IMachineConfigurationType::GetTypeUUID - Returns the UUID the type.
+	* @return Type UUID.
+	*/
+	virtual std::string GetTypeUUID() = 0;
+
+	/**
+	* IMachineConfigurationType::GetLatestXSDVersion - Returns the latest Machine Configuration XSD Version.
+	* @return Returns the latest XSD version, or 0 if no XSD exists.
+	*/
+	virtual LibMCEnv_uint32 GetLatestXSDVersion() = 0;
+
+	/**
+	* IMachineConfigurationType::RegisterConfigurationXSD - Registers a new configuration XSD.
+	* @param[in] sXSDString - XSD String of the version. MUST be incremental.
+	* @param[in] nXSDVersion - New Version to add. MUST be larger than GetLatestXSDVersion.
+	* @param[in] sDefaultConfigurationXML - Default configuration XML to use for this XSD. MUST conform to XSD in question.
+	*/
+	virtual void RegisterConfigurationXSD(const std::string & sXSDString, const LibMCEnv_uint32 nXSDVersion, const std::string & sDefaultConfigurationXML) = 0;
+
+	/**
+	* IMachineConfigurationType::RegisterConfigurationXSDFromResource - Registers a new configuration XSD from machine resource files.
+	* @param[in] sXSDResourceName - Resource identifier of the XSD file of the version. MUST be incremental.
+	* @param[in] nXSDVersion - New Version to add. MUST be larger than GetLatestXSDVersion.
+	* @param[in] sDefaultConfigurationResourceName - Resource identifier of the configuration XML to use for this XSD. MUST conform to XSD in question.
+	*/
+	virtual void RegisterConfigurationXSDFromResource(const std::string & sXSDResourceName, const LibMCEnv_uint32 nXSDVersion, const std::string & sDefaultConfigurationResourceName) = 0;
+
+	/**
+	* IMachineConfigurationType::GetLatestConfiguration - Returns the latest Machine Configuration of this configuration type. Returns the default XML of the newest XSD if no configuration exists.
+	* @return Configuration Version instance.
+	*/
+	virtual IMachineConfigurationVersion * GetLatestConfiguration() = 0;
+
+	/**
+	* IMachineConfigurationType::GetActiveConfiguration - Returns the active Machine Configuration of this configuration type.
+	* @param[in] bFallBackToDefault - If true, the default configuration is returned, if no active configuration exists. Otherwise null is returned.
+	* @return Configuration Version instance.
+	*/
+	virtual IMachineConfigurationVersion * GetActiveConfiguration(const bool bFallBackToDefault) = 0;
+
+};
+
+typedef IBaseSharedPtr<IMachineConfigurationType> PIMachineConfigurationType;
+
+
+/*************************************************************************************************************************
+ Class interface for MachineConfigurationHandler 
+**************************************************************************************************************************/
+
+class IMachineConfigurationHandler : public virtual IBase {
+public:
+	/**
+	* IMachineConfigurationHandler::RegisterMachineConfigurationType - Registers a new machine configuration type, or returns the unique existing one with the same schema type.
+	* @param[in] sSchemaType - Schema Type String. MUST not be empty.
+	* @param[in] sName - Type Name. MUST not be empty. If the configuration type already exists, the name will be checked for identity!
+	* @return Instance of machine configuration type.
+	*/
+	virtual IMachineConfigurationType * RegisterMachineConfigurationType(const std::string & sSchemaType, const std::string & sName) = 0;
+
+	/**
+	* IMachineConfigurationHandler::HasMachineConfigurationType - Checks if a certain configuration schema type has been registered.
+	* @param[in] sSchemaType - Schema Type String. MUST not be empty.
+	* @return Returns true, if the system knows about a configuration schema type.
+	*/
+	virtual bool HasMachineConfigurationType(const std::string & sSchemaType) = 0;
+
+	/**
+	* IMachineConfigurationHandler::GetLatestConfiguration - Returns the latest Machine Configuration for a specific configuration type. Returns the default XML of the newest XSD if no configuration exists.
+	* @param[in] sSchemaType - Schema Type String. Fails if configuration schema type is not known.
+	* @return Configuration Version instance.
+	*/
+	virtual IMachineConfigurationVersion * GetLatestConfiguration(const std::string & sSchemaType) = 0;
+
+	/**
+	* IMachineConfigurationHandler::GetActiveConfiguration - Returns the active Machine Configuration for a specific configuration type.
+	* @param[in] sSchemaType - Schema Type String. Fails if configuration schema type is not known.
+	* @param[in] bFallBackToDefault - If true, the default configuration is returned, if no active configuration exists. Otherwise null is returned.
+	* @return Configuration Version instance.
+	*/
+	virtual IMachineConfigurationVersion * GetActiveConfiguration(const std::string & sSchemaType, const bool bFallBackToDefault) = 0;
+
+};
+
+typedef IBaseSharedPtr<IMachineConfigurationHandler> PIMachineConfigurationHandler;
+
+
+/*************************************************************************************************************************
  Class interface for StateEnvironment 
 **************************************************************************************************************************/
 
@@ -6918,6 +7084,12 @@ public:
 	* @return Image loader instance.
 	*/
 	virtual IImageLoader * CreateImageLoader() = 0;
+
+	/**
+	* IStateEnvironment::CreateMachineConfigurationHandler - creates a machine configuration handler, dealing with all persistent machine settings that the user will store in the local database.
+	* @return MachineConfigurationHandler instance.
+	*/
+	virtual IMachineConfigurationHandler * CreateMachineConfigurationHandler() = 0;
 
 	/**
 	* IStateEnvironment::CreateDiscreteField2D - Creates an empty discrete field.

@@ -2171,6 +2171,25 @@ public:
 	*/
 	virtual std::string GetConfigurationXMLString() = 0;
 
+	/**
+	* IMachineConfigurationVersion::CreateNewVersion - Creates a new configuration version from this version with the same XSD.
+	* @param[in] sXMLString - New XML Configuration String. MUST conform to current XSD.
+	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sTimeStampUTC - Current time in UTC.
+	* @return returns the MachineConfigurationVersion instance.
+	*/
+	virtual IMachineConfigurationVersion * CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sTimeStampUTC) = 0;
+
+	/**
+	* IMachineConfigurationVersion::MigrateToNewXSD - Creates a new configuration version from this version with another XSD.
+	* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
+	* @param[in] sXMLString - New XML Configuration String. MUST conform to new XSD.
+	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sTimeStampUTC - Current time in UTC.
+	* @return returns the MachineConfigurationVersion instance.
+	*/
+	virtual IMachineConfigurationVersion * MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sTimeStampUTC) = 0;
+
 };
 
 typedef IBaseSharedPtr<IMachineConfigurationVersion> PIMachineConfigurationVersion;
@@ -2229,6 +2248,12 @@ public:
 	*/
 	virtual std::string GetXSDString() = 0;
 
+	/**
+	* IMachineConfigurationXSD::ListVersions - Lists all known Configuration version of the current XSD.
+	* @return Returns a list of versions.
+	*/
+	virtual IMachineConfigurationVersionIterator * ListVersions() = 0;
+
 };
 
 typedef IBaseSharedPtr<IMachineConfigurationXSD> PIMachineConfigurationXSD;
@@ -2281,9 +2306,10 @@ public:
 	* IMachineConfigurationType::CreateNewXSD - Creates a new XSD Version. Fails if version already exists or is not incrementing.
 	* @param[in] sXSDString - XSD String of the version. MUST be incremental.
 	* @param[in] nXSDVersion - New Version to add. MUST be larger than GetLatestXSDVersion.
+	* @param[in] sDefaultConfigurationXML - Default configuration XML to use for this XSD. MUST conform to XSD in question.
 	* @return Returns the new XSD of the configuration type.
 	*/
-	virtual IMachineConfigurationXSD * CreateNewXSD(const std::string & sXSDString, const LibMCData_uint32 nXSDVersion) = 0;
+	virtual IMachineConfigurationXSD * CreateNewXSD(const std::string & sXSDString, const LibMCData_uint32 nXSDVersion, const std::string & sDefaultConfigurationXML) = 0;
 
 	/**
 	* IMachineConfigurationType::GetXSDVersion - Returns an Configuration XSD Version.
