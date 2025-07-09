@@ -40,7 +40,7 @@ namespace AMCData {
 			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDPARAM);
 
 		switch (nCurrentVersionIndex) {
-		case 0: {
+		case 17: {
 			std::string sConfigurationTypes = "CREATE TABLE `machineconfiguration_types` (";
 			sConfigurationTypes += "`uuid` varchar ( 64 ) UNIQUE NOT NULL,";
 			sConfigurationTypes += "`name` varchar ( 256 ) NOT NULL,";
