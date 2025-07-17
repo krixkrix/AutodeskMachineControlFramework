@@ -404,6 +404,9 @@ void CRTCContext::SetLaserPulsesInMicroSeconds(const LibMCDriver_ScanLab_double 
 
 void CRTCContext::SetStandbyInBits(const LibMCDriver_ScanLab_uint32 nHalfPeriod, const LibMCDriver_ScanLab_uint32 nPulseLength)
 {
+	if (nPulseLength > 2 * nHalfPeriod)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD);
+
 	m_pScanLabSDK->n_set_standby(m_CardNo, nHalfPeriod, nPulseLength);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
 
@@ -416,12 +419,12 @@ void CRTCContext::SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHal
 	double HalfPeriodBits = round(dHalfPeriod * 64.0);
 	double PulseLengthBits = round(dPulseLength * 64.0);
 
-	if ((HalfPeriodBits < 1) || (HalfPeriodBits >= (double)(1UL << 31)))
+	if ((HalfPeriodBits < 0) || (HalfPeriodBits >= (double)(1UL << 31)))
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
-	if ((PulseLengthBits < 1) || (PulseLengthBits >= (double)(1UL << 31)))
+	if ((PulseLengthBits < 0) || (PulseLengthBits >= (double)(1UL << 31)))
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
 	if (PulseLengthBits > 2 * HalfPeriodBits)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD);
 
 	SetStandbyInBits((uint32_t)HalfPeriodBits, (uint32_t)PulseLengthBits);
 }
@@ -679,6 +682,8 @@ void CRTCContext::writePower(double dPowerInPercent, bool bOIEPIDControlFlag)
 			break;
 		case eLaserPort::Port12BitAnalog1andAnalog2:
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_MULTIPLELASERPORTSNOTCOMPATIBLEWITHPID);
+		case eLaserPort::LaserPulseModulation:
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE);
 		}
 
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
@@ -714,6 +719,17 @@ void CRTCContext::writePower(double dPowerInPercent, bool bOIEPIDControlFlag)
 			m_pScanLabSDK->n_set_laser_power(m_CardNo, 0, digitalPowerValue);
 			m_pScanLabSDK->n_set_laser_power(m_CardNo, 1, digitalPowerValue);
 			break;
+		case eLaserPort::LaserPulseModulation: 
+			{
+				uint32_t nHalfPeriodInBits = (uint32_t)round(m_dLaserPulseHalfPeriodInMS * 64.0);
+				uint32_t nFullPeriodInBits = nHalfPeriodInBits * 2;
+				uint32_t nPulseLength = (uint32_t)round((double)nFullPeriodInBits * dClippedPowerFactor);
+
+				std::cout << "laser pulse modulation: half period " << nHalfPeriodInBits << " bits, pulse length " << nPulseLength << " bits, factor " << dClippedPowerFactor << std::endl;
+
+				m_pScanLabSDK->n_set_laser_pulses(m_CardNo, nHalfPeriodInBits, nPulseLength);
+				break;
+			}
 		}
 
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
