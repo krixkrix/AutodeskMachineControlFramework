@@ -43,7 +43,7 @@ Abstract: This is a stub class definition of CSMCJob
 #include <array>
 #include <thread>
 #include <cmath>
-#include <iostream>
+//#include <iostream>
 #include <chrono>
 
 using namespace LibMCDriver_ScanLabSMC::Impl;
@@ -376,7 +376,7 @@ void CSMCJobInstance::Execute(const bool bBlocking)
 {
     auto contextHandle = m_pContextHandle->getHandle();
 
-    std::cout << "Waiting for execution" << std::endl;
+    //std::cout << "Waiting for execution" << std::endl;
 
     slsc_ExecState execState1 = slsc_ExecState::slsc_ExecState_NotInitOrError;
     while (execState1 != slsc_ExecState::slsc_ExecState_ReadyForExecution) {
@@ -665,7 +665,7 @@ void CSMCJobInstance::ExecuteLaserInitSequence()
 {
     auto contextHandle = m_pContextHandle->getHandle();
 
-    std::cout << "Executing laser init sequence" << std::endl;
+    //std::cout << "Executing laser init sequence" << std::endl;
  
     m_pSDK->checkError(contextHandle, m_pSDK->slsc_ctrl_exec_init_laser_sequence(contextHandle));
 }
@@ -674,7 +674,7 @@ void CSMCJobInstance::ExecuteLaserShutdownSequence()
 {
     auto contextHandle = m_pContextHandle->getHandle();
 
-    std::cout << "Executing laser shutdown sequence" << std::endl;
+    //std::cout << "Executing laser shutdown sequence" << std::endl;
 
     m_pSDK->checkError(contextHandle, m_pSDK->slsc_ctrl_exec_shutdown_laser_sequence(contextHandle));
 }
