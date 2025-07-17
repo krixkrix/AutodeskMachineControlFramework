@@ -46,8 +46,8 @@ using namespace LibMCDriver_Raylase::Impl;
 CNLightDriverImpl::CNLightDriverImpl(PRaylaseSDK pSDK, LibMCEnv::PDriverEnvironment pDriverEnvironment)
     : m_pSDK (pSDK), 
     m_pDriverEnvironment (pDriverEnvironment), 
-    m_nModeChangeSignalDelayInMicroseconds (5),
-    m_nModeChangeApplyDelayInMicroseconds (30000),
+    m_nModeChangeSignalDelayInMicroseconds (10000),
+    m_nModeChangeApplyDelayInMicroseconds (100000),
     m_AutomaticLaserModesEnabled (false),
     m_nSPITimeoutInMilliseconds (10),
     m_nSPIModuleIndex (2),
