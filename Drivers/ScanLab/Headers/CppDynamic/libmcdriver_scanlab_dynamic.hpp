@@ -368,6 +368,8 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE";
 			case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE";
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "INVALIDCORRECTIONFACTOR";
+			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "PULSELENGTHEXCEEDSCONTROLPERIOD";
+			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "PULSELENGTHCONTROLNOTSUPPORTEDBYOIE";
 		}
 		return "UNKNOWN";
 	}
@@ -538,6 +540,8 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "Invalid or no skywriting npost provided in profile.";
 			case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "Skywriting npost provided twice in profile.";
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "Invalid correction factor.";
+			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "Pulse Length exceeds control period.";
+			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "Pulse Length control not supported by OIE yet.";
 		}
 		return "unknown error";
 	}
@@ -8092,7 +8096,7 @@ public:
 	}
 	
 	/**
-	* CDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* CDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
 	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
 	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
 	* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
@@ -8234,7 +8238,7 @@ public:
 	}
 	
 	/**
-	* CDriver_ScanLab_RTC6::ConfigureLaserMode - Configures the laser mode. MUST be called before any exposure.
+	* CDriver_ScanLab_RTC6::ConfigureLaserMode - Configures the laser mode. MUST be called before any exposure. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.
 	* @param[in] eLaserMode - Laser Mode Enum
 	* @param[in] eLaserPort - Laser Port Enum
 	* @param[in] dMaxLaserPower - Maximum laser power.
@@ -8439,7 +8443,7 @@ public:
 	}
 	
 	/**
-	* CDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* CDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
 	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
 	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
 	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
@@ -8592,7 +8596,7 @@ public:
 	}
 	
 	/**
-	* CDriver_ScanLab_RTC6xN::ConfigureLaserMode - Configures the laser mode.
+	* CDriver_ScanLab_RTC6xN::ConfigureLaserMode - Configures the laser mode. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.
 	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
 	* @param[in] eLaserMode - Laser Mode Enum
 	* @param[in] eLaserPort - Laser Port Enum

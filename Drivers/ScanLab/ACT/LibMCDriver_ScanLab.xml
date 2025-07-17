@@ -205,6 +205,8 @@
 		<error name="INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE" code="1153" description="Invalid or no skywriting npost provided in profile." />
 		<error name="SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE" code="1154" description="Skywriting npost provided twice in profile." />
 		<error name="INVALIDCORRECTIONFACTOR" code="1155" description="Invalid correction factor." />
+		<error name="PULSELENGTHEXCEEDSCONTROLPERIOD" code="1156" description="Pulse Length exceeds control period." />
+		<error name="PULSELENGTHCONTROLNOTSUPPORTEDBYOIE" code="1157" description="Pulse Length control not supported by OIE yet." />
 			
 							
 	</errors>
@@ -226,6 +228,7 @@
 	   <option name="Port12BitAnalog1" value="3" />
 	   <option name="Port12BitAnalog2" value="4" />
 	   <option name="Port12BitAnalog1andAnalog2" value="5" />
+	   <option name="LaserPulseModulation" value="6" />
 	</enum>
 
 

@@ -2434,7 +2434,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_Init
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_InitialiseFromConfigurationPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, const char * pPresetName);
 
 /**
-* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
 *
 * @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
 * @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
@@ -2557,7 +2557,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_Load
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetCorrectionFilePtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, LibMCDriver_ScanLab_uint32 nTableNumber, LibMCDriver_ScanLab_uint32 nDimension, LibMCDriver_ScanLab_uint32 nTableNumberHeadA, LibMCDriver_ScanLab_uint32 nTableNumberHeadB);
 
 /**
-* Configures the laser mode. MUST be called before any exposure.
+* Configures the laser mode. MUST be called before any exposure. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.
 *
 * @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
 * @param[in] eLaserMode - Laser Mode Enum
@@ -2747,7 +2747,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_In
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_InitialiseScannerFromConfigurationPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, const char * pPresetName);
 
 /**
-* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
 *
 * @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
 * @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
@@ -2878,7 +2878,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_Lo
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_SetCorrectionFilePtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, LibMCDriver_ScanLab_uint32 nTableNumber, LibMCDriver_ScanLab_uint32 nDimension, LibMCDriver_ScanLab_uint32 nTableNumberHeadA, LibMCDriver_ScanLab_uint32 nTableNumberHeadB);
 
 /**
-* Configures the laser mode.
+* Configures the laser mode. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.
 *
 * @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
 * @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount

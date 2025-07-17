@@ -2152,7 +2152,7 @@ public:
 	virtual void InitialiseFromConfiguration(const std::string & sPresetName) = 0;
 
 	/**
-	* IDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* IDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
 	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
 	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
 	* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
@@ -2238,7 +2238,7 @@ public:
 	virtual void SetCorrectionFile(const LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, const LibMCDriver_ScanLab_uint32 nTableNumber, const LibMCDriver_ScanLab_uint32 nDimension, const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB) = 0;
 
 	/**
-	* IDriver_ScanLab_RTC6::ConfigureLaserMode - Configures the laser mode. MUST be called before any exposure.
+	* IDriver_ScanLab_RTC6::ConfigureLaserMode - Configures the laser mode. MUST be called before any exposure. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.
 	* @param[in] eLaserMode - Laser Mode Enum
 	* @param[in] eLaserPort - Laser Port Enum
 	* @param[in] dMaxLaserPower - Maximum laser power.
@@ -2381,7 +2381,7 @@ public:
 	virtual void InitialiseScannerFromConfiguration(const LibMCDriver_ScanLab_uint32 nScannerIndex, const std::string & sPresetName) = 0;
 
 	/**
-	* IDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
+	* IDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults - Sets the laser timing defaults for CO2 lasers. Only has an effect if called before ConfigureLaserMode. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
 	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
 	* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
 	* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
@@ -2475,7 +2475,7 @@ public:
 	virtual void SetCorrectionFile(const LibMCDriver_ScanLab_uint32 nScannerIndex, const LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, const LibMCDriver_ScanLab_uint32 nTableNumber, const LibMCDriver_ScanLab_uint32 nDimension, const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB) = 0;
 
 	/**
-	* IDriver_ScanLab_RTC6xN::ConfigureLaserMode - Configures the laser mode.
+	* IDriver_ScanLab_RTC6xN::ConfigureLaserMode - Configures the laser mode. For CO2 Lasers, SetLaserSignalTimingDefaults SHOULD be called before to set the proper laser signal timing.
 	* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
 	* @param[in] eLaserMode - Laser Mode Enum
 	* @param[in] eLaserPort - Laser Port Enum

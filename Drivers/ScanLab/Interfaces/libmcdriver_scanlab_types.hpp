@@ -258,6 +258,8 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE 1153 /** Invalid or no skywriting npost provided in profile. */
 #define LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE 1154 /** Skywriting npost provided twice in profile. */
 #define LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR 1155 /** Invalid correction factor. */
+#define LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD 1156 /** Pulse Length exceeds control period. */
+#define LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE 1157 /** Pulse Length control not supported by OIE yet. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -428,6 +430,8 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE: return "Invalid or no skywriting npost provided in profile.";
     case LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE: return "Skywriting npost provided twice in profile.";
     case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "Invalid correction factor.";
+    case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "Pulse Length exceeds control period.";
+    case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "Pulse Length control not supported by OIE yet.";
     default: return "unknown error";
   }
 }
@@ -471,7 +475,8 @@ namespace LibMCDriver_ScanLab {
     Port16bitDigital = 2,
     Port12BitAnalog1 = 3,
     Port12BitAnalog2 = 4,
-    Port12BitAnalog1andAnalog2 = 5
+    Port12BitAnalog1andAnalog2 = 5,
+    LaserPulseModulation = 6
   };
   
   enum class eOIEOperationMode : LibMCDriver_ScanLab_int32 {
