@@ -1483,6 +1483,12 @@ public:
 	virtual LibMCData::eBuildJobStatus GetStatus() = 0;
 
 	/**
+	* IBuildJob::GetStatusString - returns the status of a build job as string.
+	* @return Status of build job as string.
+	*/
+	virtual std::string GetStatusString() = 0;
+
+	/**
 	* IBuildJob::GetLayerCount - returns the layer count of a build job.
 	* @return Layer Count of build job
 	*/
@@ -1541,6 +1547,12 @@ public:
 	* @return Stream UUID.
 	*/
 	virtual std::string GetStorageStreamUUID() = 0;
+
+	/**
+	* IBuildJob::GetStorageStreamSize - returns the size of the storage stream in bytes.
+	* @return Stream Size.
+	*/
+	virtual LibMCData_uint64 GetStorageStreamSize() = 0;
 
 	/**
 	* IBuildJob::StartValidating - Starts validation of a build job.

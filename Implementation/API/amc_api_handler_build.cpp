@@ -256,6 +256,9 @@ void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAut
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTORAGESTREAM, pBuildJob->GetStorageStreamUUID());
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName ());
 		jobJSON.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBLAYERCOUNT, pBuildJob->GetLayerCount());
+		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, pBuildJob->GetStatusString());
+		jobJSON.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBSIZE, pBuildJob->GetStorageStreamSize());
+		;
 
 		if (pBuildJob->HasThumbnailStream())
 			jobJSON.addString(AMC_API_KEY_UPLOAD_ITEMBUILDTHUMBNAIL, pBuildJob->GetThumbnailStreamUUID());
@@ -321,6 +324,8 @@ void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAu
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTORAGESTREAM, pBuildJob->GetStorageStreamUUID());
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName());
 	writer.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBLAYERCOUNT, pBuildJob->GetLayerCount());
+	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, pBuildJob->GetStatusString());
+	writer.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBSIZE, pBuildJob->GetStorageStreamSize());
 
 	if (pBuildJob->HasThumbnailStream())
 		writer.addString(AMC_API_KEY_UPLOAD_ITEMBUILDTHUMBNAIL, pBuildJob->GetThumbnailStreamUUID());

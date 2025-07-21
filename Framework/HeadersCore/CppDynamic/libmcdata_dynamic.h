@@ -1611,6 +1611,17 @@ typedef LibMCDataResult (*PLibMCDataBuildJob_GetNamePtr) (LibMCData_BuildJob pBu
 typedef LibMCDataResult (*PLibMCDataBuildJob_GetStatusPtr) (LibMCData_BuildJob pBuildJob, LibMCData::eBuildJobStatus * pStatus);
 
 /**
+* returns the status of a build job as string.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @param[in] nStatusStringBufferSize - size of the buffer (including trailing 0)
+* @param[out] pStatusStringNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pStatusStringBuffer -  buffer of Status of build job as string., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataBuildJob_GetStatusStringPtr) (LibMCData_BuildJob pBuildJob, const LibMCData_uint32 nStatusStringBufferSize, LibMCData_uint32* pStatusStringNeededChars, char * pStatusStringBuffer);
+
+/**
 * returns the layer count of a build job.
 *
 * @param[in] pBuildJob - BuildJob instance.
@@ -1709,6 +1720,15 @@ typedef LibMCDataResult (*PLibMCDataBuildJob_GetStorageStreamPtr) (LibMCData_Bui
 * @return error code or 0 (success)
 */
 typedef LibMCDataResult (*PLibMCDataBuildJob_GetStorageStreamUUIDPtr) (LibMCData_BuildJob pBuildJob, const LibMCData_uint32 nStreamUUIDBufferSize, LibMCData_uint32* pStreamUUIDNeededChars, char * pStreamUUIDBuffer);
+
+/**
+* returns the size of the storage stream in bytes.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @param[out] pStreamSize - Stream Size.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataBuildJob_GetStorageStreamSizePtr) (LibMCData_BuildJob pBuildJob, LibMCData_uint64 * pStreamSize);
 
 /**
 * Starts validation of a build job.
@@ -3280,6 +3300,7 @@ typedef struct {
 	PLibMCDataBuildJob_GetUUIDPtr m_BuildJob_GetUUID;
 	PLibMCDataBuildJob_GetNamePtr m_BuildJob_GetName;
 	PLibMCDataBuildJob_GetStatusPtr m_BuildJob_GetStatus;
+	PLibMCDataBuildJob_GetStatusStringPtr m_BuildJob_GetStatusString;
 	PLibMCDataBuildJob_GetLayerCountPtr m_BuildJob_GetLayerCount;
 	PLibMCDataBuildJob_GetExecutionCountPtr m_BuildJob_GetExecutionCount;
 	PLibMCDataBuildJob_GetTimeStampPtr m_BuildJob_GetTimeStamp;
@@ -3290,6 +3311,7 @@ typedef struct {
 	PLibMCDataBuildJob_GetCreatorNamePtr m_BuildJob_GetCreatorName;
 	PLibMCDataBuildJob_GetStorageStreamPtr m_BuildJob_GetStorageStream;
 	PLibMCDataBuildJob_GetStorageStreamUUIDPtr m_BuildJob_GetStorageStreamUUID;
+	PLibMCDataBuildJob_GetStorageStreamSizePtr m_BuildJob_GetStorageStreamSize;
 	PLibMCDataBuildJob_StartValidatingPtr m_BuildJob_StartValidating;
 	PLibMCDataBuildJob_FinishValidatingPtr m_BuildJob_FinishValidating;
 	PLibMCDataBuildJob_ArchiveJobPtr m_BuildJob_ArchiveJob;

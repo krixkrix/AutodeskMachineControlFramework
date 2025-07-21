@@ -436,6 +436,8 @@
 		<error name="INVALIDALIASINDEX" code="436" description="Invalid alias index" />
 		<error name="SOURCEOFJOURNALALIASNOTFOUND" code="437" description="Source of Journal Alias not found" />
 		<error name="COULDNOTFINDMACHINECONFIGURATIONTYPE" code="438" description="Could not find machine configuration type." />
+		<error name="INVALIDSTORAGESTREAMSIZE" code="439" description="Storage stream size for build is zero." />
+		
 		
 
 	</errors>
@@ -1298,6 +1300,10 @@
 			<param name="Status" type="enum" class="BuildJobStatus" pass="return" description="Status of build job." />	
 		</method>
 
+		<method name="GetStatusString" description="returns the status of a build job as string.">
+			<param name="StatusString" type="string" pass="return" description="Status of build job as string." />	
+		</method>
+
 		<method name="GetLayerCount" description="returns the layer count of a build job.">
 			<param name="LayerCount" type="uint32" pass="return" description="Layer Count of build job" />	
 		</method>
@@ -1338,6 +1344,10 @@
 			<param name="StreamUUID" type="string" pass="return" description="Stream UUID." />
 		</method>	
 		
+		<method name="GetStorageStreamSize" description="returns the size of the storage stream in bytes.">
+			<param name="StreamSize" type="uint64" pass="return" description="Stream Size." />
+		</method>	
+
 		<method name="StartValidating" description="Starts validation of a build job.">
 		</method>
 

@@ -648,6 +648,7 @@ public:
 			case LIBMCDATA_ERROR_INVALIDALIASINDEX: return "INVALIDALIASINDEX";
 			case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "SOURCEOFJOURNALALIASNOTFOUND";
 			case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "COULDNOTFINDMACHINECONFIGURATIONTYPE";
+			case LIBMCDATA_ERROR_INVALIDSTORAGESTREAMSIZE: return "INVALIDSTORAGESTREAMSIZE";
 		}
 		return "UNKNOWN";
 	}
@@ -1023,6 +1024,7 @@ public:
 			case LIBMCDATA_ERROR_INVALIDALIASINDEX: return "Invalid alias index";
 			case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "Source of Journal Alias not found";
 			case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "Could not find machine configuration type.";
+			case LIBMCDATA_ERROR_INVALIDSTORAGESTREAMSIZE: return "Storage stream size for build is zero.";
 		}
 		return "unknown error";
 	}
@@ -1688,6 +1690,7 @@ public:
 	inline std::string GetUUID();
 	inline std::string GetName();
 	inline eBuildJobStatus GetStatus();
+	inline std::string GetStatusString();
 	inline LibMCData_uint32 GetLayerCount();
 	inline LibMCData_uint32 GetExecutionCount();
 	inline std::string GetTimeStamp();
@@ -1698,6 +1701,7 @@ public:
 	inline std::string GetCreatorName();
 	inline PStorageStream GetStorageStream();
 	inline std::string GetStorageStreamUUID();
+	inline LibMCData_uint64 GetStorageStreamSize();
 	inline void StartValidating();
 	inline void FinishValidating(const LibMCData_uint32 nLayerCount);
 	inline void ArchiveJob();
@@ -2232,6 +2236,7 @@ public:
 		pWrapperTable->m_BuildJob_GetUUID = nullptr;
 		pWrapperTable->m_BuildJob_GetName = nullptr;
 		pWrapperTable->m_BuildJob_GetStatus = nullptr;
+		pWrapperTable->m_BuildJob_GetStatusString = nullptr;
 		pWrapperTable->m_BuildJob_GetLayerCount = nullptr;
 		pWrapperTable->m_BuildJob_GetExecutionCount = nullptr;
 		pWrapperTable->m_BuildJob_GetTimeStamp = nullptr;
@@ -2242,6 +2247,7 @@ public:
 		pWrapperTable->m_BuildJob_GetCreatorName = nullptr;
 		pWrapperTable->m_BuildJob_GetStorageStream = nullptr;
 		pWrapperTable->m_BuildJob_GetStorageStreamUUID = nullptr;
+		pWrapperTable->m_BuildJob_GetStorageStreamSize = nullptr;
 		pWrapperTable->m_BuildJob_StartValidating = nullptr;
 		pWrapperTable->m_BuildJob_FinishValidating = nullptr;
 		pWrapperTable->m_BuildJob_ArchiveJob = nullptr;
@@ -3663,6 +3669,15 @@ public:
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_BuildJob_GetStatusString = (PLibMCDataBuildJob_GetStatusStringPtr) GetProcAddress(hLibrary, "libmcdata_buildjob_getstatusstring");
+		#else // _WIN32
+		pWrapperTable->m_BuildJob_GetStatusString = (PLibMCDataBuildJob_GetStatusStringPtr) dlsym(hLibrary, "libmcdata_buildjob_getstatusstring");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BuildJob_GetStatusString == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_BuildJob_GetLayerCount = (PLibMCDataBuildJob_GetLayerCountPtr) GetProcAddress(hLibrary, "libmcdata_buildjob_getlayercount");
 		#else // _WIN32
 		pWrapperTable->m_BuildJob_GetLayerCount = (PLibMCDataBuildJob_GetLayerCountPtr) dlsym(hLibrary, "libmcdata_buildjob_getlayercount");
@@ -3750,6 +3765,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_BuildJob_GetStorageStreamUUID == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BuildJob_GetStorageStreamSize = (PLibMCDataBuildJob_GetStorageStreamSizePtr) GetProcAddress(hLibrary, "libmcdata_buildjob_getstoragestreamsize");
+		#else // _WIN32
+		pWrapperTable->m_BuildJob_GetStorageStreamSize = (PLibMCDataBuildJob_GetStorageStreamSizePtr) dlsym(hLibrary, "libmcdata_buildjob_getstoragestreamsize");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BuildJob_GetStorageStreamSize == nullptr)
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -5472,6 +5496,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_GetStatus == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdata_buildjob_getstatusstring", (void**)&(pWrapperTable->m_BuildJob_GetStatusString));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_GetStatusString == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdata_buildjob_getlayercount", (void**)&(pWrapperTable->m_BuildJob_GetLayerCount));
 		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_GetLayerCount == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -5510,6 +5538,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_buildjob_getstoragestreamuuid", (void**)&(pWrapperTable->m_BuildJob_GetStorageStreamUUID));
 		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_GetStorageStreamUUID == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_buildjob_getstoragestreamsize", (void**)&(pWrapperTable->m_BuildJob_GetStorageStreamSize));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_GetStorageStreamSize == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_buildjob_startvalidating", (void**)&(pWrapperTable->m_BuildJob_StartValidating));
@@ -8046,6 +8078,21 @@ public:
 	}
 	
 	/**
+	* CBuildJob::GetStatusString - returns the status of a build job as string.
+	* @return Status of build job as string.
+	*/
+	std::string CBuildJob::GetStatusString()
+	{
+		LibMCData_uint32 bytesNeededStatusString = 0;
+		LibMCData_uint32 bytesWrittenStatusString = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_GetStatusString(m_pHandle, 0, &bytesNeededStatusString, nullptr));
+		std::vector<char> bufferStatusString(bytesNeededStatusString);
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_GetStatusString(m_pHandle, bytesNeededStatusString, &bytesWrittenStatusString, &bufferStatusString[0]));
+		
+		return std::string(&bufferStatusString[0]);
+	}
+	
+	/**
 	* CBuildJob::GetLayerCount - returns the layer count of a build job.
 	* @return Layer Count of build job
 	*/
@@ -8178,6 +8225,18 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_GetStorageStreamUUID(m_pHandle, bytesNeededStreamUUID, &bytesWrittenStreamUUID, &bufferStreamUUID[0]));
 		
 		return std::string(&bufferStreamUUID[0]);
+	}
+	
+	/**
+	* CBuildJob::GetStorageStreamSize - returns the size of the storage stream in bytes.
+	* @return Stream Size.
+	*/
+	LibMCData_uint64 CBuildJob::GetStorageStreamSize()
+	{
+		LibMCData_uint64 resultStreamSize = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_GetStorageStreamSize(m_pHandle, &resultStreamSize));
+		
+		return resultStreamSize;
 	}
 	
 	/**

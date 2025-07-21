@@ -5111,6 +5111,54 @@ LibMCDataResult libmcdata_buildjob_getstatus(LibMCData_BuildJob pBuildJob, eLibM
 	}
 }
 
+LibMCDataResult libmcdata_buildjob_getstatusstring(LibMCData_BuildJob pBuildJob, const LibMCData_uint32 nStatusStringBufferSize, LibMCData_uint32* pStatusStringNeededChars, char * pStatusStringBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pBuildJob;
+
+	try {
+		if ( (!pStatusStringBuffer) && !(pStatusStringNeededChars) )
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		std::string sStatusString("");
+		IBuildJob* pIBuildJob = dynamic_cast<IBuildJob*>(pIBaseClass);
+		if (!pIBuildJob)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pStatusStringBuffer == nullptr);
+		if (isCacheCall) {
+			sStatusString = pIBuildJob->GetStatusString();
+
+			pIBuildJob->_setCache (new ParameterCache_1<std::string> (sStatusString));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIBuildJob->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+			cache->retrieveData (sStatusString);
+			pIBuildJob->_setCache (nullptr);
+		}
+		
+		if (pStatusStringNeededChars)
+			*pStatusStringNeededChars = (LibMCData_uint32) (sStatusString.size()+1);
+		if (pStatusStringBuffer) {
+			if (sStatusString.size() >= nStatusStringBufferSize)
+				throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_BUFFERTOOSMALL);
+			for (size_t iStatusString = 0; iStatusString < sStatusString.size(); iStatusString++)
+				pStatusStringBuffer[iStatusString] = sStatusString[iStatusString];
+			pStatusStringBuffer[sStatusString.size()] = 0;
+		}
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDataResult libmcdata_buildjob_getlayercount(LibMCData_BuildJob pBuildJob, LibMCData_uint32 * pLayerCount)
 {
 	IBase* pIBaseClass = (IBase *)pBuildJob;
@@ -5471,6 +5519,32 @@ LibMCDataResult libmcdata_buildjob_getstoragestreamuuid(LibMCData_BuildJob pBuil
 				pStreamUUIDBuffer[iStreamUUID] = sStreamUUID[iStreamUUID];
 			pStreamUUIDBuffer[sStreamUUID.size()] = 0;
 		}
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDataResult libmcdata_buildjob_getstoragestreamsize(LibMCData_BuildJob pBuildJob, LibMCData_uint64 * pStreamSize)
+{
+	IBase* pIBaseClass = (IBase *)pBuildJob;
+
+	try {
+		if (pStreamSize == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		IBuildJob* pIBuildJob = dynamic_cast<IBuildJob*>(pIBaseClass);
+		if (!pIBuildJob)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		*pStreamSize = pIBuildJob->GetStorageStreamSize();
+
 		return LIBMCDATA_SUCCESS;
 	}
 	catch (ELibMCDataInterfaceException & Exception) {
@@ -10340,6 +10414,8 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_buildjob_getname;
 	if (sProcName == "libmcdata_buildjob_getstatus") 
 		*ppProcAddress = (void*) &libmcdata_buildjob_getstatus;
+	if (sProcName == "libmcdata_buildjob_getstatusstring") 
+		*ppProcAddress = (void*) &libmcdata_buildjob_getstatusstring;
 	if (sProcName == "libmcdata_buildjob_getlayercount") 
 		*ppProcAddress = (void*) &libmcdata_buildjob_getlayercount;
 	if (sProcName == "libmcdata_buildjob_getexecutioncount") 
@@ -10360,6 +10436,8 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_buildjob_getstoragestream;
 	if (sProcName == "libmcdata_buildjob_getstoragestreamuuid") 
 		*ppProcAddress = (void*) &libmcdata_buildjob_getstoragestreamuuid;
+	if (sProcName == "libmcdata_buildjob_getstoragestreamsize") 
+		*ppProcAddress = (void*) &libmcdata_buildjob_getstoragestreamsize;
 	if (sProcName == "libmcdata_buildjob_startvalidating") 
 		*ppProcAddress = (void*) &libmcdata_buildjob_startvalidating;
 	if (sProcName == "libmcdata_buildjob_finishvalidating") 

@@ -1624,6 +1624,17 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_getname(LibMCData_BuildJob
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_getstatus(LibMCData_BuildJob pBuildJob, LibMCData::eBuildJobStatus * pStatus);
 
 /**
+* returns the status of a build job as string.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @param[in] nStatusStringBufferSize - size of the buffer (including trailing 0)
+* @param[out] pStatusStringNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pStatusStringBuffer -  buffer of Status of build job as string., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_getstatusstring(LibMCData_BuildJob pBuildJob, const LibMCData_uint32 nStatusStringBufferSize, LibMCData_uint32* pStatusStringNeededChars, char * pStatusStringBuffer);
+
+/**
 * returns the layer count of a build job.
 *
 * @param[in] pBuildJob - BuildJob instance.
@@ -1722,6 +1733,15 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_getstoragestream(LibMCData
 * @return error code or 0 (success)
 */
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_getstoragestreamuuid(LibMCData_BuildJob pBuildJob, const LibMCData_uint32 nStreamUUIDBufferSize, LibMCData_uint32* pStreamUUIDNeededChars, char * pStreamUUIDBuffer);
+
+/**
+* returns the size of the storage stream in bytes.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @param[out] pStreamSize - Stream Size.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_getstoragestreamsize(LibMCData_BuildJob pBuildJob, LibMCData_uint64 * pStreamSize);
 
 /**
 * Starts validation of a build job.
