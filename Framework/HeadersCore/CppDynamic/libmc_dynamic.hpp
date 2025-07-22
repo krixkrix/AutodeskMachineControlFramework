@@ -758,6 +758,9 @@ public:
 			case LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT: return "INVALIDSIGNALREACTIONTIMEOUT";
 			case LIBMC_ERROR_INVALIDSIGNALQUEUESIZE: return "INVALIDSIGNALQUEUESIZE";
 			case LIBMC_ERROR_SIGNALALREADYTRIGGERED: return "SIGNALALREADYTRIGGERED";
+			case LIBMC_ERROR_INVALIDQUERYPARAMETER: return "INVALIDQUERYPARAMETER";
+			case LIBMC_ERROR_DUPLICATEQUERYPARAMETER: return "DUPLICATEQUERYPARAMETER";
+			case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "QUERYPARAMETERNOTFOUND";
 		}
 		return "UNKNOWN";
 	}
@@ -1350,6 +1353,9 @@ public:
 			case LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT: return "Invalid Signal Reaction Timeout.";
 			case LIBMC_ERROR_INVALIDSIGNALQUEUESIZE: return "Invalid Signal queue size.";
 			case LIBMC_ERROR_SIGNALALREADYTRIGGERED: return "Signal has already been triggered.";
+			case LIBMC_ERROR_INVALIDQUERYPARAMETER: return "Invalid query parameter.";
+			case LIBMC_ERROR_DUPLICATEQUERYPARAMETER: return "Duplicate query parameter.";
+			case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "Query parameter not found.";
 		}
 		return "unknown error";
 	}
@@ -1591,6 +1597,7 @@ public:
 	inline void GetFormDataDetails(const LibMC_uint32 nFieldIndex, std::string & sName, bool & bIsFile, bool & bMandatory);
 	inline void SetFormDataField(const std::string & sName, const CInputVector<LibMC_uint8> & DataFieldBuffer);
 	inline void SetFormStringField(const std::string & sName, const std::string & sString);
+	inline void SetRequestParameter(const std::string & sName, const std::string & sValue);
 	inline void Handle(const CInputVector<LibMC_uint8> & RawBodyBuffer, std::string & sContentType, LibMC_uint32 & nHTTPCode);
 	inline void GetResultData(std::vector<LibMC_uint8> & DataBuffer);
 	inline std::string GetContentDispositionName();
@@ -1742,6 +1749,7 @@ public:
 		pWrapperTable->m_APIRequestHandler_GetFormDataDetails = nullptr;
 		pWrapperTable->m_APIRequestHandler_SetFormDataField = nullptr;
 		pWrapperTable->m_APIRequestHandler_SetFormStringField = nullptr;
+		pWrapperTable->m_APIRequestHandler_SetRequestParameter = nullptr;
 		pWrapperTable->m_APIRequestHandler_Handle = nullptr;
 		pWrapperTable->m_APIRequestHandler_GetResultData = nullptr;
 		pWrapperTable->m_APIRequestHandler_GetContentDispositionName = nullptr;
@@ -1902,6 +1910,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_APIRequestHandler_SetFormStringField == nullptr)
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_APIRequestHandler_SetRequestParameter = (PLibMCAPIRequestHandler_SetRequestParameterPtr) GetProcAddress(hLibrary, "libmc_apirequesthandler_setrequestparameter");
+		#else // _WIN32
+		pWrapperTable->m_APIRequestHandler_SetRequestParameter = (PLibMCAPIRequestHandler_SetRequestParameterPtr) dlsym(hLibrary, "libmc_apirequesthandler_setrequestparameter");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_APIRequestHandler_SetRequestParameter == nullptr)
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -2158,6 +2175,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_APIRequestHandler_SetFormStringField == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmc_apirequesthandler_setrequestparameter", (void**)&(pWrapperTable->m_APIRequestHandler_SetRequestParameter));
+		if ( (eLookupError != 0) || (pWrapperTable->m_APIRequestHandler_SetRequestParameter == nullptr) )
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmc_apirequesthandler_handle", (void**)&(pWrapperTable->m_APIRequestHandler_Handle));
 		if ( (eLookupError != 0) || (pWrapperTable->m_APIRequestHandler_Handle == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -2395,6 +2416,16 @@ public:
 	void CAPIRequestHandler::SetFormStringField(const std::string & sName, const std::string & sString)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_APIRequestHandler_SetFormStringField(m_pHandle, sName.c_str(), sString.c_str()));
+	}
+	
+	/**
+	* CAPIRequestHandler::SetRequestParameter - Sets a request parameter.
+	* @param[in] sName - Name of the parameter.
+	* @param[in] sValue - Value of the parameter.
+	*/
+	void CAPIRequestHandler::SetRequestParameter(const std::string & sName, const std::string & sValue)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_APIRequestHandler_SetRequestParameter(m_pHandle, sName.c_str(), sValue.c_str()));
 	}
 	
 	/**

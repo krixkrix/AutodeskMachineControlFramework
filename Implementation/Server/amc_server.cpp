@@ -443,6 +443,13 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 
 					auto pHandler = m_pContext->CreateAPIRequestHandler(sURL, sMethod, sAuthorization);
 
+					if (req.method == "GET") {
+						// In case of a get request, we can use the query parameters
+						for (auto iParamIter : req.params) {
+							pHandler->SetRequestParameter(iParamIter.first, iParamIter.second);
+						}
+					}
+
 					uint32_t nFieldCount = 0;
 					if (pHandler->ExpectsFormData(nFieldCount)) {
 						for (uint32_t nIndex = 0; nIndex < nFieldCount; nIndex++) {

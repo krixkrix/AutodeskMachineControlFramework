@@ -177,6 +177,16 @@ LIBMC_DECLSPEC LibMCResult libmc_apirequesthandler_setformdatafield(LibMC_APIReq
 LIBMC_DECLSPEC LibMCResult libmc_apirequesthandler_setformstringfield(LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pString);
 
 /**
+* Sets a request parameter.
+*
+* @param[in] pAPIRequestHandler - APIRequestHandler instance.
+* @param[in] pName - Name of the parameter.
+* @param[in] pValue - Value of the parameter.
+* @return error code or 0 (success)
+*/
+LIBMC_DECLSPEC LibMCResult libmc_apirequesthandler_setrequestparameter(LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pValue);
+
+/**
 * handles the request.
 *
 * @param[in] pAPIRequestHandler - APIRequestHandler instance.

@@ -164,6 +164,16 @@ typedef LibMCResult (*PLibMCAPIRequestHandler_SetFormDataFieldPtr) (LibMC_APIReq
 typedef LibMCResult (*PLibMCAPIRequestHandler_SetFormStringFieldPtr) (LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pString);
 
 /**
+* Sets a request parameter.
+*
+* @param[in] pAPIRequestHandler - APIRequestHandler instance.
+* @param[in] pName - Name of the parameter.
+* @param[in] pValue - Value of the parameter.
+* @return error code or 0 (success)
+*/
+typedef LibMCResult (*PLibMCAPIRequestHandler_SetRequestParameterPtr) (LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pValue);
+
+/**
 * handles the request.
 *
 * @param[in] pAPIRequestHandler - APIRequestHandler instance.
@@ -404,6 +414,7 @@ typedef struct {
 	PLibMCAPIRequestHandler_GetFormDataDetailsPtr m_APIRequestHandler_GetFormDataDetails;
 	PLibMCAPIRequestHandler_SetFormDataFieldPtr m_APIRequestHandler_SetFormDataField;
 	PLibMCAPIRequestHandler_SetFormStringFieldPtr m_APIRequestHandler_SetFormStringField;
+	PLibMCAPIRequestHandler_SetRequestParameterPtr m_APIRequestHandler_SetRequestParameter;
 	PLibMCAPIRequestHandler_HandlePtr m_APIRequestHandler_Handle;
 	PLibMCAPIRequestHandler_GetResultDataPtr m_APIRequestHandler_GetResultData;
 	PLibMCAPIRequestHandler_GetContentDispositionNamePtr m_APIRequestHandler_GetContentDispositionName;

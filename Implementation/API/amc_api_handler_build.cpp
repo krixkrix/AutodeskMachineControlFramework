@@ -236,7 +236,7 @@ void CAPIHandler_Build::handleToolpathRequest(CJSONWriter& writer, const uint8_t
 }
 
 
-void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth)
+void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth, bool bArchived)
 {	
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -428,14 +428,19 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 	writeJSONHeader(writer, AMC_API_PROTOCOL_BUILD);
 
 	switch (buildType) {
-	case APIHandler_BuildType::btListJobs:
-		handleListJobsRequest(writer, pAuth);
+	case APIHandler_BuildType::btListJobs: {
+		std::string sArchived = pFormFields.getRequestParameter (AMC_API_KEY_BUILD_ARCHIVED, false);
+		bool bArchived = false;
+		if (!sArchived.empty ()) 
+			bArchived = AMCCommon::CUtils::stringToBool(sArchived);
+		handleListJobsRequest(writer, pAuth, bArchived);
 		break;
+	}
 	case APIHandler_BuildType::btToolpath:
 		handleToolpathRequest(writer, pBodyData, nBodyDataSize, pAuth);
 		break;
 
-	case APIHandler_BuildType::btListBuildData:
+	case APIHandler_BuildType::btListBuildData: 
 		handleListBuildDataRequest(writer, pAuth, paramUUID);
 		break;
 

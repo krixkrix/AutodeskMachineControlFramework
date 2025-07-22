@@ -680,6 +680,9 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT 664 /** Invalid Signal Reaction Timeout. */
 #define LIBMC_ERROR_INVALIDSIGNALQUEUESIZE 665 /** Invalid Signal queue size. */
 #define LIBMC_ERROR_SIGNALALREADYTRIGGERED 666 /** Signal has already been triggered. */
+#define LIBMC_ERROR_INVALIDQUERYPARAMETER 667 /** Invalid query parameter. */
+#define LIBMC_ERROR_DUPLICATEQUERYPARAMETER 668 /** Duplicate query parameter. */
+#define LIBMC_ERROR_QUERYPARAMETERNOTFOUND 669 /** Query parameter not found. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1272,6 +1275,9 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT: return "Invalid Signal Reaction Timeout.";
     case LIBMC_ERROR_INVALIDSIGNALQUEUESIZE: return "Invalid Signal queue size.";
     case LIBMC_ERROR_SIGNALALREADYTRIGGERED: return "Signal has already been triggered.";
+    case LIBMC_ERROR_INVALIDQUERYPARAMETER: return "Invalid query parameter.";
+    case LIBMC_ERROR_DUPLICATEQUERYPARAMETER: return "Duplicate query parameter.";
+    case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "Query parameter not found.";
     default: return "unknown error";
   }
 }

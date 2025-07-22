@@ -410,6 +410,36 @@ LibMCResult libmc_apirequesthandler_setformstringfield(LibMC_APIRequestHandler p
 	}
 }
 
+LibMCResult libmc_apirequesthandler_setrequestparameter(LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pValue)
+{
+	IBase* pIBaseClass = (IBase *)pAPIRequestHandler;
+
+	try {
+		if (pName == nullptr)
+			throw ELibMCInterfaceException (LIBMC_ERROR_INVALIDPARAM);
+		if (pValue == nullptr)
+			throw ELibMCInterfaceException (LIBMC_ERROR_INVALIDPARAM);
+		std::string sName(pName);
+		std::string sValue(pValue);
+		IAPIRequestHandler* pIAPIRequestHandler = dynamic_cast<IAPIRequestHandler*>(pIBaseClass);
+		if (!pIAPIRequestHandler)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCAST);
+		
+		pIAPIRequestHandler->SetRequestParameter(sName, sValue);
+
+		return LIBMC_SUCCESS;
+	}
+	catch (ELibMCInterfaceException & Exception) {
+		return handleLibMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCResult libmc_apirequesthandler_handle(LibMC_APIRequestHandler pAPIRequestHandler, LibMC_uint64 nRawBodyBufferSize, const LibMC_uint8 * pRawBodyBuffer, const LibMC_uint32 nContentTypeBufferSize, LibMC_uint32* pContentTypeNeededChars, char * pContentTypeBuffer, LibMC_uint32 * pHTTPCode)
 {
 	IBase* pIBaseClass = (IBase *)pAPIRequestHandler;
@@ -944,6 +974,8 @@ LibMCResult LibMC::Impl::LibMC_GetProcAddress (const char * pProcName, void ** p
 		*ppProcAddress = (void*) &libmc_apirequesthandler_setformdatafield;
 	if (sProcName == "libmc_apirequesthandler_setformstringfield") 
 		*ppProcAddress = (void*) &libmc_apirequesthandler_setformstringfield;
+	if (sProcName == "libmc_apirequesthandler_setrequestparameter") 
+		*ppProcAddress = (void*) &libmc_apirequesthandler_setrequestparameter;
 	if (sProcName == "libmc_apirequesthandler_handle") 
 		*ppProcAddress = (void*) &libmc_apirequesthandler_handle;
 	if (sProcName == "libmc_apirequesthandler_getresultdata") 

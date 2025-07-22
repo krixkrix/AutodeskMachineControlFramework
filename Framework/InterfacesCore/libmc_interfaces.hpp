@@ -338,6 +338,13 @@ public:
 	virtual void SetFormStringField(const std::string & sName, const std::string & sString) = 0;
 
 	/**
+	* IAPIRequestHandler::SetRequestParameter - Sets a request parameter.
+	* @param[in] sName - Name of the parameter.
+	* @param[in] sValue - Value of the parameter.
+	*/
+	virtual void SetRequestParameter(const std::string & sName, const std::string & sValue) = 0;
+
+	/**
 	* IAPIRequestHandler::Handle - handles the request.
 	* @param[in] nRawBodyBufferSize - Number of elements in buffer
 	* @param[in] pRawBodyBuffer - Raw Body that was sent. Only necessary, if ExpectsRawBody returns true.

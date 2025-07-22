@@ -689,9 +689,10 @@
 		<error name="INVALIDSIGNALREACTIONTIMEOUT" code="664" description="Invalid Signal Reaction Timeout." />		
 		<error name="INVALIDSIGNALQUEUESIZE" code="665" description="Invalid Signal queue size." />		
 		<error name="SIGNALALREADYTRIGGERED" code="666" description="Signal has already been triggered." />		
-		
-		
-
+		<error name="INVALIDQUERYPARAMETER" code="667" description="Invalid query parameter." />		
+		<error name="DUPLICATEQUERYPARAMETER" code="668" description="Duplicate query parameter." />		
+		<error name="QUERYPARAMETERNOTFOUND" code="669" description="Query parameter not found." />		
+				
 	</errors>
 	
 	
@@ -782,6 +783,12 @@
 			<param name="Name" type="string" pass="in" description="Name of the form data field." />	
 			<param name="String" type="string" pass="in" description="DataString that was sent." />
 		</method>
+		
+		<method name="SetRequestParameter" description="Sets a request parameter.">
+			<param name="Name" type="string" pass="in" description="Name of the parameter." />	
+			<param name="Value" type="string" pass="in" description="Value of the parameter." />
+		</method>
+		
 
 		<method name="Handle" description="handles the request.">
 			<param name="RawBody" type="basicarray" class="uint8" pass="in" description="Raw Body that was sent. Only necessary, if ExpectsRawBody returns true." />
