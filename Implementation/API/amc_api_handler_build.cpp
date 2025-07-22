@@ -75,6 +75,10 @@ APIHandler_BuildType CAPIHandler_Build::parseRequest(const std::string& sURI, co
 			return APIHandler_BuildType::btToolpath;
 		}
 
+		if ((sParameterString.substr(0, 1) == "/") && (sParameterString.length() == 37)) {
+			paramUUID = AMCCommon::CUtils::normalizeUUIDString(sParameterString.substr(1));
+			return APIHandler_BuildType::btBuildJobUpdate;
+		}
 	}
 
 	if (requestType == eAPIRequestType::rtGet) {
@@ -236,25 +240,35 @@ void CAPIHandler_Build::handleToolpathRequest(CJSONWriter& writer, const uint8_t
 }
 
 
-void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth, bool bArchived)
+void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& sStatusToQuery)
 {	
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
+	LibMCData::eBuildJobStatus buildStatus = LibMCData::eBuildJobStatus::Created;
+	if (sStatusToQuery.empty() || (sStatusToQuery == "validated")) {
+		buildStatus = LibMCData::eBuildJobStatus::Validated;
+	} 
+	else if (sStatusToQuery == "archived") {
+		buildStatus = LibMCData::eBuildJobStatus::Archived;
+	} else 
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY, sStatusToQuery);
 
 	auto pDataModel = m_pSystemState->getDataModelInstance();
 	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-	auto pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(LibMCData::eBuildJobStatus::Validated);
+	auto pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(buildStatus);
 
 	CJSONWriterArray jobJSONArray(writer);
 
 	while (pBuildJobIterator->MoveNext()) {
 		auto pBuildJob = pBuildJobIterator->GetCurrentJob();
 
+		LibMCData::eBuildJobStatus buildStatus = pBuildJob->GetStatus();
+
 		CJSONWriterObject jobJSON(writer);
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBUUID, pBuildJob->GetUUID());
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTORAGESTREAM, pBuildJob->GetStorageStreamUUID());
-		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName ());
+		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName());
 		jobJSON.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBLAYERCOUNT, pBuildJob->GetLayerCount());
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, pBuildJob->GetStatusString());
 		jobJSON.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBSIZE, pBuildJob->GetStorageStreamSize());
@@ -267,6 +281,7 @@ void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAut
 		jobJSON.addInteger(AMC_API_KEY_UI_ITEMBUILDEXECUTIONCOUNT, pBuildJob->GetExecutionCount()); */
 
 		jobJSONArray.addObject(jobJSON);
+		
 	}
 
 	writer.addArray(AMC_API_KEY_UPLOAD_BUILDJOBARRAY, jobJSONArray);
@@ -418,6 +433,20 @@ PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, std::s
 }
 
 
+void CAPIHandler_Build::handleUpdateBuildRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
+{
+	if (pBodyData == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+	if (pAuth.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	CAPIJSONRequest jsonRequest(pBodyData, nBodyDataSize);
+
+	auto sName = jsonRequest.getRawString(AMC_API_KEY_UPLOAD_NAME, LIBMC_ERROR_INVALIDUPLOADNAME);
+
+
+}
+
 PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAPIRequestType requestType, CAPIFormFields & pFormFields, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
 {
 	std::string paramUUID;
@@ -429,11 +458,8 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 
 	switch (buildType) {
 	case APIHandler_BuildType::btListJobs: {
-		std::string sArchived = pFormFields.getRequestParameter (AMC_API_KEY_BUILD_ARCHIVED, false);
-		bool bArchived = false;
-		if (!sArchived.empty ()) 
-			bArchived = AMCCommon::CUtils::stringToBool(sArchived);
-		handleListJobsRequest(writer, pAuth, bArchived);
+		std::string sStatus = pFormFields.getRequestParameter (AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, false);
+		handleListJobsRequest(writer, pAuth, sStatus);
 		break;
 	}
 	case APIHandler_BuildType::btToolpath:
@@ -450,6 +476,10 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 
 	case APIHandler_BuildType::btBuildJobDetails:
 		handleBuildJobDetailsRequest(writer, pAuth, paramUUID);
+		break;
+
+	case APIHandler_BuildType::btBuildJobUpdate:
+		handleUpdateBuildRequest(writer, pBodyData, nBodyDataSize, pAuth);
 		break;
 
 	default:
