@@ -326,14 +326,10 @@ void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth
 }
 
 
-void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID)
+void CAPIHandler_Build::writeJobDetailsEx(CJSONWriter& writer, LibMCData::PBuildJob & pBuildJob)
 {
-	if (pAuth.get() == nullptr)
+	if (pBuildJob.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	auto pDataModel = m_pSystemState->getDataModelInstance();
-	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-	auto pBuildJob = pBuildJobHandler->RetrieveJob(buildUUID);
 
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBUUID, pBuildJob->GetUUID());
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTORAGESTREAM, pBuildJob->GetStorageStreamUUID());
@@ -381,10 +377,10 @@ void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAu
 	CJSONWriterArray layerJSONArray(writer);
 	for (uint32_t nLayerIndex = 0; nLayerIndex < nLayerCount; nLayerIndex++) {
 		uint32_t nZMin = pToolpath->getLayerMinZInUnits(nLayerIndex);
-		uint32_t nZMax = pToolpath->getLayerZInUnits (nLayerIndex);
+		uint32_t nZMax = pToolpath->getLayerZInUnits(nLayerIndex);
 
 		if (nZMin >= nZMax)
-			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDTOOLPATHLAYERTHICKNESS, "Invalid toolpath layer thickness in job " + buildUUID + ", layer " + std::to_string (nLayerIndex));
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDTOOLPATHLAYERTHICKNESS, "Invalid toolpath layer thickness in job " + pBuildJob->GetUUID () + ", layer " + std::to_string(nLayerIndex));
 
 		uint32_t nLayerThickness = nZMax - nZMin;
 		if (nLayerIndex > 0) {
@@ -409,6 +405,20 @@ void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAu
 	if (!bLayerThicknessIsVariable)
 		writer.addDouble(AMC_API_KEY_UPLOAD_BUILDGLOBALLAYERTHICKNESS, nGlobalLayerThicknessInUnits * dUnits);
 
+}
+
+void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID)
+{
+	if (pAuth.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	auto pDataModel = m_pSystemState->getDataModelInstance();
+	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
+	auto pBuildJob = pBuildJobHandler->RetrieveJob(buildUUID);
+
+	writeJobDetailsEx(writer, pBuildJob);
+
+	
 }
 
 
