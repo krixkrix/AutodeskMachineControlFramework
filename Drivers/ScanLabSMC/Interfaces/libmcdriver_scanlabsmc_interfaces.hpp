@@ -364,11 +364,11 @@ public:
 	* @param[in] dMarkSpeed - Mark speed in mm/s
 	* @param[in] dMinimalMarkSpeed - Minimal allowed mark speed in mm/s
 	* @param[in] dJumpSpeed - Jump speed in mm/s
-	* @param[in] dPower - Laser power in percent
+	* @param[in] dPowerInWatts - Laser power in Watts
 	* @param[in] dCornerTolerance - Allowed position deviation on corners (in mm.)
 	* @param[in] dZValue - Focus Z Value
 	*/
-	virtual void DrawPolyline(const LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue) = 0;
+	virtual void DrawPolyline(const LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue) = 0;
 
 	/**
 	* ISMCJob::DrawLoop - Writes a loop into the open list
@@ -377,11 +377,11 @@ public:
 	* @param[in] dMarkSpeed - Mark speed in mm/s
 	* @param[in] dMinimalMarkSpeed - Minimal allowed mark speed in mm/s
 	* @param[in] dJumpSpeed - Jump speed in mm/s
-	* @param[in] dPower - Laser power in percent
+	* @param[in] dPowerInWatts - Laser power in Watts
 	* @param[in] dCornerTolerance - Allowed position deviation on corners (in mm.)
 	* @param[in] dZValue - Focus Z Value
 	*/
-	virtual void DrawLoop(const LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue) = 0;
+	virtual void DrawLoop(const LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue) = 0;
 
 	/**
 	* ISMCJob::DrawHatches - Writes a list of hatches into the open list
@@ -389,10 +389,10 @@ public:
 	* @param[in] pHatchesBuffer - Hatches to draw.
 	* @param[in] dMarkSpeed - Mark speed in mm/s
 	* @param[in] dJumpSpeed - Jump speed in mm/s
-	* @param[in] dPower - Laser power in percent
+	* @param[in] dPowerInWatts - Laser power in Watts
 	* @param[in] dZValue - Focus Z Value
 	*/
-	virtual void DrawHatches(const LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D * pHatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue) = 0;
+	virtual void DrawHatches(const LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D * pHatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dZValue) = 0;
 
 	/**
 	* ISMCJob::AddLayerToList - Adds a layer instance to the current open list.
@@ -696,9 +696,10 @@ public:
 	* ISMCContext::BeginJob - Starts a new job definition. Fails if another job is not finalized yet.
 	* @param[in] dStartPositionX - Start position in X.
 	* @param[in] dStartPositionY - Start position in Y.
+	* @param[in] dMaxPowerInWatts - Maximum laser power in Watts.
 	* @return SMC Job Instance.
 	*/
-	virtual ISMCJob * BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY) = 0;
+	virtual ISMCJob * BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts) = 0;
 
 	/**
 	* ISMCContext::GetUnfinishedJob - Returns the job that is not finalized yet. Returns null if no job is active.
@@ -710,8 +711,9 @@ public:
 	* ISMCContext::DrawLayer - Draws a layer of a build stream. Blocks until the layer is drawn.
 	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 	* @param[in] nLayerIndex - Layer index of the build file.
+	* @param[in] dMaxPowerInWatts - Maximum laser power in Watts.
 	*/
-	virtual void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex) = 0;
+	virtual void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts) = 0;
 
 };
 

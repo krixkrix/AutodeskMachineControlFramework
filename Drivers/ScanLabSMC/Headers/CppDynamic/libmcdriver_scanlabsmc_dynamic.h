@@ -153,12 +153,12 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_IsFinalized
 * @param[in] dMarkSpeed - Mark speed in mm/s
 * @param[in] dMinimalMarkSpeed - Minimal allowed mark speed in mm/s
 * @param[in] dJumpSpeed - Jump speed in mm/s
-* @param[in] dPower - Laser power in percent
+* @param[in] dPowerInWatts - Laser power in Watts
 * @param[in] dCornerTolerance - Allowed position deviation on corners (in mm.)
 * @param[in] dZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawPolylinePtr) (LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPower, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue);
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawPolylinePtr) (LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPowerInWatts, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue);
 
 /**
 * Writes a loop into the open list
@@ -169,12 +169,12 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawPolylin
 * @param[in] dMarkSpeed - Mark speed in mm/s
 * @param[in] dMinimalMarkSpeed - Minimal allowed mark speed in mm/s
 * @param[in] dJumpSpeed - Jump speed in mm/s
-* @param[in] dPower - Laser power in percent
+* @param[in] dPowerInWatts - Laser power in Watts
 * @param[in] dCornerTolerance - Allowed position deviation on corners (in mm.)
 * @param[in] dZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawLoopPtr) (LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPower, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue);
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawLoopPtr) (LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPowerInWatts, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue);
 
 /**
 * Writes a list of hatches into the open list
@@ -184,11 +184,11 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawLoopPtr
 * @param[in] pHatchesBuffer - Hatch2D buffer of Hatches to draw.
 * @param[in] dMarkSpeed - Mark speed in mm/s
 * @param[in] dJumpSpeed - Jump speed in mm/s
-* @param[in] dPower - Laser power in percent
+* @param[in] dPowerInWatts - Laser power in Watts
 * @param[in] dZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawHatchesPtr) (LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D * pHatchesBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPower, LibMCDriver_ScanLabSMC_double dZValue);
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCJob_DrawHatchesPtr) (LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const LibMCDriver_ScanLabSMC::sHatch2D * pHatchesBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPowerInWatts, LibMCDriver_ScanLabSMC_double dZValue);
 
 /**
 * Adds a layer instance to the current open list.
@@ -622,10 +622,11 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_GetLase
 * @param[in] pSMCContext - SMCContext instance.
 * @param[in] dStartPositionX - Start position in X.
 * @param[in] dStartPositionY - Start position in Y.
+* @param[in] dMaxPowerInWatts - Maximum laser power in Watts.
 * @param[out] pJobInstance - SMC Job Instance.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_BeginJobPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance);
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_BeginJobPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_double dMaxPowerInWatts, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance);
 
 /**
 * Returns the job that is not finalized yet. Returns null if no job is active.
@@ -642,9 +643,10 @@ typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_GetUnfi
 * @param[in] pSMCContext - SMCContext instance.
 * @param[in] pStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 * @param[in] nLayerIndex - Layer index of the build file.
+* @param[in] dMaxPowerInWatts - Maximum laser power in Watts.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_DrawLayerPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const char * pStreamUUID, LibMCDriver_ScanLabSMC_uint32 nLayerIndex);
+typedef LibMCDriver_ScanLabSMCResult (*PLibMCDriver_ScanLabSMCSMCContext_DrawLayerPtr) (LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const char * pStreamUUID, LibMCDriver_ScanLabSMC_uint32 nLayerIndex, LibMCDriver_ScanLabSMC_double dMaxPowerInWatts);
 
 /*************************************************************************************************************************
  Class definition for Driver_ScanLabSMC

@@ -39,11 +39,13 @@ Abstract: This is a stub class definition of CSMCJob
 
 // Include custom headers here.
 #define SCANLABSMC_MICROSTEPSPERSECOND 100000
+#define SCANLABSMC_MIN_MAXPOWERINWATTS 1.0
+#define SCANLABSMC_MAX_MAXPOWERINWATTS 1000000.0
 
 #include <array>
 #include <thread>
 #include <cmath>
-#include <iostream>
+//#include <iostream>
 #include <chrono>
 
 using namespace LibMCDriver_ScanLabSMC::Impl;
@@ -52,7 +54,7 @@ using namespace LibMCDriver_ScanLabSMC::Impl;
  Class definition of CSMCJob
 **************************************************************************************************************************/
 
-CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStartPositionX, double dStartPositionY, LibMCEnv::PWorkingDirectory pWorkingDirectory, std::string sSimulationSubDirectory, bool bSendToHardware)
+CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStartPositionX, double dStartPositionY, LibMCEnv::PWorkingDirectory pWorkingDirectory, std::string sSimulationSubDirectory, bool bSendToHardware, double dMaxPowerInWatts)
     : m_pContextHandle(pContextHandle), 
     m_JobID(0), 
     m_bIsFinalized(false), 
@@ -61,8 +63,11 @@ CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStart
     m_bHasJobDuration (false),
     m_dJobDuration (0.0),
     m_bSendToHardware (bSendToHardware),
-    m_dMaxPowerInWatts (400.0)
+    m_dMaxPowerInWatts (dMaxPowerInWatts)
 {
+
+
+
 
     if (m_pWorkingDirectory.get() == nullptr)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
@@ -72,21 +77,6 @@ CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStart
     m_pSDK = m_pContextHandle->getSDK();
 
     auto contextHandle = m_pContextHandle->getHandle();
-   /* switch (eBlendMode) {
-    case LibMCDriver_ScanLabSMC::eBlendMode::Deactivated:
-        m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, slsc_BlendModes::slsc_BlendModes_Deactivated), LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE);
-        break;
-    case LibMCDriver_ScanLabSMC::eBlendMode::SwiftBlending:
-        m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, slsc_BlendModes::slsc_BlendModes_SwiftBlending), LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE);
-        break;
-    case LibMCDriver_ScanLabSMC::eBlendMode::MaxAccuracy:
-        m_pSDK->checkError(m_pSDK->slsc_cfg_set_blend_mode(contextHandle, slsc_BlendModes::slsc_BlendModes_MaxAccuracy), LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTSETBLENDMODE);
-        break;
-    default:
-        throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDBLENDMODE);
-
-    }
-    // */
     m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_begin(contextHandle, &m_JobID));
     
 
@@ -94,6 +84,9 @@ CSMCJobInstance::CSMCJobInstance(PSMCContextHandle pContextHandle, double dStart
     slsc_RecordSet eRecordSetB = slsc_RecordSet::slsc_RecordSet_LaserSwitches;
 
     m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_start_record(contextHandle, eRecordSetA, eRecordSetB));
+
+    if (dMaxPowerInWatts < SCANLABSMC_MIN_MAXPOWERINWATTS || dMaxPowerInWatts > SCANLABSMC_MAX_MAXPOWERINWATTS)
+		throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDMAXPOWERVALUE);
 }
 
 CSMCJobInstance::~CSMCJobInstance()
@@ -124,13 +117,16 @@ bool CSMCJobInstance::IsFinalized()
     return m_bIsFinalized;
 }
 
-void CSMCJobInstance::drawPolylineEx(slscHandle contextHandle, const uint64_t nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D* pPointsBuffer, bool bIsClosed)
+void CSMCJobInstance::drawPolylineEx(slscHandle contextHandle, const uint64_t nPointsBufferSize, const LibMCDriver_ScanLabSMC::sPoint2D* pPointsBuffer, bool bIsClosed, double dPowerInWatts)
 {
 
     if (nPointsBufferSize < 2)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
     if (pPointsBuffer == nullptr)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
+
+    double dPowerFactor = dPowerInWatts / m_dMaxPowerInWatts;
+    m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_write_analog_x(contextHandle, slsc_AnalogOutput::slsc_AnalogOutput_1, dPowerFactor, 0.0));
 
     auto& startPoint = pPointsBuffer[0];
     std::array<double, 2> startPosition;
@@ -173,7 +169,7 @@ void CSMCJobInstance::DrawPolyline(const LibMCDriver_ScanLabSMC_uint64 nPointsBu
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_mark_speed(contextHandle, dMarkSpeed));
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_min_mark_speed(contextHandle, dMinimalMarkSpeed));
 
-        drawPolylineEx(contextHandle, nPointsBufferSize, pPointsBuffer, false);
+        drawPolylineEx(contextHandle, nPointsBufferSize, pPointsBuffer, false, dPowerInWatts);
 
 
     }
@@ -192,7 +188,8 @@ void CSMCJobInstance::DrawLoop(const LibMCDriver_ScanLabSMC_uint64 nPointsBuffer
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_jump_speed(contextHandle, dJumpSpeed));
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_mark_speed(contextHandle, dMarkSpeed));
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_min_mark_speed(contextHandle, dMinimalMarkSpeed));
-        drawPolylineEx(contextHandle, nPointsBufferSize, pPointsBuffer, true);
+        
+        drawPolylineEx(contextHandle, nPointsBufferSize, pPointsBuffer, true, dPowerInWatts);
 
 
     }
@@ -210,10 +207,10 @@ void CSMCJobInstance::drawHatchesEx(const LibMCDriver_ScanLabSMC_uint64 nHatches
     if (m_bIsFinalized)
         throw std::runtime_error("Job is already finalized!");
 
-    std::array<double, 1> paraPower;
-    paraPower[0] = dPowerInWatts / m_dMaxPowerInWatts;
+    //std::array<double, 1> paraPower;
+    double dPowerFactor = dPowerInWatts / m_dMaxPowerInWatts;
 
-	std::cout << "drawing hatches with laser power " << dPowerInWatts << " and max power " << m_dMaxPowerInWatts << std::endl;
+	//std::cout << "drawing hatches with laser power " << dPowerInWatts << " and max power " << m_dMaxPowerInWatts << std::endl;
 
     if (nHatchesBufferSize > 0) {
         if (pHatchesBuffer == nullptr)
@@ -223,6 +220,7 @@ void CSMCJobInstance::drawHatchesEx(const LibMCDriver_ScanLabSMC_uint64 nHatches
 
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_jump_speed(contextHandle, dJumpSpeed));
         m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_set_mark_speed(contextHandle, dMarkSpeed));
+        m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_write_analog_x(contextHandle, slsc_AnalogOutput::slsc_AnalogOutput_1, dPowerFactor, 0.0));
 
         for (uint64_t nHatchIndex = 0; nHatchIndex < nHatchesBufferSize; nHatchIndex++) {
             auto& hatch = pHatchesBuffer[nHatchIndex];
@@ -236,11 +234,10 @@ void CSMCJobInstance::drawHatchesEx(const LibMCDriver_ScanLabSMC_uint64 nHatches
 
 
             m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_jump(contextHandle, point1.data()));
+            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_line(contextHandle, point2.data()));
 
-            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_enable(contextHandle, paraPower.data()));
-            m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_line(contextHandle, point2.data(), paraPower.data()));
-
-            //m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_line(contextHandle, point2.data()));
+            //m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_enable(contextHandle, paraPower.data()));
+            //m_pSDK->checkError(contextHandle, m_pSDK->slsc_job_para_line(contextHandle, point2.data(), paraPower.data()));
 
         }
     }

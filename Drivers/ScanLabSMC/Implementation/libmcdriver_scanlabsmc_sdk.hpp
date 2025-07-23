@@ -194,6 +194,13 @@ namespace LibMCDriver_ScanLabSMC {
 			slsc_TransformationStep_Rtc = 3,
 		};
 
+		enum class slsc_AnalogOutput : uint8_t
+		{
+			slsc_AnalogOutput_1 = 0,
+			slsc_AnalogOutput_2 = 1
+		};
+		
+
 		typedef struct _slsc_PolylineOptions slsc_PolylineOptions;
 		typedef struct _slsc_VersionInfo slsc_VersionInfo;
 
@@ -238,6 +245,8 @@ namespace LibMCDriver_ScanLabSMC {
 
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_exec_init_laser_sequence) (size_t Handle);
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_ctrl_exec_shutdown_laser_sequence) (size_t Handle);
+
+		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_write_analog_x) (size_t Handle, slsc_AnalogOutput Channel, double Value, double TimeDelay);
 
 		class CScanLabSMCSDK_DLLDirectoryCache {
 		private:
@@ -299,6 +308,7 @@ namespace LibMCDriver_ScanLabSMC {
 			PScanLabSMCPtr_slsc_ctrl_log_record slsc_ctrl_log_record  = nullptr;
 			PScanLabSMCPtr_slsc_ctrl_exec_init_laser_sequence slsc_ctrl_exec_init_laser_sequence = nullptr;
 			PScanLabSMCPtr_slsc_ctrl_exec_shutdown_laser_sequence slsc_ctrl_exec_shutdown_laser_sequence = nullptr;
+			PScanLabSMCPtr_slsc_job_write_analog_x slsc_job_write_analog_x = nullptr;
 
 			CScanLabSMCSDK(const std::string & sDLLNameUTF8, const std::string& sDLLDirectoryUTF8);
 			~CScanLabSMCSDK();

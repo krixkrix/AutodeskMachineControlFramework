@@ -393,7 +393,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_isfinalized(LibMCDriv
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawpolyline(LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const sLibMCDriver_ScanLabSMCPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPower, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue)
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawpolyline(LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const sLibMCDriver_ScanLabSMCPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPowerInWatts, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue)
 {
 	IBase* pIBaseClass = (IBase *)pSMCJob;
 
@@ -404,7 +404,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawpolyline(LibMCDri
 		if (!pISMCJob)
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
-		pISMCJob->DrawPolyline(nPointsBufferSize, pPointsBuffer, dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPower, dCornerTolerance, dZValue);
+		pISMCJob->DrawPolyline(nPointsBufferSize, pPointsBuffer, dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPowerInWatts, dCornerTolerance, dZValue);
 
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
 	}
@@ -419,7 +419,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawpolyline(LibMCDri
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawloop(LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const sLibMCDriver_ScanLabSMCPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPower, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue)
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawloop(LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nPointsBufferSize, const sLibMCDriver_ScanLabSMCPoint2D * pPointsBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPowerInWatts, LibMCDriver_ScanLabSMC_double dCornerTolerance, LibMCDriver_ScanLabSMC_double dZValue)
 {
 	IBase* pIBaseClass = (IBase *)pSMCJob;
 
@@ -430,7 +430,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawloop(LibMCDriver_
 		if (!pISMCJob)
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
-		pISMCJob->DrawLoop(nPointsBufferSize, pPointsBuffer, dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPower, dCornerTolerance, dZValue);
+		pISMCJob->DrawLoop(nPointsBufferSize, pPointsBuffer, dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPowerInWatts, dCornerTolerance, dZValue);
 
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
 	}
@@ -445,7 +445,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawloop(LibMCDriver_
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawhatches(LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const sLibMCDriver_ScanLabSMCHatch2D * pHatchesBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPower, LibMCDriver_ScanLabSMC_double dZValue)
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawhatches(LibMCDriver_ScanLabSMC_SMCJob pSMCJob, LibMCDriver_ScanLabSMC_uint64 nHatchesBufferSize, const sLibMCDriver_ScanLabSMCHatch2D * pHatchesBuffer, LibMCDriver_ScanLabSMC_double dMarkSpeed, LibMCDriver_ScanLabSMC_double dJumpSpeed, LibMCDriver_ScanLabSMC_double dPowerInWatts, LibMCDriver_ScanLabSMC_double dZValue)
 {
 	IBase* pIBaseClass = (IBase *)pSMCJob;
 
@@ -456,7 +456,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smcjob_drawhatches(LibMCDriv
 		if (!pISMCJob)
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
-		pISMCJob->DrawHatches(nHatchesBufferSize, pHatchesBuffer, dMarkSpeed, dJumpSpeed, dPower, dZValue);
+		pISMCJob->DrawHatches(nHatchesBufferSize, pHatchesBuffer, dMarkSpeed, dJumpSpeed, dPowerInWatts, dZValue);
 
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
 	}
@@ -1735,7 +1735,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getlaserfield(Lib
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance)
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, LibMCDriver_ScanLabSMC_double dStartPositionX, LibMCDriver_ScanLabSMC_double dStartPositionY, LibMCDriver_ScanLabSMC_double dMaxPowerInWatts, LibMCDriver_ScanLabSMC_SMCJob * pJobInstance)
 {
 	IBase* pIBaseClass = (IBase *)pSMCContext;
 
@@ -1747,7 +1747,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_beginjob(LibMCDri
 		if (!pISMCContext)
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
-		pBaseJobInstance = pISMCContext->BeginJob(dStartPositionX, dStartPositionY);
+		pBaseJobInstance = pISMCContext->BeginJob(dStartPositionX, dStartPositionY, dMaxPowerInWatts);
 
 		*pJobInstance = (IBase*)(pBaseJobInstance);
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
@@ -1791,7 +1791,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_getunfinishedjob(
 	}
 }
 
-LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_drawlayer(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const char * pStreamUUID, LibMCDriver_ScanLabSMC_uint32 nLayerIndex)
+LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_drawlayer(LibMCDriver_ScanLabSMC_SMCContext pSMCContext, const char * pStreamUUID, LibMCDriver_ScanLabSMC_uint32 nLayerIndex, LibMCDriver_ScanLabSMC_double dMaxPowerInWatts)
 {
 	IBase* pIBaseClass = (IBase *)pSMCContext;
 
@@ -1803,7 +1803,7 @@ LibMCDriver_ScanLabSMCResult libmcdriver_scanlabsmc_smccontext_drawlayer(LibMCDr
 		if (!pISMCContext)
 			throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDCAST);
 		
-		pISMCContext->DrawLayer(sStreamUUID, nLayerIndex);
+		pISMCContext->DrawLayer(sStreamUUID, nLayerIndex, dMaxPowerInWatts);
 
 		return LIBMCDRIVER_SCANLABSMC_SUCCESS;
 	}

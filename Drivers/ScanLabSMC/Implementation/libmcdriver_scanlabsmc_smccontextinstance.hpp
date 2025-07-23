@@ -85,7 +85,7 @@ public:
 
 	std::string GetSimulationSubDirectory();
 
-	PSMCJobInstance BeginJob(const double dStartPositionX, const double dStartPositionY);
+	PSMCJobInstance BeginJob(const double dStartPositionX, const double dStartPositionY, const double dMaxPowerInWatts);
 
 	PSMCJobInstance GetUnfinishedJob();
 

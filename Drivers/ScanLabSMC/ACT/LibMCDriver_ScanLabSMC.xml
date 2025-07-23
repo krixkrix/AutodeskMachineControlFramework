@@ -107,6 +107,8 @@
 		<error name="COULDNOTREADSIMULATIONFILE" code="1053" description="Could not read simulation file." />
 		<error name="CSVPARSERUNKNOWNFIELDPARSERTYPE" code="1054" description="Unknown Field Parser Type." />
 		<error name="CSVPARSERINTERPOLATEINDEXOUTOFRANGE" code="1055" description="Index out of range in Interpolate." />
+		<error name="INVALIDMAXPOWERVALUE" code="1056" description="Invalid max power value." />
+		
 	</errors>
 
 	<struct name="Point2D">
@@ -502,6 +504,7 @@ Custom implementation
 		<method name="BeginJob" description="Starts a new job definition. Fails if another job is not finalized yet.">
 			<param name="StartPositionX" type="double" pass="in" description="Start position in X." />
 			<param name="StartPositionY" type="double" pass="in" description="Start position in Y." />
+			<param name="MaxPowerInWatts" type="double" pass="in" description="Maximum laser power in Watts." />
 			<param name="JobInstance" type="class" class="SMCJob" pass="return" description="SMC Job Instance." />
 		</method>
 		
@@ -512,6 +515,7 @@ Custom implementation
 		<method name="DrawLayer" description="Draws a layer of a build stream. Blocks until the layer is drawn.">
 			<param name="StreamUUID" type="string" pass="in" description="UUID of the build stream. Must have been loaded in memory by the system." />
 			<param name="LayerIndex" type="uint32" pass="in" description="Layer index of the build file." />
+			<param name="MaxPowerInWatts" type="double" pass="in" description="Maximum laser power in Watts." />
 		</method>
 						
 	</class>

@@ -243,6 +243,7 @@ public:
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTREADSIMULATIONFILE: return "COULDNOTREADSIMULATIONFILE";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERUNKNOWNFIELDPARSERTYPE: return "CSVPARSERUNKNOWNFIELDPARSERTYPE";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERINTERPOLATEINDEXOUTOFRANGE: return "CSVPARSERINTERPOLATEINDEXOUTOFRANGE";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDMAXPOWERVALUE: return "INVALIDMAXPOWERVALUE";
 		}
 		return "UNKNOWN";
 	}
@@ -316,6 +317,7 @@ public:
 			case LIBMCDRIVER_SCANLABSMC_ERROR_COULDNOTREADSIMULATIONFILE: return "Could not read simulation file.";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERUNKNOWNFIELDPARSERTYPE: return "Unknown Field Parser Type.";
 			case LIBMCDRIVER_SCANLABSMC_ERROR_CSVPARSERINTERPOLATEINDEXOUTOFRANGE: return "Index out of range in Interpolate.";
+			case LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDMAXPOWERVALUE: return "Invalid max power value.";
 		}
 		return "unknown error";
 	}
@@ -542,9 +544,9 @@ public:
 	inline LibMCDriver_ScanLabSMC_uint64 GetJobID();
 	inline void Finalize();
 	inline bool IsFinalized();
-	inline void DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue);
-	inline void DrawLoop(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue);
-	inline void DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue);
+	inline void DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue);
+	inline void DrawLoop(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue);
+	inline void DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dZValue);
 	inline void AddLayerToList(classParam<LibMCEnv::CToolpathLayer> pLayer);
 	inline bool IsReady();
 	inline void Execute(const bool bBlocking);
@@ -621,9 +623,9 @@ public:
 	inline void SetLaserField(const LibMCDriver_ScanLabSMC_double dMinX, const LibMCDriver_ScanLabSMC_double dMinY, const LibMCDriver_ScanLabSMC_double dMaxX, const LibMCDriver_ScanLabSMC_double dMaxY);
 	inline void ResetLaserField();
 	inline bool GetLaserField(LibMCDriver_ScanLabSMC_double & dMinX, LibMCDriver_ScanLabSMC_double & dMinY, LibMCDriver_ScanLabSMC_double & dMaxX, LibMCDriver_ScanLabSMC_double & dMaxY);
-	inline PSMCJob BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY);
+	inline PSMCJob BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts);
 	inline PSMCJob GetUnfinishedJob();
-	inline void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex);
+	inline void DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts);
 };
 	
 /*************************************************************************************************************************
@@ -2078,13 +2080,13 @@ public:
 	* @param[in] dMarkSpeed - Mark speed in mm/s
 	* @param[in] dMinimalMarkSpeed - Minimal allowed mark speed in mm/s
 	* @param[in] dJumpSpeed - Jump speed in mm/s
-	* @param[in] dPower - Laser power in percent
+	* @param[in] dPowerInWatts - Laser power in Watts
 	* @param[in] dCornerTolerance - Allowed position deviation on corners (in mm.)
 	* @param[in] dZValue - Focus Z Value
 	*/
-	void CSMCJob::DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue)
+	void CSMCJob::DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCJob_DrawPolyline(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)PointsBuffer.size(), PointsBuffer.data(), dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPower, dCornerTolerance, dZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCJob_DrawPolyline(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)PointsBuffer.size(), PointsBuffer.data(), dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPowerInWatts, dCornerTolerance, dZValue));
 	}
 	
 	/**
@@ -2093,13 +2095,13 @@ public:
 	* @param[in] dMarkSpeed - Mark speed in mm/s
 	* @param[in] dMinimalMarkSpeed - Minimal allowed mark speed in mm/s
 	* @param[in] dJumpSpeed - Jump speed in mm/s
-	* @param[in] dPower - Laser power in percent
+	* @param[in] dPowerInWatts - Laser power in Watts
 	* @param[in] dCornerTolerance - Allowed position deviation on corners (in mm.)
 	* @param[in] dZValue - Focus Z Value
 	*/
-	void CSMCJob::DrawLoop(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue)
+	void CSMCJob::DrawLoop(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dMinimalMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dCornerTolerance, const LibMCDriver_ScanLabSMC_double dZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCJob_DrawLoop(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)PointsBuffer.size(), PointsBuffer.data(), dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPower, dCornerTolerance, dZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCJob_DrawLoop(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)PointsBuffer.size(), PointsBuffer.data(), dMarkSpeed, dMinimalMarkSpeed, dJumpSpeed, dPowerInWatts, dCornerTolerance, dZValue));
 	}
 	
 	/**
@@ -2107,12 +2109,12 @@ public:
 	* @param[in] HatchesBuffer - Hatches to draw.
 	* @param[in] dMarkSpeed - Mark speed in mm/s
 	* @param[in] dJumpSpeed - Jump speed in mm/s
-	* @param[in] dPower - Laser power in percent
+	* @param[in] dPowerInWatts - Laser power in Watts
 	* @param[in] dZValue - Focus Z Value
 	*/
-	void CSMCJob::DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPower, const LibMCDriver_ScanLabSMC_double dZValue)
+	void CSMCJob::DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLabSMC_double dMarkSpeed, const LibMCDriver_ScanLabSMC_double dJumpSpeed, const LibMCDriver_ScanLabSMC_double dPowerInWatts, const LibMCDriver_ScanLabSMC_double dZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCJob_DrawHatches(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)HatchesBuffer.size(), HatchesBuffer.data(), dMarkSpeed, dJumpSpeed, dPower, dZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCJob_DrawHatches(m_pHandle, (LibMCDriver_ScanLabSMC_uint64)HatchesBuffer.size(), HatchesBuffer.data(), dMarkSpeed, dJumpSpeed, dPowerInWatts, dZValue));
 	}
 	
 	/**
@@ -2602,12 +2604,13 @@ public:
 	* CSMCContext::BeginJob - Starts a new job definition. Fails if another job is not finalized yet.
 	* @param[in] dStartPositionX - Start position in X.
 	* @param[in] dStartPositionY - Start position in Y.
+	* @param[in] dMaxPowerInWatts - Maximum laser power in Watts.
 	* @return SMC Job Instance.
 	*/
-	PSMCJob CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY)
+	PSMCJob CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts)
 	{
 		LibMCDriver_ScanLabSMCHandle hJobInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_BeginJob(m_pHandle, dStartPositionX, dStartPositionY, &hJobInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_BeginJob(m_pHandle, dStartPositionX, dStartPositionY, dMaxPowerInWatts, &hJobInstance));
 		
 		if (!hJobInstance) {
 			CheckError(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
@@ -2635,10 +2638,11 @@ public:
 	* CSMCContext::DrawLayer - Draws a layer of a build stream. Blocks until the layer is drawn.
 	* @param[in] sStreamUUID - UUID of the build stream. Must have been loaded in memory by the system.
 	* @param[in] nLayerIndex - Layer index of the build file.
+	* @param[in] dMaxPowerInWatts - Maximum laser power in Watts.
 	*/
-	void CSMCContext::DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex)
+	void CSMCContext::DrawLayer(const std::string & sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_DrawLayer(m_pHandle, sStreamUUID.c_str(), nLayerIndex));
+		CheckError(m_pWrapper->m_WrapperTable.m_SMCContext_DrawLayer(m_pHandle, sStreamUUID.c_str(), nLayerIndex, dMaxPowerInWatts));
 	}
 	
 	/**

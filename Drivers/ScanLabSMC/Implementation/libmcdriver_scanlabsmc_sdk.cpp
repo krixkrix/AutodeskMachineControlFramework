@@ -172,6 +172,7 @@ CScanLabSMCSDK::CScanLabSMCSDK(const std::string& sDLLNameUTF8, const std::strin
 
 	this->slsc_ctrl_exec_init_laser_sequence = (PScanLabSMCPtr_slsc_ctrl_exec_init_laser_sequence)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_exec_init_laser_sequence");
 	this->slsc_ctrl_exec_shutdown_laser_sequence = (PScanLabSMCPtr_slsc_ctrl_exec_shutdown_laser_sequence)_loadScanLabSMCAddress(hLibrary, "slsc_ctrl_exec_shutdown_laser_sequence");
+	this->slsc_job_write_analog_x = (PScanLabSMCPtr_slsc_job_write_analog_x)_loadScanLabSMCAddress(hLibrary, "slsc_job_write_analog_x");
 
 	m_LibraryHandle = (void*) hLibrary;
 }
