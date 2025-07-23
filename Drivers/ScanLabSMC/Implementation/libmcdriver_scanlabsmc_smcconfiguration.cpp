@@ -51,7 +51,8 @@ CSMCConfiguration::CSMCConfiguration(LibMCEnv::PDriverEnvironment pDriverEnviron
       m_DynamicViolationReaction (LibMCDriver_ScanLabSMC::eDynamicViolationReaction::WarningOnly),
      m_WarnLevel (LibMCDriver_ScanLabSMC::eWarnLevel::Error),
     m_nSerialNumber (0),
-    m_BlendMode (LibMCDriver_ScanLabSMC::eBlendMode::Deactivated)
+    m_BlendMode (LibMCDriver_ScanLabSMC::eBlendMode::Deactivated),
+    m_bSendToHardware (false)
 
 {
     if (pDriverEnvironment.get() == nullptr)
@@ -100,6 +101,17 @@ void CSMCConfiguration::SetIPAddress(const std::string& sValue)
 {
     m_sIPAddress = sValue;
 }
+
+void CSMCConfiguration::SetSendToHardware(const bool bSendToHardware)
+{
+    m_bSendToHardware = bSendToHardware;
+}
+
+bool CSMCConfiguration::GetSendToHardware()
+{
+    return m_bSendToHardware;
+}
+
 
 std::string CSMCConfiguration::GetIPAddress()
 {
@@ -243,6 +255,8 @@ void CSMCConfiguration::SetFirmwareResources(const std::string& sFirmwareDataRes
     if (sFirmwareDataResource.empty())
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCFIRMWARERESOURCENAME);
 
+    m_sFirmwareDataResource = sFirmwareDataResource;
+
     if (m_pDriverEnvironment->MachineHasResourceData(sFirmwareDataResource)) {
         m_pDriverEnvironment->RetrieveMachineResourceData(sFirmwareDataResource, m_FirmwareData);
     }
@@ -295,16 +309,22 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
     if (m_CorrectionFileData.size () == 0)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYRTCCORRECTIONFILE);
 
-    if (m_sIPAddress.empty ())
-        throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_EMPTYIPADDRESS);
-    for (auto ch : m_sIPAddress)
-        if (!( ((ch >= '0') && (ch <= '9')) || (ch == '.') ))
-            throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDIPADDRESS, "invalid RTC IP Address: " + m_sIPAddress);
+    if (!sRTCIPAddress.empty()) {
+        for (auto ch : sRTCIPAddress)
+            if (!(((ch >= '0') && (ch <= '9')) || (ch == '.')))
+                throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDIPADDRESS, "invalid RTC IP Address: " + sRTCIPAddress);
+    }
 
     newCorrectionFile = pWorkingDirectory->StoreCustomDataInTempFile("ct5", m_CorrectionFileData);
 
     pWorkingDirectory->StoreCustomData("RTC6RBF.rbf", m_FPGAData);
-    pWorkingDirectory->StoreCustomData("RTC6ETH.out", m_FirmwareData);
+    if (sRTCIPAddress.empty()) {
+        pWorkingDirectory->StoreCustomData("RTC6OUT.out", m_FirmwareData);
+    }
+    else {
+        pWorkingDirectory->StoreCustomData("RTC6ETH.out", m_FirmwareData);
+    }
+
     pWorkingDirectory->StoreCustomData("RTC6DAT.dat", m_AuxiliaryData);
 
     std::string sBaseDirectoryPath = pWorkingDirectory->GetAbsoluteFilePath();
@@ -325,6 +345,7 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
     std::string sBoardsNodeName;
     std::string sVersionString;
     std::string sSchemaLocationString;
+    std::string sSimulationMode;
     std::vector<std::string> nodesToCopyFromTemplate;
 
     switch (configVersion) {
@@ -334,6 +355,11 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
             sVersionString = "0.8";
             sSchemaLocationString = "cfg SCANmotionControl_0_8.xsd";
             sBoardsNodeName = "Boards";
+            if (m_bSendToHardware)
+                sSimulationMode = "false";
+            else
+                sSimulationMode = "true";
+
             nodesToCopyFromTemplate.push_back("ScanDeviceConfig");
             nodesToCopyFromTemplate.push_back("LaserConfig");
             nodesToCopyFromTemplate.push_back("IOConfig");
@@ -345,11 +371,51 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
             sVersionString = "0.9";
             sSchemaLocationString = "cfg SCANmotionControl_0_9.xsd";
             sBoardsNodeName = "BoardList";
+            if (m_bSendToHardware)
+                sSimulationMode = "false";
+            else
+                sSimulationMode = "true";
             nodesToCopyFromTemplate.push_back("AxesList");
             nodesToCopyFromTemplate.push_back("ScanheadList");
             nodesToCopyFromTemplate.push_back("KinematicsList");
             nodesToCopyFromTemplate.push_back("LaserConfig");
             nodesToCopyFromTemplate.push_back("IOConfig");
+
+            break;
+        case eSMCConfigVersion::Version_1_0:
+            // Customize writing to SMC Version 1.0
+            sVersionString = "1.0";
+            sSchemaLocationString = "cfg SCANmotionControlConfig_1_0.xsd";
+            sBoardsNodeName = "BoardList";
+            if (m_bSendToHardware)
+                sSimulationMode = "Hardware";
+            else
+                sSimulationMode = "Simulation";
+
+            nodesToCopyFromTemplate.push_back("AxesList");
+            nodesToCopyFromTemplate.push_back("ScanheadList");
+            nodesToCopyFromTemplate.push_back("KinematicsList");
+            nodesToCopyFromTemplate.push_back("LaserConfig");
+            nodesToCopyFromTemplate.push_back("IOConfig");
+            nodesToCopyFromTemplate.push_back("SystemConfig");
+
+            break;
+        case eSMCConfigVersion::Version_1_1:
+            // Customize writing to SMC Version 1.1
+            sVersionString = "1.1";
+            sSchemaLocationString = "cfg SCANmotionControlConfig_1_1.xsd";
+            sBoardsNodeName = "BoardList";
+            if (m_bSendToHardware)
+                sSimulationMode = "Hardware";
+            else
+                sSimulationMode = "Simulation";
+
+            nodesToCopyFromTemplate.push_back("AxesList");
+            nodesToCopyFromTemplate.push_back("ScanheadList");
+            nodesToCopyFromTemplate.push_back("KinematicsList");
+            nodesToCopyFromTemplate.push_back("LaserConfig");
+            nodesToCopyFromTemplate.push_back("IOConfig");
+            nodesToCopyFromTemplate.push_back("SystemConfig");
 
             break;
         default:
@@ -386,7 +452,7 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
     pGeneralConfigNode->AddChildText("", "BaseDirectoryPath", sBaseDirectoryPath);
 
     auto pSimulationConfigNode = pGeneralConfigNode->AddChild("", "SimulationConfig");
-    pSimulationConfigNode->AddChildText("", "SimulationMode", "true");
+    pSimulationConfigNode->AddChildText("", "SimulationMode", sSimulationMode);
     pSimulationConfigNode->AddChildText("", "SimOutputFileDirectory", sSimulationDirectory);
     pSimulationConfigNode->AddChildText("", "BinaryOutput", "false");
     pSimulationConfigNode->AddChildText("", "DisableFileOutput", "false");
@@ -410,7 +476,9 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
             break;
         }
 
-        case eSMCConfigVersion::Version_0_9: {
+        case eSMCConfigVersion::Version_0_9: 
+        case eSMCConfigVersion::Version_1_0: 
+        case eSMCConfigVersion::Version_1_1: {
             if (!sRTCIPAddress.empty()) {
                 auto pEthSearchNode = pRTCConfigNode->AddChild("", "EthSearch");
                 auto pIPListNode = pEthSearchNode->AddChild("", "IPList");
@@ -463,6 +531,29 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
         
     } 
 
+    if (configVersion == eSMCConfigVersion::Version_1_0 || configVersion == eSMCConfigVersion::Version_1_1) {
+        auto pKinematicsListNode = pXMLDocument->GetRootNode()->FindChild(sCfgNameSpace, "KinematicsList", true);
+        auto pKinematicsListNodes = pKinematicsListNode->GetChildrenByName(sCfgNameSpace, "Kinematic");
+        uint64_t nKinematicsListCount = pKinematicsListNodes->GetNodeCount();
+        for (uint64_t nKinematicsListIndex = 0; nKinematicsListIndex < nKinematicsListCount; nKinematicsListIndex++) {
+
+            auto pKinematicNode = pKinematicsListNodes->GetNode(nKinematicsListIndex);
+			auto pTrafoListNode = pKinematicNode->FindChild(sCfgNameSpace, "TrafoList", true);
+
+			auto pTrafoListNodes = pTrafoListNode->GetChildrenByName(sCfgNameSpace, "PosTrafos");
+			uint64_t nTrafoListCount = pTrafoListNodes->GetNodeCount();
+            for (uint64_t nTrafoListIndex = 0; nTrafoListIndex < nTrafoListCount; nTrafoListIndex++) {
+				auto pTrafoNode = pTrafoListNodes->GetNode(nTrafoListIndex);
+				auto pCorrectionFileListNode = pTrafoNode->FindChild(sCfgNameSpace, "CorrectionFileList", true);
+                pCorrectionFileListNode->RemoveChildrenWithName(sCfgNameSpace, "CorrectionFilePath");
+
+                auto pPatchedCorrectionFileNode = pCorrectionFileListNode->AddChildText(sCfgNameSpace, "CorrectionFilePath", sCorrectionFilePath);
+                pPatchedCorrectionFileNode->AddAttribute("", "CalibrationFactor", "-1");
+
+            }
+        }
+    }
+
     // Patch Blend Mode!
     if (configVersion == eSMCConfigVersion::Version_0_8) {
         auto pTrajectoryConfigNode = pXMLDocument->GetRootNode()->FindChild(sCfgNameSpace, "TrajectoryConfig", true);
@@ -473,11 +564,6 @@ std::string CSMCConfiguration::buildConfigurationXML(LibMCEnv::CWorkingDirectory
             case eBlendMode::MaxAccuracy: pBlendModeNode->SetTextContent("MaxAccuracy"); break;
             default: pBlendModeNode->SetTextContent("Deactivated");
         }
-        
-        
-        
-        
-
     }
 
     std::string sXMLString = pXMLDocument->SaveToString (true);

@@ -31,7 +31,7 @@ Abstract: This is a stub class definition of CRaylaseCard
 
 */
 
-#include "libmcdriver_raylase_raylasecard.hpp"
+#include "libmcdriver_raylase_raylasecardlist.hpp"
 #include "libmcdriver_raylase_interfaceexception.hpp"
 #include <cmath>
 
@@ -87,14 +87,15 @@ void CRaylaseCoordinateTransform::applyTransform(double& dX, double& dY)
 }
 
 
-CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode>& partSuppressions)
+CRaylaseCardList::CRaylaseCardList(PRaylaseSDK pSDK, rlHandle cardHandle, double dMaxLaserPowerInWatts, PRaylaseCoordinateTransform pCoordinateTransform, const std::map<std::string, ePartSuppressionMode>& partSuppressions, PNLightDriverImpl pNLightBoardImpl)
     : m_pSDK(pSDK), 
     m_ListHandle(0), 
     m_CardHandle(cardHandle), 
-    m_dMaxLaserPowerInWatts(dMaxLaserPowerInWatts),
+    m_dMaxLaserPowerInWatts_Mode0(dMaxLaserPowerInWatts),
     m_nListIDOnCard (RAYLASE_LISTONCARDNOTSET),
     m_pCoordinateTransform (pCoordinateTransform),
-    m_PartSuppressions (partSuppressions)
+    m_PartSuppressions (partSuppressions),
+    m_pNLightBoardImpl (pNLightBoardImpl)
 
 {
     if (pSDK.get() == nullptr)
@@ -109,9 +110,9 @@ CRaylaseCardList::~CRaylaseCardList()
 {
     if ((m_pSDK.get() != nullptr) && (m_ListHandle != 0)) {
         if (m_nListIDOnCard != RAYLASE_LISTONCARDNOTSET) {
-            bool bInProgress = false;
+            uint32_t bInProgress = 0;
             m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress);
-            if (!bInProgress) {
+            if (bInProgress == 0) {
                 // Deleting the list is not possible if it is in progress...
                 m_pSDK->checkError(m_pSDK->rlListDelete(m_CardHandle, m_nListIDOnCard, true), "rlListDelete");
             }
@@ -124,10 +125,18 @@ CRaylaseCardList::~CRaylaseCardList()
     m_ListHandle = 0;
 }
 
-void CRaylaseCardList::appendPowerInWatts(double dPowerInWatts)
+void CRaylaseCardList::appendPowerInWatts(double dPowerInWatts, uint32_t nLaserMode)
 {
 
-    double dPowerFactor = (dPowerInWatts / m_dMaxLaserPowerInWatts);
+    double dMaxPower = m_dMaxLaserPowerInWatts_Mode0;
+    if (m_pNLightBoardImpl.get() != nullptr) {
+        if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
+            if (m_pNLightBoardImpl->hasLaserModeMaxPowerOverride(nLaserMode))
+                dMaxPower = m_pNLightBoardImpl->getLaserModeMaxPowerOverride(nLaserMode);
+        }
+    }
+
+    double dPowerFactor = (dPowerInWatts / dMaxPower);
     //std::cout << "appending power: " << dPowerFactor << std::endl;
 
     int32_t nPowerInUnits = (int32_t)(dPowerFactor * 65535.0);
@@ -145,6 +154,14 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 {
     if (pLayer.get() == nullptr)
         throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPARAM);
+
+    if (m_pNLightBoardImpl.get() != nullptr) {
+
+        if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
+            m_pNLightBoardImpl->addNLightLaserModeToList(m_ListHandle, 0);
+        }
+
+    }
 
     double dUnits = pLayer->GetUnits();
 
@@ -194,9 +211,30 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
 
             double dJumpSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::JumpSpeed);
             double dMarkSpeedInMMPerSecond = pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::Speed);
+            double dLaserFocusInMM = pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserFocus, 0.0);
+
+            int64_t nLightAFXMode = 0;
+
+            if (m_pNLightBoardImpl.get() != nullptr) {
+
+                if (m_pNLightBoardImpl->automaticLaserModesAreEnabled()) {
+                    nLightAFXMode = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.nlight.com/afx/2024/09", "afxmode", 0);
+                    if (nLightAFXMode < 0)
+                        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE, "Invalid nLightAFXMode: " + std::to_string(nLightAFXMode));
+                    if (nLightAFXMode > (int64_t) m_pNLightBoardImpl->getMaxAFXMode())
+                        throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDNLIGHTAFXMODE, "Invalid nLightAFXMode: " + std::to_string(nLightAFXMode));
+
+                    //std::cout << "adding nLight Laser mode to list: " << nLightAFXMode << std::endl;
+                    m_pNLightBoardImpl->addNLightLaserModeToList(m_ListHandle, (uint32_t)nLightAFXMode);
+
+                }
+
+            }
+            
 
             double dJumpSpeedInMeterPerSecond = dJumpSpeedInMMPerSecond * 0.001;
             double dMarkSpeedInMeterPerSecond = dMarkSpeedInMMPerSecond * 0.001;
+            double dZInMicron = 0.0; // dLaserFocusInMM * 1000.0;
 
             m_pSDK->checkError(m_pSDK->rlListAppendJumpSpeed(m_ListHandle, dJumpSpeedInMeterPerSecond), "rlListAppendJumpSpeed");
             m_pSDK->checkError(m_pSDK->rlListAppendMarkSpeed(m_ListHandle, dMarkSpeedInMeterPerSecond), "rlListAppendMarkSpeed");
@@ -208,7 +246,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             } 
 
             if (!bSegmentHasPowerPerVector) {
-                appendPowerInWatts(dBasePowerInWatts);
+                appendPowerInWatts(dBasePowerInWatts, (uint32_t) nLightAFXMode);
                 //std::cout << "segment power: " << dBasePowerInWatts << std::endl;
             }
             else {
@@ -217,26 +255,20 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
             }
 
             switch (eSegmentType) {
-            case LibMCEnv::eToolpathSegmentType::Loop:
             case LibMCEnv::eToolpathSegmentType::Polyline:
             {
 
                 std::vector<LibMCEnv::sFloatPosition2D> PointsInMM;
-                pLayer->GetSegmentPointDataInMM(nSegmentIndex, PointsInMM);
+                pLayer->GetSegmentPolylineDataInMM(nSegmentIndex, PointsInMM);
 
-                std::vector<double> FactorOverrides;
                 if (bSegmentHasPowerPerVector) {
-                    pLayer->GetSegmentPointOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor::FactorF, FactorOverrides);
+                    //pLayer->GetSegmentLinearPolylineModifiers(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
                 }
 
                 if (nPointCount != PointsInMM.size())
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPOINTCOUNT);
 
-                uint32_t nPointLoopCount = nPointCount;
-                if (eSegmentType == LibMCEnv::eToolpathSegmentType::Loop)
-                    nPointLoopCount++;
-
-                for (uint32_t nPointLoopIndex = 0; nPointLoopIndex < nPointLoopCount; nPointLoopIndex++) {
+                for (uint32_t nPointLoopIndex = 0; nPointLoopIndex < nPointCount; nPointLoopIndex++) {
 
                     // Loops have one point more to draw
                     uint32_t nPointIndex = nPointLoopIndex % nPointCount;
@@ -250,7 +282,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                     double dYinMicron = dYinMM * 1000.0;
 
                     if (nPointIndex == 0) {
-                        m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs2D(m_ListHandle, dXinMicron, dYinMicron), "rlListAppendJumpAbs2D");
+                        m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs3D(m_ListHandle, dXinMicron, dYinMicron, dZInMicron), "rlListAppendJumpAbs3D");
                         m_pSDK->checkError(m_pSDK->rlListAppendLaserOn(m_ListHandle), "rlListAppendLaserOn");
                     }
                     else {
@@ -258,7 +290,7 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                             appendPowerInWatts(dBasePowerInWatts * FactorOverrides.at(nPointIndex));
                         }*/
 
-                        m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs2D(m_ListHandle, dXinMicron, dYinMicron), "rlListAppendMarkAbs2D");
+                        m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs3D(m_ListHandle, dXinMicron, dYinMicron, dZInMicron), "rlListAppendMarkAbs3D");
                     }
 
                 }
@@ -274,9 +306,8 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                     throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_INVALIDPOINTCOUNT);
 
                 std::vector<LibMCEnv::sFloatHatch2D> HatchesInMM;
-                std::vector<LibMCEnv::sHatch2DOverrides> FactorOverrides;
                 if (bSegmentHasPowerPerVector) {
-                    pLayer->GetSegmentHatchOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileOverrideFactor::FactorF, FactorOverrides);
+                    //pLayer->GetSegmentLinearHatchOverrides(nSegmentIndex, LibMCEnv::eToolpathProfileModificationFactor::FactorF, FactorOverrides);
                 }
 
                 uint64_t nHatchCount = nPointCount / 2;
@@ -303,9 +334,9 @@ void CRaylaseCardList::addLayerToList(LibMCEnv::PToolpathLayer pLayer, uint32_t 
                         appendPowerInWatts(dBasePowerInWatts * FactorOverrides.at(nHatchIndex).m_Point1Override);
                     }*/
 
-                    m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs2D(m_ListHandle, dX1inMicron, dY1inMicron), "rlListAppendJumpAbs2D");
+                    m_pSDK->checkError(m_pSDK->rlListAppendJumpAbs3D(m_ListHandle, dX1inMicron, dY1inMicron, dZInMicron), "rlListAppendJumpAbs3D");
                     m_pSDK->checkError(m_pSDK->rlListAppendLaserOn(m_ListHandle), "rlListAppendLaserOn");
-                    m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs2D(m_ListHandle, dX2inMicron, dY2inMicron), "rlListAppendMarkAbs2D");
+                    m_pSDK->checkError(m_pSDK->rlListAppendMarkAbs3D(m_ListHandle, dX2inMicron, dY2inMicron, dZInMicron), "rlListAppendMarkAbs3D");
                     m_pSDK->checkError(m_pSDK->rlListAppendLaserOff(m_ListHandle), "rlListAppendLaserOff");
                 }
 
@@ -339,9 +370,9 @@ void CRaylaseCardList::deleteListListOnCard ()
 {
     if (m_nListIDOnCard != RAYLASE_LISTONCARDNOTSET) {
 
-        bool bInProgress = false;
+        uint32_t bInProgress = 0;
         m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress);
-        if (bInProgress)
+        if (bInProgress != 0)
             throw ELibMCDriver_RaylaseInterfaceException(LIBMCDRIVER_RAYLASE_ERROR_CANNOTDELETELISTLISTINPROGRESS);
 
         m_pSDK->checkError(m_pSDK->rlListDelete(m_CardHandle, m_nListIDOnCard, true), "rlListDelete");
@@ -360,23 +391,34 @@ void CRaylaseCardList::executeList(uint32_t nListIDOnCard)
 
 bool CRaylaseCardList::waitForExecution(uint32_t nTimeOutInMS)
 {
-    bool done = false;
+    uint32_t done = 0;
     int32_t listID = 0;
     m_pSDK->checkError(m_pSDK->rlListWaitForListDone(m_CardHandle, nTimeOutInMS, done, listID), "rlListWaitForListDone");
 
-    return done;
+    return done != 0;
 
 }
+
+
 
 void CRaylaseCardList::abortExecution()
 {
-    bool bInProgress = false;
+    uint32_t bInProgress = 0;
     m_pSDK->checkError(m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress));
 
-    if (bInProgress)
+    if (bInProgress != 0)
         m_pSDK->checkError(m_pSDK->rlListAbortExecution(m_CardHandle));
 
 }
+
+bool CRaylaseCardList::executionIsInProgress()
+{
+    uint32_t bInProgress = 0;
+    m_pSDK->checkError(m_pSDK->rlListIsExecutionInProgress(m_CardHandle, bInProgress));
+
+    return (bInProgress != 0);
+}
+
 
 LibMCDriver_Raylase::ePartSuppressionMode CRaylaseCardList::getPartSuppressionMode(const std::string& sPartUUID)
 {

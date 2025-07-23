@@ -230,17 +230,21 @@ void CVideoDeviceInstance_Win32::refreshSupportedResolutions()
         if ((denominator == 0) || (numerator == 0))
             throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDMEDIATYPEFRAMERATE);
 
-        if ((numerator % denominator) == 0) { 
-            // We only support integer framerates for now!
-            uint32_t nFramerate = numerator / denominator;
+        bool bUUIDIsSupported = convertUUIDToAnyVideoSourceFormat (sTypeUUID) != LibMCDriver_Camera::eVideoSourceFormat::Invalid;
 
-            if ((nWidth >= CAMERARESOLUTION_MIN) && (nWidth <= CAMERARESOLUTION_MAX) &&
-                (nHeight >= CAMERARESOLUTION_MIN) && (nHeight <= CAMERARESOLUTION_MAX) &&
-                (nFramerate >= CAMERAFRAMERATE_MIN) && (nFramerate <= CAMERAFRAMERATE_MAX)) {
+        if (bUUIDIsSupported) {
+            if ((numerator % denominator) == 0) {
+                // We only support integer framerates for now!
+                uint32_t nFramerate = numerator / denominator;
 
-                m_SupportedResolutions.push_back(std::make_shared<CVideoResolution> (nWidth, nHeight, nFramerate, sTypeUUID));
+                if ((nWidth >= CAMERARESOLUTION_MIN) && (nWidth <= CAMERARESOLUTION_MAX) &&
+                    (nHeight >= CAMERARESOLUTION_MIN) && (nHeight <= CAMERARESOLUTION_MAX) &&
+                    (nFramerate >= CAMERAFRAMERATE_MIN) && (nFramerate <= CAMERAFRAMERATE_MAX)) {
+
+                    m_SupportedResolutions.push_back(std::make_shared<CVideoResolution>(nWidth, nHeight, nFramerate, sTypeUUID));
+                }
+
             }
-                
         }
 
         nIndex++;
@@ -282,7 +286,16 @@ uint32_t CVideoDeviceInstance_Win32::getSupportedResolutionCount()
     return (uint32_t)m_SupportedResolutions.size();
 }
 
-LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDToVideoSourceFormat(const std::string& sUUID)
+LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDToValidVideoSourceFormat(const std::string& sUUID)
+{
+    auto sourceFormat = convertUUIDToAnyVideoSourceFormat(sUUID);
+    if (sourceFormat == LibMCDriver_Camera::eVideoSourceFormat::Invalid)
+        throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDMEDIASUBTYPE, "Invalid media video source type: " + sUUID);
+
+    return sourceFormat;
+}
+
+LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDToAnyVideoSourceFormat(const std::string& sUUID)
 {
 #ifdef _WIN32
 
@@ -291,7 +304,6 @@ LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDTo
     HRESULT hResult = CLSIDFromString(sTypeUUIDW.c_str(), &typeUUID);
     if (hResult != S_OK)
         throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDMEDIASUBTYPE, "Invalid media video source type: " + sUUID);
-
 
     if (IsEqualGUID(typeUUID, MFVideoFormat_RGB32))
         return LibMCDriver_Camera::eVideoSourceFormat::RGB32;
@@ -319,8 +331,6 @@ LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDTo
         return LibMCDriver_Camera::eVideoSourceFormat::NV11;
     if (IsEqualGUID(typeUUID, MFVideoFormat_NV12))
         return LibMCDriver_Camera::eVideoSourceFormat::NV12;
-    if (IsEqualGUID(typeUUID, MFVideoFormat_NV21))
-        return LibMCDriver_Camera::eVideoSourceFormat::NV21;
     if (IsEqualGUID(typeUUID, MFVideoFormat_UYVY))
         return LibMCDriver_Camera::eVideoSourceFormat::UYVY;
     if (IsEqualGUID(typeUUID, MFVideoFormat_Y41P))
@@ -337,6 +347,10 @@ LibMCDriver_Camera::eVideoSourceFormat CVideoDeviceInstance_Win32::convertUUIDTo
         return LibMCDriver_Camera::eVideoSourceFormat::YV12;
     if (IsEqualGUID(typeUUID, MFVideoFormat_YVYU))
         return LibMCDriver_Camera::eVideoSourceFormat::YVYU;
+    if (IsEqualGUID(typeUUID, MFVideoFormat_MJPG))
+        return LibMCDriver_Camera::eVideoSourceFormat::MJPG;
+
+    return LibMCDriver_Camera::eVideoSourceFormat::Invalid;
 
 #else 
     throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_PLATFORMERROR);
@@ -361,7 +375,6 @@ std::string CVideoDeviceInstance_Win32::convertVideoSourceFormatToUUID(LibMCDriv
         case LibMCDriver_Camera::eVideoSourceFormat::IYUV: return GUIDToString(MFVideoFormat_IYUV);
         case LibMCDriver_Camera::eVideoSourceFormat::NV11: return GUIDToString(MFVideoFormat_NV11);
         case LibMCDriver_Camera::eVideoSourceFormat::NV12: return GUIDToString(MFVideoFormat_NV12);
-        case LibMCDriver_Camera::eVideoSourceFormat::NV21: return GUIDToString(MFVideoFormat_NV21);
         case LibMCDriver_Camera::eVideoSourceFormat::UYVY: return GUIDToString(MFVideoFormat_UYVY);
         case LibMCDriver_Camera::eVideoSourceFormat::Y41P: return GUIDToString(MFVideoFormat_Y41P);
         case LibMCDriver_Camera::eVideoSourceFormat::Y41T: return GUIDToString(MFVideoFormat_Y41T);
@@ -370,6 +383,7 @@ std::string CVideoDeviceInstance_Win32::convertVideoSourceFormatToUUID(LibMCDriv
         case LibMCDriver_Camera::eVideoSourceFormat::YVU9: return GUIDToString(MFVideoFormat_YVU9);
         case LibMCDriver_Camera::eVideoSourceFormat::YV12: return GUIDToString(MFVideoFormat_YV12);
         case LibMCDriver_Camera::eVideoSourceFormat::YVYU: return GUIDToString(MFVideoFormat_YVYU);
+        case LibMCDriver_Camera::eVideoSourceFormat::MJPG: return GUIDToString(MFVideoFormat_MJPG);
 
         default:
             throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_INVALIDVIDEOSOURCEFORMAT);
@@ -391,7 +405,7 @@ void CVideoDeviceInstance_Win32::getSupportedResolution(uint32_t nIndex, uint32_
     nWidth = resolution->getWidth();
     nHeight = resolution->getHeight();
     nFramerate = resolution->getFramerate();
-    sourceFormat = convertUUIDToVideoSourceFormat (resolution->getTypeUUID ());
+    sourceFormat = convertUUIDToAnyVideoSourceFormat (resolution->getTypeUUID ());
 
 }
 
@@ -794,7 +808,14 @@ bool CVideoDeviceInstance_Win32::captureRawImage(LibMCEnv::PImageData pImageData
             return false;
         }
     }
+    else {
+        pImageData->Clear(0);
 
-#endif // _WIN32
-    
+        return false;
+    }
+
+#else 
+throw ELibMCDriver_CameraInterfaceException(LIBMCDRIVER_CAMERA_ERROR_PLATFORMERROR);
+#endif //_WIN32
+
 }

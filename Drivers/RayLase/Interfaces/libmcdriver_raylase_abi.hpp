@@ -150,9 +150,10 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_rayla
 * Initializes the NLight laser via the driver board.
 *
 * @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] bEnableAutomaticLaserModeSwitching - If true, laser modes will be used from the corresponding build file.
 * @return error code or 0 (success)
 */
-LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_initializelaser(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_initializelaser(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool bEnableAutomaticLaserModeSwitching);
 
 /**
 * Disables the NLight laser via the driver board.
@@ -161,6 +162,68 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nligh
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_disablelaser(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+
+/**
+* Returns if the automatic laser mode switching is enabled.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pEnableAutomaticLaserModeSwitching - If true, laser modes will be used from the corresponding build file.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_automaticlasermodeswitchingisenabled(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pEnableAutomaticLaserModeSwitching);
+
+/**
+* Enables the Automatic laser mode switching.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_enableautomaticlasermodeswitching(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+
+/**
+* Disables the Automatic laser mode switching.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_disableautomaticlasermodeswitching(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
+
+/**
+* Sets an override for the maximum available laser power used for a specific laser mode. Can not be changed for laser mode 0.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nLaserMode - The laser mode that shall be changed. MUST be between 1 and 7.
+* @param[in] dMaxPowerInWatts - Maximum laser power in Watts. MUST be larger than 1.0.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_setlasermodemaxpoweroverride(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode, LibMCDriver_Raylase_double dMaxPowerInWatts);
+
+/**
+* Gets an override for the maximum available laser power used for a specific laser mode. Returns default max laser power for laser mode 0 or if no laser mode override has been set.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nLaserMode - The laser mode that shall be queried. MUST be between 0 and 7.
+* @param[out] pMaxPowerInWatts - Maximum laser power in Watts for this Laser Mode.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_getlasermodemaxpoweroverride(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode, LibMCDriver_Raylase_double * pMaxPowerInWatts);
+
+/**
+* Clears a power override for a specific laser mode.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nLaserMode - The laser mode that shall be changed. MUST be between 1 and 7.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_clearlasermodemaxpoweroverride(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nLaserMode);
+
+/**
+* Clears all max power overrides for the different laser modes.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_clearalllasermodemaxpoweroverrides(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard);
 
 /**
 * Clears any error state in the NLight laser via the driver board.
@@ -241,6 +304,26 @@ LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nligh
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_iswaterflow(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, bool * pWaterFlowState);
+
+/**
+* Sets the mode change delays.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[in] nModeChangeSignalDelayInMicroseconds - New mode change signal delay in microseconds. This is the length of the signal peak to the AFX laser. Default value is 10 microseconds.
+* @param[in] nModeChangeApplyDelayInMicroseconds - New mode change apply delay in microseconds. This is the wait delay after the new mode has sent. Default value is 30000 microseconds.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_setmodechangedelays(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 nModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 nModeChangeApplyDelayInMicroseconds);
+
+/**
+* Returns the mode change delays.
+*
+* @param[in] pNLightDriverBoard - NLightDriverBoard instance.
+* @param[out] pModeChangeSignalDelayInMicroseconds - Current mode change signal delay in microseconds. This is the length of the signal peak to the AFX laser. Default value is 10 microseconds.
+* @param[out] pModeChangeApplyDelayInMicroseconds - Current mode change apply delay in microseconds. This is the wait delay after the new mode has sent. Default value is 30000 microseconds.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_RAYLASE_DECLSPEC LibMCDriver_RaylaseResult libmcdriver_raylase_nlightdriverboard_getmodechangedelays(LibMCDriver_Raylase_NLightDriverBoard pNLightDriverBoard, LibMCDriver_Raylase_uint32 * pModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 * pModeChangeApplyDelayInMicroseconds);
 
 /*************************************************************************************************************************
  Class definition for RaylaseCard

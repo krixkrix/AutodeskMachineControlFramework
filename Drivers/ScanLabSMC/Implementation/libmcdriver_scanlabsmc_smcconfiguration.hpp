@@ -66,12 +66,17 @@ private:
     
     uint32_t m_nSerialNumber;
     std::vector<uint8_t> m_CorrectionFileData;
+    
+    std::string m_sFirmwareDataResource;
     std::vector<uint8_t> m_FirmwareData;
+
     std::vector<uint8_t> m_FPGAData;
     std::vector<uint8_t> m_AuxiliaryData;
     std::string m_sIPAddress;
     std::string m_sConfigurationTemplateXML;
     std::string m_sSimulationSubDirectory;
+
+    bool m_bSendToHardware;
 
 public:
 
@@ -92,6 +97,10 @@ public:
 	LibMCDriver_ScanLabSMC_uint32 GetSerialNumber() override;
 
 	void SetIPAddress(const std::string& sValue) override;
+
+    void SetSendToHardware(const bool bSendToHardware) override;
+
+    bool GetSendToHardware() override;
 
 	std::string GetIPAddress() override;
 

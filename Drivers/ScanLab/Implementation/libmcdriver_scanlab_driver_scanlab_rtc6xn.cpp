@@ -392,8 +392,12 @@ void CDriver_ScanLab_RTC6xN::ConfigureLaserMode(const LibMCDriver_ScanLab_uint32
 		pRTCContext->SetLaserMode(eLaserMode, eLaserPort);
 		pRTCContext->DisableAutoLaserControl();
 		pRTCContext->SetLaserControlParameters(false, bFinishLaserPulseAfterOn, bPhaseShiftOfLaserSignal, bLaserOnSignalLowActive, bLaserHalfSignalsLowActive, bSetDigitalInOneHighActive, bOutputSynchronizationActive);
-		pRTCContext->SetLaserPulsesInMicroSeconds(5, 5);
-		pRTCContext->SetStandbyInMicroSeconds(1, 1);
+
+		auto pContextInstance = dynamic_cast<CRTCContext*> (pRTCContext.get());
+		if (pContextInstance == nullptr)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+
+		pContextInstance->writeLaserTimingsToCard();
 
 	}
 }
@@ -702,6 +706,36 @@ void CDriver_ScanLab_RTC6xN::updateDLLVersionParameter(uint32_t nDLLVersionParam
 		std::string sPrefix = "scanner" + std::to_string(nIndex) + "_";
 
 		m_pDriverEnvironment->SetIntegerParameter(sPrefix + "dll_version", nDLLVersionParameter);
+	}
+
+}
+
+void CDriver_ScanLab_RTC6xN::SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength)
+{
+	if (!m_SimulationMode) {
+
+		auto pRTCContext = getRTCContextForScannerIndex(nScannerIndex, true);
+		pRTCContext->SetLaserPulsesInMicroSeconds(dLaserPulseHalfPeriod, dLaserPulseLength);
+		pRTCContext->SetStandbyInMicroSeconds(dStandbyPulseHalfPeriod, dStandbyPulseLength);
+
+	} 
+
+}
+
+void CDriver_ScanLab_RTC6xN::GetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double& dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double& dLaserPulseLength, LibMCDriver_ScanLab_double& dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double& dStandbyPulseLength)
+{
+	if (!m_SimulationMode) {
+
+		auto pRTCContext = getRTCContextForScannerIndex(nScannerIndex, true);
+		pRTCContext->GetLaserPulsesInMicroSeconds(dLaserPulseHalfPeriod, dLaserPulseLength);
+		pRTCContext->GetStandbyInMicroSeconds(dStandbyPulseHalfPeriod, dStandbyPulseLength);
+
+	}
+	else {
+		dLaserPulseHalfPeriod = RTC_TIMINGDEFAULT_LASERPULSEHALFPERIOD;
+		dLaserPulseLength = RTC_TIMINGDEFAULT_LASERPULSELENGTH;
+		dStandbyPulseHalfPeriod = RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD;
+		dStandbyPulseLength = RTC_TIMINGDEFAULT_STANDBYPULSELENGTH;
 	}
 
 }

@@ -81,7 +81,9 @@ private:
 
 	void refreshSupportedResolutions();
 
-	LibMCDriver_Camera::eVideoSourceFormat convertUUIDToVideoSourceFormat(const std::string& sUUID);
+	LibMCDriver_Camera::eVideoSourceFormat convertUUIDToAnyVideoSourceFormat(const std::string& sUUID);
+
+	LibMCDriver_Camera::eVideoSourceFormat convertUUIDToValidVideoSourceFormat(const std::string& sUUID);
 	std::string convertVideoSourceFormatToUUID(LibMCDriver_Camera::eVideoSourceFormat sourceFormat);
 
 public:

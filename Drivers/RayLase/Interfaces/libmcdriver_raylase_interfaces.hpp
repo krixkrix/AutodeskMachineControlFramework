@@ -336,13 +336,55 @@ class INLightDriverBoard : public virtual IBase {
 public:
 	/**
 	* INLightDriverBoard::InitializeLaser - Initializes the NLight laser via the driver board.
+	* @param[in] bEnableAutomaticLaserModeSwitching - If true, laser modes will be used from the corresponding build file.
 	*/
-	virtual void InitializeLaser() = 0;
+	virtual void InitializeLaser(const bool bEnableAutomaticLaserModeSwitching) = 0;
 
 	/**
 	* INLightDriverBoard::DisableLaser - Disables the NLight laser via the driver board.
 	*/
 	virtual void DisableLaser() = 0;
+
+	/**
+	* INLightDriverBoard::AutomaticLaserModeSwitchingIsEnabled - Returns if the automatic laser mode switching is enabled.
+	* @return If true, laser modes will be used from the corresponding build file.
+	*/
+	virtual bool AutomaticLaserModeSwitchingIsEnabled() = 0;
+
+	/**
+	* INLightDriverBoard::EnableAutomaticLaserModeSwitching - Enables the Automatic laser mode switching.
+	*/
+	virtual void EnableAutomaticLaserModeSwitching() = 0;
+
+	/**
+	* INLightDriverBoard::DisableAutomaticLaserModeSwitching - Disables the Automatic laser mode switching.
+	*/
+	virtual void DisableAutomaticLaserModeSwitching() = 0;
+
+	/**
+	* INLightDriverBoard::SetLaserModeMaxPowerOverride - Sets an override for the maximum available laser power used for a specific laser mode. Can not be changed for laser mode 0.
+	* @param[in] nLaserMode - The laser mode that shall be changed. MUST be between 1 and 7.
+	* @param[in] dMaxPowerInWatts - Maximum laser power in Watts. MUST be larger than 1.0.
+	*/
+	virtual void SetLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode, const LibMCDriver_Raylase_double dMaxPowerInWatts) = 0;
+
+	/**
+	* INLightDriverBoard::GetLaserModeMaxPowerOverride - Gets an override for the maximum available laser power used for a specific laser mode. Returns default max laser power for laser mode 0 or if no laser mode override has been set.
+	* @param[in] nLaserMode - The laser mode that shall be queried. MUST be between 0 and 7.
+	* @return Maximum laser power in Watts for this Laser Mode.
+	*/
+	virtual LibMCDriver_Raylase_double GetLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode) = 0;
+
+	/**
+	* INLightDriverBoard::ClearLaserModeMaxPowerOverride - Clears a power override for a specific laser mode.
+	* @param[in] nLaserMode - The laser mode that shall be changed. MUST be between 1 and 7.
+	*/
+	virtual void ClearLaserModeMaxPowerOverride(const LibMCDriver_Raylase_uint32 nLaserMode) = 0;
+
+	/**
+	* INLightDriverBoard::ClearAllLaserModeMaxPowerOverrides - Clears all max power overrides for the different laser modes.
+	*/
+	virtual void ClearAllLaserModeMaxPowerOverrides() = 0;
 
 	/**
 	* INLightDriverBoard::ClearError - Clears any error state in the NLight laser via the driver board.
@@ -396,6 +438,20 @@ public:
 	* @return Returns true if the laser has the water flow flag set.
 	*/
 	virtual bool IsWaterFlow() = 0;
+
+	/**
+	* INLightDriverBoard::SetModeChangeDelays - Sets the mode change delays.
+	* @param[in] nModeChangeSignalDelayInMicroseconds - New mode change signal delay in microseconds. This is the length of the signal peak to the AFX laser. Default value is 10 microseconds.
+	* @param[in] nModeChangeApplyDelayInMicroseconds - New mode change apply delay in microseconds. This is the wait delay after the new mode has sent. Default value is 30000 microseconds.
+	*/
+	virtual void SetModeChangeDelays(const LibMCDriver_Raylase_uint32 nModeChangeSignalDelayInMicroseconds, const LibMCDriver_Raylase_uint32 nModeChangeApplyDelayInMicroseconds) = 0;
+
+	/**
+	* INLightDriverBoard::GetModeChangeDelays - Returns the mode change delays.
+	* @param[out] nModeChangeSignalDelayInMicroseconds - Current mode change signal delay in microseconds. This is the length of the signal peak to the AFX laser. Default value is 10 microseconds.
+	* @param[out] nModeChangeApplyDelayInMicroseconds - Current mode change apply delay in microseconds. This is the wait delay after the new mode has sent. Default value is 30000 microseconds.
+	*/
+	virtual void GetModeChangeDelays(LibMCDriver_Raylase_uint32 & nModeChangeSignalDelayInMicroseconds, LibMCDriver_Raylase_uint32 & nModeChangeApplyDelayInMicroseconds) = 0;
 
 };
 

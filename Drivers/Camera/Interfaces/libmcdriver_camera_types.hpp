@@ -265,7 +265,8 @@ namespace LibMCDriver_Camera {
     YUY2 = 19,
     YVU9 = 20,
     YV12 = 21,
-    YVYU = 22
+    YVYU = 22,
+    MJPG = 23
   };
   
 } // namespace LibMCDriver_Camera;

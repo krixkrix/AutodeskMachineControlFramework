@@ -55,6 +55,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcenv_zipstreamwriter.hpp"
 #include "libmcenv_streamreader.hpp"
 #include "libmcenv_datatable.hpp"
+#include "libmcenv_machineconfigurationhandler.hpp"
 #include "libmcenv_modeldatacomponentinstance.hpp"
 #include "libmcenv_imageloader.hpp"
 #include "libmcenv_jsonobject.hpp"
@@ -113,7 +114,7 @@ ISignalTrigger* CStateEnvironment::PrepareSignal(const std::string& sMachineInst
 	if (!m_pSystemState->stateSignalHandler()->hasSignalDefinition(sMachineInstance, sSignalName))
 		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_COULDNOTFINDSIGNALDEFINITON);
 
-	return new CSignalTrigger(m_pSystemState->getStateSignalHandlerInstance (), sMachineInstance, sSignalName, m_pSystemState->getGlobalChronoInstance());
+	return new CSignalTrigger (m_pSystemState->getStateSignalHandlerInstance (), sMachineInstance, sSignalName, m_pSystemState->getGlobalChronoInstance());
 
 }
 
@@ -125,10 +126,10 @@ bool CStateEnvironment::WaitForSignal(const std::string& sSignalName, const LibM
 	bool bIsTimeOut = false;
 	while (!bIsTimeOut) {
 
-		std::string sCurrentSignalUUID;
+		std::string sUnhandledSignalUUID = m_pSystemState->stateSignalHandler()->peekSignalMessageFromQueue(m_sInstanceName, sSignalName);
 
-		if (m_pSystemState->stateSignalHandler()->checkSignal(m_sInstanceName, sSignalName, sCurrentSignalUUID)) {
-			pHandlerInstance = new CSignalHandler(m_pSystemState->getStateSignalHandlerInstance(), sCurrentSignalUUID, m_pSystemState->getGlobalChronoInstance());
+		if (!sUnhandledSignalUUID.empty ()) {
+			pHandlerInstance = new CSignalHandler(m_pSystemState->getStateSignalHandlerInstance(), sUnhandledSignalUUID, m_pSystemState->getGlobalChronoInstance());
 
 			return true;
 		}
@@ -140,7 +141,7 @@ bool CStateEnvironment::WaitForSignal(const std::string& sSignalName, const LibM
 				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_TERMINATED);
 
 			AMCCommon::CChrono chrono;
-			chrono.sleepMilliseconds(DEFAULT_WAITFOR_SLEEP_MS);
+			chrono.sleepMilliseconds(AMC_SIGNAL_DEFAULT_WAITFOR_SLEEP_MS);
 		}
 	}
 
@@ -149,10 +150,10 @@ bool CStateEnvironment::WaitForSignal(const std::string& sSignalName, const LibM
 
 ISignalHandler* CStateEnvironment::GetUnhandledSignal(const std::string& sSignalTypeName)
 {
-	std::string sCurrentSignalUUID;
+	std::string sUnhandledSignalUUID = m_pSystemState->stateSignalHandler()->peekSignalMessageFromQueue(m_sInstanceName, sSignalTypeName);
 
-	if (m_pSystemState->stateSignalHandler()->checkSignal(m_sInstanceName, sSignalTypeName, sCurrentSignalUUID)) {
-		return new CSignalHandler(m_pSystemState->getStateSignalHandlerInstance(), sCurrentSignalUUID, m_pSystemState->getGlobalChronoInstance());
+	if (!sUnhandledSignalUUID.empty ()) {
+		return new CSignalHandler(m_pSystemState->getStateSignalHandlerInstance(), sUnhandledSignalUUID, m_pSystemState->getGlobalChronoInstance());
 	}
 
 	return nullptr;
@@ -172,12 +173,14 @@ ISignalHandler* CStateEnvironment::GetUnhandledSignalByUUID(const std::string& s
 {
 	std::string sNormalizedSignalUUID = AMCCommon::CUtils::normalizeUUIDString (sUUID);
 
-	if (m_pSystemState->stateSignalHandler()->checkSignalUUID(m_sInstanceName, sNormalizedSignalUUID)) {
+	AMC::eAMCSignalPhase signalPhase = m_pSystemState->stateSignalHandler()->getSignalPhase(sNormalizedSignalUUID);
+
+	if (signalPhase == AMC::eAMCSignalPhase::InQueue) {
 		return new CSignalHandler(m_pSystemState->getStateSignalHandlerInstance(), sNormalizedSignalUUID, m_pSystemState->getGlobalChronoInstance());
 	}
 	else {
 		if (bMustExist)
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_SIGNALUUIDNOTACTIVE, "signal uuid not active: " + sNormalizedSignalUUID);
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_SIGNALUUIDNOTACTIVE, "signal uuid not in queue: " + sNormalizedSignalUUID);
 
 		return nullptr;
 	}
@@ -304,10 +307,10 @@ void CStateEnvironment::StoreSignal(const std::string& sName, ISignalHandler* pH
 	AMC::CParameterGroup* pGroup = m_pSystemState->stateMachineData()->getDataStore(m_sInstanceName);
 
 	if (!pGroup->hasParameter(sName)) {
-		pGroup->addNewStringParameter(sName, "", pHandler->GetSignalID());
+		pGroup->addNewStringParameter(sName, "", pHandler->GetSignalUUID());
 	}
 	else {
-		pGroup->setParameterValueByName(sName, pHandler->GetSignalID());
+		pGroup->setParameterValueByName(sName, pHandler->GetSignalUUID());
 	}
 
 }
@@ -644,6 +647,11 @@ IJSONObject* CStateEnvironment::ParseJSONString(const std::string& sJSONString)
 IJSONObject* CStateEnvironment::ParseJSONData(const LibMCEnv_uint64 nJSONDataBufferSize, const LibMCEnv_uint8* pJSONDataBuffer)
 {
 	return new CJSONObject(pJSONDataBuffer, nJSONDataBufferSize);
+}
+
+IMachineConfigurationHandler* CStateEnvironment::CreateMachineConfigurationHandler()
+{
+	return new CMachineConfigurationHandler(m_pSystemState->getDataModelInstance ());
 }
 
 
