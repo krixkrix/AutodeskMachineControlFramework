@@ -67,7 +67,7 @@ namespace AMC {
 		void handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID);
 		void handleUpdateBuildRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth);
 
-
+		void writeJobDetailsEx(CJSONWriter& writer, LibMCData::PBuildJob& pBuildJob);
 	public:
 
 		CAPIHandler_Build(PSystemState pSystemState);
