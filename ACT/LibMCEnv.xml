@@ -774,8 +774,72 @@
 	
 	<class name="VideoStream" parent="Base" description="Video stream class.">
 	
+		<method name="GetUUID" description="Global UUID of the video stream.">
+			<param name="UUID" type="string" pass="return" description="Video stream UUID." />
+		</method>
 		
+		<method name="GetWidth" description="Returns the width of the video stream in pixels.">
+			<param name="Width" type="uint32" pass="return" description="Width of the video stream in pixels." />
+		</method>
+
+		<method name="GetHeight" description="Returns the height of the video stream in pixels.">
+			<param name="Height" type="uint32" pass="return" description="Height of the video stream in pixels." />
+		</method>
+
+		<method name="GetExtents" description="Returns the width and height of the video stream in pixels.">
+			<param name="Width" type="uint32" pass="out" description="Width of the video stream in pixels." />
+			<param name="Height" type="uint32" pass="out" description="Height of the video stream in pixels." />
+		</method>
+
+		<method name="GetFrameCount" description="Returns the number of source frames in the stream.">
+			<param name="FrameCount" type="uint32" pass="return" description="Number of frames that have been pushed to the stream." />
+		</method>
+
+		<method name="GetDroppedFrameCount" description="Returns the number of source frames in the stream that have not been processed..">
+			<param name="DroppedFrameCount" type="uint32" pass="return" description="Number of frames that have been dropped from the stream." />
+		</method>
+
+		<method name="GetDesiredFrameDuration" description="Returns the desired frame duration of the stream.">
+			<param name="FrameDurationInMicroseconds" type="uint32" pass="return" description="Duration of a frame. MUST be between 10000 and 60000000." />
+		</method>
+
+		<method name="GetDesiredFramerate" description="Returns the desired framerate of the stream.">
+			<param name="Framerate" type="double" pass="return" description="Desired Framerate in Frames per second. This is 1000000 divided by DesiredFrameDuration. MUST be between 1 frame per minute and 100 Frames per second." />
+		</method>
+
+		<method name="GetPauseTolerance" description="Returns the how long the stream will be active without new source frames being available.">
+			<param name="PauseToleranceInMicroseconds" type="uint32" pass="return" description="Defines how many microseconds can pass until the stream becomes inactive. Duration MUST exceed the duration of a frame." />
+		</method>
+		
+		<method name="GetFrameCacheDuration" description="Returns how long frames will be cached in the stream. This adds a delay to the stream.">
+			<param name="FrameCacheDurationInMicroseconds" type="uint32" pass="return" description="How long frames will be cached in the stream. Value MUST not be smaller than DesiredFrameDuration or exceed 100 times DesiredFrameDuration." />
+		</method>
 	
+		<method name="IsActive" description="Returns if the video stream is active. A video stream is active, if the last source frame was available within ">
+			<param name="Active" type="bool" pass="return" description="Returns true if the video stream is active." />
+		</method>
+
+		<method name="GetStreamStartTime" description="Returns the DateTime when the stream has started.">
+			<param name="StartTime" type="class" class="DateTime" pass="return" description="DateTime when the stream has started." />
+		</method>
+
+		<method name="GetLastSourceTime" description="Returns the timestamp of the last new video frame.">
+			<param name="TimestampInMicroseconds" type="uint64" pass="return" description="Time in Microseconds since Start Time" />
+		</method>
+
+		<method name="GetLastSourceFrame" description="Returns the image of the last video frame.">
+			<param name="SourceFrameImage" type="class" class="ImageData" pass="return" description="Returns an image containing the last source frame. Image format will be RGB24." />
+		</method>	
+
+		<method name="PushFrame" description="Pushes a frame to the stream irrespective of timing.">
+			<param name="SourceFrameImage" type="class" class="ImageData" pass="in" description="Fails if Image extents do not match or the video format is not RGB24." />
+		</method>	
+
+		<method name="PushFrameWithTime" description="Pushes a frame to the stream with a given timing. Frame will be dropped, if the given timestamp is in the past or beyond the current time plus the Frame Cache Duration.">
+			<param name="FrameTimeInMicroseconds" type="uint64" pass="return" description="Time in Microseconds since Start Time." />
+			<param name="SourceFrameImage" type="class" class="ImageData" pass="in" description="Fails if Image extents do not match or the video format is not RGB24." />
+		</method>	
+
 	</class>
 	
 
