@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_api_response.hpp"
 
 #include "amc_systemstate.hpp"
+#include "libmcdata_dynamic.hpp"
 
 namespace AMC {
 
