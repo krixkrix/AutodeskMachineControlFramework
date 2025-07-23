@@ -1549,6 +1549,458 @@ LibMCEnvResult libmcenv_imageloader_createimagefromrawyuy2data(LibMCEnv_ImageLoa
 /*************************************************************************************************************************
  Class implementation for VideoStream
 **************************************************************************************************************************/
+LibMCEnvResult libmcenv_videostream_getuuid(LibMCEnv_VideoStream pVideoStream, const LibMCEnv_uint32 nUUIDBufferSize, LibMCEnv_uint32* pUUIDNeededChars, char * pUUIDBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if ( (!pUUIDBuffer) && !(pUUIDNeededChars) )
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		std::string sUUID("");
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pUUIDBuffer == nullptr);
+		if (isCacheCall) {
+			sUUID = pIVideoStream->GetUUID();
+
+			pIVideoStream->_setCache (new ParameterCache_1<std::string> (sUUID));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIVideoStream->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+			cache->retrieveData (sUUID);
+			pIVideoStream->_setCache (nullptr);
+		}
+		
+		if (pUUIDNeededChars)
+			*pUUIDNeededChars = (LibMCEnv_uint32) (sUUID.size()+1);
+		if (pUUIDBuffer) {
+			if (sUUID.size() >= nUUIDBufferSize)
+				throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_BUFFERTOOSMALL);
+			for (size_t iUUID = 0; iUUID < sUUID.size(); iUUID++)
+				pUUIDBuffer[iUUID] = sUUID[iUUID];
+			pUUIDBuffer[sUUID.size()] = 0;
+		}
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getwidth(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pWidth)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pWidth == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pWidth = pIVideoStream->GetWidth();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getheight(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pHeight)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pHeight == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pHeight = pIVideoStream->GetHeight();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getextents(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pWidth, LibMCEnv_uint32 * pHeight)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (!pWidth)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		if (!pHeight)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIVideoStream->GetExtents(*pWidth, *pHeight);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getframecount(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pFrameCount)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pFrameCount == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pFrameCount = pIVideoStream->GetFrameCount();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getdroppedframecount(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pDroppedFrameCount)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pDroppedFrameCount == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pDroppedFrameCount = pIVideoStream->GetDroppedFrameCount();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getdesiredframeduration(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pFrameDurationInMicroseconds)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pFrameDurationInMicroseconds == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pFrameDurationInMicroseconds = pIVideoStream->GetDesiredFrameDuration();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getdesiredframerate(LibMCEnv_VideoStream pVideoStream, LibMCEnv_double * pFramerate)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pFramerate == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pFramerate = pIVideoStream->GetDesiredFramerate();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getpausetolerance(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pPauseToleranceInMicroseconds)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pPauseToleranceInMicroseconds == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pPauseToleranceInMicroseconds = pIVideoStream->GetPauseTolerance();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getframecacheduration(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pFrameCacheDurationInMicroseconds)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pFrameCacheDurationInMicroseconds == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pFrameCacheDurationInMicroseconds = pIVideoStream->GetFrameCacheDuration();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_isactive(LibMCEnv_VideoStream pVideoStream, bool * pActive)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pActive == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pActive = pIVideoStream->IsActive();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getstreamstarttime(LibMCEnv_VideoStream pVideoStream, LibMCEnv_DateTime * pStartTime)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pStartTime == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseStartTime(nullptr);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseStartTime = pIVideoStream->GetStreamStartTime();
+
+		*pStartTime = (IBase*)(pBaseStartTime);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getlastsourcetime(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint64 * pTimestampInMicroseconds)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pTimestampInMicroseconds == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pTimestampInMicroseconds = pIVideoStream->GetLastSourceTime();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_getlastsourceframe(LibMCEnv_VideoStream pVideoStream, LibMCEnv_ImageData * pSourceFrameImage)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pSourceFrameImage == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pBaseSourceFrameImage(nullptr);
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pBaseSourceFrameImage = pIVideoStream->GetLastSourceFrame();
+
+		*pSourceFrameImage = (IBase*)(pBaseSourceFrameImage);
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_pushframe(LibMCEnv_VideoStream pVideoStream, LibMCEnv_ImageData pSourceFrameImage)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		IBase* pIBaseClassSourceFrameImage = (IBase *)pSourceFrameImage;
+		IImageData* pISourceFrameImage = dynamic_cast<IImageData*>(pIBaseClassSourceFrameImage);
+		if (!pISourceFrameImage)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDCAST);
+		
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIVideoStream->PushFrame(pISourceFrameImage);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_videostream_pushframewithtime(LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint64 * pFrameTimeInMicroseconds, LibMCEnv_ImageData pSourceFrameImage)
+{
+	IBase* pIBaseClass = (IBase *)pVideoStream;
+
+	try {
+		if (pFrameTimeInMicroseconds == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBase* pIBaseClassSourceFrameImage = (IBase *)pSourceFrameImage;
+		IImageData* pISourceFrameImage = dynamic_cast<IImageData*>(pIBaseClassSourceFrameImage);
+		if (!pISourceFrameImage)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDCAST);
+		
+		IVideoStream* pIVideoStream = dynamic_cast<IVideoStream*>(pIBaseClass);
+		if (!pIVideoStream)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pFrameTimeInMicroseconds = pIVideoStream->PushFrameWithTime(pISourceFrameImage);
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for ScatterPlot
@@ -31723,6 +32175,38 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_imageloader_createimagefromrawrgba32data;
 	if (sProcName == "libmcenv_imageloader_createimagefromrawyuy2data") 
 		*ppProcAddress = (void*) &libmcenv_imageloader_createimagefromrawyuy2data;
+	if (sProcName == "libmcenv_videostream_getuuid") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getuuid;
+	if (sProcName == "libmcenv_videostream_getwidth") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getwidth;
+	if (sProcName == "libmcenv_videostream_getheight") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getheight;
+	if (sProcName == "libmcenv_videostream_getextents") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getextents;
+	if (sProcName == "libmcenv_videostream_getframecount") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getframecount;
+	if (sProcName == "libmcenv_videostream_getdroppedframecount") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getdroppedframecount;
+	if (sProcName == "libmcenv_videostream_getdesiredframeduration") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getdesiredframeduration;
+	if (sProcName == "libmcenv_videostream_getdesiredframerate") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getdesiredframerate;
+	if (sProcName == "libmcenv_videostream_getpausetolerance") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getpausetolerance;
+	if (sProcName == "libmcenv_videostream_getframecacheduration") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getframecacheduration;
+	if (sProcName == "libmcenv_videostream_isactive") 
+		*ppProcAddress = (void*) &libmcenv_videostream_isactive;
+	if (sProcName == "libmcenv_videostream_getstreamstarttime") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getstreamstarttime;
+	if (sProcName == "libmcenv_videostream_getlastsourcetime") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getlastsourcetime;
+	if (sProcName == "libmcenv_videostream_getlastsourceframe") 
+		*ppProcAddress = (void*) &libmcenv_videostream_getlastsourceframe;
+	if (sProcName == "libmcenv_videostream_pushframe") 
+		*ppProcAddress = (void*) &libmcenv_videostream_pushframe;
+	if (sProcName == "libmcenv_videostream_pushframewithtime") 
+		*ppProcAddress = (void*) &libmcenv_videostream_pushframewithtime;
 	if (sProcName == "libmcenv_scatterplot_getuuid") 
 		*ppProcAddress = (void*) &libmcenv_scatterplot_getuuid;
 	if (sProcName == "libmcenv_scatterplot_getpointcount") 

@@ -838,6 +838,104 @@ typedef IBaseSharedPtr<IImageLoader> PIImageLoader;
 
 class IVideoStream : public virtual IBase {
 public:
+	/**
+	* IVideoStream::GetUUID - Global UUID of the video stream.
+	* @return Video stream UUID.
+	*/
+	virtual std::string GetUUID() = 0;
+
+	/**
+	* IVideoStream::GetWidth - Returns the width of the video stream in pixels.
+	* @return Width of the video stream in pixels.
+	*/
+	virtual LibMCEnv_uint32 GetWidth() = 0;
+
+	/**
+	* IVideoStream::GetHeight - Returns the height of the video stream in pixels.
+	* @return Height of the video stream in pixels.
+	*/
+	virtual LibMCEnv_uint32 GetHeight() = 0;
+
+	/**
+	* IVideoStream::GetExtents - Returns the width and height of the video stream in pixels.
+	* @param[out] nWidth - Width of the video stream in pixels.
+	* @param[out] nHeight - Height of the video stream in pixels.
+	*/
+	virtual void GetExtents(LibMCEnv_uint32 & nWidth, LibMCEnv_uint32 & nHeight) = 0;
+
+	/**
+	* IVideoStream::GetFrameCount - Returns the number of source frames in the stream.
+	* @return Number of frames that have been pushed to the stream.
+	*/
+	virtual LibMCEnv_uint32 GetFrameCount() = 0;
+
+	/**
+	* IVideoStream::GetDroppedFrameCount - Returns the number of source frames in the stream that have not been processed..
+	* @return Number of frames that have been dropped from the stream.
+	*/
+	virtual LibMCEnv_uint32 GetDroppedFrameCount() = 0;
+
+	/**
+	* IVideoStream::GetDesiredFrameDuration - Returns the desired frame duration of the stream.
+	* @return Duration of a frame. MUST be between 10000 and 60000000.
+	*/
+	virtual LibMCEnv_uint32 GetDesiredFrameDuration() = 0;
+
+	/**
+	* IVideoStream::GetDesiredFramerate - Returns the desired framerate of the stream.
+	* @return Desired Framerate in Frames per second. This is 1000000 divided by DesiredFrameDuration. MUST be between 1 frame per minute and 100 Frames per second.
+	*/
+	virtual LibMCEnv_double GetDesiredFramerate() = 0;
+
+	/**
+	* IVideoStream::GetPauseTolerance - Returns the how long the stream will be active without new source frames being available.
+	* @return Defines how many microseconds can pass until the stream becomes inactive. Duration MUST exceed the duration of a frame.
+	*/
+	virtual LibMCEnv_uint32 GetPauseTolerance() = 0;
+
+	/**
+	* IVideoStream::GetFrameCacheDuration - Returns how long frames will be cached in the stream. This adds a delay to the stream.
+	* @return How long frames will be cached in the stream. Value MUST not be smaller than DesiredFrameDuration or exceed 100 times DesiredFrameDuration.
+	*/
+	virtual LibMCEnv_uint32 GetFrameCacheDuration() = 0;
+
+	/**
+	* IVideoStream::IsActive - Returns if the video stream is active. A video stream is active, if the last source frame was available within 
+	* @return Returns true if the video stream is active.
+	*/
+	virtual bool IsActive() = 0;
+
+	/**
+	* IVideoStream::GetStreamStartTime - Returns the DateTime when the stream has started.
+	* @return DateTime when the stream has started.
+	*/
+	virtual IDateTime * GetStreamStartTime() = 0;
+
+	/**
+	* IVideoStream::GetLastSourceTime - Returns the timestamp of the last new video frame.
+	* @return Time in Microseconds since Start Time
+	*/
+	virtual LibMCEnv_uint64 GetLastSourceTime() = 0;
+
+	/**
+	* IVideoStream::GetLastSourceFrame - Returns the image of the last video frame.
+	* @return Returns an image containing the last source frame. Image format will be RGB24.
+	*/
+	virtual IImageData * GetLastSourceFrame() = 0;
+
+	/**
+	* IVideoStream::PushFrame - Pushes a frame to the stream irrespective of timing.
+	* @param[in] pSourceFrameImage - Fails if Image extents do not match or the video format is not RGB24.
+	*/
+	virtual void PushFrame(IImageData* pSourceFrameImage) = 0;
+
+	/**
+	* IVideoStream::PushFrameWithTime - Pushes a frame to the stream with a given timing. Frame will be dropped, if the given timestamp is in the past or beyond the current time plus the Frame Cache Duration.
+	* @return Time in Microseconds since Start Time.
+	* @param[in] pSourceFrameImage - Fails if Image extents do not match or the video format is not RGB24.
+	*/
+	virtual LibMCEnv_uint64 PushFrameWithTime(IImageData* pSourceFrameImage) = 0;
+
 };
 
 typedef IBaseSharedPtr<IVideoStream> PIVideoStream;

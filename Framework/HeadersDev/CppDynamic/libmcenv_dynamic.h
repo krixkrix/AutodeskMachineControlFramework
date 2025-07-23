@@ -621,6 +621,154 @@ typedef LibMCEnvResult (*PLibMCEnvImageLoader_CreateImageFromRawYUY2DataPtr) (Li
  Class definition for VideoStream
 **************************************************************************************************************************/
 
+/**
+* Global UUID of the video stream.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[in] nUUIDBufferSize - size of the buffer (including trailing 0)
+* @param[out] pUUIDNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pUUIDBuffer -  buffer of Video stream UUID., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetUUIDPtr) (LibMCEnv_VideoStream pVideoStream, const LibMCEnv_uint32 nUUIDBufferSize, LibMCEnv_uint32* pUUIDNeededChars, char * pUUIDBuffer);
+
+/**
+* Returns the width of the video stream in pixels.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pWidth - Width of the video stream in pixels.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetWidthPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pWidth);
+
+/**
+* Returns the height of the video stream in pixels.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pHeight - Height of the video stream in pixels.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetHeightPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pHeight);
+
+/**
+* Returns the width and height of the video stream in pixels.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pWidth - Width of the video stream in pixels.
+* @param[out] pHeight - Height of the video stream in pixels.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetExtentsPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pWidth, LibMCEnv_uint32 * pHeight);
+
+/**
+* Returns the number of source frames in the stream.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pFrameCount - Number of frames that have been pushed to the stream.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetFrameCountPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pFrameCount);
+
+/**
+* Returns the number of source frames in the stream that have not been processed..
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pDroppedFrameCount - Number of frames that have been dropped from the stream.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetDroppedFrameCountPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pDroppedFrameCount);
+
+/**
+* Returns the desired frame duration of the stream.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pFrameDurationInMicroseconds - Duration of a frame. MUST be between 10000 and 60000000.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetDesiredFrameDurationPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pFrameDurationInMicroseconds);
+
+/**
+* Returns the desired framerate of the stream.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pFramerate - Desired Framerate in Frames per second. This is 1000000 divided by DesiredFrameDuration. MUST be between 1 frame per minute and 100 Frames per second.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetDesiredFrameratePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_double * pFramerate);
+
+/**
+* Returns the how long the stream will be active without new source frames being available.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pPauseToleranceInMicroseconds - Defines how many microseconds can pass until the stream becomes inactive. Duration MUST exceed the duration of a frame.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetPauseTolerancePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pPauseToleranceInMicroseconds);
+
+/**
+* Returns how long frames will be cached in the stream. This adds a delay to the stream.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pFrameCacheDurationInMicroseconds - How long frames will be cached in the stream. Value MUST not be smaller than DesiredFrameDuration or exceed 100 times DesiredFrameDuration.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetFrameCacheDurationPtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint32 * pFrameCacheDurationInMicroseconds);
+
+/**
+* Returns if the video stream is active. A video stream is active, if the last source frame was available within 
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pActive - Returns true if the video stream is active.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_IsActivePtr) (LibMCEnv_VideoStream pVideoStream, bool * pActive);
+
+/**
+* Returns the DateTime when the stream has started.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pStartTime - DateTime when the stream has started.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetStreamStartTimePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_DateTime * pStartTime);
+
+/**
+* Returns the timestamp of the last new video frame.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pTimestampInMicroseconds - Time in Microseconds since Start Time
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetLastSourceTimePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint64 * pTimestampInMicroseconds);
+
+/**
+* Returns the image of the last video frame.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pSourceFrameImage - Returns an image containing the last source frame. Image format will be RGB24.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_GetLastSourceFramePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_ImageData * pSourceFrameImage);
+
+/**
+* Pushes a frame to the stream irrespective of timing.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[in] pSourceFrameImage - Fails if Image extents do not match or the video format is not RGB24.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_PushFramePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_ImageData pSourceFrameImage);
+
+/**
+* Pushes a frame to the stream with a given timing. Frame will be dropped, if the given timestamp is in the past or beyond the current time plus the Frame Cache Duration.
+*
+* @param[in] pVideoStream - VideoStream instance.
+* @param[out] pFrameTimeInMicroseconds - Time in Microseconds since Start Time.
+* @param[in] pSourceFrameImage - Fails if Image extents do not match or the video format is not RGB24.
+* @return error code or 0 (success)
+*/
+typedef LibMCEnvResult (*PLibMCEnvVideoStream_PushFrameWithTimePtr) (LibMCEnv_VideoStream pVideoStream, LibMCEnv_uint64 * pFrameTimeInMicroseconds, LibMCEnv_ImageData pSourceFrameImage);
+
 /*************************************************************************************************************************
  Class definition for ScatterPlot
 **************************************************************************************************************************/
@@ -10596,6 +10744,22 @@ typedef struct {
 	PLibMCEnvImageLoader_CreateImageFromRawRGB24DataPtr m_ImageLoader_CreateImageFromRawRGB24Data;
 	PLibMCEnvImageLoader_CreateImageFromRawRGBA32DataPtr m_ImageLoader_CreateImageFromRawRGBA32Data;
 	PLibMCEnvImageLoader_CreateImageFromRawYUY2DataPtr m_ImageLoader_CreateImageFromRawYUY2Data;
+	PLibMCEnvVideoStream_GetUUIDPtr m_VideoStream_GetUUID;
+	PLibMCEnvVideoStream_GetWidthPtr m_VideoStream_GetWidth;
+	PLibMCEnvVideoStream_GetHeightPtr m_VideoStream_GetHeight;
+	PLibMCEnvVideoStream_GetExtentsPtr m_VideoStream_GetExtents;
+	PLibMCEnvVideoStream_GetFrameCountPtr m_VideoStream_GetFrameCount;
+	PLibMCEnvVideoStream_GetDroppedFrameCountPtr m_VideoStream_GetDroppedFrameCount;
+	PLibMCEnvVideoStream_GetDesiredFrameDurationPtr m_VideoStream_GetDesiredFrameDuration;
+	PLibMCEnvVideoStream_GetDesiredFrameratePtr m_VideoStream_GetDesiredFramerate;
+	PLibMCEnvVideoStream_GetPauseTolerancePtr m_VideoStream_GetPauseTolerance;
+	PLibMCEnvVideoStream_GetFrameCacheDurationPtr m_VideoStream_GetFrameCacheDuration;
+	PLibMCEnvVideoStream_IsActivePtr m_VideoStream_IsActive;
+	PLibMCEnvVideoStream_GetStreamStartTimePtr m_VideoStream_GetStreamStartTime;
+	PLibMCEnvVideoStream_GetLastSourceTimePtr m_VideoStream_GetLastSourceTime;
+	PLibMCEnvVideoStream_GetLastSourceFramePtr m_VideoStream_GetLastSourceFrame;
+	PLibMCEnvVideoStream_PushFramePtr m_VideoStream_PushFrame;
+	PLibMCEnvVideoStream_PushFrameWithTimePtr m_VideoStream_PushFrameWithTime;
 	PLibMCEnvScatterPlot_GetUUIDPtr m_ScatterPlot_GetUUID;
 	PLibMCEnvScatterPlot_GetPointCountPtr m_ScatterPlot_GetPointCount;
 	PLibMCEnvScatterPlot_GetPointPositionPtr m_ScatterPlot_GetPointPosition;

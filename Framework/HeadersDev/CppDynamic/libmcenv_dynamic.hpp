@@ -1428,6 +1428,22 @@ public:
 	{
 	}
 	
+	inline std::string GetUUID();
+	inline LibMCEnv_uint32 GetWidth();
+	inline LibMCEnv_uint32 GetHeight();
+	inline void GetExtents(LibMCEnv_uint32 & nWidth, LibMCEnv_uint32 & nHeight);
+	inline LibMCEnv_uint32 GetFrameCount();
+	inline LibMCEnv_uint32 GetDroppedFrameCount();
+	inline LibMCEnv_uint32 GetDesiredFrameDuration();
+	inline LibMCEnv_double GetDesiredFramerate();
+	inline LibMCEnv_uint32 GetPauseTolerance();
+	inline LibMCEnv_uint32 GetFrameCacheDuration();
+	inline bool IsActive();
+	inline PDateTime GetStreamStartTime();
+	inline LibMCEnv_uint64 GetLastSourceTime();
+	inline PImageData GetLastSourceFrame();
+	inline void PushFrame(classParam<CImageData> pSourceFrameImage);
+	inline LibMCEnv_uint64 PushFrameWithTime(classParam<CImageData> pSourceFrameImage);
 };
 	
 /*************************************************************************************************************************
@@ -3542,6 +3558,22 @@ public:
 		pWrapperTable->m_ImageLoader_CreateImageFromRawRGB24Data = nullptr;
 		pWrapperTable->m_ImageLoader_CreateImageFromRawRGBA32Data = nullptr;
 		pWrapperTable->m_ImageLoader_CreateImageFromRawYUY2Data = nullptr;
+		pWrapperTable->m_VideoStream_GetUUID = nullptr;
+		pWrapperTable->m_VideoStream_GetWidth = nullptr;
+		pWrapperTable->m_VideoStream_GetHeight = nullptr;
+		pWrapperTable->m_VideoStream_GetExtents = nullptr;
+		pWrapperTable->m_VideoStream_GetFrameCount = nullptr;
+		pWrapperTable->m_VideoStream_GetDroppedFrameCount = nullptr;
+		pWrapperTable->m_VideoStream_GetDesiredFrameDuration = nullptr;
+		pWrapperTable->m_VideoStream_GetDesiredFramerate = nullptr;
+		pWrapperTable->m_VideoStream_GetPauseTolerance = nullptr;
+		pWrapperTable->m_VideoStream_GetFrameCacheDuration = nullptr;
+		pWrapperTable->m_VideoStream_IsActive = nullptr;
+		pWrapperTable->m_VideoStream_GetStreamStartTime = nullptr;
+		pWrapperTable->m_VideoStream_GetLastSourceTime = nullptr;
+		pWrapperTable->m_VideoStream_GetLastSourceFrame = nullptr;
+		pWrapperTable->m_VideoStream_PushFrame = nullptr;
+		pWrapperTable->m_VideoStream_PushFrameWithTime = nullptr;
 		pWrapperTable->m_ScatterPlot_GetUUID = nullptr;
 		pWrapperTable->m_ScatterPlot_GetPointCount = nullptr;
 		pWrapperTable->m_ScatterPlot_GetPointPosition = nullptr;
@@ -4954,6 +4986,150 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_ImageLoader_CreateImageFromRawYUY2Data == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetUUID = (PLibMCEnvVideoStream_GetUUIDPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getuuid");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetUUID = (PLibMCEnvVideoStream_GetUUIDPtr) dlsym(hLibrary, "libmcenv_videostream_getuuid");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetUUID == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetWidth = (PLibMCEnvVideoStream_GetWidthPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getwidth");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetWidth = (PLibMCEnvVideoStream_GetWidthPtr) dlsym(hLibrary, "libmcenv_videostream_getwidth");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetWidth == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetHeight = (PLibMCEnvVideoStream_GetHeightPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getheight");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetHeight = (PLibMCEnvVideoStream_GetHeightPtr) dlsym(hLibrary, "libmcenv_videostream_getheight");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetHeight == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetExtents = (PLibMCEnvVideoStream_GetExtentsPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getextents");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetExtents = (PLibMCEnvVideoStream_GetExtentsPtr) dlsym(hLibrary, "libmcenv_videostream_getextents");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetExtents == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetFrameCount = (PLibMCEnvVideoStream_GetFrameCountPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getframecount");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetFrameCount = (PLibMCEnvVideoStream_GetFrameCountPtr) dlsym(hLibrary, "libmcenv_videostream_getframecount");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetFrameCount == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetDroppedFrameCount = (PLibMCEnvVideoStream_GetDroppedFrameCountPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getdroppedframecount");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetDroppedFrameCount = (PLibMCEnvVideoStream_GetDroppedFrameCountPtr) dlsym(hLibrary, "libmcenv_videostream_getdroppedframecount");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetDroppedFrameCount == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetDesiredFrameDuration = (PLibMCEnvVideoStream_GetDesiredFrameDurationPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getdesiredframeduration");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetDesiredFrameDuration = (PLibMCEnvVideoStream_GetDesiredFrameDurationPtr) dlsym(hLibrary, "libmcenv_videostream_getdesiredframeduration");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetDesiredFrameDuration == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetDesiredFramerate = (PLibMCEnvVideoStream_GetDesiredFrameratePtr) GetProcAddress(hLibrary, "libmcenv_videostream_getdesiredframerate");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetDesiredFramerate = (PLibMCEnvVideoStream_GetDesiredFrameratePtr) dlsym(hLibrary, "libmcenv_videostream_getdesiredframerate");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetDesiredFramerate == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetPauseTolerance = (PLibMCEnvVideoStream_GetPauseTolerancePtr) GetProcAddress(hLibrary, "libmcenv_videostream_getpausetolerance");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetPauseTolerance = (PLibMCEnvVideoStream_GetPauseTolerancePtr) dlsym(hLibrary, "libmcenv_videostream_getpausetolerance");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetPauseTolerance == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetFrameCacheDuration = (PLibMCEnvVideoStream_GetFrameCacheDurationPtr) GetProcAddress(hLibrary, "libmcenv_videostream_getframecacheduration");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetFrameCacheDuration = (PLibMCEnvVideoStream_GetFrameCacheDurationPtr) dlsym(hLibrary, "libmcenv_videostream_getframecacheduration");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetFrameCacheDuration == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_IsActive = (PLibMCEnvVideoStream_IsActivePtr) GetProcAddress(hLibrary, "libmcenv_videostream_isactive");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_IsActive = (PLibMCEnvVideoStream_IsActivePtr) dlsym(hLibrary, "libmcenv_videostream_isactive");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_IsActive == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetStreamStartTime = (PLibMCEnvVideoStream_GetStreamStartTimePtr) GetProcAddress(hLibrary, "libmcenv_videostream_getstreamstarttime");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetStreamStartTime = (PLibMCEnvVideoStream_GetStreamStartTimePtr) dlsym(hLibrary, "libmcenv_videostream_getstreamstarttime");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetStreamStartTime == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetLastSourceTime = (PLibMCEnvVideoStream_GetLastSourceTimePtr) GetProcAddress(hLibrary, "libmcenv_videostream_getlastsourcetime");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetLastSourceTime = (PLibMCEnvVideoStream_GetLastSourceTimePtr) dlsym(hLibrary, "libmcenv_videostream_getlastsourcetime");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetLastSourceTime == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_GetLastSourceFrame = (PLibMCEnvVideoStream_GetLastSourceFramePtr) GetProcAddress(hLibrary, "libmcenv_videostream_getlastsourceframe");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_GetLastSourceFrame = (PLibMCEnvVideoStream_GetLastSourceFramePtr) dlsym(hLibrary, "libmcenv_videostream_getlastsourceframe");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_GetLastSourceFrame == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_PushFrame = (PLibMCEnvVideoStream_PushFramePtr) GetProcAddress(hLibrary, "libmcenv_videostream_pushframe");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_PushFrame = (PLibMCEnvVideoStream_PushFramePtr) dlsym(hLibrary, "libmcenv_videostream_pushframe");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_PushFrame == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_VideoStream_PushFrameWithTime = (PLibMCEnvVideoStream_PushFrameWithTimePtr) GetProcAddress(hLibrary, "libmcenv_videostream_pushframewithtime");
+		#else // _WIN32
+		pWrapperTable->m_VideoStream_PushFrameWithTime = (PLibMCEnvVideoStream_PushFrameWithTimePtr) dlsym(hLibrary, "libmcenv_videostream_pushframewithtime");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_VideoStream_PushFrameWithTime == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -13552,6 +13728,70 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_ImageLoader_CreateImageFromRawYUY2Data == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_videostream_getuuid", (void**)&(pWrapperTable->m_VideoStream_GetUUID));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetUUID == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getwidth", (void**)&(pWrapperTable->m_VideoStream_GetWidth));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetWidth == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getheight", (void**)&(pWrapperTable->m_VideoStream_GetHeight));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetHeight == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getextents", (void**)&(pWrapperTable->m_VideoStream_GetExtents));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetExtents == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getframecount", (void**)&(pWrapperTable->m_VideoStream_GetFrameCount));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetFrameCount == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getdroppedframecount", (void**)&(pWrapperTable->m_VideoStream_GetDroppedFrameCount));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetDroppedFrameCount == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getdesiredframeduration", (void**)&(pWrapperTable->m_VideoStream_GetDesiredFrameDuration));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetDesiredFrameDuration == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getdesiredframerate", (void**)&(pWrapperTable->m_VideoStream_GetDesiredFramerate));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetDesiredFramerate == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getpausetolerance", (void**)&(pWrapperTable->m_VideoStream_GetPauseTolerance));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetPauseTolerance == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getframecacheduration", (void**)&(pWrapperTable->m_VideoStream_GetFrameCacheDuration));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetFrameCacheDuration == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_isactive", (void**)&(pWrapperTable->m_VideoStream_IsActive));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_IsActive == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getstreamstarttime", (void**)&(pWrapperTable->m_VideoStream_GetStreamStartTime));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetStreamStartTime == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getlastsourcetime", (void**)&(pWrapperTable->m_VideoStream_GetLastSourceTime));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetLastSourceTime == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_getlastsourceframe", (void**)&(pWrapperTable->m_VideoStream_GetLastSourceFrame));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_GetLastSourceFrame == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_pushframe", (void**)&(pWrapperTable->m_VideoStream_PushFrame));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_PushFrame == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_videostream_pushframewithtime", (void**)&(pWrapperTable->m_VideoStream_PushFrameWithTime));
+		if ( (eLookupError != 0) || (pWrapperTable->m_VideoStream_PushFrameWithTime == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_scatterplot_getuuid", (void**)&(pWrapperTable->m_ScatterPlot_GetUUID));
 		if ( (eLookupError != 0) || (pWrapperTable->m_ScatterPlot_GetUUID == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -17972,6 +18212,205 @@ public:
 	/**
 	 * Method definitions for class CVideoStream
 	 */
+	
+	/**
+	* CVideoStream::GetUUID - Global UUID of the video stream.
+	* @return Video stream UUID.
+	*/
+	std::string CVideoStream::GetUUID()
+	{
+		LibMCEnv_uint32 bytesNeededUUID = 0;
+		LibMCEnv_uint32 bytesWrittenUUID = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetUUID(m_pHandle, 0, &bytesNeededUUID, nullptr));
+		std::vector<char> bufferUUID(bytesNeededUUID);
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetUUID(m_pHandle, bytesNeededUUID, &bytesWrittenUUID, &bufferUUID[0]));
+		
+		return std::string(&bufferUUID[0]);
+	}
+	
+	/**
+	* CVideoStream::GetWidth - Returns the width of the video stream in pixels.
+	* @return Width of the video stream in pixels.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetWidth()
+	{
+		LibMCEnv_uint32 resultWidth = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetWidth(m_pHandle, &resultWidth));
+		
+		return resultWidth;
+	}
+	
+	/**
+	* CVideoStream::GetHeight - Returns the height of the video stream in pixels.
+	* @return Height of the video stream in pixels.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetHeight()
+	{
+		LibMCEnv_uint32 resultHeight = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetHeight(m_pHandle, &resultHeight));
+		
+		return resultHeight;
+	}
+	
+	/**
+	* CVideoStream::GetExtents - Returns the width and height of the video stream in pixels.
+	* @param[out] nWidth - Width of the video stream in pixels.
+	* @param[out] nHeight - Height of the video stream in pixels.
+	*/
+	void CVideoStream::GetExtents(LibMCEnv_uint32 & nWidth, LibMCEnv_uint32 & nHeight)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetExtents(m_pHandle, &nWidth, &nHeight));
+	}
+	
+	/**
+	* CVideoStream::GetFrameCount - Returns the number of source frames in the stream.
+	* @return Number of frames that have been pushed to the stream.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetFrameCount()
+	{
+		LibMCEnv_uint32 resultFrameCount = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetFrameCount(m_pHandle, &resultFrameCount));
+		
+		return resultFrameCount;
+	}
+	
+	/**
+	* CVideoStream::GetDroppedFrameCount - Returns the number of source frames in the stream that have not been processed..
+	* @return Number of frames that have been dropped from the stream.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetDroppedFrameCount()
+	{
+		LibMCEnv_uint32 resultDroppedFrameCount = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetDroppedFrameCount(m_pHandle, &resultDroppedFrameCount));
+		
+		return resultDroppedFrameCount;
+	}
+	
+	/**
+	* CVideoStream::GetDesiredFrameDuration - Returns the desired frame duration of the stream.
+	* @return Duration of a frame. MUST be between 10000 and 60000000.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetDesiredFrameDuration()
+	{
+		LibMCEnv_uint32 resultFrameDurationInMicroseconds = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetDesiredFrameDuration(m_pHandle, &resultFrameDurationInMicroseconds));
+		
+		return resultFrameDurationInMicroseconds;
+	}
+	
+	/**
+	* CVideoStream::GetDesiredFramerate - Returns the desired framerate of the stream.
+	* @return Desired Framerate in Frames per second. This is 1000000 divided by DesiredFrameDuration. MUST be between 1 frame per minute and 100 Frames per second.
+	*/
+	LibMCEnv_double CVideoStream::GetDesiredFramerate()
+	{
+		LibMCEnv_double resultFramerate = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetDesiredFramerate(m_pHandle, &resultFramerate));
+		
+		return resultFramerate;
+	}
+	
+	/**
+	* CVideoStream::GetPauseTolerance - Returns the how long the stream will be active without new source frames being available.
+	* @return Defines how many microseconds can pass until the stream becomes inactive. Duration MUST exceed the duration of a frame.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetPauseTolerance()
+	{
+		LibMCEnv_uint32 resultPauseToleranceInMicroseconds = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetPauseTolerance(m_pHandle, &resultPauseToleranceInMicroseconds));
+		
+		return resultPauseToleranceInMicroseconds;
+	}
+	
+	/**
+	* CVideoStream::GetFrameCacheDuration - Returns how long frames will be cached in the stream. This adds a delay to the stream.
+	* @return How long frames will be cached in the stream. Value MUST not be smaller than DesiredFrameDuration or exceed 100 times DesiredFrameDuration.
+	*/
+	LibMCEnv_uint32 CVideoStream::GetFrameCacheDuration()
+	{
+		LibMCEnv_uint32 resultFrameCacheDurationInMicroseconds = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetFrameCacheDuration(m_pHandle, &resultFrameCacheDurationInMicroseconds));
+		
+		return resultFrameCacheDurationInMicroseconds;
+	}
+	
+	/**
+	* CVideoStream::IsActive - Returns if the video stream is active. A video stream is active, if the last source frame was available within 
+	* @return Returns true if the video stream is active.
+	*/
+	bool CVideoStream::IsActive()
+	{
+		bool resultActive = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_IsActive(m_pHandle, &resultActive));
+		
+		return resultActive;
+	}
+	
+	/**
+	* CVideoStream::GetStreamStartTime - Returns the DateTime when the stream has started.
+	* @return DateTime when the stream has started.
+	*/
+	PDateTime CVideoStream::GetStreamStartTime()
+	{
+		LibMCEnvHandle hStartTime = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetStreamStartTime(m_pHandle, &hStartTime));
+		
+		if (!hStartTime) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CDateTime>(m_pWrapper, hStartTime);
+	}
+	
+	/**
+	* CVideoStream::GetLastSourceTime - Returns the timestamp of the last new video frame.
+	* @return Time in Microseconds since Start Time
+	*/
+	LibMCEnv_uint64 CVideoStream::GetLastSourceTime()
+	{
+		LibMCEnv_uint64 resultTimestampInMicroseconds = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetLastSourceTime(m_pHandle, &resultTimestampInMicroseconds));
+		
+		return resultTimestampInMicroseconds;
+	}
+	
+	/**
+	* CVideoStream::GetLastSourceFrame - Returns the image of the last video frame.
+	* @return Returns an image containing the last source frame. Image format will be RGB24.
+	*/
+	PImageData CVideoStream::GetLastSourceFrame()
+	{
+		LibMCEnvHandle hSourceFrameImage = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_GetLastSourceFrame(m_pHandle, &hSourceFrameImage));
+		
+		if (!hSourceFrameImage) {
+			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CImageData>(m_pWrapper, hSourceFrameImage);
+	}
+	
+	/**
+	* CVideoStream::PushFrame - Pushes a frame to the stream irrespective of timing.
+	* @param[in] pSourceFrameImage - Fails if Image extents do not match or the video format is not RGB24.
+	*/
+	void CVideoStream::PushFrame(classParam<CImageData> pSourceFrameImage)
+	{
+		LibMCEnvHandle hSourceFrameImage = pSourceFrameImage.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_PushFrame(m_pHandle, hSourceFrameImage));
+	}
+	
+	/**
+	* CVideoStream::PushFrameWithTime - Pushes a frame to the stream with a given timing. Frame will be dropped, if the given timestamp is in the past or beyond the current time plus the Frame Cache Duration.
+	* @return Time in Microseconds since Start Time.
+	* @param[in] pSourceFrameImage - Fails if Image extents do not match or the video format is not RGB24.
+	*/
+	LibMCEnv_uint64 CVideoStream::PushFrameWithTime(classParam<CImageData> pSourceFrameImage)
+	{
+		LibMCEnv_uint64 resultFrameTimeInMicroseconds = 0;
+		LibMCEnvHandle hSourceFrameImage = pSourceFrameImage.GetHandle();
+		CheckError(m_pWrapper->m_WrapperTable.m_VideoStream_PushFrameWithTime(m_pHandle, &resultFrameTimeInMicroseconds, hSourceFrameImage));
+		
+		return resultFrameTimeInMicroseconds;
+	}
 	
 	/**
 	 * Method definitions for class CScatterPlot
