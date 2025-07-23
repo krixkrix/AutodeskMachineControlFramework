@@ -281,7 +281,7 @@ Custom implementation
 			<param name="MarkSpeed" type="double" pass="in" description="Mark speed in mm/s" />
 			<param name="MinimalMarkSpeed" type="double" pass="in" description="Minimal allowed mark speed in mm/s" />
 			<param name="JumpSpeed" type="double" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="double" pass="in" description="Laser power in percent" />
+			<param name="PowerInWatts" type="double" pass="in" description="Laser power in Watts" />
 			<param name="CornerTolerance" type="double" pass="in" description="Allowed position deviation on corners (in mm.)" />
 			<param name="ZValue" type="double" pass="in" description="Focus Z Value" />
 		</method>
@@ -291,7 +291,7 @@ Custom implementation
 			<param name="MarkSpeed" type="double" pass="in" description="Mark speed in mm/s" />
 			<param name="MinimalMarkSpeed" type="double" pass="in" description="Minimal allowed mark speed in mm/s" />
 			<param name="JumpSpeed" type="double" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="double" pass="in" description="Laser power in percent" />
+			<param name="PowerInWatts" type="double" pass="in" description="Laser power in Watts" />
 			<param name="CornerTolerance" type="double" pass="in" description="Allowed position deviation on corners (in mm.)" />
 			<param name="ZValue" type="double" pass="in" description="Focus Z Value" />
 		</method>
@@ -300,7 +300,7 @@ Custom implementation
 			<param name="Hatches" type="structarray" class="Hatch2D" pass="in" description="Hatches to draw." />
 			<param name="MarkSpeed" type="double" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="double" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="double" pass="in" description="Laser power in percent" />
+			<param name="PowerInWatts" type="double" pass="in" description="Laser power in Watts" />
 			<param name="ZValue" type="double" pass="in" description="Focus Z Value" />
 		</method>
 		
