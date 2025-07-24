@@ -313,6 +313,8 @@ void CBuildJob::ArchiveJob()
     pStatement = nullptr;
 
     ensureUpdate(updateUUID, LIBMCDATA_ERROR_COULDNOTUPDATEBUILDSTATUS);
+
+    m_eJobStatus = LibMCData::eBuildJobStatus::Archived;
 }
 
 
@@ -328,6 +330,8 @@ void CBuildJob::UnArchiveJob()
     pStatement->execute();
 
     ensureUpdate(updateUUID, LIBMCDATA_ERROR_COULDNOTUPDATEBUILDSTATUS);
+
+    m_eJobStatus = LibMCData::eBuildJobStatus::Validated;
 
 }
 
@@ -347,6 +351,7 @@ void CBuildJob::DeleteJob()
 
     ensureUpdate(updateUUID, LIBMCDATA_ERROR_COULDNOTUPDATEBUILDSTATUS);
 
+    m_eJobStatus = LibMCData::eBuildJobStatus::Deleted;
 }
 
 bool CBuildJob::JobCanBeArchived()
