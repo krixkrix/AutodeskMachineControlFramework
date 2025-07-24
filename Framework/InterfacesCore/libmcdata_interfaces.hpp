@@ -1566,7 +1566,7 @@ public:
 	virtual void FinishValidating(const LibMCData_uint32 nLayerCount) = 0;
 
 	/**
-	* IBuildJob::ArchiveJob - Archives a Job. Job MUST not be opened in the system. Job MUST be of state validated.
+	* IBuildJob::ArchiveJob - Archives a Job. Job MUST be of state validated.
 	*/
 	virtual void ArchiveJob() = 0;
 
@@ -1574,6 +1574,12 @@ public:
 	* IBuildJob::UnArchiveJob - Unarchives a Job. Job MUST be of state archived.
 	*/
 	virtual void UnArchiveJob() = 0;
+
+	/**
+	* IBuildJob::ChangeName - Changes the name of a job.
+	* @param[in] sName - New name of the job. MUST not be empty. MUST have less than 1024 characters.
+	*/
+	virtual void ChangeName(const std::string & sName) = 0;
 
 	/**
 	* IBuildJob::DeleteJob - Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.

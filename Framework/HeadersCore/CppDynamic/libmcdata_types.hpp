@@ -464,6 +464,7 @@ typedef void * LibMCData_pvoid;
 #define LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND 437 /** Source of Journal Alias not found */
 #define LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE 438 /** Could not find machine configuration type. */
 #define LIBMCDATA_ERROR_INVALIDSTORAGESTREAMSIZE 439 /** Storage stream size for build is zero. */
+#define LIBMCDATA_ERROR_COULDNOTUPDATEBUILDNAME 440 /** Could not update build name */
 
 /*************************************************************************************************************************
  Error strings for LibMCData
@@ -840,6 +841,7 @@ inline const char * LIBMCDATA_GETERRORSTRING (LibMCDataResult nErrorCode) {
     case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "Source of Journal Alias not found";
     case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "Could not find machine configuration type.";
     case LIBMCDATA_ERROR_INVALIDSTORAGESTREAMSIZE: return "Storage stream size for build is zero.";
+    case LIBMCDATA_ERROR_COULDNOTUPDATEBUILDNAME: return "Could not update build name";
     default: return "unknown error";
   }
 }

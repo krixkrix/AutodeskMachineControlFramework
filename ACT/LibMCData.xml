@@ -437,8 +437,8 @@
 		<error name="SOURCEOFJOURNALALIASNOTFOUND" code="437" description="Source of Journal Alias not found" />
 		<error name="COULDNOTFINDMACHINECONFIGURATIONTYPE" code="438" description="Could not find machine configuration type." />
 		<error name="INVALIDSTORAGESTREAMSIZE" code="439" description="Storage stream size for build is zero." />
-		
-		
+		<error name="COULDNOTUPDATEBUILDNAME" code="440" description="Could not update build name" />
+						
 
 	</errors>
 	
@@ -1355,10 +1355,14 @@
 			<param name="LayerCount" type="uint32" pass="in" description="Layer count" />
 		</method>
 
-		<method name="ArchiveJob" description="Archives a Job. Job MUST not be opened in the system. Job MUST be of state validated.">
+		<method name="ArchiveJob" description="Archives a Job. Job MUST be of state validated.">
 		</method>
 
 		<method name="UnArchiveJob" description="Unarchives a Job. Job MUST be of state archived.">
+		</method>
+
+		<method name="ChangeName" description="Changes the name of a job.">
+			<param name="Name" type="string" pass="in" description="New name of the job. MUST not be empty. MUST have less than 1024 characters." />
 		</method>
 
 		<method name="DeleteJob" description="Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.">

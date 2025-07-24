@@ -138,6 +138,8 @@ public:
     void UnArchiveJob() override;
 
     void DeleteJob() override;
+
+    void ChangeName(const std::string& sName) override;
     
     bool JobCanBeArchived() override;
     

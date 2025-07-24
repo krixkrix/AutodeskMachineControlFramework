@@ -693,6 +693,7 @@
 		<error name="DUPLICATEQUERYPARAMETER" code="668" description="Duplicate query parameter." />		
 		<error name="QUERYPARAMETERNOTFOUND" code="669" description="Query parameter not found." />		
 		<error name="INVALIDBUILDJOBSTATUSQUERY" code="670" description="Invalid build job status query." />		
+		<error name="INVALIDNEWBUILDSTATUS" code="671" description="Invalid new build status." />		
 				
 	</errors>
 	

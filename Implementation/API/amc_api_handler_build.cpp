@@ -116,6 +116,8 @@ bool CAPIHandler_Build::expectsRawBody(const std::string& sURI, const eAPIReques
 	switch (parseRequest(sURI, requestType, jobUUID)) {
 		case APIHandler_BuildType::btToolpath:
 			return true;
+		case APIHandler_BuildType::btBuildJobUpdate:
+			return true;
 
 		default:
 			return false;
@@ -287,7 +289,7 @@ void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAut
 	writer.addArray(AMC_API_KEY_UPLOAD_BUILDJOBARRAY, jobJSONArray);
 }
 
-void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID)
+void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& buildUUID)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -407,7 +409,7 @@ void CAPIHandler_Build::writeJobDetailsEx(CJSONWriter& writer, LibMCData::PBuild
 
 }
 
-void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID)
+void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& buildUUID)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -422,7 +424,7 @@ void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAu
 }
 
 
-PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, std::string& buildDataUUID)
+PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, const std::string& buildDataUUID)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -443,7 +445,7 @@ PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, std::s
 }
 
 
-void CAPIHandler_Build::handleUpdateBuildRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
+void CAPIHandler_Build::handleUpdateBuildRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth, const std::string& buildUUID)
 {
 	if (pBodyData == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -452,9 +454,35 @@ void CAPIHandler_Build::handleUpdateBuildRequest(CJSONWriter& writer, const uint
 
 	CAPIJSONRequest jsonRequest(pBodyData, nBodyDataSize);
 
-	auto sName = jsonRequest.getRawString(AMC_API_KEY_UPLOAD_NAME, LIBMC_ERROR_INVALIDUPLOADNAME);
+	std::string sNewName;
+	if (jsonRequest.hasValue (AMC_API_KEY_UPLOAD_NAME)) 
+		sNewName = jsonRequest.getRawString(AMC_API_KEY_UPLOAD_NAME, LIBMC_ERROR_INVALIDUPLOADNAME);
 
+	std::string sNewStatus;
+	if (jsonRequest.hasValue (AMC_API_KEY_UPLOAD_BUILDJOBSTATUS))
+		sNewStatus = jsonRequest.getRawString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, LIBMC_ERROR_INVALIDNEWBUILDSTATUS);
 
+	auto pDataModel = m_pSystemState->getDataModelInstance();
+	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
+	auto pBuildJob = pBuildJobHandler->RetrieveJob(buildUUID);
+
+	if (!sNewName.empty())
+		pBuildJob->ChangeName(sNewName);
+
+	if (!sNewStatus.empty()) {
+		if (sNewStatus == "archived") {
+			pBuildJob->ArchiveJob();
+
+		} else if (sNewStatus == "validated") {
+			pBuildJob->UnArchiveJob();		
+		}
+		else {
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDNEWBUILDSTATUS, sNewStatus);
+		}
+		
+	}
+
+	writeJobDetailsEx(writer, pBuildJob);
 }
 
 PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAPIRequestType requestType, CAPIFormFields & pFormFields, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
@@ -489,7 +517,7 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 		break;
 
 	case APIHandler_BuildType::btBuildJobUpdate:
-		handleUpdateBuildRequest(writer, pBodyData, nBodyDataSize, pAuth);
+		handleUpdateBuildRequest(writer, pBodyData, nBodyDataSize, pAuth, paramUUID);
 		break;
 
 	default:

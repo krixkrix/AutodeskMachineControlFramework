@@ -1748,7 +1748,7 @@ typedef LibMCDataResult (*PLibMCDataBuildJob_StartValidatingPtr) (LibMCData_Buil
 typedef LibMCDataResult (*PLibMCDataBuildJob_FinishValidatingPtr) (LibMCData_BuildJob pBuildJob, LibMCData_uint32 nLayerCount);
 
 /**
-* Archives a Job. Job MUST not be opened in the system. Job MUST be of state validated.
+* Archives a Job. Job MUST be of state validated.
 *
 * @param[in] pBuildJob - BuildJob instance.
 * @return error code or 0 (success)
@@ -1762,6 +1762,15 @@ typedef LibMCDataResult (*PLibMCDataBuildJob_ArchiveJobPtr) (LibMCData_BuildJob 
 * @return error code or 0 (success)
 */
 typedef LibMCDataResult (*PLibMCDataBuildJob_UnArchiveJobPtr) (LibMCData_BuildJob pBuildJob);
+
+/**
+* Changes the name of a job.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @param[in] pName - New name of the job. MUST not be empty. MUST have less than 1024 characters.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataBuildJob_ChangeNamePtr) (LibMCData_BuildJob pBuildJob, const char * pName);
 
 /**
 * Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.
@@ -3316,6 +3325,7 @@ typedef struct {
 	PLibMCDataBuildJob_FinishValidatingPtr m_BuildJob_FinishValidating;
 	PLibMCDataBuildJob_ArchiveJobPtr m_BuildJob_ArchiveJob;
 	PLibMCDataBuildJob_UnArchiveJobPtr m_BuildJob_UnArchiveJob;
+	PLibMCDataBuildJob_ChangeNamePtr m_BuildJob_ChangeName;
 	PLibMCDataBuildJob_DeleteJobPtr m_BuildJob_DeleteJob;
 	PLibMCDataBuildJob_JobCanBeArchivedPtr m_BuildJob_JobCanBeArchived;
 	PLibMCDataBuildJob_AddJobDataPtr m_BuildJob_AddJobData;

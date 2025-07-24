@@ -649,6 +649,7 @@ public:
 			case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "SOURCEOFJOURNALALIASNOTFOUND";
 			case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "COULDNOTFINDMACHINECONFIGURATIONTYPE";
 			case LIBMCDATA_ERROR_INVALIDSTORAGESTREAMSIZE: return "INVALIDSTORAGESTREAMSIZE";
+			case LIBMCDATA_ERROR_COULDNOTUPDATEBUILDNAME: return "COULDNOTUPDATEBUILDNAME";
 		}
 		return "UNKNOWN";
 	}
@@ -1025,6 +1026,7 @@ public:
 			case LIBMCDATA_ERROR_SOURCEOFJOURNALALIASNOTFOUND: return "Source of Journal Alias not found";
 			case LIBMCDATA_ERROR_COULDNOTFINDMACHINECONFIGURATIONTYPE: return "Could not find machine configuration type.";
 			case LIBMCDATA_ERROR_INVALIDSTORAGESTREAMSIZE: return "Storage stream size for build is zero.";
+			case LIBMCDATA_ERROR_COULDNOTUPDATEBUILDNAME: return "Could not update build name";
 		}
 		return "unknown error";
 	}
@@ -1706,6 +1708,7 @@ public:
 	inline void FinishValidating(const LibMCData_uint32 nLayerCount);
 	inline void ArchiveJob();
 	inline void UnArchiveJob();
+	inline void ChangeName(const std::string & sName);
 	inline void DeleteJob();
 	inline bool JobCanBeArchived();
 	inline std::string AddJobData(const std::string & sIdentifier, const std::string & sName, classParam<CStorageStream> pStream, const eCustomDataType eDataType, const std::string & sUserUUID, const LibMCData_uint64 nAbsoluteTimeStamp);
@@ -2252,6 +2255,7 @@ public:
 		pWrapperTable->m_BuildJob_FinishValidating = nullptr;
 		pWrapperTable->m_BuildJob_ArchiveJob = nullptr;
 		pWrapperTable->m_BuildJob_UnArchiveJob = nullptr;
+		pWrapperTable->m_BuildJob_ChangeName = nullptr;
 		pWrapperTable->m_BuildJob_DeleteJob = nullptr;
 		pWrapperTable->m_BuildJob_JobCanBeArchived = nullptr;
 		pWrapperTable->m_BuildJob_AddJobData = nullptr;
@@ -3810,6 +3814,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_BuildJob_UnArchiveJob == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BuildJob_ChangeName = (PLibMCDataBuildJob_ChangeNamePtr) GetProcAddress(hLibrary, "libmcdata_buildjob_changename");
+		#else // _WIN32
+		pWrapperTable->m_BuildJob_ChangeName = (PLibMCDataBuildJob_ChangeNamePtr) dlsym(hLibrary, "libmcdata_buildjob_changename");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BuildJob_ChangeName == nullptr)
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -5558,6 +5571,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_buildjob_unarchivejob", (void**)&(pWrapperTable->m_BuildJob_UnArchiveJob));
 		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_UnArchiveJob == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_buildjob_changename", (void**)&(pWrapperTable->m_BuildJob_ChangeName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_ChangeName == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_buildjob_deletejob", (void**)&(pWrapperTable->m_BuildJob_DeleteJob));
@@ -8257,7 +8274,7 @@ public:
 	}
 	
 	/**
-	* CBuildJob::ArchiveJob - Archives a Job. Job MUST not be opened in the system. Job MUST be of state validated.
+	* CBuildJob::ArchiveJob - Archives a Job. Job MUST be of state validated.
 	*/
 	void CBuildJob::ArchiveJob()
 	{
@@ -8270,6 +8287,15 @@ public:
 	void CBuildJob::UnArchiveJob()
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_UnArchiveJob(m_pHandle));
+	}
+	
+	/**
+	* CBuildJob::ChangeName - Changes the name of a job.
+	* @param[in] sName - New name of the job. MUST not be empty. MUST have less than 1024 characters.
+	*/
+	void CBuildJob::ChangeName(const std::string & sName)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_ChangeName(m_pHandle, sName.c_str()));
 	}
 	
 	/**

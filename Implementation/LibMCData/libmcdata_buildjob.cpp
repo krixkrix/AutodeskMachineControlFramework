@@ -44,6 +44,8 @@ Abstract: This is a stub class definition of CBuildJob
 #include "common_utils.hpp"
 #include "common_chrono.hpp"
 
+#define AMC_BUILDJOBDATA_MAXNAMELENGTH 1024
+
 using namespace LibMCData::Impl;
 
 /*************************************************************************************************************************
@@ -356,8 +358,31 @@ bool CBuildJob::JobCanBeArchived()
     pStatement->setString(1, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Validated));
     pStatement->setString(2, m_sUUID);
     return pStatement->nextRow();
-
 }
+
+void CBuildJob::ChangeName(const std::string& sName)
+{
+    if (sName.empty ())
+		throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDJOBNAME);
+
+    if (sName.length () > AMC_BUILDJOBDATA_MAXNAMELENGTH)
+        throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDJOBNAME, "invalid job name: " + sName);
+
+	auto updateUUID = AMCCommon::CUtils::createUUID();
+
+    std::string sQuery = "UPDATE buildjobs SET name=?, updateuuid=? WHERE uuid=?";
+    auto pStatement = m_pSQLHandler->prepareStatement(sQuery);
+    pStatement->setString(1, sName);
+    pStatement->setString(2, updateUUID);
+    pStatement->setString(3, m_sUUID);
+    pStatement->execute();
+    pStatement = nullptr;
+
+    ensureUpdate(updateUUID, LIBMCDATA_ERROR_COULDNOTUPDATEBUILDNAME);
+
+	m_sName = sName; // Update the local name as well, so that we do not have to query it again.
+}
+
 
 std::string CBuildJob::AddJobData(const std::string& sIdentifier, const std::string& sName, IStorageStream* pStream, const LibMCData::eCustomDataType eDataType, const std::string& sUserUUID, const LibMCData_uint64 nAbsoluteTimeStamp)
 {

@@ -762,6 +762,7 @@ public:
 			case LIBMC_ERROR_DUPLICATEQUERYPARAMETER: return "DUPLICATEQUERYPARAMETER";
 			case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "QUERYPARAMETERNOTFOUND";
 			case LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY: return "INVALIDBUILDJOBSTATUSQUERY";
+			case LIBMC_ERROR_INVALIDNEWBUILDSTATUS: return "INVALIDNEWBUILDSTATUS";
 		}
 		return "UNKNOWN";
 	}
@@ -1358,6 +1359,7 @@ public:
 			case LIBMC_ERROR_DUPLICATEQUERYPARAMETER: return "Duplicate query parameter.";
 			case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "Query parameter not found.";
 			case LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY: return "Invalid build job status query.";
+			case LIBMC_ERROR_INVALIDNEWBUILDSTATUS: return "Invalid new build status.";
 		}
 		return "unknown error";
 	}

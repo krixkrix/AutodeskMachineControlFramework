@@ -1761,7 +1761,7 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_startvalidating(LibMCData_
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_finishvalidating(LibMCData_BuildJob pBuildJob, LibMCData_uint32 nLayerCount);
 
 /**
-* Archives a Job. Job MUST not be opened in the system. Job MUST be of state validated.
+* Archives a Job. Job MUST be of state validated.
 *
 * @param[in] pBuildJob - BuildJob instance.
 * @return error code or 0 (success)
@@ -1775,6 +1775,15 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_archivejob(LibMCData_Build
 * @return error code or 0 (success)
 */
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_unarchivejob(LibMCData_BuildJob pBuildJob);
+
+/**
+* Changes the name of a job.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @param[in] pName - New name of the job. MUST not be empty. MUST have less than 1024 characters.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_changename(LibMCData_BuildJob pBuildJob, const char * pName);
 
 /**
 * Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.

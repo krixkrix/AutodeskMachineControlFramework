@@ -684,6 +684,7 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_DUPLICATEQUERYPARAMETER 668 /** Duplicate query parameter. */
 #define LIBMC_ERROR_QUERYPARAMETERNOTFOUND 669 /** Query parameter not found. */
 #define LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY 670 /** Invalid build job status query. */
+#define LIBMC_ERROR_INVALIDNEWBUILDSTATUS 671 /** Invalid new build status. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1280,6 +1281,7 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_DUPLICATEQUERYPARAMETER: return "Duplicate query parameter.";
     case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "Query parameter not found.";
     case LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY: return "Invalid build job status query.";
+    case LIBMC_ERROR_INVALIDNEWBUILDSTATUS: return "Invalid new build status.";
     default: return "unknown error";
   }
 }
