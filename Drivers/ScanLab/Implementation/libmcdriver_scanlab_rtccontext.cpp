@@ -2397,7 +2397,7 @@ double readSkywritingLimitInCosine(LibMCEnv::CToolpathLayer * pLayer, uint32_t n
 	double dSkywritingLimit_Degree = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit_degree", -100.0);
 
 	bool bCosineIsInRange = (dSkywritingLimit_Cosine >= -1.0) && (dSkywritingLimit_Cosine <= 1.0);
-	bool bDegreeIsInRange = (dSkywritingLimit_Cosine >= 0.0) && (dSkywritingLimit_Cosine <= 180.0);
+	bool bDegreeIsInRange = (dSkywritingLimit_Degree >= 0.0) && (dSkywritingLimit_Degree <= 180.0);
 
 	if (!bCosineIsInRange && !bDegreeIsInRange)
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLIMITPROVIDEDINPROFILE);
