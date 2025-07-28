@@ -74,8 +74,11 @@ private:
     LibMCEnv::PWorkingFile m_pRTCDLL;
     LibMCEnv::PWorkingFile m_pRTCServiceDLL;
     LibMCEnv::PWorkingFile m_pXercesDLL;
-
+    LibMCEnv::PWorkingFile m_pJournalFile;
+    
     PScanLabSMCSDK m_pSDK;
+
+    bool m_bEnableJournaling;
 
     std::map<std::string, PSMCContextInstance> m_pContextMap;
 

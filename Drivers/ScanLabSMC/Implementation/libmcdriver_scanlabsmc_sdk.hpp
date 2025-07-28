@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <string>
 #include <mutex>
+#include <fstream>
+#include <map>
 
 #ifdef _WIN32
 
@@ -248,6 +250,32 @@ namespace LibMCDriver_ScanLabSMC {
 
 		typedef slscReturnValue(SCANLABSMC_CALLINGCONVENTION* PScanLabSMCPtr_slsc_job_write_analog_x) (size_t Handle, slsc_AnalogOutput Channel, double Value, double TimeDelay);
 
+		class CScanLabSMCSDKJournal {
+		private:
+			std::map<std::string, uint32_t> m_DefinedVariables;
+			std::ofstream m_CStream;
+			std::mutex m_Mutex;
+
+			void writeCLine(const std::string& sLine);
+
+		public:
+
+			CScanLabSMCSDKJournal(const std::string& sDebugFileName);
+			virtual ~CScanLabSMCSDKJournal();
+
+			void logCall(const std::string& sFunctionName, const std::string& sCParameters);
+
+			std::string defineDoubleVariable(const std::string& sVariableBaseName);
+			std::string defineUint32Variable(const std::string& sVariableBaseName);
+			std::string defineInt32Variable(const std::string& sVariableBaseName);
+
+			std::string getVariableSuffix(const std::string& sVariableBaseName);
+
+			std::string escapeString(const std::string& sString);
+		};
+
+		typedef std::shared_ptr<CScanLabSMCSDKJournal> PScanLabSMCSDKJournal;
+
 		class CScanLabSMCSDK_DLLDirectoryCache {
 		private:
 #ifdef _WIN32
@@ -267,54 +295,104 @@ namespace LibMCDriver_ScanLabSMC {
 			std::wstring m_sDLLDirectoryW;
 
 			std::mutex m_ListErrorMutex;
+			PScanLabSMCSDKJournal m_pLogJournal;
 
 			void* m_LibraryHandle;
 			void resetFunctionPtrs ();
 
 			PScanLabSMCSDK_DLLDirectoryCache cacheDllDirectory();
 
+			PScanLabSMCPtr_slsc_cfg_get_scanmotioncontrol_version ptr_slsc_cfg_get_scanmotioncontrol_version = nullptr;
+			PScanLabSMCPtr_slsc_cfg_initialize_from_file ptr_slsc_cfg_initialize_from_file = nullptr;
+			PScanLabSMCPtr_slsc_cfg_delete ptr_slsc_cfg_delete = nullptr;
+			PScanLabSMCPtr_slsc_job_begin ptr_slsc_job_begin = nullptr;
+			PScanLabSMCPtr_slsc_job_end ptr_slsc_job_end = nullptr;
+			PScanLabSMCPtr_slsc_job_jump ptr_slsc_job_jump = nullptr;
+			PScanLabSMCPtr_slsc_job_begin_polyline ptr_slsc_job_begin_polyline = nullptr;
+			PScanLabSMCPtr_slsc_slsc_job_end_polyline ptr_slsc_job_end_polyline = nullptr;
+			PScanLabSMCPtr_slsc_job_line ptr_slsc_job_line = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_start_execution ptr_slsc_ctrl_start_execution = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_stop ptr_slsc_ctrl_stop = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_stop_controlled ptr_slsc_ctrl_stop_controlled = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_get_exec_state ptr_slsc_ctrl_get_exec_state = nullptr;
+			PScanLabSMCPtr_slsc_job_set_jump_speed ptr_slsc_job_set_jump_speed = nullptr;
+			PScanLabSMCPtr_slsc_job_set_mark_speed ptr_slsc_job_set_mark_speed = nullptr;
+			PScanLabSMCPtr_slsc_job_set_min_mark_speed ptr_slsc_job_set_min_mark_speed = nullptr;
+			PScanLabSMCPtr_slsc_job_jump_min_time ptr_slsc_job_jump_min_time = nullptr;
+			PScanLabSMCPtr_slsc_job_set_corner_tolerance ptr_slsc_job_set_corner_tolerance = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_get_error ptr_slsc_ctrl_get_error = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_get_error_count ptr_slsc_ctrl_get_error_count = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_get_simulation_filename ptr_slsc_ctrl_get_simulation_filename = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_get_job_characteristic ptr_slsc_ctrl_get_job_characteristic = nullptr;
+			PScanLabSMCPtr_slsc_cfg_get_blend_mode ptr_slsc_cfg_get_blend_mode = nullptr;
+			PScanLabSMCPtr_slsc_cfg_set_blend_mode ptr_slsc_cfg_set_blend_mode = nullptr;
+			PScanLabSMCPtr_slsc_job_para_enable ptr_slsc_job_para_enable = nullptr;
+			PScanLabSMCPtr_slsc_job_para_disable ptr_slsc_job_para_disable = nullptr;
+			PScanLabSMCPtr_slsc_job_para_line ptr_slsc_job_para_line = nullptr;
+			PScanLabSMCPtr_slsc_job_multi_para_line ptr_slsc_job_multi_para_line = nullptr;
+			PScanLabSMCPtr_slsc_job_start_record ptr_slsc_job_start_record = nullptr;
+			PScanLabSMCPtr_slsc_job_stop_record ptr_slsc_job_stop_record = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_log_record ptr_slsc_ctrl_log_record = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_exec_init_laser_sequence ptr_slsc_ctrl_exec_init_laser_sequence = nullptr;
+			PScanLabSMCPtr_slsc_ctrl_exec_shutdown_laser_sequence ptr_slsc_ctrl_exec_shutdown_laser_sequence = nullptr;
+			PScanLabSMCPtr_slsc_job_write_analog_x ptr_slsc_job_write_analog_x = nullptr;
+
 		public:
 
-			PScanLabSMCPtr_slsc_cfg_get_scanmotioncontrol_version slsc_cfg_get_scanmotioncontrol_version = nullptr;
-			PScanLabSMCPtr_slsc_cfg_initialize_from_file slsc_cfg_initialize_from_file = nullptr;
-			PScanLabSMCPtr_slsc_cfg_delete slsc_cfg_delete = nullptr;
-			PScanLabSMCPtr_slsc_job_begin slsc_job_begin = nullptr;
-			PScanLabSMCPtr_slsc_job_end slsc_job_end = nullptr;
-			PScanLabSMCPtr_slsc_job_jump slsc_job_jump = nullptr;
-			PScanLabSMCPtr_slsc_job_begin_polyline slsc_job_begin_polyline = nullptr;
-			PScanLabSMCPtr_slsc_slsc_job_end_polyline slsc_job_end_polyline = nullptr;
-			PScanLabSMCPtr_slsc_job_line slsc_job_line = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_start_execution slsc_ctrl_start_execution = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_stop slsc_ctrl_stop = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_stop_controlled slsc_ctrl_stop_controlled = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_get_exec_state slsc_ctrl_get_exec_state = nullptr;
-			PScanLabSMCPtr_slsc_job_set_jump_speed slsc_job_set_jump_speed = nullptr;
-			PScanLabSMCPtr_slsc_job_set_mark_speed slsc_job_set_mark_speed = nullptr;
-			PScanLabSMCPtr_slsc_job_set_min_mark_speed slsc_job_set_min_mark_speed = nullptr;
-			PScanLabSMCPtr_slsc_job_jump_min_time slsc_job_jump_min_time = nullptr;
-			PScanLabSMCPtr_slsc_job_set_corner_tolerance slsc_job_set_corner_tolerance = nullptr;		
-			PScanLabSMCPtr_slsc_ctrl_get_error slsc_ctrl_get_error = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_get_error_count slsc_ctrl_get_error_count = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_get_simulation_filename slsc_ctrl_get_simulation_filename = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_get_job_characteristic slsc_ctrl_get_job_characteristic = nullptr;
-			PScanLabSMCPtr_slsc_cfg_get_blend_mode slsc_cfg_get_blend_mode = nullptr;
-			PScanLabSMCPtr_slsc_cfg_set_blend_mode slsc_cfg_set_blend_mode = nullptr;
-			PScanLabSMCPtr_slsc_job_para_enable slsc_job_para_enable = nullptr;
-			PScanLabSMCPtr_slsc_job_para_disable slsc_job_para_disable = nullptr;
-			PScanLabSMCPtr_slsc_job_para_line slsc_job_para_line = nullptr;
-			PScanLabSMCPtr_slsc_job_multi_para_line slsc_job_multi_para_line = nullptr;
-			PScanLabSMCPtr_slsc_job_start_record slsc_job_start_record = nullptr;
-			PScanLabSMCPtr_slsc_job_stop_record slsc_job_stop_record = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_log_record slsc_ctrl_log_record  = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_exec_init_laser_sequence slsc_ctrl_exec_init_laser_sequence = nullptr;
-			PScanLabSMCPtr_slsc_ctrl_exec_shutdown_laser_sequence slsc_ctrl_exec_shutdown_laser_sequence = nullptr;
-			PScanLabSMCPtr_slsc_job_write_analog_x slsc_job_write_analog_x = nullptr;
 
 			CScanLabSMCSDK(const std::string & sDLLNameUTF8, const std::string& sDLLDirectoryUTF8);
 			~CScanLabSMCSDK();
 
 			void initDLL();
 			void checkError(size_t hHandle, uint32_t nSMCError);
+
+			void setJournal(PScanLabSMCSDKJournal pLogJournal);
+
+
+			slsc_VersionInfo slsc_cfg_get_scanmotioncontrol_version(void);
+
+			slscReturnValue slsc_cfg_initialize_from_file(slscHandle* Handle, const char* XmlConfigFileName);
+			slscReturnValue slsc_cfg_delete(size_t Handle);
+
+			slscReturnValue slsc_job_begin(size_t Handle, size_t* JobID);
+			slscReturnValue slsc_job_end(size_t Handle);
+			slscReturnValue slsc_job_jump(size_t Handle, const double* Target);
+
+			slscReturnValue slsc_job_begin_polyline(size_t Handle, const slsc_PolylineOptions Options);
+			slscReturnValue slsc_job_end_polyline(size_t Handle);
+			slscReturnValue slsc_job_line(size_t Handle, const double* Target);
+			slscReturnValue slsc_job_para_enable(size_t Handle, double* dParaTargetDefault);
+			slscReturnValue slsc_job_para_disable(size_t Handle);
+			slscReturnValue slsc_job_para_line(size_t Handle, const double* Target, const double* ParaTarget);
+			slscReturnValue slsc_job_multi_para_line(size_t Handle, const double* Target, const slsc_MultiParaTarget* pParaTarget);
+
+			slscReturnValue slsc_ctrl_start_execution(size_t Handle);
+			slscReturnValue slsc_ctrl_stop(size_t Handle);
+			slscReturnValue slsc_ctrl_stop_controlled(size_t Handle);
+			slscReturnValue slsc_ctrl_get_exec_state(size_t Handle, slsc_ExecState* execState);
+			slscReturnValue slsc_ctrl_get_error(size_t Handle, size_t ErrorNr, uint64_t& nErrorCode, char* pErrorMsg, size_t nBufSize);
+			slscReturnValue slsc_ctrl_get_error_count(size_t Handle, size_t& nErrorCount);
+
+			slscReturnValue slsc_job_set_jump_speed(size_t Handle, double dJumpSpeed);
+			slscReturnValue slsc_job_set_mark_speed(size_t Handle, double dMarkSpeed);
+			slscReturnValue slsc_job_set_min_mark_speed(size_t Handle, double dMinimalMarkSpeed);
+			slscReturnValue slsc_job_jump_min_time(size_t Handle, const double* Target, double dMinimalJumpTime);
+			slscReturnValue slsc_job_set_corner_tolerance(size_t Handle, const double* Target, double dCornerTolerance);
+			slscReturnValue slsc_ctrl_get_simulation_filename(size_t Handle, size_t nJobID, char* pszBuffer, size_t nBufferSize);
+			slscReturnValue slsc_ctrl_get_job_characteristic(size_t Handle, size_t nJobID, slsc_JobCharacteristic eKey, double* pdValue);
+
+			slscReturnValue slsc_cfg_get_blend_mode(size_t Handle, slsc_BlendModes* BlendMode);
+			slscReturnValue slsc_cfg_set_blend_mode(size_t Handle, slsc_BlendModes BlendMode);
+
+			slscReturnValue slsc_job_start_record(size_t Handle, slsc_RecordSet RecordSetA, slsc_RecordSet RecordSetB);
+			slscReturnValue slsc_job_stop_record(size_t Handle);
+			slscReturnValue slsc_ctrl_log_record(size_t Handle, const char* DatasetPath, slsc_TransformationStep Step);
+
+			slscReturnValue slsc_ctrl_exec_init_laser_sequence(size_t Handle);
+			slscReturnValue slsc_ctrl_exec_shutdown_laser_sequence(size_t Handle);
+
+			slscReturnValue slsc_job_write_analog_x(size_t Handle, slsc_AnalogOutput Channel, double Value, double TimeDelay);
+
 
 		};
 

@@ -53,7 +53,7 @@ using namespace LibMCDriver_ScanLabSMC::Impl;
 **************************************************************************************************************************/
 
 CDriver_ScanLabSMC::CDriver_ScanLabSMC(const std::string& sName, const std::string& sType, LibMCEnv::PDriverEnvironment pDriverEnvironment)
-    : m_sName (sName), m_sType (sType), m_pDriverEnvironment (pDriverEnvironment)
+    : m_sName (sName), m_sType (sType), m_pDriverEnvironment (pDriverEnvironment), m_bEnableJournaling (true)
 {
     if (pDriverEnvironment.get() == nullptr)
         throw ELibMCDriver_ScanLabSMCInterfaceException(LIBMCDRIVER_SCANLABSMC_ERROR_INVALIDPARAM);
@@ -261,6 +261,12 @@ void CDriver_ScanLabSMC::LoadSDK()
     m_pXercesDLL = m_pDLLDirectory->StoreCustomData("xerces-c_3_2.dll", m_XercesDLLResourceData);
 
     m_pSDK = std::make_shared<CScanLabSMCSDK>(m_pSMCDLL->GetAbsoluteFileName (), m_pDLLDirectory->GetAbsoluteFilePath ());
+
+    if (m_bEnableJournaling) {
+        std::string sJournalFileName = "journal.txt";
+        m_pJournalFile = m_pDLLDirectory->AddManagedFile(sJournalFileName);
+        m_pSDK->setJournal(std::make_shared<CScanLabSMCSDKJournal>(m_pJournalFile->GetAbsoluteFileName()));
+    }
 
     // Free up resource data buffers
     m_SMCDLLResourceData.resize(0);
