@@ -242,6 +242,7 @@ void CGPIOTask_WaitforInput::writeToSDKList(CScanLabSDK* pSDK, uint32_t nCardNo)
     pSDK->n_list_until(nCardNo, m_nMaxDelayInMilliseconds);
     pSDK->n_set_free_variable_list(nCardNo, nErrorVariableNo, nErrorCode);
     pSDK->n_set_end_of_list(nCardNo);
+    pSDK->n_list_until(nCardNo, 0); // Finish List repeat
 
 }
 

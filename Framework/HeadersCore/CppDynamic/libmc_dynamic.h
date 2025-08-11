@@ -96,6 +96,15 @@ typedef LibMCResult (*PLibMCStreamConnection_GetNewContentPtr) (LibMC_StreamConn
 */
 typedef LibMCResult (*PLibMCStreamConnection_GetIdleDelayPtr) (LibMC_StreamConnection pStreamConnection, LibMC_uint32 * pIdleDelay);
 
+/**
+* Returns the stream type.
+*
+* @param[in] pStreamConnection - StreamConnection instance.
+* @param[out] pStreamType - Content type of the stream.
+* @return error code or 0 (success)
+*/
+typedef LibMCResult (*PLibMCStreamConnection_GetStreamTypePtr) (LibMC_StreamConnection pStreamConnection, LibMC::eStreamConnectionType * pStreamType);
+
 /*************************************************************************************************************************
  Class definition for APIRequestHandler
 **************************************************************************************************************************/
@@ -153,6 +162,16 @@ typedef LibMCResult (*PLibMCAPIRequestHandler_SetFormDataFieldPtr) (LibMC_APIReq
 * @return error code or 0 (success)
 */
 typedef LibMCResult (*PLibMCAPIRequestHandler_SetFormStringFieldPtr) (LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pString);
+
+/**
+* Sets a request parameter.
+*
+* @param[in] pAPIRequestHandler - APIRequestHandler instance.
+* @param[in] pName - Name of the parameter.
+* @param[in] pValue - Value of the parameter.
+* @return error code or 0 (success)
+*/
+typedef LibMCResult (*PLibMCAPIRequestHandler_SetRequestParameterPtr) (LibMC_APIRequestHandler pAPIRequestHandler, const char * pName, const char * pValue);
 
 /**
 * handles the request.
@@ -389,11 +408,13 @@ typedef struct {
 	PLibMCStreamData_GetMIMETypePtr m_StreamData_GetMIMEType;
 	PLibMCStreamConnection_GetNewContentPtr m_StreamConnection_GetNewContent;
 	PLibMCStreamConnection_GetIdleDelayPtr m_StreamConnection_GetIdleDelay;
+	PLibMCStreamConnection_GetStreamTypePtr m_StreamConnection_GetStreamType;
 	PLibMCAPIRequestHandler_ExpectsRawBodyPtr m_APIRequestHandler_ExpectsRawBody;
 	PLibMCAPIRequestHandler_ExpectsFormDataPtr m_APIRequestHandler_ExpectsFormData;
 	PLibMCAPIRequestHandler_GetFormDataDetailsPtr m_APIRequestHandler_GetFormDataDetails;
 	PLibMCAPIRequestHandler_SetFormDataFieldPtr m_APIRequestHandler_SetFormDataField;
 	PLibMCAPIRequestHandler_SetFormStringFieldPtr m_APIRequestHandler_SetFormStringField;
+	PLibMCAPIRequestHandler_SetRequestParameterPtr m_APIRequestHandler_SetRequestParameter;
 	PLibMCAPIRequestHandler_HandlePtr m_APIRequestHandler_Handle;
 	PLibMCAPIRequestHandler_GetResultDataPtr m_APIRequestHandler_GetResultData;
 	PLibMCAPIRequestHandler_GetContentDispositionNamePtr m_APIRequestHandler_GetContentDispositionName;

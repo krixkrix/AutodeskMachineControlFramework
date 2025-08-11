@@ -73,8 +73,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace AMC;
 
-CUIHandleEventResponse::CUIHandleEventResponse(uint32_t nErrorCode, const std::string& sErrorMessage, const std::vector<PUIClientAction>& clientActions, const std::map<std::string, std::string>& returnValues)
-    : m_nErrorCode(nErrorCode), m_clientActions (clientActions), m_sErrorMessage (sErrorMessage), m_returnValues (returnValues)
+CUIHandleEventResponse::CUIHandleEventResponse(uint32_t nErrorCode, const std::string& sErrorMessage, const std::vector<PUIClientAction>& clientActions, const std::string& sReturnValueJSON)
+    : m_nErrorCode(nErrorCode), m_clientActions (clientActions), m_sErrorMessage (sErrorMessage), m_ReturnValueJSON (sReturnValueJSON)
 {
 
 }
@@ -94,9 +94,9 @@ std::vector<PUIClientAction>& CUIHandleEventResponse::getClientActions()
     return m_clientActions;
 }
 
-std::map<std::string, std::string>& CUIHandleEventResponse::getReturnValues()
+std::string CUIHandleEventResponse::getReturnValueJSON()
 {
-    return m_returnValues;
+    return m_ReturnValueJSON;
 }
 
 bool CUIHandleEventResponse::externalValueNameIsReserved(const std::string& sName)
@@ -768,7 +768,7 @@ CUIHandleEventResponse CUIHandler::handleEvent(const std::string& sEventName, co
     std::string sErrorMessage;
 
     std::vector<PUIClientAction> clientActions;
-    std::map<std::string, std::string> returnValues;
+    std::string returnValueJSON;
 
     try {
 
@@ -800,8 +800,9 @@ CUIHandleEventResponse CUIHandler::handleEvent(const std::string& sEventName, co
         auto pExternalEnvironment = mapInternalUIEnvInstance<LibMCEnv::CUIEnvironment>(pInternalUIEnvironment, m_pEnvironmentWrapper);
 
         auto pEvent = m_pUIEventHandler->CreateEvent(sEventName, pExternalEnvironment);
+        pInternalUIEnvironment->setExternalEventParameters(sEventParameterJSON);
 
-        if (!sEventParameterJSON.empty ()) {
+        /*if (!sEventParameterJSON.empty()) {
             rapidjson::Document document;
             document.Parse(sEventParameterJSON.c_str());
             if (!document.IsObject())
@@ -842,7 +843,7 @@ CUIHandleEventResponse CUIHandler::handleEvent(const std::string& sEventName, co
 
             }
 
-        }
+        } */
 
         auto pClientVariableHandler = pAPIAuth->getClientVariableHandler();
         if ((pClientVariableHandler.get() != nullptr) && (!sEventFormPayloadJSON.empty())) {
@@ -893,7 +894,7 @@ CUIHandleEventResponse CUIHandler::handleEvent(const std::string& sEventName, co
 
         clientActions = pInternalUIEnvironment->getClientActions();
 
-        returnValues = pInternalUIEnvironment->getExternalEventReturnValues();
+        returnValueJSON = pInternalUIEnvironment->getExternalEventReturnValues();
 
     } 
     catch (LibMCUI::ELibMCUIException & UIException) {
@@ -915,7 +916,7 @@ CUIHandleEventResponse CUIHandler::handleEvent(const std::string& sEventName, co
 
     }
 
-    return CUIHandleEventResponse (nErrorCode, sErrorMessage, clientActions, returnValues);
+    return CUIHandleEventResponse (nErrorCode, sErrorMessage, clientActions, returnValueJSON);
        
 
 }
