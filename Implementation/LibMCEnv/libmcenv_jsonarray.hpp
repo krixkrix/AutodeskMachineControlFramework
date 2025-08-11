@@ -46,8 +46,6 @@ Abstract: This is the class declaration of CJSONArray
 
 // Include custom headers here.
 
-#include "RapidJSON/rapidjson.h"
-#include "RapidJSON/document.h"
 
 namespace LibMCEnv {
 namespace Impl {
@@ -60,22 +58,32 @@ namespace Impl {
 class CJSONArray : public virtual IJSONArray, public virtual CBase {
 private:
 
-	std::shared_ptr<rapidjson::Document> m_pDocument;
-	rapidjson::GenericValue<rapidjson::UTF8<>>* m_pInstance;
+	/**
+	* Put private members here.
+	*/
+
+protected:
+
+	/**
+	* Put protected members here.
+	*/
 
 public:
 
-	CJSONArray(std::shared_ptr<rapidjson::Document> pDocument, rapidjson::Value* pReferencedArray);
+	/**
+	* Put additional public members here. They will not be visible in the external API.
+	*/
 
-	virtual ~CJSONArray();
+
+	/**
+	* Public member functions to implement.
+	*/
 
 	LibMCEnv_uint64 GetElementCount() override;
 
 	LibMCEnv::eJSONObjectType GetElementType(const LibMCEnv_uint64 nIndex) override;
 
 	std::string GetValue(const LibMCEnv_uint64 nIndex) override;
-
-	std::string GetUUIDValue(const LibMCEnv_uint64 nIndex) override;
 
 	LibMCEnv_int64 GetIntegerValue(const LibMCEnv_uint64 nIndex) override;
 
@@ -91,17 +99,15 @@ public:
 
 	void AddValue(const std::string & sValue) override;
 
-	void AddIntegerValue(const LibMCEnv_int64 nValue) override;
+	LibMCEnv_int64 AddIntegerValue() override;
 
-	void AddDoubleValue(const LibMCEnv_double dValue) override;
+	LibMCEnv_double AddDoubleValue() override;
 
-	void AddBoolValue(const bool bValue) override;
+	bool AddBoolValue() override;
 
 	IJSONObject * AddObjectValue() override;
 
 	IJSONArray * AddArrayValue() override;
-
-	std::string SerializeToString() override;
 
 };
 

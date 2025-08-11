@@ -39,7 +39,6 @@ Abstract: This is the class declaration of CVideoDevice
 #include "libmcdriver_camera_videoresolution.hpp"
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <windows.h>
 #include <mfapi.h>
 #include <mfplay.h>
@@ -67,24 +66,17 @@ private:
 	uint32_t m_nCurrentResolutionY;
 	uint32_t m_nCurrentFrameRate;
 
-	eVideoSourceFormat m_SourceFormat;
-
 #ifdef _WIN32
 	Microsoft::WRL::ComPtr<IMFSourceReader> m_pSourceReader;
 	Microsoft::WRL::ComPtr<IMFMediaType> m_pMediaType;
 
-	//Microsoft::WRL::ComPtr<IMFTransform> createMJPEGEncoder (IMFMediaType * pInputMediaType);
+	Microsoft::WRL::ComPtr<IMFTransform> createMJPEGEncoder (IMFMediaType * pInputMediaType);
 
 #endif
 
 	std::vector<PVideoResolution> m_SupportedResolutions;
 
 	void refreshSupportedResolutions();
-
-	LibMCDriver_Camera::eVideoSourceFormat convertUUIDToAnyVideoSourceFormat(const std::string& sUUID);
-
-	LibMCDriver_Camera::eVideoSourceFormat convertUUIDToValidVideoSourceFormat(const std::string& sUUID);
-	std::string convertVideoSourceFormatToUUID(LibMCDriver_Camera::eVideoSourceFormat sourceFormat);
 
 public:
 
@@ -102,11 +94,11 @@ public:
 
 	uint32_t getSupportedResolutionCount();
 
-	void getSupportedResolution(uint32_t nIndex, uint32_t& nWidth, uint32_t& nHeight, uint32_t& nFramerate, LibMCDriver_Camera::eVideoSourceFormat & sourceFormat);
+	void getSupportedResolution(uint32_t nIndex, uint32_t& nWidth, uint32_t& nHeight, uint32_t& nFramerate);
 
-	void getCurrentResolution(uint32_t & nWidth, uint32_t& nHeight, uint32_t & nFramerate, LibMCDriver_Camera::eVideoSourceFormat& sourceFormat);
+	void getCurrentResolution(uint32_t & nWidth, uint32_t& nHeight, uint32_t & nFramerate);
 
-	void setResolution(uint32_t nWidth, uint32_t nHeight, uint32_t nFramerate, LibMCDriver_Camera::eVideoSourceFormat& sourceFormat);
+	void setResolution(uint32_t nWidth, uint32_t nHeight, uint32_t nFramerate);
 
 	void startStreamCapture(LibMCEnv::PVideoStream pStreamInstance);
 
@@ -116,9 +108,7 @@ public:
 
 	void getStreamCaptureStatistics(LibMCDriver_Camera_double & dDesiredFramerate, LibMCDriver_Camera_double & dMinFramerate, LibMCDriver_Camera_double & dMaxFramerate, LibMCDriver_Camera_double & dMeanFramerate, LibMCDriver_Camera_double & dStdDevFramerate);
 
-	bool captureRawImage(LibMCEnv::PImageData pImageData);
-
-	static std::string getSourceFormatDescription(const LibMCDriver_Camera::eVideoSourceFormat eSourceFormat);
+	void captureRawImage(LibMCEnv::PImageData pImageData);
 
 };
 

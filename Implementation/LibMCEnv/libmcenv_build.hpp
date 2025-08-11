@@ -81,8 +81,6 @@ public:
 
 	std::string GetStorageSHA256() override;
 
-	void EnsureStorageSHA256IsValid() override;
-
 	LibMCEnv_uint32 GetLayerCount() override;
 
 	LibMCEnv_double GetBuildHeightInMM() override;

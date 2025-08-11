@@ -343,16 +343,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddTimedMarkMovem
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddFreeVariablePtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint32 nVariableNo, LibMCDriver_ScanLab_uint32 nValue);
 
-/**
-* Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
-*
-* @param[in] pRTCJob - RTCJob instance.
-* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
-* @param[in] pMicrovectorArrayBuffer - MicroVector buffer of Microvector array to execute.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer);
-
 /*************************************************************************************************************************
  Class definition for RTCRecording
 **************************************************************************************************************************/
@@ -772,107 +762,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabNLightAFXProfileSelector
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabNLightAFXProfileSelector_AddCustomSelectionPtr) (LibMCDriver_ScanLab_NLightAFXProfileSelector pNLightAFXProfileSelector, LibMCDriver_ScanLab_uint32 nAFXModeIndex);
 
 /*************************************************************************************************************************
- Class definition for OIEMeasurementTagMap
-**************************************************************************************************************************/
-
-/**
-* Returns the current maximum measurement tag that has been sent to the OIE.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[out] pMeasurementTag - Measurement Tag that has been sent to the OIE.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_GetOIEMaxMeasurementTagPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 * pMeasurementTag);
-
-/**
-* Maps an OIE Measurement tag back to the original scan parameters.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
-* @param[out] pPartID - ID of the part.
-* @param[out] pProfileID - ID of the profile.
-* @param[out] pSegmentID - ID of the segment.
-* @param[out] pVectorID - ID of the vector.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32 * pPartID, LibMCDriver_ScanLab_uint32 * pProfileID, LibMCDriver_ScanLab_uint32 * pSegmentID, LibMCDriver_ScanLab_uint32 * pVectorID);
-
-/**
-* Maps an OIE Measurement tag back to the original scan parameters.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
-* @param[out] pData - Measurement as tag data struct.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagDataPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab::sOIEMeasurementTagData * pData);
-
-/**
-* Maps an array of OIE Measurement tags back to the original scan parameters.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
-* @param[in] pMeasurementTagBuffer - uint32 buffer of Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
-* @param[in] nDataBufferSize - Number of elements in buffer
-* @param[out] pDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pDataBuffer - OIEMeasurementTagData  buffer of Will be filled with all the tags associated with the input array. The length of the array will match the input array.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagsPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab::sOIEMeasurementTagData * pDataBuffer);
-
-/**
-* Maps an array of OIE Measurement tags back to the original part IDs.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
-* @param[in] pMeasurementTagBuffer - uint32 buffer of Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
-* @param[in] nDataBufferSize - Number of elements in buffer
-* @param[out] pDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pDataBuffer - uint32  buffer of Will be filled with all the part IDs associated with the input array. The length of the array will match the input array.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementPartIDsPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer);
-
-/**
-* Maps an array of OIE Measurement tags back to the original profile IDs.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
-* @param[in] pMeasurementTagBuffer - uint32 buffer of Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
-* @param[in] nDataBufferSize - Number of elements in buffer
-* @param[out] pDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pDataBuffer - uint32  buffer of Will be filled with all the profile IDs associated with the input array. The length of the array will match the input array.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementProfileIDsPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer);
-
-/**
-* Maps an array of OIE Measurement tags back to the original segment IDs.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
-* @param[in] pMeasurementTagBuffer - uint32 buffer of Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
-* @param[in] nDataBufferSize - Number of elements in buffer
-* @param[out] pDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pDataBuffer - uint32  buffer of Will be filled with all the segment IDs associated with the input array. The length of the array will match the input array.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementSegmentIDsPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer);
-
-/**
-* Maps an array of OIE Measurement tags back to the original vector IDs.
-*
-* @param[in] pOIEMeasurementTagMap - OIEMeasurementTagMap instance.
-* @param[in] nMeasurementTagBufferSize - Number of elements in buffer
-* @param[in] pMeasurementTagBuffer - uint32 buffer of Array of Measurement Tags that has been sent to the OIE. MUST NOT be empty!
-* @param[in] nDataBufferSize - Number of elements in buffer
-* @param[out] pDataNeededCount - will be filled with the count of the written elements, or needed buffer size.
-* @param[out] pDataBuffer - uint32  buffer of Will be filled with all the vector  IDs associated with the input array. The length of the array will match the input array.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementVectorIDsPtr) (LibMCDriver_ScanLab_OIEMeasurementTagMap pOIEMeasurementTagMap, LibMCDriver_ScanLab_uint64 nMeasurementTagBufferSize, const LibMCDriver_ScanLab_uint32 * pMeasurementTagBuffer, const LibMCDriver_ScanLab_uint64 nDataBufferSize, LibMCDriver_ScanLab_uint64* pDataNeededCount, LibMCDriver_ScanLab_uint32 * pDataBuffer);
-
-/*************************************************************************************************************************
  Class definition for RTCContext
 **************************************************************************************************************************/
 
@@ -903,7 +792,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LoadFirmwareP
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LoadCorrectionFilePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8 * pCorrectionFileBuffer, LibMCDriver_ScanLab_uint32 nTableNumber, LibMCDriver_ScanLab_uint32 nDimension);
 
 /**
-* Selects Correction Table on card. Reads the correction factorw out of the Table, if existent.
+* Selects Correction Table on card.
 *
 * @param[in] pRTCContext - RTCContext instance.
 * @param[in] nTableNumberHeadA - Table Number for HeadA (1..8) or off (0).
@@ -911,16 +800,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LoadCorrectio
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SelectCorrectionTablePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nTableNumberHeadA, LibMCDriver_ScanLab_uint32 nTableNumberHeadB);
-
-/**
-* Sets the correction factor manually.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[in] dCorrectionFactorXY - Scale correction factor in the XY plane. In bits per mm. MUST BE larger than 0.
-* @param[in] dCorrectionFactorZ - Scale correction factor in the Z axis. In bits per mm. Should be equal to CorrectionFactorXY for the RTC6 card. MUST BE larger than 0.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetCorrectionFactorsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dCorrectionFactorXY, LibMCDriver_ScanLab_double dCorrectionFactorZ);
 
 /**
 * Configures list buffer size.
@@ -1004,46 +883,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetStandbyInB
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetStandbyInMicroSecondsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dHalfPeriod, LibMCDriver_ScanLab_double dPulseLength);
-
-/**
-* Sets laser control pulse interval (in 1/64th microseconds)
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pHalfPeriod - Half Output period in 1/64th microseconds
-* @param[out] pPulseLength - Pulse Length in 1/64th microseconds
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInBitsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pHalfPeriod, LibMCDriver_ScanLab_uint32 * pPulseLength);
-
-/**
-* Sets laser control pulse interval (in microseconds)
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pHalfPeriod - Half Output period in microseconds
-* @param[out] pPulseLength - Pulse Length in microseconds
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInMicroSecondsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pHalfPeriod, LibMCDriver_ScanLab_double * pPulseLength);
-
-/**
-* Sets standby pulse interval (in 1/64th microseconds)
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pHalfPeriod - Half Output period in 1/64th microseconds
-* @param[out] pPulseLength - Pulse Length in 1/64th microseconds
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetStandbyInBitsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pHalfPeriod, LibMCDriver_ScanLab_uint32 * pPulseLength);
-
-/**
-* Sets laser control pulse interval (in microseconds)
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pHalfPeriod - Half Output period in microseconds
-* @param[out] pPulseLength - Pulse Length in microseconds
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetStandbyInMicroSecondsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pHalfPeriod, LibMCDriver_ScanLab_double * pPulseLength);
 
 /**
 * Returns the IP Address of the RTC Card. Fails if driver has not been initialized.
@@ -1190,24 +1029,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_ExecuteListPt
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetAutoChangePosPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nPosition);
-
-/**
-* Sets a factor for the Z defocus commands.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[in] dValue - Z Defocus Factor.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetDefocusFactorPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dValue);
-
-/**
-* Returns the current factor for the Z defocus commands.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pValue - Z Defocus Factor.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetDefocusFactorPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pValue);
 
 /**
 * Sets the laser delays
@@ -1379,16 +1200,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_AddTimedMarkM
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_AddFreeVariablePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nVariableNo, LibMCDriver_ScanLab_uint32 nValue);
-
-/**
-* Adds a movement with microvectors. See micro_vector_abs in SCANLABs RTC documentation.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[in] nMicrovectorArrayBufferSize - Number of elements in buffer
-* @param[in] pMicrovectorArrayBuffer - MicroVector buffer of Microvector array to execute.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_AddMicrovectorMovementPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector * pMicrovectorArrayBuffer);
 
 /**
 * Returns the currently set free variable.
@@ -1616,14 +1427,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetCommunicat
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_InitializeForOIEPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nSignalChannelsBufferSize, const LibMCDriver_ScanLab_uint32 * pSignalChannelsBuffer, LibMCDriver_ScanLab::eOIEOperationMode eOperationMode);
 
 /**
-* Disables the on the fly marking after OIE initialization. This is a workaround that will become depreciated in newer versions..
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DisableOnTheFlyForOIEPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext);
-
-/**
 * Sets the laser pin outputs to a certain state. Control command, has immediate effect.
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -1795,15 +1598,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DisableOIEPID
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_ClearOIEMeasurementTagsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext);
 
 /**
-* Extracts all stored OIE Measurement tags of the context and returns them as separate object. New Tag Indices will start from 0 again.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pMeasurementTags - Instance of the OIE Measurement Tag data.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_RetrieveOIEMeasurementTagsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_OIEMeasurementTagMap * pMeasurementTags);
-
-/**
 * Enables OIE Measurement tagging.
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -1820,7 +1614,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_EnableOIEMeas
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DisableOIEMeasurementTaggingPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext);
 
 /**
-* Returns the current maximum measurement tag that has been sent to the OIE. Will return 0 after RetrieveOIEMeasurementTags has been called.
+* Returns the current maximum measurement tag that has been sent to the OIE.
 *
 * @param[in] pRTCContext - RTCContext instance.
 * @param[out] pMeasurementTag - Measurement Tag that has been sent to the OIE.
@@ -1829,7 +1623,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DisableOIEMea
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetOIEMaxMeasurementTagPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 * pMeasurementTag);
 
 /**
-* DEPRECIATED! Maps an OIE Measurement tag back to the original scan parameters. Use RetrieveOIEMeasurementTags instead.
+* Maps an OIE Measurement tag back to the original scan parameters.
 *
 * @param[in] pRTCContext - RTCContext instance.
 * @param[in] nMeasurementTag - Measurement Tag that has been sent to the OIE.
@@ -2425,37 +2219,13 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_IsIn
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_InitialisePtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, const char * pIP, const char * pNetmask, LibMCDriver_ScanLab_uint32 nTimeout, LibMCDriver_ScanLab_uint32 nSerialNumber);
 
 /**
-* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserTimingDefaults.
+* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
 *
 * @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
 * @param[in] pPresetName - Name of the configuration preset.
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_InitialiseFromConfigurationPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, const char * pPresetName);
-
-/**
-* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
-*
-* @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
-* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
-* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
-* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
-* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetLaserSignalTimingDefaultsPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double dLaserPulseLength, LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double dStandbyPulseLength);
-
-/**
-* Returns the laser timing defaults for CO2 lasers.
-*
-* @param[in] pDriver_ScanLab_RTC6 - Driver_ScanLab_RTC6 instance.
-* @param[out] pLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
-* @param[out] pLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
-* @param[out] pStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
-* @param[out] pStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6_GetLaserSignalTimingDefaultsPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6 pDriver_ScanLab_RTC6, LibMCDriver_ScanLab_double * pLaserPulseHalfPeriod, LibMCDriver_ScanLab_double * pLaserPulseLength, LibMCDriver_ScanLab_double * pStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double * pStandbyPulseLength);
 
 /**
 * Set RTC Ethernet communication timeouts. The given values will be defaults for all subsequent connections.
@@ -2737,7 +2507,7 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_Ge
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_InitialiseScannerPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, const char * pIP, const char * pNetmask, LibMCDriver_ScanLab_uint32 nTimeout, LibMCDriver_ScanLab_uint32 nSerialNumber, LibMCDriver_ScanLab_uint32 nLaserIndex);
 
 /**
-* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode, ConfigureDelays and SetLaserSignalTimingDefaults.
+* Initializes the RTC6 Scanner Driver from a configuration preset. Calls Initialise, LoadFirmware, SetCorrectionFile, ConfigureLaserMode and ConfigureDelays.
 *
 * @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
 * @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
@@ -2745,32 +2515,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_In
 * @return error code or 0 (success)
 */
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_InitialiseScannerFromConfigurationPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, const char * pPresetName);
-
-/**
-* Sets the laser timing defaults for CO2 lasers. Only has an effect if called before Initialise. For on the fly changing of the laser signal, the appropriate methods of CRTCContext need to be called.
-*
-* @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
-* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
-* @param[in] dLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
-* @param[in] dLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
-* @param[in] dStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
-* @param[in] dStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_SetLaserSignalTimingDefaultsPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double dLaserPulseLength, LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double dStandbyPulseLength);
-
-/**
-* Returns the laser timing defaults for CO2 lasers.
-*
-* @param[in] pDriver_ScanLab_RTC6xN - Driver_ScanLab_RTC6xN instance.
-* @param[in] nScannerIndex - Index of the scanner (0-based). MUST be smaller than ScannerCount
-* @param[out] pLaserPulseHalfPeriod - Half Output period for laser pulses in microseconds. Default is 5.
-* @param[out] pLaserPulseLength - Pulse Length in microseconds for full laser power. Default is 5.
-* @param[out] pStandbyPulseHalfPeriod - Half Output period for standby pulses in microseconds. Default is 1.
-* @param[out] pStandbyPulseLength - Standby Pulse Length in microseconds. Default is 1.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetLaserSignalTimingDefaultsPtr) (LibMCDriver_ScanLab_Driver_ScanLab_RTC6xN pDriver_ScanLab_RTC6xN, LibMCDriver_ScanLab_uint32 nScannerIndex, LibMCDriver_ScanLab_double * pLaserPulseHalfPeriod, LibMCDriver_ScanLab_double * pLaserPulseLength, LibMCDriver_ScanLab_double * pStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double * pStandbyPulseLength);
 
 /**
 * Returns the IP Address of the RTC Card. Fails if driver has not been initialized.
@@ -3126,7 +2870,6 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCJob_AddMarkMovementPtr m_RTCJob_AddMarkMovement;
 	PLibMCDriver_ScanLabRTCJob_AddTimedMarkMovementPtr m_RTCJob_AddTimedMarkMovement;
 	PLibMCDriver_ScanLabRTCJob_AddFreeVariablePtr m_RTCJob_AddFreeVariable;
-	PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr m_RTCJob_AddMicrovectorMovement;
 	PLibMCDriver_ScanLabRTCRecording_ClearPtr m_RTCRecording_Clear;
 	PLibMCDriver_ScanLabRTCRecording_AddChannelPtr m_RTCRecording_AddChannel;
 	PLibMCDriver_ScanLabRTCRecording_RemoveChannelPtr m_RTCRecording_RemoveChannel;
@@ -3168,18 +2911,9 @@ typedef struct {
 	PLibMCDriver_ScanLabNLightAFXProfileSelector_EnableAutomaticSelectionPtr m_NLightAFXProfileSelector_EnableAutomaticSelection;
 	PLibMCDriver_ScanLabNLightAFXProfileSelector_DisableAutomaticSelectionPtr m_NLightAFXProfileSelector_DisableAutomaticSelection;
 	PLibMCDriver_ScanLabNLightAFXProfileSelector_AddCustomSelectionPtr m_NLightAFXProfileSelector_AddCustomSelection;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_GetOIEMaxMeasurementTagPtr m_OIEMeasurementTagMap_GetOIEMaxMeasurementTag;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagPtr m_OIEMeasurementTagMap_MapOIEMeasurementTag;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagDataPtr m_OIEMeasurementTagMap_MapOIEMeasurementTagData;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementTagsPtr m_OIEMeasurementTagMap_MapOIEMeasurementTags;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementPartIDsPtr m_OIEMeasurementTagMap_MapOIEMeasurementPartIDs;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementProfileIDsPtr m_OIEMeasurementTagMap_MapOIEMeasurementProfileIDs;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementSegmentIDsPtr m_OIEMeasurementTagMap_MapOIEMeasurementSegmentIDs;
-	PLibMCDriver_ScanLabOIEMeasurementTagMap_MapOIEMeasurementVectorIDsPtr m_OIEMeasurementTagMap_MapOIEMeasurementVectorIDs;
 	PLibMCDriver_ScanLabRTCContext_LoadFirmwarePtr m_RTCContext_LoadFirmware;
 	PLibMCDriver_ScanLabRTCContext_LoadCorrectionFilePtr m_RTCContext_LoadCorrectionFile;
 	PLibMCDriver_ScanLabRTCContext_SelectCorrectionTablePtr m_RTCContext_SelectCorrectionTable;
-	PLibMCDriver_ScanLabRTCContext_SetCorrectionFactorsPtr m_RTCContext_SetCorrectionFactors;
 	PLibMCDriver_ScanLabRTCContext_ConfigureListsPtr m_RTCContext_ConfigureLists;
 	PLibMCDriver_ScanLabRTCContext_SetLaserModePtr m_RTCContext_SetLaserMode;
 	PLibMCDriver_ScanLabRTCContext_DisableAutoLaserControlPtr m_RTCContext_DisableAutoLaserControl;
@@ -3188,10 +2922,6 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_SetLaserPulsesInMicroSecondsPtr m_RTCContext_SetLaserPulsesInMicroSeconds;
 	PLibMCDriver_ScanLabRTCContext_SetStandbyInBitsPtr m_RTCContext_SetStandbyInBits;
 	PLibMCDriver_ScanLabRTCContext_SetStandbyInMicroSecondsPtr m_RTCContext_SetStandbyInMicroSeconds;
-	PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInBitsPtr m_RTCContext_GetLaserPulsesInBits;
-	PLibMCDriver_ScanLabRTCContext_GetLaserPulsesInMicroSecondsPtr m_RTCContext_GetLaserPulsesInMicroSeconds;
-	PLibMCDriver_ScanLabRTCContext_GetStandbyInBitsPtr m_RTCContext_GetStandbyInBits;
-	PLibMCDriver_ScanLabRTCContext_GetStandbyInMicroSecondsPtr m_RTCContext_GetStandbyInMicroSeconds;
 	PLibMCDriver_ScanLabRTCContext_GetIPAddressPtr m_RTCContext_GetIPAddress;
 	PLibMCDriver_ScanLabRTCContext_GetNetmaskPtr m_RTCContext_GetNetmask;
 	PLibMCDriver_ScanLabRTCContext_GetSerialNumberPtr m_RTCContext_GetSerialNumber;
@@ -3207,8 +2937,6 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_SetEndOfListPtr m_RTCContext_SetEndOfList;
 	PLibMCDriver_ScanLabRTCContext_ExecuteListPtr m_RTCContext_ExecuteList;
 	PLibMCDriver_ScanLabRTCContext_SetAutoChangePosPtr m_RTCContext_SetAutoChangePos;
-	PLibMCDriver_ScanLabRTCContext_SetDefocusFactorPtr m_RTCContext_SetDefocusFactor;
-	PLibMCDriver_ScanLabRTCContext_GetDefocusFactorPtr m_RTCContext_GetDefocusFactor;
 	PLibMCDriver_ScanLabRTCContext_SetDelaysPtr m_RTCContext_SetDelays;
 	PLibMCDriver_ScanLabRTCContext_SetLaserDelaysInMicrosecondsPtr m_RTCContext_SetLaserDelaysInMicroseconds;
 	PLibMCDriver_ScanLabRTCContext_SetLaserDelaysInBitsPtr m_RTCContext_SetLaserDelaysInBits;
@@ -3225,7 +2953,6 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_AddMarkMovementPtr m_RTCContext_AddMarkMovement;
 	PLibMCDriver_ScanLabRTCContext_AddTimedMarkMovementPtr m_RTCContext_AddTimedMarkMovement;
 	PLibMCDriver_ScanLabRTCContext_AddFreeVariablePtr m_RTCContext_AddFreeVariable;
-	PLibMCDriver_ScanLabRTCContext_AddMicrovectorMovementPtr m_RTCContext_AddMicrovectorMovement;
 	PLibMCDriver_ScanLabRTCContext_GetCurrentFreeVariablePtr m_RTCContext_GetCurrentFreeVariable;
 	PLibMCDriver_ScanLabRTCContext_GetTimeStampPtr m_RTCContext_GetTimeStamp;
 	PLibMCDriver_ScanLabRTCContext_GetRTCChannelPtr m_RTCContext_GetRTCChannel;
@@ -3247,7 +2974,6 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_SetCommunicationTimeoutsPtr m_RTCContext_SetCommunicationTimeouts;
 	PLibMCDriver_ScanLabRTCContext_GetCommunicationTimeoutsPtr m_RTCContext_GetCommunicationTimeouts;
 	PLibMCDriver_ScanLabRTCContext_InitializeForOIEPtr m_RTCContext_InitializeForOIE;
-	PLibMCDriver_ScanLabRTCContext_DisableOnTheFlyForOIEPtr m_RTCContext_DisableOnTheFlyForOIE;
 	PLibMCDriver_ScanLabRTCContext_SetLaserPinOutPtr m_RTCContext_SetLaserPinOut;
 	PLibMCDriver_ScanLabRTCContext_GetLaserPinInPtr m_RTCContext_GetLaserPinIn;
 	PLibMCDriver_ScanLabRTCContext_AddLaserPinOutToListPtr m_RTCContext_AddLaserPinOutToList;
@@ -3267,7 +2993,6 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_EnableOIEPIDControlPtr m_RTCContext_EnableOIEPIDControl;
 	PLibMCDriver_ScanLabRTCContext_DisableOIEPIDControlPtr m_RTCContext_DisableOIEPIDControl;
 	PLibMCDriver_ScanLabRTCContext_ClearOIEMeasurementTagsPtr m_RTCContext_ClearOIEMeasurementTags;
-	PLibMCDriver_ScanLabRTCContext_RetrieveOIEMeasurementTagsPtr m_RTCContext_RetrieveOIEMeasurementTags;
 	PLibMCDriver_ScanLabRTCContext_EnableOIEMeasurementTaggingPtr m_RTCContext_EnableOIEMeasurementTagging;
 	PLibMCDriver_ScanLabRTCContext_DisableOIEMeasurementTaggingPtr m_RTCContext_DisableOIEMeasurementTagging;
 	PLibMCDriver_ScanLabRTCContext_GetOIEMaxMeasurementTagPtr m_RTCContext_GetOIEMaxMeasurementTag;
@@ -3331,8 +3056,6 @@ typedef struct {
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_IsInitializedPtr m_Driver_ScanLab_RTC6_IsInitialized;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_InitialisePtr m_Driver_ScanLab_RTC6_Initialise;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_InitialiseFromConfigurationPtr m_Driver_ScanLab_RTC6_InitialiseFromConfiguration;
-	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetLaserSignalTimingDefaultsPtr m_Driver_ScanLab_RTC6_SetLaserSignalTimingDefaults;
-	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_GetLaserSignalTimingDefaultsPtr m_Driver_ScanLab_RTC6_GetLaserSignalTimingDefaults;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_SetCommunicationTimeoutsPtr m_Driver_ScanLab_RTC6_SetCommunicationTimeouts;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_GetIPAddressPtr m_Driver_ScanLab_RTC6_GetIPAddress;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6_GetNetmaskPtr m_Driver_ScanLab_RTC6_GetNetmask;
@@ -3360,8 +3083,6 @@ typedef struct {
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetScannerCountPtr m_Driver_ScanLab_RTC6xN_GetScannerCount;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_InitialiseScannerPtr m_Driver_ScanLab_RTC6xN_InitialiseScanner;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_InitialiseScannerFromConfigurationPtr m_Driver_ScanLab_RTC6xN_InitialiseScannerFromConfiguration;
-	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_SetLaserSignalTimingDefaultsPtr m_Driver_ScanLab_RTC6xN_SetLaserSignalTimingDefaults;
-	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetLaserSignalTimingDefaultsPtr m_Driver_ScanLab_RTC6xN_GetLaserSignalTimingDefaults;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetIPAddressPtr m_Driver_ScanLab_RTC6xN_GetIPAddress;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetNetmaskPtr m_Driver_ScanLab_RTC6xN_GetNetmask;
 	PLibMCDriver_ScanLabDriver_ScanLab_RTC6xN_GetSerialNumberPtr m_Driver_ScanLab_RTC6xN_GetSerialNumber;

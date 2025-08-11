@@ -45,8 +45,7 @@ Abstract: This is the class declaration of CDataTableScatterPlotOptions
 #endif
 
 // Include custom headers here.
-#include "libmcenv_scatterplotdatachannel.hpp"
-#include <map>
+
 
 namespace LibMCEnv {
 namespace Impl {
@@ -66,8 +65,6 @@ private:
 	std::string m_sYAxisColumnIdentifier;
 	double m_dYAxisScaleFactor;
 	double m_dYAxisOffset;
-
-	std::map<std::string, std::unique_ptr<CScatterPlotDataChannel>> m_DataChannelsMap;
 
 public:
 
@@ -93,7 +90,6 @@ public:
 
 	void AddDataChannel(const std::string & sChannelIdentifier, const std::string & sColumnIdentifier, const LibMCEnv_double dScaleFactor, const LibMCEnv_double dOffsetFactor, const LibMCEnv_uint32 nColor) override;
 
-	IScatterPlotDataChannelIterator* ListDataChannels();
 };
 
 } // namespace Impl

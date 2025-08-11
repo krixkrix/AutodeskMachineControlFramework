@@ -37,7 +37,6 @@ Abstract: This is the class declaration of CVideoDevice
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #define CAMERARESOLUTION_MIN 8
 #define CAMERARESOLUTION_MAX (256 * 1024)
@@ -58,18 +57,15 @@ private:
 	uint32_t m_nHeight;
 	uint32_t m_nFramerate;
 
-	std::string m_sTypeUUID;
-
 public:
 	
-	CVideoResolution(uint32_t nWidth, uint32_t nHeight, uint32_t nFramerate, const std::string & sTypeUUID);
+	CVideoResolution(uint32_t nWidth, uint32_t nHeight, uint32_t nFramerate);
 
 	virtual ~CVideoResolution();
 	
 	uint32_t getWidth ();
 	uint32_t getHeight ();
 	uint32_t getFramerate ();
-	std::string getTypeUUID();
 
 };
 

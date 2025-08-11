@@ -17,13 +17,6 @@ Abstract: This is the class declaration of CRTCContext
 #include "libmcdriver_scanlab_rtcrecordinginstance.hpp"
 #include "libmcdriver_scanlab_nlightafxprofileselector.hpp"
 #include "libmcdriver_scanlab_gpiosequence.hpp"
-#include "libmcdriver_scanlab_measurementtagmapinstance.hpp"
-
-#define RTC_TIMINGDEFAULT_LASERPULSEHALFPERIOD 5.0
-#define RTC_TIMINGDEFAULT_LASERPULSELENGTH 5.0
-#define RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD 1.0
-#define RTC_TIMINGDEFAULT_STANDBYPULSELENGTH 1.0
-
 
 // Parent classes
 #include "libmcdriver_scanlab_base.hpp"
@@ -38,6 +31,13 @@ Abstract: This is the class declaration of CRTCContext
 namespace LibMCDriver_ScanLab {
 namespace Impl {
 
+
+typedef struct _sMeasurementTagInfo {
+	uint32_t m_nCurrentPartID;
+	uint32_t m_nCurrentProfileID;
+	uint32_t m_nCurrentSegmentID;
+	uint32_t m_nCurrentVectorID;
+} sMeasurementTagInfo;
 
 /*************************************************************************************************************************
  Class declaration of CRTCContext 
@@ -79,8 +79,6 @@ protected:
 	uint32_t m_CardNo;
 	double m_dCorrectionFactor;
 	double m_dZCorrectionFactor;
-	double m_dDefocusFactor;
-
 	eLaserPort m_LaserPort;
 	bool m_bIsNetwork;
 	std::vector<uint32_t> m_MCBSPSignalChannels;
@@ -97,8 +95,8 @@ protected:
 	int32_t m_nCurrentScanPositionX;
 	int32_t m_nCurrentScanPositionY;
 
-	PRTCMeasurementTagMapInstance m_pMeasurementTagMap;
-	sOIEMeasurementTagData m_CurrentMeasurementTagInfo;
+	sMeasurementTagInfo m_CurrentMeasurementTagInfo;
+	std::vector<sMeasurementTagInfo> m_MeasurementTags;
 
 	bool m_bEnableOIEPIDControl;
 	uint32_t m_nCurrentFreeVariable0;
@@ -116,10 +114,6 @@ protected:
 	void* m_pModulationCallbackUserData;
 	bool m_bEnableLineSubdivision;
 	double m_dLineSubdivisionThreshold;
-	double m_dLaserPulseHalfPeriodInMS;
-	double m_dLaserPulseLengthInMS;
-	double m_dStandbyPulseHalfPeriodInMS;
-	double m_dStandbyPulseLengthInMS;
 
 	LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
 
@@ -187,12 +181,9 @@ public:
 
 	void LoadFirmware(const LibMCDriver_ScanLab_uint64 nFirmwareDataBufferSize, const LibMCDriver_ScanLab_uint8* pFirmwareDataBuffer, const LibMCDriver_ScanLab_uint64 nFPGADataBufferSize, const LibMCDriver_ScanLab_uint8* pFPGADataBuffer, const LibMCDriver_ScanLab_uint64 nAuxiliaryDataBufferSize, const LibMCDriver_ScanLab_uint8* pAuxiliaryDataBuffer);
 
-
 	void LoadCorrectionFile(const LibMCDriver_ScanLab_uint64 nCorrectionFileBufferSize, const LibMCDriver_ScanLab_uint8* pCorrectionFileBuffer, const LibMCDriver_ScanLab_uint32 nTableNumber, const LibMCDriver_ScanLab_uint32 nDimension);
 
 	void SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableNumberHeadA, const LibMCDriver_ScanLab_uint32 nTableNumberHeadB) override;
-
-	void SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ) override;
 
 	void ConfigureLists(const LibMCDriver_ScanLab_uint32 nSizeListA, const LibMCDriver_ScanLab_uint32 nSizeListB) override;
 
@@ -210,16 +201,6 @@ public:
 
 	void SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength) override;
 
-	void GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength) override;
-
-	void GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength) override;
-
-	void GetStandbyInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength) override;
-	
-	void GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength) override;
-
-	void writeLaserTimingsToCard();
-
 	LibMCDriver_ScanLab_uint32 GetSerialNumber() override;
 
 	LibMCDriver_ScanLab_uint32 GetLaserIndex() override;
@@ -232,10 +213,6 @@ public:
 	void ExecuteList(const LibMCDriver_ScanLab_uint32 nListIndex, const LibMCDriver_ScanLab_uint32 nPosition) override;
 
 	void SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition) override;
-
-	void SetDefocusFactor(const LibMCDriver_ScanLab_double dValue) override;
-
-	LibMCDriver_ScanLab_double GetDefocusFactor() override;
 
 	void SetDelays(const LibMCDriver_ScanLab_uint32 nMarkDelay, const LibMCDriver_ScanLab_uint32 nJumpDelay, const LibMCDriver_ScanLab_uint32 nPolygonDelay) override;
 
@@ -281,8 +258,6 @@ public:
 
 	void InitializeForOIE(const LibMCDriver_ScanLab_uint64 nSignalChannelsBufferSize, const LibMCDriver_ScanLab_uint32* pSignalChannelsBuffer, const LibMCDriver_ScanLab::eOIEOperationMode eOperationMode) override;
 
-	void DisableOnTheFlyForOIE();
-
 	void SetLaserPinOut(const bool bLaserOut1, const bool bLaserOut2) override;
 
 	void GetLaserPinIn(bool & bLaserOut1, bool & bLaserOut2) override;
@@ -316,8 +291,6 @@ public:
 	void SetOIEPIDMode(const LibMCDriver_ScanLab_uint32 nOIEPIDIndex) override;
 
 	void ClearOIEMeasurementTags() override;
-
-	IOIEMeasurementTagMap* RetrieveOIEMeasurementTags() override;
 
 	LibMCDriver_ScanLab_uint32 GetOIEMaxMeasurementTag() override;
 
@@ -399,6 +372,7 @@ public:
 
 	void AddSetPowerForPIDControl(const LibMCDriver_ScanLab_single fPowerInPercent) override;
 
+
 	void AddSetJumpSpeed(const LibMCDriver_ScanLab_single fJumpSpeed) override;
 
 	void AddSetMarkSpeed(const LibMCDriver_ScanLab_single fMarkSpeed) override;
@@ -454,8 +428,6 @@ public:
 	LibMCDriver_ScanLab_int32 GetRTCChannel(const LibMCDriver_ScanLab::eRTCChannelType eChannelType) override;
 
 	LibMCDriver_ScanLab_int32 GetRTCInternalValue(const LibMCDriver_ScanLab_uint32 nInternalSignalID) override;
-
-	void AddMicrovectorMovement(const LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector* pMicrovectorArrayBuffer) override;
 
 };
 

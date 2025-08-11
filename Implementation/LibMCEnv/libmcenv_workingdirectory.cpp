@@ -35,7 +35,6 @@ Abstract: This is a stub class definition of CWorkingDirectory
 #include "libmcenv_interfaceexception.hpp"
 #include "libmcenv_workingfile.hpp"
 #include "libmcenv_workingfileiterator.hpp"
-#include "libmcenv_workingfilewriter.hpp"
 
 // Include custom headers here.
 #include "common_utils.hpp"
@@ -46,171 +45,97 @@ using namespace LibMCEnv::Impl;
 /*************************************************************************************************************************
  Class definition of CWorkingDirectory 
 **************************************************************************************************************************/
-CWorkingDirectory::CWorkingDirectory(AMC::PProcessDirectoryStructure pProcessDirectoryStructure, AMC::WProcessDirectory pProcessDirectory, AMC::PResourcePackage pDriverResourcePackage, AMC::PResourcePackage pMachineResourcePackage, AMCCommon::PChrono pGlobalChrono, AMC::PLogger pLogger)
-    : m_pDriverResourcePackage (pDriverResourcePackage), 
-    m_pMachineResourcePackage (pMachineResourcePackage),
-    m_sTempFileNamePrefix ("amcf_"),
-    m_pProcessDirectoryStructure (pProcessDirectoryStructure),
-    m_pProcessDirectory (pProcessDirectory)
 
+CWorkingDirectory::CWorkingDirectory(const std::string& sBasePath, AMC::PResourcePackage pResourcePackage)
+    : m_pResourcePackage (pResourcePackage), m_sTempFileNamePrefix ("amcf_")
 {
-    if (pDriverResourcePackage.get() == nullptr)
+    if (pResourcePackage.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-    if (pMachineResourcePackage.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-    if (pProcessDirectoryStructure.get() == nullptr)
+    if (sBasePath.empty ())
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
 
-    /*
+    auto sWorkingDirectoryPath = AMCCommon::CUtils::findTemporaryFileName(sBasePath, m_sTempFileNamePrefix, "", 1024);
+    AMCCommon::CUtils::createDirectoryOnDisk(sWorkingDirectoryPath);
 
-    m_pWorkingFileMonitor = std::make_shared<CWorkingFileMonitor> (sWorkingDirectoryPath, pGlobalChrono, pLogger); */
+    m_pWorkingFileMonitor = std::make_shared<CWorkingFileMonitor> (sWorkingDirectoryPath);
 
 }
 
 
 CWorkingDirectory::~CWorkingDirectory()
 {
-    try {
-
-        auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-        if (pProcessDirectoryInstance.get() != nullptr) {
-            pProcessDirectoryInstance->cleanUpDirectory(nullptr);
-        }
+    try
+    {
+        if (m_pWorkingFileMonitor.get () != nullptr)
+            m_pWorkingFileMonitor->cleanUpDirectory(nullptr);
     }
-    catch (...) {
-
+    catch (...)
+    {
+        // Last resort: Never let exceptions pass through destructor
     }
-    m_pProcessDirectory.reset();
-    m_pProcessDirectoryStructure = nullptr;
 }
 
 
 bool CWorkingDirectory::IsActive()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    return pProcessDirectoryInstance->isActive();
+    return m_pWorkingFileMonitor->isActive();
 }
 
 std::string CWorkingDirectory::GetAbsoluteFilePath()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    return pProcessDirectoryInstance->getWorkingDirectory ();
+    return m_pWorkingFileMonitor->getWorkingDirectory ();
 }
-
-AMC::WProcessDirectory CWorkingDirectory::getProcessDirectory()
-{
-    return m_pProcessDirectory;
-}
-
-
-IWorkingDirectory* CWorkingDirectory::CreateSubDirectory(const std::string& sDirectoryName)
-{
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-	auto pSubDirectory = pProcessDirectoryInstance->createSubDirectory(sDirectoryName);
-
-	return new CWorkingDirectory(m_pProcessDirectoryStructure, pSubDirectory, m_pDriverResourcePackage, m_pMachineResourcePackage, m_pProcessDirectoryStructure->getGlobalChrono(), m_pProcessDirectoryStructure->getLogger());
-
-}
-
 
 IWorkingFile * CWorkingDirectory::StoreCustomData(const std::string & sFileName, const LibMCEnv_uint64 nDataBufferBufferSize, const LibMCEnv_uint8 * pDataBufferBuffer)
 {
     if (pDataBufferBuffer == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
  
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    std::string sAbsoluteFileName = pProcessDirectoryInstance->getAbsoluteFileName (sFileName);
-    pProcessDirectoryInstance->addNewMonitoredFile(sFileName);
+    std::string sAbsoluteFileName = m_pWorkingFileMonitor->getAbsoluteFileName (sFileName);
+    m_pWorkingFileMonitor->addNewMonitoredFile(sFileName);
 
     auto pStream = std::make_unique<AMCCommon::CExportStream_Native>(sAbsoluteFileName);
     if (nDataBufferBufferSize > 0)
         pStream->writeBuffer(pDataBufferBuffer, nDataBufferBufferSize);
     pStream.reset();
 
-    return new CWorkingFile (sFileName, m_pProcessDirectory);
+    return new CWorkingFile (sFileName, m_pWorkingFileMonitor);
 }
 
 
 IWorkingFile* CWorkingDirectory::StoreCustomString(const std::string& sFileName, const std::string& sDataString)
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    std::string sAbsoluteFileName = pProcessDirectoryInstance->getAbsoluteFileName(sFileName);
-    pProcessDirectoryInstance->addNewMonitoredFile(sFileName);
+    std::string sAbsoluteFileName = m_pWorkingFileMonitor->getAbsoluteFileName(sFileName);
+    m_pWorkingFileMonitor->addNewMonitoredFile(sFileName);
 
     auto pStream = std::make_unique<AMCCommon::CExportStream_Native>(sAbsoluteFileName);
     if (sDataString.length () > 0)
         pStream->writeBuffer(sDataString.c_str (), sDataString.length ());
     pStream.reset();
 
-    return new CWorkingFile(sFileName, m_pProcessDirectory);
+    return new CWorkingFile(sFileName, m_pWorkingFileMonitor);
 }
 
 
 IWorkingFile * CWorkingDirectory::StoreDriverData(const std::string & sFileName, const std::string & sIdentifier)
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    std::string sAbsoluteFileName = pProcessDirectoryInstance->getAbsoluteFileName(sFileName);
-    pProcessDirectoryInstance->addNewMonitoredFile(sFileName);
+    std::string sAbsoluteFileName = m_pWorkingFileMonitor->getAbsoluteFileName(sFileName);
+    m_pWorkingFileMonitor->addNewMonitoredFile(sFileName);
 
     std::vector<uint8_t> Buffer;
-    m_pDriverResourcePackage->readEntry(sIdentifier, Buffer);
+    m_pResourcePackage->readEntry(sIdentifier, Buffer);
 
     auto pStream = std::make_unique<AMCCommon::CExportStream_Native>(sAbsoluteFileName);
     if (Buffer.size () > 0)
         pStream->writeBuffer(Buffer.data(), Buffer.size ());
     pStream.reset();
 
-    return new CWorkingFile(sFileName, m_pProcessDirectory);
+    return new CWorkingFile(sFileName, m_pWorkingFileMonitor);
 
 }
-
-
-IWorkingFile* CWorkingDirectory::StoreMachineResourceData(const std::string& sFileName, const std::string& sIdentifier)
-{
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    std::string sAbsoluteFileName = pProcessDirectoryInstance->getAbsoluteFileName(sFileName);
-    pProcessDirectoryInstance->addNewMonitoredFile(sFileName);
-
-    std::vector<uint8_t> Buffer;
-    m_pMachineResourcePackage->readEntry(sIdentifier, Buffer);
-
-    auto pStream = std::make_unique<AMCCommon::CExportStream_Native>(sAbsoluteFileName);
-    if (Buffer.size() > 0)
-        pStream->writeBuffer(Buffer.data(), Buffer.size());
-    pStream.reset();
-
-    return new CWorkingFile(sFileName, m_pProcessDirectory);
-}
-
 
 std::string CWorkingDirectory::generateFileNameForExtension(const std::string& sExtension)
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-
     std::string sFilteredExtension = sExtension;
     if (!sFilteredExtension.empty()) {
         if (sExtension.length () > 64)
@@ -225,7 +150,7 @@ std::string CWorkingDirectory::generateFileNameForExtension(const std::string& s
     uint32_t nMaxIterations = 64;
     for (uint32_t nIndex = 0; nIndex < nMaxIterations; nIndex++) {
         std::string sFileName = m_sTempFileNamePrefix + AMCCommon::CUtils::createUUID() + sFilteredExtension;
-        std::string sAbsoluteFileName = pProcessDirectoryInstance->getAbsoluteFileName(sFileName);
+        std::string sAbsoluteFileName = m_pWorkingFileMonitor->getAbsoluteFileName(sFileName);
 
         if (!AMCCommon::CUtils::fileOrPathExistsOnDisk(sAbsoluteFileName))
             return sFileName;
@@ -255,71 +180,33 @@ IWorkingFile* CWorkingDirectory::StoreDriverDataInTempFile(const std::string& sE
 }
 
 
-IWorkingFile* CWorkingDirectory::StoreMachineResourceDataInTempFile(const std::string& sExtension, const std::string& sIdentifier)
-{
-    std::string sFileName = generateFileNameForExtension(sExtension);
-    return StoreMachineResourceData(sFileName, sIdentifier);
-
-}
-
-
 bool CWorkingDirectory::CleanUp()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    pProcessDirectoryInstance->cleanUpDirectory (nullptr);
+    m_pWorkingFileMonitor->cleanUpDirectory (nullptr);
 
     return !HasUnmanagedFiles();
 }
 
 IWorkingFile* CWorkingDirectory::AddManagedFile(const std::string& sFileName)
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
+    m_pWorkingFileMonitor->addNewMonitoredFile(sFileName);
 
-    pProcessDirectoryInstance->addNewMonitoredFile(sFileName);
-
-    return new CWorkingFile(sFileName, m_pProcessDirectory);
+    return new CWorkingFile(sFileName, m_pWorkingFileMonitor);
 }
-
-IWorkingFile* CWorkingDirectory::AddManagedTempFile(const std::string& sExtension)
-{
-    std::string sFileName = generateFileNameForExtension(sExtension);
-    return AddManagedFile(sFileName);
-
-}
-
 
 bool CWorkingDirectory::HasUnmanagedFiles()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    auto fileNames = AMCCommon::CUtils::findContentOfDirectory(pProcessDirectoryInstance->getWorkingDirectory(), true, false);
-    for (auto sFileName : fileNames) {
-        if (!pProcessDirectoryInstance->fileIsMonitored(sFileName))
-            return true;
-    }
-
     return false;
 }
 
 IWorkingFileIterator* CWorkingDirectory::RetrieveUnmanagedFiles()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
     auto pIterator = std::make_unique<CWorkingFileIterator>();
 
-    auto fileNames = AMCCommon::CUtils::findContentOfDirectory(pProcessDirectoryInstance->getWorkingDirectory(), true, false);
+    auto fileNames = AMCCommon::CUtils::findContentOfDirectory(m_pWorkingFileMonitor->getWorkingDirectory(), true, false);
     for (auto sFileName : fileNames) {
-        if (!pProcessDirectoryInstance->fileIsMonitored (sFileName))
-            pIterator->AddWorkingFile(std::make_shared<CWorkingFile>(sFileName, m_pProcessDirectory));
+        if (!m_pWorkingFileMonitor->fileIsMonitored (sFileName))
+            pIterator->AddWorkingFile(std::make_shared<CWorkingFile>(sFileName, m_pWorkingFileMonitor));
     }
 
     return pIterator.release();
@@ -327,16 +214,11 @@ IWorkingFileIterator* CWorkingDirectory::RetrieveUnmanagedFiles()
 
 IWorkingFileIterator* CWorkingDirectory::RetrieveManagedFiles()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-
     auto pIterator = std::make_unique<CWorkingFileIterator>();
 
-    auto fileNames = pProcessDirectoryInstance->getFileNames ();
+    auto fileNames = m_pWorkingFileMonitor->getFileNames ();
     for (auto sFileName : fileNames) {
-        pIterator->AddWorkingFile(std::make_shared<CWorkingFile>(sFileName, m_pProcessDirectory));
+        pIterator->AddWorkingFile(std::make_shared<CWorkingFile>(sFileName, m_pWorkingFileMonitor));
     }
 
     return pIterator.release();
@@ -345,34 +227,16 @@ IWorkingFileIterator* CWorkingDirectory::RetrieveManagedFiles()
 
 IWorkingFileIterator* CWorkingDirectory::RetrieveAllFiles()
 {
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
 
     auto pIterator = std::make_unique<CWorkingFileIterator>();
 
-    auto fileNames = AMCCommon::CUtils::findContentOfDirectory (pProcessDirectoryInstance->getWorkingDirectory(), true, false);
+    auto fileNames = AMCCommon::CUtils::findContentOfDirectory (m_pWorkingFileMonitor->getWorkingDirectory(), true, false);
     for (auto sFileName : fileNames) {
-        pIterator->AddWorkingFile(std::make_shared<CWorkingFile>(sFileName, m_pProcessDirectory));
+        pIterator->AddWorkingFile(std::make_shared<CWorkingFile>(sFileName, m_pWorkingFileMonitor));
     }
 
     return pIterator.release();
 }
 
-IWorkingFileWriter* CWorkingDirectory::AddBufferedWriter(const std::string& sFileName, const LibMCEnv_uint32 nBufferSizeInkB)
-{
-    auto pProcessDirectoryInstance = m_pProcessDirectory.lock();
-    if (pProcessDirectoryInstance.get() == nullptr)
-        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_WORKINGDIRECTORYCEASEDTOEXIST);
-
-    auto pInstance = pProcessDirectoryInstance->addNewFileWriter(sFileName, nBufferSizeInkB);
-    return new CWorkingFileWriter (pInstance, m_pProcessDirectory);
-}
-
-IWorkingFileWriter* CWorkingDirectory::AddBufferedWriterTempFile(const std::string& sExtension, const LibMCEnv_uint32 nBufferSizeInkB)
-{
-    std::string sFileName = generateFileNameForExtension(sExtension);
-    return AddBufferedWriter(sFileName, nBufferSizeInkB);
-}
 
 

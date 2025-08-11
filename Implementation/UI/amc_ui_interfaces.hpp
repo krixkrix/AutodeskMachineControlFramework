@@ -45,10 +45,10 @@ namespace AMC {
 		std::string m_sErrorMessage;
 
 		std::vector<PUIClientAction> m_clientActions;
-		std::string m_ReturnValueJSON;
+		std::map<std::string, std::string> m_returnValues;
 
 	public:
-		CUIHandleEventResponse(uint32_t nErrorCode, const std::string& sErrorMessage, const std::vector<PUIClientAction>& clientActions, const std::string & sReturnValueJSON);
+		CUIHandleEventResponse(uint32_t nErrorCode, const std::string& sErrorMessage, const std::vector<PUIClientAction>& clientActions, const std::map<std::string, std::string>& returnValues);
 
 		uint32_t getErrorCode();
 
@@ -56,7 +56,7 @@ namespace AMC {
 
 		std::vector<PUIClientAction>& getClientActions();
 
-		std::string getReturnValueJSON();
+		std::map<std::string, std::string>& getReturnValues();
 
 		static bool externalValueNameIsReserved(const std::string& sName);
 	};

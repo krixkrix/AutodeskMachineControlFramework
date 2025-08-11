@@ -77,6 +77,8 @@ public:
 
 	std::string GetIPAddress() override;
 
+	std::string GetNetmask() override;
+
 	LibMCDriver_ScanLabSMC_uint32 GetSerialNumber() override;
 
 	LibMCDriver_ScanLabSMC_uint32 GetLaserIndex() override;
@@ -93,7 +95,7 @@ public:
 
 	bool GetLaserField(LibMCDriver_ScanLabSMC_double & dMinX, LibMCDriver_ScanLabSMC_double & dMinY, LibMCDriver_ScanLabSMC_double & dMaxX, LibMCDriver_ScanLabSMC_double & dMaxY) override;
 
-	ISMCJob * BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY) override;
+	ISMCJob * BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode) override;
 
 	ISMCJob * GetUnfinishedJob() override;
 

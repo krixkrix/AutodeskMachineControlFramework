@@ -96,15 +96,6 @@ typedef LibMCResult (*PLibMCStreamConnection_GetNewContentPtr) (LibMC_StreamConn
 */
 typedef LibMCResult (*PLibMCStreamConnection_GetIdleDelayPtr) (LibMC_StreamConnection pStreamConnection, LibMC_uint32 * pIdleDelay);
 
-/**
-* Returns the stream type.
-*
-* @param[in] pStreamConnection - StreamConnection instance.
-* @param[out] pStreamType - Content type of the stream.
-* @return error code or 0 (success)
-*/
-typedef LibMCResult (*PLibMCStreamConnection_GetStreamTypePtr) (LibMC_StreamConnection pStreamConnection, LibMC::eStreamConnectionType * pStreamType);
-
 /*************************************************************************************************************************
  Class definition for APIRequestHandler
 **************************************************************************************************************************/
@@ -398,7 +389,6 @@ typedef struct {
 	PLibMCStreamData_GetMIMETypePtr m_StreamData_GetMIMEType;
 	PLibMCStreamConnection_GetNewContentPtr m_StreamConnection_GetNewContent;
 	PLibMCStreamConnection_GetIdleDelayPtr m_StreamConnection_GetIdleDelay;
-	PLibMCStreamConnection_GetStreamTypePtr m_StreamConnection_GetStreamType;
 	PLibMCAPIRequestHandler_ExpectsRawBodyPtr m_APIRequestHandler_ExpectsRawBody;
 	PLibMCAPIRequestHandler_ExpectsFormDataPtr m_APIRequestHandler_ExpectsFormData;
 	PLibMCAPIRequestHandler_GetFormDataDetailsPtr m_APIRequestHandler_GetFormDataDetails;

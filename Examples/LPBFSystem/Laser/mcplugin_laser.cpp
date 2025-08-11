@@ -316,7 +316,7 @@ __DECLARESTATE(exposure)
 
 		auto pContext = pDriver->FindContext("smccontext");
 		//pContext->DrawLayer(pBuildJob->GetStorageUUID(), nLayerIndex);
-		auto pJob = pContext->BeginJob (0.0, 0.0);
+		auto pJob = pContext->BeginJob(0.0, 0.0, LibMCDriver_ScanLabSMC::eBlendMode::Deactivated);
 
 		auto pDataTable = pStateEnvironment->CreateDataTable();
 

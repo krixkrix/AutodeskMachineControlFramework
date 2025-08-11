@@ -47,8 +47,7 @@ using namespace LibMC::Impl;
 **************************************************************************************************************************/
 
 CStreamConnection::CStreamConnection(const std::string& sStreamUUID)
-    : m_sStreamUUID (AMCCommon::CUtils::normalizeUUIDString (sStreamUUID)),
-    m_nDummy (0)
+    : m_sStreamUUID (AMCCommon::CUtils::normalizeUUIDString (sStreamUUID))
 {
 
 }
@@ -62,28 +61,15 @@ CStreamConnection::~CStreamConnection()
 
 IStreamData * CStreamConnection::GetNewContent()
 {
-	std::unique_ptr<CStreamData> pStreamData(new CStreamData("image/jpeg"));
+    std::cout << "GetNewContent" << std::endl;
 
-    auto & buffer = pStreamData->getBuffer();
-
-    std::string sString = "{ \"test\": \"abc" + std::to_string (m_nDummy)  + "\" }";
-    for (auto ch : sString) {
-        buffer.push_back(ch);
-    }
-
-    m_nDummy++;
-
-    return pStreamData.release();
+    return new CStreamData ();
 
 
 }
 
 uint32_t CStreamConnection::GetIdleDelay()
 {
-    return 50;
+    return 1000;
 }
 
-LibMC::eStreamConnectionType CStreamConnection::GetStreamType()
-{
-    return LibMC::eStreamConnectionType::JSONEventStream;
-}

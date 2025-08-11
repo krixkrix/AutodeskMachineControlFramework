@@ -84,14 +84,7 @@ public:
 
 	IMeshObject * CreateCopiedMesh() override;
 
-    IMeshObject* CreateTriangleSetOfMesh(const std::string& sTriangleSetName) override;
-
-    bool HasTriangleSet(const std::string& sTriangleSetName) override;
-
 	IPersistentMeshObject * CreatePersistentMesh(const bool bBoundToLoginSession) override;
-
-    IBoundingBox3D* CalculateBoundingBox() override;
-    
 
 };
 

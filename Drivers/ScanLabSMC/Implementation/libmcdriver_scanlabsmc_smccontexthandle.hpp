@@ -56,19 +56,16 @@ namespace Impl {
     private:
         slscHandle m_Handle;
         PScanLabSMCSDK m_pSDK;
-        eLibMCDriver_ScanLabSMCSMCConfigVersion m_Version;
 
     public:
 
-        CSMCContextHandle(PScanLabSMCSDK pSDK, slscHandle handle, eLibMCDriver_ScanLabSMCSMCConfigVersion version);
+        CSMCContextHandle(PScanLabSMCSDK pSDK, slscHandle handle);
 
         virtual ~CSMCContextHandle();
 
         slscHandle getHandle();
 
         PScanLabSMCSDK getSDK ();
-
-        eLibMCDriver_ScanLabSMCSMCConfigVersion getVersion();
 
     };
 

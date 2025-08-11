@@ -1170,7 +1170,7 @@ namespace AMCCommon {
 		TempPathBuffer[MAX_PATH] = 0;
 		std::string tmpfolder = CUtils::UTF16toUTF8(TempPathBuffer.data());
 #else
-		std::string tmpfolder = getenv("TMPDIR");
+		std::string tmpfolder = GetEnv("TMPDIR");
 #endif
 		if (tmpfolder.empty())
 			return "";

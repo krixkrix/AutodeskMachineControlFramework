@@ -64,15 +64,13 @@ private:
 
 public:
 
-    CStreamData(const std::string & sMimeType);
+    CStreamData();
 
     virtual ~CStreamData();
 
 	void GetData(LibMC_uint64 nDataBufferSize, LibMC_uint64* pDataNeededCount, LibMC_uint8 * pDataBuffer) override;
 
 	std::string GetMIMEType() override;
-
-    std::vector<uint8_t> & getBuffer ();
 
 };
 

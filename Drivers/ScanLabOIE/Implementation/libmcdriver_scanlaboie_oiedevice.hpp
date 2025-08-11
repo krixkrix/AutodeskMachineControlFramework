@@ -101,12 +101,8 @@ protected:
 	uint32_t m_nDeviceID;
 
 	bool m_bIsConnected;
-	uint64_t m_nPacketReceiveCounter;
-	uint64_t m_nPacketReceiveSkipCounter;
 
 	std::vector<POIEDeviceApp> m_AppList;
-	LibMCDriver_ScanLabOIE::eOIEDeviceDriverType m_DeviceDriverType;
-	LibMCDriver_ScanLabOIE::eOIERecordingFrequency m_RecordingFrequency;
 
 	// RTC 6 Correction File Data
 	bool m_bHasCorrectionData;
@@ -175,10 +171,6 @@ public:
 	bool AppIsRunning();
 
 	void GetRunningApp(std::string& sName, LibMCDriver_ScanLabOIE_uint32& nMajor, LibMCDriver_ScanLabOIE_uint32& nMinor, LibMCDriver_ScanLabOIE_uint32& nPatch);
-
-	void SetRecordingFrequency(const LibMCDriver_ScanLabOIE::eOIERecordingFrequency eFrequency);
-
-	LibMCDriver_ScanLabOIE::eOIERecordingFrequency GetRecordingFrequency();
 
 	void InstallApp(const LibMCDriver_ScanLabOIE_uint64 nAppPackageBufferSize, const LibMCDriver_ScanLabOIE_uint8* pAppPackageBuffer);
 
@@ -264,10 +256,6 @@ public:
 	void StopApp() override;
 
 	bool AppIsRunning() override;
-
-	void SetRecordingFrequency(const LibMCDriver_ScanLabOIE::eOIERecordingFrequency eFrequency) override;
-
-	LibMCDriver_ScanLabOIE::eOIERecordingFrequency GetRecordingFrequency() override;
 
 	void GetRunningApp(std::string & sName, LibMCDriver_ScanLabOIE_uint32 & nMajor, LibMCDriver_ScanLabOIE_uint32 & nMinor, LibMCDriver_ScanLabOIE_uint32 & nPatch) override;
 

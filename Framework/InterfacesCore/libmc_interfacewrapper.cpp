@@ -215,32 +215,6 @@ LibMCResult libmc_streamconnection_getidledelay(LibMC_StreamConnection pStreamCo
 	}
 }
 
-LibMCResult libmc_streamconnection_getstreamtype(LibMC_StreamConnection pStreamConnection, eLibMCStreamConnectionType * pStreamType)
-{
-	IBase* pIBaseClass = (IBase *)pStreamConnection;
-
-	try {
-		if (pStreamType == nullptr)
-			throw ELibMCInterfaceException (LIBMC_ERROR_INVALIDPARAM);
-		IStreamConnection* pIStreamConnection = dynamic_cast<IStreamConnection*>(pIBaseClass);
-		if (!pIStreamConnection)
-			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCAST);
-		
-		*pStreamType = pIStreamConnection->GetStreamType();
-
-		return LIBMC_SUCCESS;
-	}
-	catch (ELibMCInterfaceException & Exception) {
-		return handleLibMCException(pIBaseClass, Exception);
-	}
-	catch (std::exception & StdException) {
-		return handleStdException(pIBaseClass, StdException);
-	}
-	catch (...) {
-		return handleUnhandledException(pIBaseClass);
-	}
-}
-
 
 /*************************************************************************************************************************
  Class implementation for APIRequestHandler
@@ -932,8 +906,6 @@ LibMCResult LibMC::Impl::LibMC_GetProcAddress (const char * pProcName, void ** p
 		*ppProcAddress = (void*) &libmc_streamconnection_getnewcontent;
 	if (sProcName == "libmc_streamconnection_getidledelay") 
 		*ppProcAddress = (void*) &libmc_streamconnection_getidledelay;
-	if (sProcName == "libmc_streamconnection_getstreamtype") 
-		*ppProcAddress = (void*) &libmc_streamconnection_getstreamtype;
 	if (sProcName == "libmc_apirequesthandler_expectsrawbody") 
 		*ppProcAddress = (void*) &libmc_apirequesthandler_expectsrawbody;
 	if (sProcName == "libmc_apirequesthandler_expectsformdata") 

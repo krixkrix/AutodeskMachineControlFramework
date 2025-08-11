@@ -46,7 +46,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_ui_handler.hpp"
 #include "amc_resourcepackage.hpp"
 #include "amc_accesscontrol.hpp"
-#include "amc_statesignalhandler.hpp"
 
 #include "amc_api_factory.hpp"
 #include "amc_api_sessionhandler.hpp"
@@ -60,7 +59,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MACHINEDEFINITION_XMLSCHEMA "http://schemas.autodesk.com/amc/machinedefinitions/2020/02"
 #define MACHINEDEFINITIONTEST_XMLSCHEMA "http://schemas.autodesk.com/amc/testdefinitions/2020/02"
-
 
 using namespace LibMC::Impl;
 using namespace AMC;
@@ -414,13 +412,10 @@ AMC::PStateMachineInstance CMCContext::addMachineInstance(const pugi::xml_node& 
 
         std::list<CStateSignalParameter> SignalParameters;
         std::list<CStateSignalParameter> SignalResults;
-        uint32_t nSignalReactionTimeOut = 0;
-        uint32_t nSignalQueueSize = 0;
 
-        readSignalParameters(signalNameAttrib.as_string(), signalNode, SignalParameters, SignalResults, nSignalReactionTimeOut, nSignalQueueSize);
+        readSignalParameters(signalNameAttrib.as_string(), signalNode, SignalParameters, SignalResults);
 
-        auto pStateSignalHandler = m_pSystemState->stateSignalHandler();
-        pStateSignalHandler->addSignalDefinition(sName, signalNameAttrib.as_string(), SignalParameters, SignalResults, nSignalReactionTimeOut, nSignalQueueSize);
+        m_pSystemState->stateSignalHandler()->addSignalDefinition(sName, signalNameAttrib.as_string(), SignalParameters, SignalResults);
 
     }
 
@@ -554,35 +549,8 @@ AMC::PStateMachineInstance CMCContext::addMachineInstance(const pugi::xml_node& 
 }
 
 
-void CMCContext::readSignalParameters(const std::string& sSignalName, const pugi::xml_node& xmlNode, std::list<AMC::CStateSignalParameter>& Parameters, std::list<AMC::CStateSignalParameter>& Results, uint32_t & nSignalReactionTimeOut, uint32_t& nSignalQueueSize)
+void CMCContext::readSignalParameters(const std::string& sSignalName, const pugi::xml_node& xmlNode, std::list<AMC::CStateSignalParameter>& Parameters, std::list<AMC::CStateSignalParameter>& Results)
 {
-
-    auto reactionTimeOutAttrib = xmlNode.attribute("reactiontimeout");
-    if (!reactionTimeOutAttrib.empty()) {
-		nSignalReactionTimeOut = reactionTimeOutAttrib.as_uint();
-        if (nSignalReactionTimeOut < AMC_SIGNAL_MINREACTIONTIMEINMS)
-			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT, sSignalName);
-        if (nSignalReactionTimeOut > AMC_SIGNAL_MAXREACTIONTIMEINMS)
-            throw ELibMCCustomException(LIBMC_ERROR_INVALIDSIGNALREACTIONTIMEOUT, sSignalName);
-    }
-    else {
-		nSignalReactionTimeOut = 3600000; // Default value is 1 hour
-    }
-		
-
-    auto queueSizeAttrib = xmlNode.attribute("queuesize");
-    if (!queueSizeAttrib.empty()) {
-        nSignalQueueSize = queueSizeAttrib.as_uint();
-        if (nSignalQueueSize < AMC_SIGNAL_MINQUEUESIZE)
-            throw ELibMCCustomException(LIBMC_ERROR_INVALIDSIGNALQUEUESIZE, sSignalName);
-
-        if (nSignalQueueSize > AMC_SIGNAL_MAXQUEUESIZE)
-            throw ELibMCCustomException(LIBMC_ERROR_INVALIDSIGNALQUEUESIZE, sSignalName);
-    }
-    else {
-		nSignalQueueSize = 1; // Default value is 1
-    }
-
     auto signalParameters = xmlNode.children("parameter");
     for (pugi::xml_node signalParameter : signalParameters) {
         auto parameterNameAttrib = signalParameter.attribute("name");
