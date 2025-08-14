@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
 		std::string sDevPackagePrefix = "";
 		std::string sConfigFileName = "";
 		std::string sOutputFileName = "";
+		std::string sCustomTempDir = "";
 		std::string sServerOutputFileName = "amc_server.xml";
 		for (size_t argIdx = 0; argIdx < argumentList.size(); argIdx++) {
 
@@ -113,6 +114,15 @@ int main(int argc, char* argv[])
 				sOutputFileName = argumentList[argIdx];
 				bHandled = true;
 			} 
+
+			if (sArgument == "--tempdir") {
+				argIdx++;
+				if (argIdx >= argumentList.size())
+					throw std::runtime_error("missing tempdir path in argument");
+
+				sCustomTempDir = argumentList[argIdx];
+				bHandled = true;
+			}
 
 			if (sArgument == "--serveroutput") {
 				argIdx++;
@@ -277,11 +287,15 @@ int main(int argc, char* argv[])
 		std::cout << std::endl;
 		
 		std::string sPackageSHA = AMCCommon::CUtils::calculateSHA256FromString(packageXMLString);
+
+		std::string sTempFolderXMLAttribute;
+		if (!sCustomTempDir.empty())
+			sTempFolderXMLAttribute = "tempfolder=\"" + sCustomTempDir + "\" ";
 		
 		std::stringstream serverXMLStream;
 		serverXMLStream << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
 		serverXMLStream << "<amc xmlns=\"http://schemas.autodesk.com/amc/2020/06\">\n";
-		serverXMLStream << "  <server hostname=\"0.0.0.0\" port=\"8869\" />\n";
+		serverXMLStream << "  <server hostname=\"0.0.0.0\" port=\"8869\" " << sTempFolderXMLAttribute << "/>\n";
 		serverXMLStream << "  <data directory=\"data/\" database=\"sqlite\" sqlitedb=\"storage.db\" />\n";
 		serverXMLStream << "  <defaultpackage name=\""<< sDevPackagePrefix << "_package.xml\" githash=\"" << sDevPackagePrefix <<"\" sha256=\"" << sPackageSHA << "\" />\n";
 		serverXMLStream << "</amc>\n";
