@@ -28,6 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+#define NOMINMAX
+
 #include "libmcdriver_scanlab_rtccontext.hpp"
 #include "libmcdriver_scanlab_interfaceexception.hpp"
 #include "libmcdriver_scanlab_uartconnection.hpp"
@@ -60,7 +62,8 @@ using namespace LibMCDriver_ScanLab::Impl;
 #define RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ 3600UL * 100000UL
 
 CRTCContextOwnerData::CRTCContextOwnerData()
-	: m_nAttributeFilterValue (0), m_OIERecordingMode (LibMCDriver_ScanLab::eOIERecordingMode::OIERecordingDisabled), m_dMaxLaserPowerInWatts (100.0)
+	: m_nAttributeFilterValue (0), m_OIERecordingMode (LibMCDriver_ScanLab::eOIERecordingMode::OIERecordingDisabled), m_d100PercentLaserPowerInWatts (100.0), m_d0PercentLaserPowerInWatts (0.0),
+	m_dEpsilon (1.0e-6)
 {
 
 }
@@ -84,16 +87,209 @@ void CRTCContextOwnerData::setAttributeFilters(const std::string& sAttributeFilt
 	m_nAttributeFilterValue = nAttributeFilterValue;
 }
 
-void CRTCContextOwnerData::setMaxLaserPower(double dMaxLaserPowerInWatts)
+void CRTCContextOwnerData::setMaxLaserPowerNoPowerCorrection(double d100PercentLaserPowerInWatts)
 {
-	m_dMaxLaserPowerInWatts = dMaxLaserPowerInWatts;
+	setMaxLaserPowerLinearPowerCorrection(0.0, d100PercentLaserPowerInWatts);
 }
 
-double CRTCContextOwnerData::getMaxLaserPower()
+void CRTCContextOwnerData::setMaxLaserPowerLinearPowerCorrection(double d0PercentLaserPowerInWatts, double d100PercentLaserPowerInWatts)
 {
-	return m_dMaxLaserPowerInWatts;
+	std::map<double, double> emptyLaserPowerMapping;
+	setMaxLaserPowerNonlinearPowerCorrection(d0PercentLaserPowerInWatts, d100PercentLaserPowerInWatts, emptyLaserPowerMapping);
 }
 
+void CRTCContextOwnerData::setMaxLaserPowerNonlinearPowerCorrection(double d0PercentLaserPowerInWatts, double d100PercentLaserPowerInWatts, std::map<double, double> laserPowerMapping)
+{
+	if ((d0PercentLaserPowerInWatts < 0.0) || (d0PercentLaserPowerInWatts > RTC6_MAX_MAXLASERPOWER))
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDMAXLASERPOWER, "invalid 0 percent laser power: " + std::to_string (d0PercentLaserPowerInWatts));
+	if ((d100PercentLaserPowerInWatts < RTC6_MIN_MAXLASERPOWER) || (d100PercentLaserPowerInWatts > RTC6_MAX_MAXLASERPOWER))
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDMAXLASERPOWER, "invalid 100 percent laser power: " + std::to_string(d100PercentLaserPowerInWatts));
+
+	if (d100PercentLaserPowerInWatts - d0PercentLaserPowerInWatts < RTC6_MIN_DELTALASERPOWER)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDMAXLASERPOWER, "invalid laser power span: " + std::to_string(d0PercentLaserPowerInWatts) + " - " + std::to_string(d100PercentLaserPowerInWatts));
+
+	m_d0PercentLaserPowerInWatts = d0PercentLaserPowerInWatts;
+	m_d100PercentLaserPowerInWatts = d100PercentLaserPowerInWatts;
+
+	buildAndValidateMappings(laserPowerMapping);
+}
+
+double CRTCContextOwnerData::get0PercentLaserPowerInWatts()
+{
+	return m_d0PercentLaserPowerInWatts;
+}
+
+double CRTCContextOwnerData::get100PercentLaserPowerInWatts()
+{
+	return m_d100PercentLaserPowerInWatts;
+}
+
+bool CRTCContextOwnerData::mapLaserPowerFromWattsToPercent(double dLaserPowerInWatts, double& dPercent)
+{
+
+	if (m_wattsToPercent.size() <= 2) {
+		// No mapping available, just return linear mapping
+		if (dLaserPowerInWatts < m_d0PercentLaserPowerInWatts) {
+			dPercent = 0.0;
+			return false;
+		}
+
+		if (dLaserPowerInWatts > m_d100PercentLaserPowerInWatts) {
+			dPercent = 100.0;
+			return false;
+		}
+		
+		dPercent = (dLaserPowerInWatts - m_d0PercentLaserPowerInWatts) / (m_d100PercentLaserPowerInWatts - m_d0PercentLaserPowerInWatts) * 100.0;
+		return true;
+		
+	}
+
+	return interpolate(m_wattsToPercent, dLaserPowerInWatts, dPercent);
+}
+
+bool CRTCContextOwnerData::mapLaserPowerFromPercentToWatts(double dLaserPowerInPercent, double& dWatts)
+{
+	if (m_percentToWatts.size() <= 2) {
+		// No mapping available, just return linear mapping
+		if (dLaserPowerInPercent < 0.0) {
+			dWatts = m_d0PercentLaserPowerInWatts;
+			return false;
+		}
+		if (dLaserPowerInPercent > 100.0) {
+			dWatts = m_d100PercentLaserPowerInWatts;
+			return false;
+		}
+
+		dWatts = m_d0PercentLaserPowerInWatts + (dLaserPowerInPercent / 100.0) * (m_d100PercentLaserPowerInWatts - m_d0PercentLaserPowerInWatts);
+		return true;
+	}
+
+	return interpolate(m_percentToWatts, dLaserPowerInPercent, dWatts);
+}
+
+
+bool CRTCContextOwnerData::interpolate(const std::vector<sPowerMappingKnot>& pts, double x, double& y)
+{
+	if (pts.size() < 2) {
+		y = 0.0;
+		return false;
+	}
+
+	// Below domain -> clamp
+	if (x <= pts.front().x) {
+		y = pts.front().y;
+		return false;
+	}
+	// Above domain -> clamp
+	if (x >= pts.back().x) {
+		y = pts.back().y;
+		return false;
+	}
+
+	// Find first knot with x_k >= x.
+	auto it = std::lower_bound(pts.begin(), pts.end(), x,
+		[](const sPowerMappingKnot& k, double xv) { return k.x < xv; });
+
+	// Exact hit?
+	if (nearlyEqual(it->x, x, m_dEpsilon)) {
+		y = it->y;
+		return true;
+	}
+
+	const sPowerMappingKnot& hi = *it;
+	const sPowerMappingKnot& lo = *(it - 1);
+
+	const double dx = hi.x - lo.x;
+	if (dx <= 0.0) { // Should never happen due to validation
+		y = lo.y;
+		return true;
+	}
+
+	const double t = (x - lo.x) / dx;
+	y = lo.y + t * (hi.y - lo.y);
+	return true;
+}
+
+bool CRTCContextOwnerData::nearlyEqual(double a, double b, double eps) {
+	return std::abs(a - b) <= eps * std::max({ 1.0, std::abs(a), std::abs(b) });
+}
+
+void CRTCContextOwnerData::buildAndValidateMappings(const std::map<double, double>& userMap)
+{
+	const double w0 = m_d0PercentLaserPowerInWatts;
+	const double w1 = m_d100PercentLaserPowerInWatts;
+
+	// 1) Build Watts->Percent knots, always including endpoints.
+	std::vector<sPowerMappingKnot> w2p;
+	w2p.reserve(userMap.size() + 2);
+	w2p.push_back({ w0, 0.0 });
+	for (const auto& kv : userMap) {
+		const double w = kv.first;
+		const double p = kv.second;
+
+		if (w < w0 - m_dEpsilon || w > w1 + m_dEpsilon)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING,
+				"mapping watt value out of bounds: " + std::to_string(w));
+
+		if (p < -m_dEpsilon || p > 100.0 + m_dEpsilon)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING,
+				"mapping percent value out of range: " + std::to_string(p));
+
+		// Snap tiny out-of-range due to rounding.
+		double pClamped = std::min(100.0, std::max(0.0, p));
+		double wClamped = std::min(w1, std::max(w0, w));
+		w2p.push_back({ wClamped, pClamped });
+	}
+	w2p.push_back({ w1, 100.0 });
+
+	// 2) Sort by watts and remove (near) duplicates in x.
+	std::sort(w2p.begin(), w2p.end(), [](const sPowerMappingKnot& a, const sPowerMappingKnot& b) { return a.x < b.x; });
+	w2p.erase(std::unique(w2p.begin(), w2p.end(),
+		[&](const sPowerMappingKnot& a, const sPowerMappingKnot& b) { return nearlyEqual(a.x, b.x, m_dEpsilon) && nearlyEqual(a.y, b.y, m_dEpsilon); }),
+		w2p.end());
+
+	// 3) Validate strict monotonicity of percent with watts.
+	for (size_t i = 1; i < w2p.size(); ++i) {
+		if (!(w2p[i - 1].x < w2p[i].x - m_dEpsilon)) {
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING,
+				"duplicate or non-increasing watt knot at " + std::to_string(w2p[i].x));
+		}
+		// "steadily increasing" -> require strictly increasing percent (better inverse).
+		if (!(w2p[i - 1].y < w2p[i].y - m_dEpsilon)) {
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING,
+				"percent must be strictly increasing with watts near W=" + std::to_string(w2p[i].x));
+		}
+	}
+
+	// 4) Ensure endpoints are exactly (w0,0) and (w1,100) (snap if within epsilon).
+	if (!nearlyEqual(w2p.front().x, w0, m_dEpsilon) || !nearlyEqual(w2p.front().y, 0.0, m_dEpsilon)) {
+		w2p.front().x = w0;  w2p.front().y = 0.0;
+	}
+	if (!nearlyEqual(w2p.back().x, w1, m_dEpsilon) || !nearlyEqual(w2p.back().y, 100.0, m_dEpsilon)) {
+		w2p.back().x = w1;  w2p.back().y = 100.0;
+	}
+
+	// Store the forward table.
+	m_wattsToPercent = std::move(w2p);
+
+	// 5) Build the inverse table (Percent -> Watts). Because y is strictly increasing, order is preserved.
+	m_percentToWatts.clear();
+	m_percentToWatts.reserve(m_wattsToPercent.size());
+	for (const auto& k : m_wattsToPercent)
+		m_percentToWatts.push_back({ k.y, k.x });
+
+	// Sort by percent for safety (should already be sorted).
+	std::sort(m_percentToWatts.begin(), m_percentToWatts.end(),
+		[](const sPowerMappingKnot& a, const sPowerMappingKnot& b) { return a.x < b.x; });
+
+	// (Optional) sanity: check inverse domain exactly [0,100].
+	if (!nearlyEqual(m_percentToWatts.front().x, 0.0, m_dEpsilon) ||
+		!nearlyEqual(m_percentToWatts.back().x, 100.0, m_dEpsilon))
+	{
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING,
+			"inverse mapping percent domain inconsistent");
+	}
+}
 void CRTCContextOwnerData::setOIERecordingMode(LibMCDriver_ScanLab::eOIERecordingMode oieRecordingMode)
 {
 	m_OIERecordingMode = oieRecordingMode;
@@ -2371,9 +2567,8 @@ void CRTCContext::AddLayerToList(LibMCEnv::PToolpathLayer pLayer, bool bFailIfNo
 	}
 
 	LibMCDriver_ScanLab::eOIERecordingMode oieRecordingMode = m_pOwnerData->getOIERecordingMode ();
-	double dMaxLaserPowerInWatts = m_pOwnerData->getMaxLaserPower();
 
-	addLayerToListEx(pLayer, oieRecordingMode, nAttributeFilterID, nAttributeFilterValue, (float)dMaxLaserPowerInWatts, bFailIfNonAssignedDataExists);
+	addLayerToListEx(pLayer, oieRecordingMode, nAttributeFilterID, nAttributeFilterValue, bFailIfNonAssignedDataExists);
 }
 
 void CRTCContext::addGPIOSequenceToList(const std::string& sSequenceName)
@@ -2525,7 +2720,7 @@ int64_t readSkywritingRunOutPhaseInBits(LibMCEnv::CToolpathLayer* pLayer, uint32
 	}
 }
 
-void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordingMode oieRecordingMode, uint32_t nAttributeFilterID, int64_t nAttributeFilterValue, float fMaxLaserPowerInWatts, bool bFailIfNonAssignedDataExists)
+void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordingMode oieRecordingMode, uint32_t nAttributeFilterID, int64_t nAttributeFilterValue, bool bFailIfNonAssignedDataExists)
 {
 	if (pLayer.get() == nullptr)
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
@@ -2597,7 +2792,12 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 			float fJumpSpeedInMMPerSecond = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::JumpSpeed);
 			float fMarkSpeedInMMPerSecond = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::Speed);
 			float fPowerInWatts = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
-			float fPowerInPercent = (fPowerInWatts * 100.f) / fMaxLaserPowerInWatts;
+			
+			double dPowerInPercent = 0.0;
+			if (!m_pOwnerData->mapLaserPowerFromWattsToPercent((double)fPowerInWatts, dPowerInPercent)) {
+				// TODO: Throw exception?
+			}
+				
 			float fLaserFocus = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserFocus);
 			double dPreSegmentDelay = (float)pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PreSegmentDelay, 0.0);
 			double dPostSegmentDelay = (float)pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PostSegmentDelay, 0.0);
@@ -2701,7 +2901,7 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 						pContourPoint->m_Y = (float)(Points[nPointIndex].m_Coordinates[1] * dUnits);
 					}
 
-					DrawPolylineOIE(nPointCount, ContourPoints.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
+					DrawPolylineOIE(nPointCount, ContourPoints.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, (float) dPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
 
 					break;
 				}
@@ -2728,7 +2928,7 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 						targetHatch.m_Y2 = (float)(srcHatch.m_Y2 * dUnits);
 					}
 
-					DrawHatchesOIE(RTCHatches.size(), RTCHatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
+					DrawHatchesOIE(RTCHatches.size(), RTCHatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, (float)dPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
 
 					break;
 				}

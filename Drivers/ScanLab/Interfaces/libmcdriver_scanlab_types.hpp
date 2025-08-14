@@ -260,6 +260,7 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR 1155 /** Invalid correction factor. */
 #define LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD 1156 /** Pulse Length exceeds control period. */
 #define LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE 1157 /** Pulse Length control not supported by OIE yet. */
+#define LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING 1158 /** Invalid laser power mapping. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -432,6 +433,7 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR: return "Invalid correction factor.";
     case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "Pulse Length exceeds control period.";
     case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "Pulse Length control not supported by OIE yet.";
+    case LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING: return "Invalid laser power mapping.";
     default: return "unknown error";
   }
 }

@@ -24,6 +24,9 @@ Abstract: This is the class declaration of CRTCContext
 #define RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD 1.0
 #define RTC_TIMINGDEFAULT_STANDBYPULSELENGTH 1.0
 
+#define RTC6_MIN_DELTALASERPOWER 0.1
+#define RTC6_MIN_MAXLASERPOWER 0.1
+#define RTC6_MAX_MAXLASERPOWER 10000.0
 
 // Parent classes
 #include "libmcdriver_scanlab_base.hpp"
@@ -44,12 +47,28 @@ namespace Impl {
 **************************************************************************************************************************/
 class CRTCContextOwnerData {
 private:
+	struct sPowerMappingKnot{ double x; double y; }; // generic point; interpret x/y per table
+
+	// Invariants:
+	// - m_wattsToPercent is sorted by x = watts, y = percent, spans [w0..w100] -> [0..100]
+	// - m_percentToWatts is sorted by x = percent, y = watts, spans [0..100] -> [w0..w100]
+	std::vector<sPowerMappingKnot> m_wattsToPercent;
+	std::vector<sPowerMappingKnot> m_percentToWatts;
+
+	double m_dEpsilon;
+
+
 	PScanLabSDK m_pScanlabSDK;
 	std::string m_sAttributeFilterNameSpace;
 	std::string m_sAttributeFilterName;
 	int64_t m_nAttributeFilterValue;
-	double m_dMaxLaserPowerInWatts;
+	double m_d0PercentLaserPowerInWatts;
+	double m_d100PercentLaserPowerInWatts;
 	eOIERecordingMode m_OIERecordingMode;
+
+	bool nearlyEqual(double a, double b, double eps);
+	void buildAndValidateMappings(const std::map<double, double>& userMap);
+	bool interpolate(const std::vector<sPowerMappingKnot>& pts, double x, double& y);
 
 
 public:
@@ -58,8 +77,16 @@ public:
 
 	void getAttributeFilters(std::string& sAttributeFilterNameSpace, std::string& sAttributeFilterName, int64_t& nAttributeFilterValue);
 	void setAttributeFilters(const std::string& sAttributeFilterNameSpace, const std::string& sAttributeFilterName, const int64_t sAttributeFilterValue);
-	void setMaxLaserPower(double dMaxLaserPowerInWatts);
-	double getMaxLaserPower();
+	
+	void setMaxLaserPowerNoPowerCorrection (double d100PercentLaserPowerInWatts);
+	void setMaxLaserPowerLinearPowerCorrection (double d0PercentLaserPowerInWatts, double d100PercentLaserPowerInWatts);
+	void setMaxLaserPowerNonlinearPowerCorrection(double d0PercentLaserPowerInWatts, double d100PercentLaserPowerInWatts, std::map<double, double> laserPowerMapping);
+
+	double get0PercentLaserPowerInWatts();
+	double get100PercentLaserPowerInWatts();
+	bool mapLaserPowerFromWattsToPercent(double dLaserPowerInWatts, double & dPercent);
+	bool mapLaserPowerFromPercentToWatts(double dLaserPowerInPercent, double & dWatts);
+
 	void setOIERecordingMode(eOIERecordingMode oieRecordingMode);
 	eOIERecordingMode getOIERecordingMode();
 	PScanLabSDK getScanLabSDK();
@@ -150,7 +177,7 @@ protected:
 
 	void addGPIOSequenceToList (const std::string & sSequenceName);
 
-	void addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordingMode oieRecordingMode, uint32_t nAttributeFilterID, int64_t nAttributeFilterValue, float fMaxLaserPowerInWatts, bool bFailIfNonAssignedDataExists);
+	void addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordingMode oieRecordingMode, uint32_t nAttributeFilterID, int64_t nAttributeFilterValue, bool bFailIfNonAssignedDataExists);
 
 	void updateLaserField(double dMinXInMM, double dMaxXInMM, double dMinYInMM, double dMaxYInMM);
 	

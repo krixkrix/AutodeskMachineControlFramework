@@ -386,7 +386,7 @@ void CDriver_ScanLab_RTC6xN::ConfigureLaserMode(const LibMCDriver_ScanLab_uint32
 		if (((float)dMaxLaserPower < RTC6_MIN_MAXLASERPOWER) || ((float)dMaxLaserPower > RTC6_MAX_MAXLASERPOWER))
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDMAXLASERPOWER);
 
-		m_pOwnerData->setMaxLaserPower(dMaxLaserPower);
+		m_pOwnerData->setMaxLaserPowerNoPowerCorrection(dMaxLaserPower);
 
 		pRTCContext->ConfigureLists(1 << 22, 1 << 22);
 		pRTCContext->SetLaserMode(eLaserMode, eLaserPort);
@@ -463,9 +463,6 @@ void CDriver_ScanLab_RTC6xN::DrawLayer(const std::string & sStreamUUID, const Li
 		}
 
 		auto pLayer = pToolpathAccessor->LoadLayer(nLayerIndex);
-
-		if ((m_pOwnerData->getMaxLaserPower () < RTC6_MIN_MAXLASERPOWER) || (m_pOwnerData->getMaxLaserPower() > RTC6_MAX_MAXLASERPOWER))
-			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDMAXLASERPOWER);
 
 		for (uint32_t nScannerIndex = 1; nScannerIndex <= m_nScannerCount; nScannerIndex++) {
 			auto pRTCContext = getRTCContextForScannerIndex(nScannerIndex, true);

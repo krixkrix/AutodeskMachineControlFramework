@@ -233,6 +233,7 @@ void CGPIOTask_WaitforInput::writeToSDKList(CScanLabSDK* pSDK, uint32_t nCardNo)
         nMask0 = 1UL << m_nInputBit;
     }
 
+	// TODO: No magic numbers, please!
     uint32_t nErrorVariableNo = 5;
     uint32_t nErrorCode = 1;
 

@@ -207,6 +207,8 @@
 		<error name="INVALIDCORRECTIONFACTOR" code="1155" description="Invalid correction factor." />
 		<error name="PULSELENGTHEXCEEDSCONTROLPERIOD" code="1156" description="Pulse Length exceeds control period." />
 		<error name="PULSELENGTHCONTROLNOTSUPPORTEDBYOIE" code="1157" description="Pulse Length control not supported by OIE yet." />
+		<error name="INVALIDLASERPOWERMAPPING" code="1158" description="Invalid laser power mapping." />
+		
 			
 							
 	</errors>
