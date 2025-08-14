@@ -511,7 +511,7 @@ export default class AMCApplication extends Common.AMCObject {
 					
 					uploadObject.setStateMessageToWaiting ();
 					
-                    application.axiosPostRequest("/upload/finish", {
+                    application.axiosPostRequest("/upload/" + uploadObject.streamuuid + "/finish", {
                         "streamuuid": uploadObject.streamuuid,
 						"context": "build",
                         "sha256": checkSum
