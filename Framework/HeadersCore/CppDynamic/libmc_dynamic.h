@@ -306,6 +306,15 @@ typedef LibMCResult (*PLibMCMCContext_InstanceStateHasFailedPtr) (LibMC_MCContex
 typedef LibMCResult (*PLibMCMCContext_LoadClientPackagePtr) (LibMC_MCContext pMCContext, const char * pResourcePath);
 
 /**
+* load a package to serve the API documentation website.
+*
+* @param[in] pMCContext - MCContext instance.
+* @param[in] pResourcePath - Path to the resource package.
+* @return error code or 0 (success)
+*/
+typedef LibMCResult (*PLibMCMCContext_LoadAPIDocumentationPtr) (LibMC_MCContext pMCContext, const char * pResourcePath);
+
+/**
 * log message with a certain log level.
 *
 * @param[in] pMCContext - MCContext instance.
@@ -428,6 +437,7 @@ typedef struct {
 	PLibMCMCContext_InstanceStateIsSuccessfulPtr m_MCContext_InstanceStateIsSuccessful;
 	PLibMCMCContext_InstanceStateHasFailedPtr m_MCContext_InstanceStateHasFailed;
 	PLibMCMCContext_LoadClientPackagePtr m_MCContext_LoadClientPackage;
+	PLibMCMCContext_LoadAPIDocumentationPtr m_MCContext_LoadAPIDocumentation;
 	PLibMCMCContext_LogPtr m_MCContext_Log;
 	PLibMCMCContext_CreateAPIRequestHandlerPtr m_MCContext_CreateAPIRequestHandler;
 	PLibMCMCContext_CreateStreamConnectionPtr m_MCContext_CreateStreamConnection;

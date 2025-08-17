@@ -267,8 +267,16 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 		m_pContext->Log("Parsing package configuration", LibMC::eLogSubSystem::System, LibMC::eLogLevel::Message);
 		m_pContext->ParseConfiguration(sPackageConfigurationXML);
 
-		m_pContext->Log("Loading " + m_pServerConfiguration->getPackageCoreClient() + "...", LibMC::eLogSubSystem::System, LibMC::eLogLevel::Message);
+		m_pContext->Log("Loading HTTP Client from " + m_pServerConfiguration->getPackageCoreClient() + "...", LibMC::eLogSubSystem::System, LibMC::eLogLevel::Message);
 		m_pContext->LoadClientPackage(m_pServerConfiguration->getPackageCoreClient());
+
+		std::string sAPIDocsPackage = m_pServerConfiguration->getPackageAPIDocs();
+		if (!sAPIDocsPackage.empty()) {
+			m_pContext->Log("Loading API Documentation from " + sAPIDocsPackage + "...", LibMC::eLogSubSystem::System, LibMC::eLogLevel::Message);
+			m_pContext->LoadAPIDocumentation(sAPIDocsPackage);
+		} else {
+			m_pContext->Log("No API Documentation package defined.", LibMC::eLogSubSystem::System, LibMC::eLogLevel::Message);
+		}
 
 
 		std::string sHostName = m_pServerConfiguration->getHostName();

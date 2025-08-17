@@ -855,6 +855,10 @@
 			<param name="ResourcePath" type="string" pass="in" description="Path to the resource package." />
 		</method>
 		
+		<method name="LoadAPIDocumentation" description="load a package to serve the API documentation website.">
+			<param name="ResourcePath" type="string" pass="in" description="Path to the resource package." />
+		</method>
+
 
 		<method name="Log" description="log message with a certain log level.">
 			<param name="Message" type="string" pass="in" description="log message" />

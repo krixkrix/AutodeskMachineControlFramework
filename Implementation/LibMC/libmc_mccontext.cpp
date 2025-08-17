@@ -97,9 +97,13 @@ CMCContext::CMCContext(LibMCData::PDataModel pDataModel)
     m_pAPI = std::make_shared<AMC::CAPI>();
     CAPIFactory factory (m_pAPI, m_pSystemState, m_InstanceList);
 
+    // Create API Documentation handler
+    m_pAPIDocumentationHandler = std::make_shared <CAPIHandler_APIDocs>(m_pSystemState->getClientHash());
+    m_pAPI->registerHandler(m_pAPIDocumentationHandler);
+
     // Create Client Dist Handler
     m_pClientDistHandler = std::make_shared <CAPIHandler_Root>(m_pSystemState->getClientHash ());
-    m_pAPI->registerHandler (m_pClientDistHandler);
+    m_pAPI->registerHandler(m_pClientDistHandler);
 
     // Proper threadsafe reading out of Base Temp directory (even if it might not matter at startup).
     auto pInstallationInformation = pDataModel->GetInstallationInformationObject();
@@ -290,6 +294,15 @@ void CMCContext::LoadClientPackage(const std::string& sResourcePath)
     auto pPackage = CResourcePackage::makeFromStream(pStream, sResourcePath, AMCPACKAGE_SCHEMANAMESPACE);
 
     m_pClientDistHandler->LoadClientPackage (pPackage);
+}
+
+void CMCContext::LoadAPIDocumentation(const std::string& sResourcePath)
+{
+    auto pStream = std::make_shared<AMCCommon::CImportStream_Native>(sResourcePath);
+    auto pPackage = CResourcePackage::makeFromStream(pStream, sResourcePath, AMCPACKAGE_SCHEMANAMESPACE);
+
+    m_pAPIDocumentationHandler->LoadAPIDocsPackage(pPackage);
+
 }
 
 struct xml_sstream_writer : pugi::xml_writer

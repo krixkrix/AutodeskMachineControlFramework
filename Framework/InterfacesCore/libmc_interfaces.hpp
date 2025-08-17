@@ -441,6 +441,12 @@ public:
 	virtual void LoadClientPackage(const std::string & sResourcePath) = 0;
 
 	/**
+	* IMCContext::LoadAPIDocumentation - load a package to serve the API documentation website.
+	* @param[in] sResourcePath - Path to the resource package.
+	*/
+	virtual void LoadAPIDocumentation(const std::string & sResourcePath) = 0;
+
+	/**
 	* IMCContext::Log - log message with a certain log level.
 	* @param[in] sMessage - log message
 	* @param[in] eSubsystem - log subsystem

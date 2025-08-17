@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_resourcepackage.hpp"
 
 #include "API/amc_api_handler_root.hpp"
+#include "API/amc_api_handler_apidocs.hpp"
 #include "API/amc_api.hpp"
 
 // Parent classes
@@ -91,6 +92,7 @@ private:
 	// API Objects
 	AMC::PAPI m_pAPI;
 	AMC::PAPIHandler_Root m_pClientDistHandler;
+	AMC::PAPIHandler_APIDocs m_pAPIDocumentationHandler;
 
 	AMC::PResourcePackage m_pCoreResourcePackage;
 
@@ -125,6 +127,8 @@ public:
 	void Log(const std::string& sMessage, const LibMC::eLogSubSystem eSubsystem, const LibMC::eLogLevel eLogLevel) override;
 
 	void LoadClientPackage(const std::string& sResourcePath) override;
+
+	void LoadAPIDocumentation(const std::string& sResourcePath) override;
 
 	IAPIRequestHandler* CreateAPIRequestHandler(const std::string& sURI, const std::string& sRequestMethod, const std::string& sAuthorization) override;
 

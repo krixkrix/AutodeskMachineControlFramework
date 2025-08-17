@@ -1631,6 +1631,7 @@ public:
 	inline bool InstanceStateIsSuccessful(const std::string & sInstanceName);
 	inline bool InstanceStateHasFailed(const std::string & sInstanceName);
 	inline void LoadClientPackage(const std::string & sResourcePath);
+	inline void LoadAPIDocumentation(const std::string & sResourcePath);
 	inline void Log(const std::string & sMessage, const eLogSubSystem eSubsystem, const eLogLevel eLogLevel);
 	inline PAPIRequestHandler CreateAPIRequestHandler(const std::string & sURI, const std::string & sRequestMethod, const std::string & sAuthorization);
 	inline PStreamConnection CreateStreamConnection(const std::string & sStreamUUID);
@@ -1767,6 +1768,7 @@ public:
 		pWrapperTable->m_MCContext_InstanceStateIsSuccessful = nullptr;
 		pWrapperTable->m_MCContext_InstanceStateHasFailed = nullptr;
 		pWrapperTable->m_MCContext_LoadClientPackage = nullptr;
+		pWrapperTable->m_MCContext_LoadAPIDocumentation = nullptr;
 		pWrapperTable->m_MCContext_Log = nullptr;
 		pWrapperTable->m_MCContext_CreateAPIRequestHandler = nullptr;
 		pWrapperTable->m_MCContext_CreateStreamConnection = nullptr;
@@ -2043,6 +2045,15 @@ public:
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_MCContext_LoadAPIDocumentation = (PLibMCMCContext_LoadAPIDocumentationPtr) GetProcAddress(hLibrary, "libmc_mccontext_loadapidocumentation");
+		#else // _WIN32
+		pWrapperTable->m_MCContext_LoadAPIDocumentation = (PLibMCMCContext_LoadAPIDocumentationPtr) dlsym(hLibrary, "libmc_mccontext_loadapidocumentation");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_MCContext_LoadAPIDocumentation == nullptr)
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_MCContext_Log = (PLibMCMCContext_LogPtr) GetProcAddress(hLibrary, "libmc_mccontext_log");
 		#else // _WIN32
 		pWrapperTable->m_MCContext_Log = (PLibMCMCContext_LogPtr) dlsym(hLibrary, "libmc_mccontext_log");
@@ -2233,6 +2244,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmc_mccontext_loadclientpackage", (void**)&(pWrapperTable->m_MCContext_LoadClientPackage));
 		if ( (eLookupError != 0) || (pWrapperTable->m_MCContext_LoadClientPackage == nullptr) )
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmc_mccontext_loadapidocumentation", (void**)&(pWrapperTable->m_MCContext_LoadAPIDocumentation));
+		if ( (eLookupError != 0) || (pWrapperTable->m_MCContext_LoadAPIDocumentation == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmc_mccontext_log", (void**)&(pWrapperTable->m_MCContext_Log));
@@ -2576,6 +2591,15 @@ public:
 	void CMCContext::LoadClientPackage(const std::string & sResourcePath)
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_MCContext_LoadClientPackage(m_pHandle, sResourcePath.c_str()));
+	}
+	
+	/**
+	* CMCContext::LoadAPIDocumentation - load a package to serve the API documentation website.
+	* @param[in] sResourcePath - Path to the resource package.
+	*/
+	void CMCContext::LoadAPIDocumentation(const std::string & sResourcePath)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_MCContext_LoadAPIDocumentation(m_pHandle, sResourcePath.c_str()));
 	}
 	
 	/**
