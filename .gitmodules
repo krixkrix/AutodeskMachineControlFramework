@@ -49,3 +49,6 @@
 [submodule "submodules/stb"]
 	path = submodules/stb
 	url = https://github.com/nothings/stb.git
+[submodule "submodules/swagger-ui"]
+	path = submodules/swagger-ui
+	url = https://github.com/swagger-api/swagger-ui.git
