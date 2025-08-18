@@ -371,6 +371,8 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "PULSELENGTHEXCEEDSCONTROLPERIOD";
 			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "PULSELENGTHCONTROLNOTSUPPORTEDBYOIE";
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING: return "INVALIDLASERPOWERMAPPING";
+			case LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOWATTS: return "COULDNOTCONVERTLASERPOWERTOWATTS";
+			case LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOPERCENT: return "COULDNOTCONVERTLASERPOWERTOPERCENT";
 		}
 		return "UNKNOWN";
 	}
@@ -544,6 +546,8 @@ public:
 			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "Pulse Length exceeds control period.";
 			case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "Pulse Length control not supported by OIE yet.";
 			case LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING: return "Invalid laser power mapping.";
+			case LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOWATTS: return "Could not convert laser power to watts.";
+			case LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOPERCENT: return "Could not convert laser power to percent.";
 		}
 		return "unknown error";
 	}
@@ -798,9 +802,9 @@ public:
 	{
 	}
 	
-	inline void DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue);
-	inline void DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
-	inline void DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue);
+	inline void DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue);
+	inline void DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
+	inline void DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue);
 	inline void AddSetPower(const LibMCDriver_ScanLab_single fPowerInPercent);
 	inline void AddSetAnalogOut(const eLaserPort eLaserPort, const LibMCDriver_ScanLab_single fOutputValue);
 	inline void AddSetDigitalOut(const eLaserPort eLaserPort, const LibMCDriver_ScanLab_single fOutputValue);
@@ -977,9 +981,9 @@ public:
 	inline void SetDelays(const LibMCDriver_ScanLab_uint32 nMarkDelay, const LibMCDriver_ScanLab_uint32 nJumpDelay, const LibMCDriver_ScanLab_uint32 nPolygonDelay);
 	inline void SetLaserDelaysInMicroseconds(const LibMCDriver_ScanLab_double dLaserOnDelay, const LibMCDriver_ScanLab_double dLaserOffDelay);
 	inline void SetLaserDelaysInBits(const LibMCDriver_ScanLab_int32 nLaserOnDelay, const LibMCDriver_ScanLab_int32 nLaserOffDelay);
-	inline void DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue);
-	inline void DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
-	inline void DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue);
+	inline void DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue);
+	inline void DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
+	inline void DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue);
 	inline void AddSetPower(const LibMCDriver_ScanLab_single fPowerInPercent);
 	inline void AddSetAnalogOut(const eLaserPort eLaserPort, const LibMCDriver_ScanLab_single fOutputValue);
 	inline void AddSetDigitalOut(const eLaserPort eLaserPort, const LibMCDriver_ScanLab_single fOutputValue);
@@ -1057,12 +1061,12 @@ public:
 	inline bool MarkOnTheFly2DIsEnabled();
 	inline void Get2DMarkOnTheFlyPosition(LibMCDriver_ScanLab_int32 & nPositionX, LibMCDriver_ScanLab_int32 & nPositionY);
 	inline LibMCDriver_ScanLab_uint32 CheckOnTheFlyError(const bool bFailIfError);
-	inline bool LaserPowerCalibrationIsEnabled();
 	inline bool LaserPowerCalibrationIsLinear();
-	inline void ClearLaserPowerCalibration();
-	inline void GetLaserPowerCalibration(std::vector<sLaserCalibrationPoint> & CalibrationPointsBuffer);
-	inline void SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dPowerOffsetInPercent, const LibMCDriver_ScanLab_double dPowerOutputScaling);
-	inline void SetPiecewiseLinearLaserPowerCalibration(const CInputVector<sLaserCalibrationPoint> & CalibrationPointsBuffer);
+	inline void GetLaserPowerCalibration(LibMCDriver_ScanLab_double & dLaserPowerAt0Percent, LibMCDriver_ScanLab_double & dLaserPowerAt100Percent, std::vector<sLaserCalibrationPoint> & CalibrationPointsBuffer);
+	inline void SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent);
+	inline void SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent, const CInputVector<sLaserCalibrationPoint> & CalibrationPointsBuffer);
+	inline LibMCDriver_ScanLab_double MapPowerPercentageToWatts(const LibMCDriver_ScanLab_double dLaserPowerInPercent);
+	inline LibMCDriver_ScanLab_double MapPowerWattsToPercent(const LibMCDriver_ScanLab_double dLaserPowerInWatts);
 	inline void EnableSpatialLaserPowerModulation(const SpatialPowerModulationCallback pModulationCallback, const LibMCDriver_ScanLab_pvoid pUserData);
 	inline void DisablePowerModulation();
 	inline void EnableLineSubdivision(const LibMCDriver_ScanLab_double dLengthThreshold);
@@ -1530,12 +1534,12 @@ public:
 		pWrapperTable->m_RTCContext_MarkOnTheFly2DIsEnabled = nullptr;
 		pWrapperTable->m_RTCContext_Get2DMarkOnTheFlyPosition = nullptr;
 		pWrapperTable->m_RTCContext_CheckOnTheFlyError = nullptr;
-		pWrapperTable->m_RTCContext_LaserPowerCalibrationIsEnabled = nullptr;
 		pWrapperTable->m_RTCContext_LaserPowerCalibrationIsLinear = nullptr;
-		pWrapperTable->m_RTCContext_ClearLaserPowerCalibration = nullptr;
 		pWrapperTable->m_RTCContext_GetLaserPowerCalibration = nullptr;
 		pWrapperTable->m_RTCContext_SetLinearLaserPowerCalibration = nullptr;
 		pWrapperTable->m_RTCContext_SetPiecewiseLinearLaserPowerCalibration = nullptr;
+		pWrapperTable->m_RTCContext_MapPowerPercentageToWatts = nullptr;
+		pWrapperTable->m_RTCContext_MapPowerWattsToPercent = nullptr;
 		pWrapperTable->m_RTCContext_EnableSpatialLaserPowerModulation = nullptr;
 		pWrapperTable->m_RTCContext_DisablePowerModulation = nullptr;
 		pWrapperTable->m_RTCContext_EnableLineSubdivision = nullptr;
@@ -3417,30 +3421,12 @@ public:
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
-		pWrapperTable->m_RTCContext_LaserPowerCalibrationIsEnabled = (PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsEnabledPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_laserpowercalibrationisenabled");
-		#else // _WIN32
-		pWrapperTable->m_RTCContext_LaserPowerCalibrationIsEnabled = (PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsEnabledPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_laserpowercalibrationisenabled");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_RTCContext_LaserPowerCalibrationIsEnabled == nullptr)
-			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
 		pWrapperTable->m_RTCContext_LaserPowerCalibrationIsLinear = (PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsLinearPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_laserpowercalibrationislinear");
 		#else // _WIN32
 		pWrapperTable->m_RTCContext_LaserPowerCalibrationIsLinear = (PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsLinearPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_laserpowercalibrationislinear");
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_LaserPowerCalibrationIsLinear == nullptr)
-			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		#ifdef _WIN32
-		pWrapperTable->m_RTCContext_ClearLaserPowerCalibration = (PLibMCDriver_ScanLabRTCContext_ClearLaserPowerCalibrationPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_clearlaserpowercalibration");
-		#else // _WIN32
-		pWrapperTable->m_RTCContext_ClearLaserPowerCalibration = (PLibMCDriver_ScanLabRTCContext_ClearLaserPowerCalibrationPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_clearlaserpowercalibration");
-		dlerror();
-		#endif // _WIN32
-		if (pWrapperTable->m_RTCContext_ClearLaserPowerCalibration == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -3468,6 +3454,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCContext_SetPiecewiseLinearLaserPowerCalibration == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_MapPowerPercentageToWatts = (PLibMCDriver_ScanLabRTCContext_MapPowerPercentageToWattsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_mappowerpercentagetowatts");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_MapPowerPercentageToWatts = (PLibMCDriver_ScanLabRTCContext_MapPowerPercentageToWattsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_mappowerpercentagetowatts");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_MapPowerPercentageToWatts == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_MapPowerWattsToPercent = (PLibMCDriver_ScanLabRTCContext_MapPowerWattsToPercentPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_mappowerwattstopercent");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_MapPowerWattsToPercent = (PLibMCDriver_ScanLabRTCContext_MapPowerWattsToPercentPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_mappowerwattstopercent");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_MapPowerWattsToPercent == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -5095,16 +5099,8 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_CheckOnTheFlyError == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
-		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_laserpowercalibrationisenabled", (void**)&(pWrapperTable->m_RTCContext_LaserPowerCalibrationIsEnabled));
-		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_LaserPowerCalibrationIsEnabled == nullptr) )
-			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_laserpowercalibrationislinear", (void**)&(pWrapperTable->m_RTCContext_LaserPowerCalibrationIsLinear));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_LaserPowerCalibrationIsLinear == nullptr) )
-			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
-		
-		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_clearlaserpowercalibration", (void**)&(pWrapperTable->m_RTCContext_ClearLaserPowerCalibration));
-		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_ClearLaserPowerCalibration == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_getlaserpowercalibration", (void**)&(pWrapperTable->m_RTCContext_GetLaserPowerCalibration));
@@ -5117,6 +5113,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_setpiecewiselinearlaserpowercalibration", (void**)&(pWrapperTable->m_RTCContext_SetPiecewiseLinearLaserPowerCalibration));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_SetPiecewiseLinearLaserPowerCalibration == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_mappowerpercentagetowatts", (void**)&(pWrapperTable->m_RTCContext_MapPowerPercentageToWatts));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_MapPowerPercentageToWatts == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_mappowerwattstopercent", (void**)&(pWrapperTable->m_RTCContext_MapPowerWattsToPercent));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_MapPowerWattsToPercent == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_enablespatiallaserpowermodulation", (void**)&(pWrapperTable->m_RTCContext_EnableSpatialLaserPowerModulation));
@@ -5686,12 +5690,12 @@ public:
 	* @param[in] PointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	void CRTCJob::DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue)
+	void CRTCJob::DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_DrawPolyline(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPower, fZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_DrawPolyline(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPowerInPercent, fZValue));
 	}
 	
 	/**
@@ -5699,13 +5703,13 @@ public:
 	* @param[in] PointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	* @param[in] nOIEPIDControlIndex - OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63.
 	*/
-	void CRTCJob::DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex)
+	void CRTCJob::DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_DrawPolylineOIE(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPower, fZValue, nOIEPIDControlIndex));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_DrawPolylineOIE(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPowerInPercent, fZValue, nOIEPIDControlIndex));
 	}
 	
 	/**
@@ -5713,12 +5717,12 @@ public:
 	* @param[in] HatchesBuffer - Hatches to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	void CRTCJob::DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue)
+	void CRTCJob::DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_DrawHatches(m_pHandle, (LibMCDriver_ScanLab_uint64)HatchesBuffer.size(), HatchesBuffer.data(), fMarkSpeed, fJumpSpeed, fPower, fZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCJob_DrawHatches(m_pHandle, (LibMCDriver_ScanLab_uint64)HatchesBuffer.size(), HatchesBuffer.data(), fMarkSpeed, fJumpSpeed, fPowerInPercent, fZValue));
 	}
 	
 	/**
@@ -6781,12 +6785,12 @@ public:
 	* @param[in] PointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	void CRTCContext::DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue)
+	void CRTCContext::DrawPolyline(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DrawPolyline(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPower, fZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DrawPolyline(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPowerInPercent, fZValue));
 	}
 	
 	/**
@@ -6794,13 +6798,13 @@ public:
 	* @param[in] PointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	* @param[in] nOIEPIDControlIndex - OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63.
 	*/
-	void CRTCContext::DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex)
+	void CRTCContext::DrawPolylineOIE(const CInputVector<sPoint2D> & PointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DrawPolylineOIE(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPower, fZValue, nOIEPIDControlIndex));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DrawPolylineOIE(m_pHandle, (LibMCDriver_ScanLab_uint64)PointsBuffer.size(), PointsBuffer.data(), fMarkSpeed, fJumpSpeed, fPowerInPercent, fZValue, nOIEPIDControlIndex));
 	}
 	
 	/**
@@ -6808,12 +6812,12 @@ public:
 	* @param[in] HatchesBuffer - Hatches to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	void CRTCContext::DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue)
+	void CRTCContext::DrawHatches(const CInputVector<sHatch2D> & HatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DrawHatches(m_pHandle, (LibMCDriver_ScanLab_uint64)HatchesBuffer.size(), HatchesBuffer.data(), fMarkSpeed, fJumpSpeed, fPower, fZValue));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_DrawHatches(m_pHandle, (LibMCDriver_ScanLab_uint64)HatchesBuffer.size(), HatchesBuffer.data(), fMarkSpeed, fJumpSpeed, fPowerInPercent, fZValue));
 	}
 	
 	/**
@@ -7647,18 +7651,6 @@ public:
 	}
 	
 	/**
-	* CRTCContext::LaserPowerCalibrationIsEnabled - Returns if the laser power calibration table is non-empty.
-	* @return Laser Calibration Is Enabled
-	*/
-	bool CRTCContext::LaserPowerCalibrationIsEnabled()
-	{
-		bool resultCalibrationEnabled = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_LaserPowerCalibrationIsEnabled(m_pHandle, &resultCalibrationEnabled));
-		
-		return resultCalibrationEnabled;
-	}
-	
-	/**
 	* CRTCContext::LaserPowerCalibrationIsLinear - Returns if the laser power calibration table has one entry.
 	* @return Laser Calibration Is Affine Linear
 	*/
@@ -7671,43 +7663,65 @@ public:
 	}
 	
 	/**
-	* CRTCContext::ClearLaserPowerCalibration - Clears the laser power calibration table.
-	*/
-	void CRTCContext::ClearLaserPowerCalibration()
-	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_ClearLaserPowerCalibration(m_pHandle));
-	}
-	
-	/**
 	* CRTCContext::GetLaserPowerCalibration - Returns the laser power calibration table. Fails if laser calibration is not enabled.
+	* @param[out] dLaserPowerAt0Percent - Laser Power at 0 percent
+	* @param[out] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 	* @param[out] CalibrationPointsBuffer - Laser Calibration Points
 	*/
-	void CRTCContext::GetLaserPowerCalibration(std::vector<sLaserCalibrationPoint> & CalibrationPointsBuffer)
+	void CRTCContext::GetLaserPowerCalibration(LibMCDriver_ScanLab_double & dLaserPowerAt0Percent, LibMCDriver_ScanLab_double & dLaserPowerAt100Percent, std::vector<sLaserCalibrationPoint> & CalibrationPointsBuffer)
 	{
 		LibMCDriver_ScanLab_uint64 elementsNeededCalibrationPoints = 0;
 		LibMCDriver_ScanLab_uint64 elementsWrittenCalibrationPoints = 0;
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetLaserPowerCalibration(m_pHandle, 0, &elementsNeededCalibrationPoints, nullptr));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetLaserPowerCalibration(m_pHandle, &dLaserPowerAt0Percent, &dLaserPowerAt100Percent, 0, &elementsNeededCalibrationPoints, nullptr));
 		CalibrationPointsBuffer.resize((size_t) elementsNeededCalibrationPoints);
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetLaserPowerCalibration(m_pHandle, elementsNeededCalibrationPoints, &elementsWrittenCalibrationPoints, CalibrationPointsBuffer.data()));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_GetLaserPowerCalibration(m_pHandle, &dLaserPowerAt0Percent, &dLaserPowerAt100Percent, elementsNeededCalibrationPoints, &elementsWrittenCalibrationPoints, CalibrationPointsBuffer.data()));
 	}
 	
 	/**
 	* CRTCContext::SetLinearLaserPowerCalibration - Enables the laser power calibration with an affine linear tranformation.
-	* @param[in] dPowerOffsetInPercent - Additional offset of the Power value.
-	* @param[in] dPowerOutputScaling - Scaling factor of the laser output.
+	* @param[in] dLaserPowerAt0Percent - Laser Power at 0 percent
+	* @param[in] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 	*/
-	void CRTCContext::SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dPowerOffsetInPercent, const LibMCDriver_ScanLab_double dPowerOutputScaling)
+	void CRTCContext::SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetLinearLaserPowerCalibration(m_pHandle, dPowerOffsetInPercent, dPowerOutputScaling));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetLinearLaserPowerCalibration(m_pHandle, dLaserPowerAt0Percent, dLaserPowerAt100Percent));
 	}
 	
 	/**
 	* CRTCContext::SetPiecewiseLinearLaserPowerCalibration - Enables the laser power calibration with multiple calibration point values. Table MUST NOT have negative power entries. Laser Power Output will be linear scaled with the given values within their respective intervals. Any laser power outside of the minimum or maximum Power values will be scaled according to the respective minimum or maximum scaling value.
-	* @param[in] CalibrationPointsBuffer - Laser Calibration Points. Array will be sorted by Laser Power Keys. Array MUST NOT be empty. Array MUST NOT have duplicate entries (to an accuracy of 0.01 Percent).
+	* @param[in] dLaserPowerAt0Percent - Laser Power at 0 percent
+	* @param[in] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
+	* @param[in] CalibrationPointsBuffer - Laser Calibration Points that match percentage to power. The percentage values MUST be in sequentially increasing in the array (to an accuracy of 0.001 Percent). The power values MUST be sequentially increasing in the array (to an accuracy of 0.001 Watts).. Array MUST NOT be empty.
 	*/
-	void CRTCContext::SetPiecewiseLinearLaserPowerCalibration(const CInputVector<sLaserCalibrationPoint> & CalibrationPointsBuffer)
+	void CRTCContext::SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent, const CInputVector<sLaserCalibrationPoint> & CalibrationPointsBuffer)
 	{
-		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetPiecewiseLinearLaserPowerCalibration(m_pHandle, (LibMCDriver_ScanLab_uint64)CalibrationPointsBuffer.size(), CalibrationPointsBuffer.data()));
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_SetPiecewiseLinearLaserPowerCalibration(m_pHandle, dLaserPowerAt0Percent, dLaserPowerAt100Percent, (LibMCDriver_ScanLab_uint64)CalibrationPointsBuffer.size(), CalibrationPointsBuffer.data()));
+	}
+	
+	/**
+	* CRTCContext::MapPowerPercentageToWatts - Maps a laser power percentage value to the laser power in watts.
+	* @param[in] dLaserPowerInPercent - Laser Power in Percent
+	* @return Laser Power in Watts
+	*/
+	LibMCDriver_ScanLab_double CRTCContext::MapPowerPercentageToWatts(const LibMCDriver_ScanLab_double dLaserPowerInPercent)
+	{
+		LibMCDriver_ScanLab_double resultLaserPowerInWatts = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_MapPowerPercentageToWatts(m_pHandle, dLaserPowerInPercent, &resultLaserPowerInWatts));
+		
+		return resultLaserPowerInWatts;
+	}
+	
+	/**
+	* CRTCContext::MapPowerWattsToPercent - Maps a laser power value to the laser power in percent.
+	* @param[in] dLaserPowerInWatts - Laser Power in Watts
+	* @return Laser Power in Percent
+	*/
+	LibMCDriver_ScanLab_double CRTCContext::MapPowerWattsToPercent(const LibMCDriver_ScanLab_double dLaserPowerInWatts)
+	{
+		LibMCDriver_ScanLab_double resultLaserPowerInPercent = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_MapPowerWattsToPercent(m_pHandle, dLaserPowerInWatts, &resultLaserPowerInPercent));
+		
+		return resultLaserPowerInPercent;
 	}
 	
 	/**

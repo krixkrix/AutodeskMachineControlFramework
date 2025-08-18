@@ -86,6 +86,8 @@ public:
 	double get100PercentLaserPowerInWatts();
 	bool mapLaserPowerFromWattsToPercent(double dLaserPowerInWatts, double & dPercent);
 	bool mapLaserPowerFromPercentToWatts(double dLaserPowerInPercent, double & dWatts);
+	std::vector<sPowerMappingKnot> & getPercentToWattTable ();
+	bool getLaserPowerCalibrationIsLinear();
 
 	void setOIERecordingMode(eOIERecordingMode oieRecordingMode);
 	eOIERecordingMode getOIERecordingMode();
@@ -151,9 +153,6 @@ protected:
 	LibMCEnv::PDriverEnvironment m_pDriverEnvironment;
 
 	LibMCDriver_ScanLab::eOIEOperationMode m_OIEOperationMode;
-
-	double m_dLaserPowerCalibrationUnits;
-	std::vector<sLaserCalibrationPoint> m_LaserPowerCalibrationList;
 
 	std::map<std::string, PRTCRecordingInstance> m_Recordings;
 
@@ -438,17 +437,17 @@ public:
 
 	void StopExecution() override;
 
-	bool LaserPowerCalibrationIsEnabled() override;
-
 	bool LaserPowerCalibrationIsLinear() override;
 
-	void ClearLaserPowerCalibration() override;
+	void GetLaserPowerCalibration(LibMCDriver_ScanLab_double& dLaserPowerAt0Percent, LibMCDriver_ScanLab_double& dLaserPowerAt100Percent, LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer) override;
 
-	void GetLaserPowerCalibration(LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer) override;
+	void SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent) override;
 
-	void SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dPowerOffsetInPercent, const LibMCDriver_ScanLab_double dPowerOutputScaling) override;
+	void SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent, const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer) override;
 
-	void SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer) override;
+	LibMCDriver_ScanLab_double MapPowerPercentageToWatts(const LibMCDriver_ScanLab_double dLaserPowerInPercent) override;
+
+	LibMCDriver_ScanLab_double MapPowerWattsToPercent(const LibMCDriver_ScanLab_double dLaserPowerInWatts) override;
 
 	void EnableSpatialLaserPowerModulation(const LibMCDriver_ScanLab::SpatialPowerModulationCallback pModulationCallback, const LibMCDriver_ScanLab_pvoid pUserData) override;
 

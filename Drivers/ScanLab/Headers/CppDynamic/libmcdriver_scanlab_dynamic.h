@@ -211,11 +211,11 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabUARTConnection_ReadLineP
 * @param[in] pPointsBuffer - Point2D buffer of Points of polyline to draw.
 * @param[in] fMarkSpeed - Mark speed in mm/s
 * @param[in] fJumpSpeed - Jump speed in mm/s
-* @param[in] fPower - Laser power in percent
+* @param[in] fPowerInPercent - Laser power in percent
 * @param[in] fZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawPolylinePtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPower, LibMCDriver_ScanLab_single fZValue);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawPolylinePtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPowerInPercent, LibMCDriver_ScanLab_single fZValue);
 
 /**
 * Writes a polyline into the open list with OIE Enabled.
@@ -225,12 +225,12 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawPolylinePtr) 
 * @param[in] pPointsBuffer - Point2D buffer of Points of polyline to draw.
 * @param[in] fMarkSpeed - Mark speed in mm/s
 * @param[in] fJumpSpeed - Jump speed in mm/s
-* @param[in] fPower - Laser power in percent
+* @param[in] fPowerInPercent - Laser power in percent
 * @param[in] fZValue - Focus Z Value
 * @param[in] nOIEPIDControlIndex - OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawPolylineOIEPtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPower, LibMCDriver_ScanLab_single fZValue, LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawPolylineOIEPtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPowerInPercent, LibMCDriver_ScanLab_single fZValue, LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
 
 /**
 * Writes a list of hatches into the open list
@@ -240,11 +240,11 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawPolylineOIEPt
 * @param[in] pHatchesBuffer - Hatch2D buffer of Hatches to draw.
 * @param[in] fMarkSpeed - Mark speed in mm/s
 * @param[in] fJumpSpeed - Jump speed in mm/s
-* @param[in] fPower - Laser power in percent
+* @param[in] fPowerInPercent - Laser power in percent
 * @param[in] fZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawHatchesPtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPower, LibMCDriver_ScanLab_single fZValue);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_DrawHatchesPtr) (LibMCDriver_ScanLab_RTCJob pRTCJob, LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPowerInPercent, LibMCDriver_ScanLab_single fZValue);
 
 /**
 * adds a power change to the open list. MUST NOT be used for PID control.
@@ -1248,11 +1248,11 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetLaserDelay
 * @param[in] pPointsBuffer - Point2D buffer of Points of polyline to draw.
 * @param[in] fMarkSpeed - Mark speed in mm/s
 * @param[in] fJumpSpeed - Jump speed in mm/s
-* @param[in] fPower - Laser power in percent
+* @param[in] fPowerInPercent - Laser power in percent
 * @param[in] fZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawPolylinePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPower, LibMCDriver_ScanLab_single fZValue);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawPolylinePtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPowerInPercent, LibMCDriver_ScanLab_single fZValue);
 
 /**
 * Writes a polyline into the open list with OIE Enabled.
@@ -1262,12 +1262,12 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawPolylineP
 * @param[in] pPointsBuffer - Point2D buffer of Points of polyline to draw.
 * @param[in] fMarkSpeed - Mark speed in mm/s
 * @param[in] fJumpSpeed - Jump speed in mm/s
-* @param[in] fPower - Laser power in percent
+* @param[in] fPowerInPercent - Laser power in percent
 * @param[in] fZValue - Focus Z Value
 * @param[in] nOIEPIDControlIndex - OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawPolylineOIEPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPower, LibMCDriver_ScanLab_single fZValue, LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawPolylineOIEPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPowerInPercent, LibMCDriver_ScanLab_single fZValue, LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex);
 
 /**
 * Writes a list of hatches into the open list
@@ -1277,11 +1277,11 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawPolylineO
 * @param[in] pHatchesBuffer - Hatch2D buffer of Hatches to draw.
 * @param[in] fMarkSpeed - Mark speed in mm/s
 * @param[in] fJumpSpeed - Jump speed in mm/s
-* @param[in] fPower - Laser power in percent
+* @param[in] fPowerInPercent - Laser power in percent
 * @param[in] fZValue - Focus Z Value
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawHatchesPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPower, LibMCDriver_ScanLab_single fZValue);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_DrawHatchesPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, LibMCDriver_ScanLab_single fMarkSpeed, LibMCDriver_ScanLab_single fJumpSpeed, LibMCDriver_ScanLab_single fPowerInPercent, LibMCDriver_ScanLab_single fZValue);
 
 /**
 * adds a power change to the open list. MUST NOT be used for PID control.
@@ -2046,15 +2046,6 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_Get2DMarkOnTh
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_CheckOnTheFlyErrorPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, bool bFailIfError, LibMCDriver_ScanLab_uint32 * pErrorCode);
 
 /**
-* Returns if the laser power calibration table is non-empty.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @param[out] pCalibrationEnabled - Laser Calibration Is Enabled
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsEnabledPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, bool * pCalibrationEnabled);
-
-/**
 * Returns if the laser power calibration table has one entry.
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -2064,43 +2055,59 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LaserPowerCal
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsLinearPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, bool * pCalibrationIsLinear);
 
 /**
-* Clears the laser power calibration table.
-*
-* @param[in] pRTCContext - RTCContext instance.
-* @return error code or 0 (success)
-*/
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_ClearLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext);
-
-/**
 * Returns the laser power calibration table. Fails if laser calibration is not enabled.
 *
 * @param[in] pRTCContext - RTCContext instance.
+* @param[out] pLaserPowerAt0Percent - Laser Power at 0 percent
+* @param[out] pLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 * @param[in] nCalibrationPointsBufferSize - Number of elements in buffer
 * @param[out] pCalibrationPointsNeededCount - will be filled with the count of the written elements, or needed buffer size.
 * @param[out] pCalibrationPointsBuffer - LaserCalibrationPoint  buffer of Laser Calibration Points
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_GetLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double * pLaserPowerAt0Percent, LibMCDriver_ScanLab_double * pLaserPowerAt100Percent, const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer);
 
 /**
 * Enables the laser power calibration with an affine linear tranformation.
 *
 * @param[in] pRTCContext - RTCContext instance.
-* @param[in] dPowerOffsetInPercent - Additional offset of the Power value.
-* @param[in] dPowerOutputScaling - Scaling factor of the laser output.
+* @param[in] dLaserPowerAt0Percent - Laser Power at 0 percent
+* @param[in] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetLinearLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dPowerOffsetInPercent, LibMCDriver_ScanLab_double dPowerOutputScaling);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetLinearLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dLaserPowerAt0Percent, LibMCDriver_ScanLab_double dLaserPowerAt100Percent);
 
 /**
 * Enables the laser power calibration with multiple calibration point values. Table MUST NOT have negative power entries. Laser Power Output will be linear scaled with the given values within their respective intervals. Any laser power outside of the minimum or maximum Power values will be scaled according to the respective minimum or maximum scaling value.
 *
 * @param[in] pRTCContext - RTCContext instance.
+* @param[in] dLaserPowerAt0Percent - Laser Power at 0 percent
+* @param[in] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 * @param[in] nCalibrationPointsBufferSize - Number of elements in buffer
-* @param[in] pCalibrationPointsBuffer - LaserCalibrationPoint buffer of Laser Calibration Points. Array will be sorted by Laser Power Keys. Array MUST NOT be empty. Array MUST NOT have duplicate entries (to an accuracy of 0.01 Percent).
+* @param[in] pCalibrationPointsBuffer - LaserCalibrationPoint buffer of Laser Calibration Points that match percentage to power. The percentage values MUST be in sequentially increasing in the array (to an accuracy of 0.001 Percent). The power values MUST be sequentially increasing in the array (to an accuracy of 0.001 Watts).. Array MUST NOT be empty.
 * @return error code or 0 (success)
 */
-typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetPiecewiseLinearLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer);
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_SetPiecewiseLinearLaserPowerCalibrationPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dLaserPowerAt0Percent, LibMCDriver_ScanLab_double dLaserPowerAt100Percent, LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer);
+
+/**
+* Maps a laser power percentage value to the laser power in watts.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] dLaserPowerInPercent - Laser Power in Percent
+* @param[out] pLaserPowerInWatts - Laser Power in Watts
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_MapPowerPercentageToWattsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dLaserPowerInPercent, LibMCDriver_ScanLab_double * pLaserPowerInWatts);
+
+/**
+* Maps a laser power value to the laser power in percent.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] dLaserPowerInWatts - Laser Power in Watts
+* @param[out] pLaserPowerInPercent - Laser Power in Percent
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_MapPowerWattsToPercentPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_double dLaserPowerInWatts, LibMCDriver_ScanLab_double * pLaserPowerInPercent);
 
 /**
 * Enables a spatial laser power modulation via callback.
@@ -3292,12 +3299,12 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_MarkOnTheFly2DIsEnabledPtr m_RTCContext_MarkOnTheFly2DIsEnabled;
 	PLibMCDriver_ScanLabRTCContext_Get2DMarkOnTheFlyPositionPtr m_RTCContext_Get2DMarkOnTheFlyPosition;
 	PLibMCDriver_ScanLabRTCContext_CheckOnTheFlyErrorPtr m_RTCContext_CheckOnTheFlyError;
-	PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsEnabledPtr m_RTCContext_LaserPowerCalibrationIsEnabled;
 	PLibMCDriver_ScanLabRTCContext_LaserPowerCalibrationIsLinearPtr m_RTCContext_LaserPowerCalibrationIsLinear;
-	PLibMCDriver_ScanLabRTCContext_ClearLaserPowerCalibrationPtr m_RTCContext_ClearLaserPowerCalibration;
 	PLibMCDriver_ScanLabRTCContext_GetLaserPowerCalibrationPtr m_RTCContext_GetLaserPowerCalibration;
 	PLibMCDriver_ScanLabRTCContext_SetLinearLaserPowerCalibrationPtr m_RTCContext_SetLinearLaserPowerCalibration;
 	PLibMCDriver_ScanLabRTCContext_SetPiecewiseLinearLaserPowerCalibrationPtr m_RTCContext_SetPiecewiseLinearLaserPowerCalibration;
+	PLibMCDriver_ScanLabRTCContext_MapPowerPercentageToWattsPtr m_RTCContext_MapPowerPercentageToWatts;
+	PLibMCDriver_ScanLabRTCContext_MapPowerWattsToPercentPtr m_RTCContext_MapPowerWattsToPercent;
 	PLibMCDriver_ScanLabRTCContext_EnableSpatialLaserPowerModulationPtr m_RTCContext_EnableSpatialLaserPowerModulation;
 	PLibMCDriver_ScanLabRTCContext_DisablePowerModulationPtr m_RTCContext_DisablePowerModulation;
 	PLibMCDriver_ScanLabRTCContext_EnableLineSubdivisionPtr m_RTCContext_EnableLineSubdivision;

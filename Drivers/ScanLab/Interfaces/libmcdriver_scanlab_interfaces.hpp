@@ -531,10 +531,10 @@ public:
 	* @param[in] pPointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	virtual void DrawPolyline(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue) = 0;
+	virtual void DrawPolyline(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue) = 0;
 
 	/**
 	* IRTCJob::DrawPolylineOIE - Writes a polyline into the open list with OIE Enabled.
@@ -542,11 +542,11 @@ public:
 	* @param[in] pPointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	* @param[in] nOIEPIDControlIndex - OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63.
 	*/
-	virtual void DrawPolylineOIE(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex) = 0;
+	virtual void DrawPolylineOIE(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex) = 0;
 
 	/**
 	* IRTCJob::DrawHatches - Writes a list of hatches into the open list
@@ -554,10 +554,10 @@ public:
 	* @param[in] pHatchesBuffer - Hatches to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	virtual void DrawHatches(const LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue) = 0;
+	virtual void DrawHatches(const LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue) = 0;
 
 	/**
 	* IRTCJob::AddSetPower - adds a power change to the open list. MUST NOT be used for PID control.
@@ -1300,10 +1300,10 @@ public:
 	* @param[in] pPointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	virtual void DrawPolyline(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue) = 0;
+	virtual void DrawPolyline(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue) = 0;
 
 	/**
 	* IRTCContext::DrawPolylineOIE - Writes a polyline into the open list with OIE Enabled.
@@ -1311,11 +1311,11 @@ public:
 	* @param[in] pPointsBuffer - Points of polyline to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	* @param[in] nOIEPIDControlIndex - OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63.
 	*/
-	virtual void DrawPolylineOIE(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex) = 0;
+	virtual void DrawPolylineOIE(const LibMCDriver_ScanLab_uint64 nPointsBufferSize, const LibMCDriver_ScanLab::sPoint2D * pPointsBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue, const LibMCDriver_ScanLab_uint32 nOIEPIDControlIndex) = 0;
 
 	/**
 	* IRTCContext::DrawHatches - Writes a list of hatches into the open list
@@ -1323,10 +1323,10 @@ public:
 	* @param[in] pHatchesBuffer - Hatches to draw.
 	* @param[in] fMarkSpeed - Mark speed in mm/s
 	* @param[in] fJumpSpeed - Jump speed in mm/s
-	* @param[in] fPower - Laser power in percent
+	* @param[in] fPowerInPercent - Laser power in percent
 	* @param[in] fZValue - Focus Z Value
 	*/
-	virtual void DrawHatches(const LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPower, const LibMCDriver_ScanLab_single fZValue) = 0;
+	virtual void DrawHatches(const LibMCDriver_ScanLab_uint64 nHatchesBufferSize, const LibMCDriver_ScanLab::sHatch2D * pHatchesBuffer, const LibMCDriver_ScanLab_single fMarkSpeed, const LibMCDriver_ScanLab_single fJumpSpeed, const LibMCDriver_ScanLab_single fPowerInPercent, const LibMCDriver_ScanLab_single fZValue) = 0;
 
 	/**
 	* IRTCContext::AddSetPower - adds a power change to the open list. MUST NOT be used for PID control.
@@ -1860,43 +1860,50 @@ public:
 	virtual LibMCDriver_ScanLab_uint32 CheckOnTheFlyError(const bool bFailIfError) = 0;
 
 	/**
-	* IRTCContext::LaserPowerCalibrationIsEnabled - Returns if the laser power calibration table is non-empty.
-	* @return Laser Calibration Is Enabled
-	*/
-	virtual bool LaserPowerCalibrationIsEnabled() = 0;
-
-	/**
 	* IRTCContext::LaserPowerCalibrationIsLinear - Returns if the laser power calibration table has one entry.
 	* @return Laser Calibration Is Affine Linear
 	*/
 	virtual bool LaserPowerCalibrationIsLinear() = 0;
 
 	/**
-	* IRTCContext::ClearLaserPowerCalibration - Clears the laser power calibration table.
-	*/
-	virtual void ClearLaserPowerCalibration() = 0;
-
-	/**
 	* IRTCContext::GetLaserPowerCalibration - Returns the laser power calibration table. Fails if laser calibration is not enabled.
+	* @param[out] dLaserPowerAt0Percent - Laser Power at 0 percent
+	* @param[out] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 	* @param[in] nCalibrationPointsBufferSize - Number of elements in buffer
 	* @param[out] pCalibrationPointsNeededCount - will be filled with the count of the written structs, or needed buffer size.
 	* @param[out] pCalibrationPointsBuffer - LaserCalibrationPoint buffer of Laser Calibration Points
 	*/
-	virtual void GetLaserPowerCalibration(LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer) = 0;
+	virtual void GetLaserPowerCalibration(LibMCDriver_ScanLab_double & dLaserPowerAt0Percent, LibMCDriver_ScanLab_double & dLaserPowerAt100Percent, LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer) = 0;
 
 	/**
 	* IRTCContext::SetLinearLaserPowerCalibration - Enables the laser power calibration with an affine linear tranformation.
-	* @param[in] dPowerOffsetInPercent - Additional offset of the Power value.
-	* @param[in] dPowerOutputScaling - Scaling factor of the laser output.
+	* @param[in] dLaserPowerAt0Percent - Laser Power at 0 percent
+	* @param[in] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 	*/
-	virtual void SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dPowerOffsetInPercent, const LibMCDriver_ScanLab_double dPowerOutputScaling) = 0;
+	virtual void SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent) = 0;
 
 	/**
 	* IRTCContext::SetPiecewiseLinearLaserPowerCalibration - Enables the laser power calibration with multiple calibration point values. Table MUST NOT have negative power entries. Laser Power Output will be linear scaled with the given values within their respective intervals. Any laser power outside of the minimum or maximum Power values will be scaled according to the respective minimum or maximum scaling value.
+	* @param[in] dLaserPowerAt0Percent - Laser Power at 0 percent
+	* @param[in] dLaserPowerAt100Percent - Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent.
 	* @param[in] nCalibrationPointsBufferSize - Number of elements in buffer
-	* @param[in] pCalibrationPointsBuffer - Laser Calibration Points. Array will be sorted by Laser Power Keys. Array MUST NOT be empty. Array MUST NOT have duplicate entries (to an accuracy of 0.01 Percent).
+	* @param[in] pCalibrationPointsBuffer - Laser Calibration Points that match percentage to power. The percentage values MUST be in sequentially increasing in the array (to an accuracy of 0.001 Percent). The power values MUST be sequentially increasing in the array (to an accuracy of 0.001 Watts).. Array MUST NOT be empty.
 	*/
-	virtual void SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer) = 0;
+	virtual void SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent, const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint * pCalibrationPointsBuffer) = 0;
+
+	/**
+	* IRTCContext::MapPowerPercentageToWatts - Maps a laser power percentage value to the laser power in watts.
+	* @param[in] dLaserPowerInPercent - Laser Power in Percent
+	* @return Laser Power in Watts
+	*/
+	virtual LibMCDriver_ScanLab_double MapPowerPercentageToWatts(const LibMCDriver_ScanLab_double dLaserPowerInPercent) = 0;
+
+	/**
+	* IRTCContext::MapPowerWattsToPercent - Maps a laser power value to the laser power in percent.
+	* @param[in] dLaserPowerInWatts - Laser Power in Watts
+	* @return Laser Power in Percent
+	*/
+	virtual LibMCDriver_ScanLab_double MapPowerWattsToPercent(const LibMCDriver_ScanLab_double dLaserPowerInWatts) = 0;
 
 	/**
 	* IRTCContext::EnableSpatialLaserPowerModulation - Enables a spatial laser power modulation via callback.

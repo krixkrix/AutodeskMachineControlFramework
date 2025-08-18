@@ -124,6 +124,12 @@ double CRTCContextOwnerData::get100PercentLaserPowerInWatts()
 	return m_d100PercentLaserPowerInWatts;
 }
 
+bool CRTCContextOwnerData::getLaserPowerCalibrationIsLinear()
+{
+	return m_percentToWatts.size() > 2;
+}
+
+
 bool CRTCContextOwnerData::mapLaserPowerFromWattsToPercent(double dLaserPowerInWatts, double& dPercent)
 {
 
@@ -146,6 +152,12 @@ bool CRTCContextOwnerData::mapLaserPowerFromWattsToPercent(double dLaserPowerInW
 
 	return interpolate(m_wattsToPercent, dLaserPowerInWatts, dPercent);
 }
+
+std::vector<CRTCContextOwnerData::sPowerMappingKnot>& CRTCContextOwnerData::getPercentToWattTable()
+{
+	return m_percentToWatts;
+}
+
 
 bool CRTCContextOwnerData::mapLaserPowerFromPercentToWatts(double dLaserPowerInPercent, double& dWatts)
 {
@@ -343,7 +355,6 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 	m_dScaleXInBitsPerEncoderStep (1.0),
 	m_dScaleYInBitsPerEncoderStep (1.0),
 	m_bEnableOIEPIDControl (false),
-	m_dLaserPowerCalibrationUnits (RTCCONTEXT_LASERPOWERCALIBRATIONUNITS),
 	m_pModulationCallback (nullptr),
 	m_pModulationCallbackUserData (nullptr),
 	m_bEnableLineSubdivision (false),
@@ -783,67 +794,6 @@ void CRTCContext::writeMarkSpeed(float markSpeedinMMPerSecond)
 void CRTCContext::writePower(double dPowerInPercent, bool bOIEPIDControlFlag)
 {
 
-	double dAdjustedPowerInPercent = dPowerInPercent;
-	if (m_LaserPowerCalibrationList.size() == 1) {
-		auto& calibration = m_LaserPowerCalibrationList.at (0);
-		dAdjustedPowerInPercent = adjustLaserPowerCalibration(dPowerInPercent, calibration.m_PowerOffsetInPercent, calibration.m_PowerOutputScaling);
-	}
-
-	if (m_LaserPowerCalibrationList.size() >= 2) {
-		size_t nMinIndex = 0;
-		size_t nMaxIndex = m_LaserPowerCalibrationList.size() - 1;
-		auto& minCalibration = m_LaserPowerCalibrationList.at(nMinIndex);
-		auto& maxCalibration = m_LaserPowerCalibrationList.at(nMaxIndex);
-
-		if (dPowerInPercent < minCalibration.m_PowerOffsetInPercent) {
-			dAdjustedPowerInPercent = adjustLaserPowerCalibration(dPowerInPercent, minCalibration.m_PowerOffsetInPercent, minCalibration.m_PowerOutputScaling);
-		} 
-		else if (dPowerInPercent > maxCalibration.m_PowerOffsetInPercent) {
-			dAdjustedPowerInPercent = adjustLaserPowerCalibration(dPowerInPercent, maxCalibration.m_PowerOffsetInPercent, maxCalibration.m_PowerOutputScaling);
-		}
-		else {
-			// Binary search of calibration values
-			while ((nMinIndex + 1) < nMaxIndex) {
-				size_t nMidIndex = (nMinIndex + nMaxIndex) / 2;
-				auto& calibration = m_LaserPowerCalibrationList.at(nMidIndex);
-
-				if (dPowerInPercent < calibration.m_PowerOffsetInPercent) {
-					nMaxIndex = nMidIndex;
-					maxCalibration = calibration;
-				}
-				else {
-					nMinIndex = nMidIndex;
-					minCalibration = calibration;
-				}
-			}
-
-			if ((nMinIndex + 1) != nMaxIndex)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_POWERCALIBRATIONLOOKUPFAILED);
-			
-			double dAdjustedMinPowerInPercent = adjustLaserPowerCalibration(dPowerInPercent, minCalibration.m_PowerOffsetInPercent, minCalibration.m_PowerOutputScaling);
-			double dAdjustedMaxPowerInPercent = adjustLaserPowerCalibration(dPowerInPercent, maxCalibration.m_PowerOffsetInPercent, maxCalibration.m_PowerOutputScaling);
-			double dDelta = (maxCalibration.m_PowerSetPointInPercent - minCalibration.m_PowerSetPointInPercent);
-			// dDelta should be larger than any arbitrary fraction of units.
-			if (dDelta < m_dLaserPowerCalibrationUnits * 0.1)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_POWERCALIBRATIONLOOKUPFAILED);
-
-			double dFactor = (dPowerInPercent - minCalibration.m_PowerSetPointInPercent) / dDelta;
-			if (dFactor < 0.0)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_POWERCALIBRATIONLOOKUPFAILED);
-			if (dFactor > 1.0)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_POWERCALIBRATIONLOOKUPFAILED);
-
-			// Linear interpolation between factors
-			dAdjustedPowerInPercent = (1.0 - dFactor) * dAdjustedMinPowerInPercent + dFactor * dAdjustedMaxPowerInPercent;
-
-		}
-
-
-
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_NOTIMPLEMENTED, "multiple power calibration values not implemented");
-	}
-
-
 	double dClippedPowerFactor = dPowerInPercent / 100.0f;
 	if (dClippedPowerFactor > 1.0f)
 		dClippedPowerFactor = 1.0f;
@@ -1193,87 +1143,93 @@ void CRTCContext::StopExecution()
 
 }
 
-bool CRTCContext::LaserPowerCalibrationIsEnabled()
-{
-	return m_LaserPowerCalibrationList.size() > 0;
-}
-
 bool CRTCContext::LaserPowerCalibrationIsLinear()
 {
-	return m_LaserPowerCalibrationList.size() == 1;
+	return m_pOwnerData->getLaserPowerCalibrationIsLinear();
 }
 
-void CRTCContext::ClearLaserPowerCalibration()
+
+
+void CRTCContext::GetLaserPowerCalibration(LibMCDriver_ScanLab_double& dLaserPowerAt0Percent, LibMCDriver_ScanLab_double& dLaserPowerAt100Percent, LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer)
 {
-	m_LaserPowerCalibrationList.clear();
-}
+	dLaserPowerAt0Percent = m_pOwnerData->get0PercentLaserPowerInWatts();
+	dLaserPowerAt100Percent = m_pOwnerData->get100PercentLaserPowerInWatts();
 
-void CRTCContext::GetLaserPowerCalibration(LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, LibMCDriver_ScanLab_uint64* pCalibrationPointsNeededCount, LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer)
-{
-	if (pCalibrationPointsNeededCount != nullptr)
-		*pCalibrationPointsNeededCount = m_LaserPowerCalibrationList.size();
+	auto percentToWattTable = m_pOwnerData->getPercentToWattTable();
 
-	if (pCalibrationPointsBuffer != nullptr) {
-		if (nCalibrationPointsBufferSize < m_LaserPowerCalibrationList.size())
-			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_BUFFERTOOSMALL);
+	if (percentToWattTable.size() < 2) {
+		if (pCalibrationPointsNeededCount != nullptr)
+			*pCalibrationPointsNeededCount = 0;
 
-		auto pTarget = pCalibrationPointsBuffer;
-		for (auto iIter = m_LaserPowerCalibrationList.begin(); iIter != m_LaserPowerCalibrationList.end(); iIter++) {
-			*pTarget = *iIter;
-			pTarget++;
-		}
 	}
+	else {
+		if (pCalibrationPointsNeededCount != nullptr)
+			*pCalibrationPointsNeededCount = percentToWattTable.size() - 2;
+
+		if (pCalibrationPointsBuffer != nullptr) {
+			if (nCalibrationPointsBufferSize < percentToWattTable.size() - 2)
+				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_BUFFERTOOSMALL);
+
+			auto pTarget = pCalibrationPointsBuffer;
+			for (size_t nIndex = 1; nIndex < percentToWattTable.size() - 1; nIndex++) {
+				auto iIter = percentToWattTable.at (nIndex);
+				pTarget->m_PowerSetPointInPercent = iIter.x;
+				pTarget->m_PowerOutputInWatts = iIter.y;
+				pTarget++;
+			}
+		}
+
+	}
+		
+
+
 }
 
-void CRTCContext::SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dPowerOffsetInPercent, const LibMCDriver_ScanLab_double dPowerOutputScaling) 
+void CRTCContext::SetLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent)
 {
-	if (dPowerOutputScaling < 0.0)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOWERCALIBRATIONOUTPUTSCALING);
-
-	m_LaserPowerCalibrationList.clear();
-	sLaserCalibrationPoint calibration;
-	calibration.m_PowerSetPointInPercent = 0.0;
-	calibration.m_PowerOffsetInPercent = dPowerOffsetInPercent;
-	calibration.m_PowerOutputScaling = dPowerOutputScaling;
-	m_LaserPowerCalibrationList.push_back(calibration);
-
+	m_pOwnerData->setMaxLaserPowerLinearPowerCorrection(dLaserPowerAt0Percent, dLaserPowerAt100Percent);
 }
 
-bool calibrationPointCompare (LibMCDriver_ScanLab::sLaserCalibrationPoint point1, LibMCDriver_ScanLab::sLaserCalibrationPoint point2) {
-	return (point1.m_PowerSetPointInPercent < point2.m_PowerSetPointInPercent); 
-}
-
-void CRTCContext::SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer)
+void CRTCContext::SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_ScanLab_double dLaserPowerAt0Percent, const LibMCDriver_ScanLab_double dLaserPowerAt100Percent, const LibMCDriver_ScanLab_uint64 nCalibrationPointsBufferSize, const LibMCDriver_ScanLab::sLaserCalibrationPoint* pCalibrationPointsBuffer) 
 {
-	m_LaserPowerCalibrationList.clear();
+
 	if (nCalibrationPointsBufferSize > 0) {
 		if (pCalibrationPointsBuffer == nullptr)
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
 
-		for (size_t nIndex = 0; nIndex < nCalibrationPointsBufferSize; nIndex++) {
-			auto point = pCalibrationPointsBuffer[nIndex];
-			if (point.m_PowerSetPointInPercent < 0.0)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOWERCALIBRATIONSETPOINT);
-			if (point.m_PowerOutputScaling < 0.0)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOWERCALIBRATIONOUTPUTSCALING);
+		std::map<double, double> nonLinearPoints;
 
-			m_LaserPowerCalibrationList.push_back(point);
-		}
 
-		std::sort(m_LaserPowerCalibrationList.begin(), m_LaserPowerCalibrationList.end(), calibrationPointCompare);
 
-		// Make sure List is strictly ascending in Power!
-		int64_t nOldDiscretePower = -1;
-		for (auto & point : m_LaserPowerCalibrationList) {
-			int64_t nDiscreteLaserPower = (int64_t) round (point.m_PowerSetPointInPercent / m_dLaserPowerCalibrationUnits);
-			if (nDiscreteLaserPower <= nOldDiscretePower)
-				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_DUPLICATELASERPOWERCALIBRATIONSETPOINT);
-			nOldDiscretePower = nDiscreteLaserPower;
-		}
+		m_pOwnerData->setMaxLaserPowerNonlinearPowerCorrection(dLaserPowerAt0Percent, dLaserPowerAt100Percent, nonLinearPoints);
 
 	}
+	else {
+		m_pOwnerData->setMaxLaserPowerLinearPowerCorrection(dLaserPowerAt0Percent, dLaserPowerAt100Percent);
+	}
+}
+
+LibMCDriver_ScanLab_double CRTCContext::MapPowerPercentageToWatts(const LibMCDriver_ScanLab_double dLaserPowerInPercent)
+{
+	double dLaserPowerInWatts = 0.0;
+	bool bSuccess = m_pOwnerData->mapLaserPowerFromPercentToWatts(dLaserPowerInPercent, dLaserPowerInWatts);
+	if (!bSuccess)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOWATTS, "could not convert laser power to watts: " + std::to_string (dLaserPowerInPercent) + "%");
+
+	return dLaserPowerInWatts;
+}
+
+LibMCDriver_ScanLab_double CRTCContext::MapPowerWattsToPercent(const LibMCDriver_ScanLab_double dLaserPowerInWatts)
+{
+	double dLaserPowerInPercent = 0.0;
+	bool bSuccess = m_pOwnerData->mapLaserPowerFromWattsToPercent(dLaserPowerInWatts, dLaserPowerInPercent);
+	if (!bSuccess)
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOPERCENT, "could not convert laser power to watts: " + std::to_string(dLaserPowerInWatts) + "W");
+
+	return dLaserPowerInWatts;
 
 }
+
 
 void CRTCContext::EnableSpatialLaserPowerModulation(const LibMCDriver_ScanLab::SpatialPowerModulationCallback pModulationCallback, const LibMCDriver_ScanLab_pvoid pUserData)
 {

@@ -208,8 +208,8 @@
 		<error name="PULSELENGTHEXCEEDSCONTROLPERIOD" code="1156" description="Pulse Length exceeds control period." />
 		<error name="PULSELENGTHCONTROLNOTSUPPORTEDBYOIE" code="1157" description="Pulse Length control not supported by OIE yet." />
 		<error name="INVALIDLASERPOWERMAPPING" code="1158" description="Invalid laser power mapping." />
-		
-			
+		<error name="COULDNOTCONVERTLASERPOWERTOWATTS" code="1159" description="Could not convert laser power to watts." />
+		<error name="COULDNOTCONVERTLASERPOWERTOPERCENT" code="1160" description="Could not convert laser power to percent." />			
 							
 	</errors>
 
@@ -325,10 +325,9 @@
 		<member name="Y2" type="single" />
 	</struct>
 
-	<struct name="LaserCalibrationPoint" description="The laser output calibration at a point will be calculated by ((PowerSetPointInPercent + PowerOffsetInPercent) * PowerOutputScaling). The result is clamped to [0, 100]">
+	<struct name="LaserCalibrationPoint" description="The laser output calibration at a percentage point.">
 		<member name="PowerSetPointInPercent" type="double" description="Set point of the power in Percent." />
-		<member name="PowerOffsetInPercent" type="double" description="Additional offset of the Power value. ." />
-		<member name="PowerOutputScaling" type="double" description="Scaling factor of the laser output. MUST be positive." />
+		<member name="PowerOutputInWatts" type="double" description="Output power in Watts." />
 	</struct>
 		
 	<struct name="MicroVector">
@@ -450,7 +449,7 @@ Custom implementation
 			<param name="Points" type="structarray" class="Point2D" pass="in" description="Points of polyline to draw." />
 			<param name="MarkSpeed" type="single" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="single" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="single" pass="in" description="Laser power in percent" />
+			<param name="PowerInPercent" type="single" pass="in" description="Laser power in percent" />
 			<param name="ZValue" type="single" pass="in" description="Focus Z Value" />
 		</method>
 		
@@ -458,7 +457,7 @@ Custom implementation
 			<param name="Points" type="structarray" class="Point2D" pass="in" description="Points of polyline to draw." />
 			<param name="MarkSpeed" type="single" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="single" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="single" pass="in" description="Laser power in percent" />
+			<param name="PowerInPercent" type="single" pass="in" description="Laser power in percent" />
 			<param name="ZValue" type="single" pass="in" description="Focus Z Value" />
 			<param name="OIEPIDControlIndex" type="uint32" pass="in" description="OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63." />
 		</method>
@@ -467,7 +466,7 @@ Custom implementation
 			<param name="Hatches" type="structarray" class="Hatch2D" pass="in" description="Hatches to draw." />
 			<param name="MarkSpeed" type="single" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="single" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="single" pass="in" description="Laser power in percent" />
+			<param name="PowerInPercent" type="single" pass="in" description="Laser power in percent" />
 			<param name="ZValue" type="single" pass="in" description="Focus Z Value" />
 		</method>
 		
@@ -966,7 +965,7 @@ Custom implementation
 			<param name="Points" type="structarray" class="Point2D" pass="in" description="Points of polyline to draw." />
 			<param name="MarkSpeed" type="single" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="single" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="single" pass="in" description="Laser power in percent" />
+			<param name="PowerInPercent" type="single" pass="in" description="Laser power in percent" />
 			<param name="ZValue" type="single" pass="in" description="Focus Z Value" />
 		</method>
 		
@@ -974,7 +973,7 @@ Custom implementation
 			<param name="Points" type="structarray" class="Point2D" pass="in" description="Points of polyline to draw." />
 			<param name="MarkSpeed" type="single" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="single" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="single" pass="in" description="Laser power in percent" />
+			<param name="PowerInPercent" type="single" pass="in" description="Laser power in percent" />
 			<param name="ZValue" type="single" pass="in" description="Focus Z Value" />
 			<param name="OIEPIDControlIndex" type="uint32" pass="in" description="OIE PID Control Index. 0 disables PID Control, MUST be smaller or equal 63." />
 		</method>
@@ -983,7 +982,7 @@ Custom implementation
 			<param name="Hatches" type="structarray" class="Hatch2D" pass="in" description="Hatches to draw." />
 			<param name="MarkSpeed" type="single" pass="in" description="Mark speed in mm/s" />
 			<param name="JumpSpeed" type="single" pass="in" description="Jump speed in mm/s" />
-			<param name="Power" type="single" pass="in" description="Laser power in percent" />
+			<param name="PowerInPercent" type="single" pass="in" description="Laser power in percent" />
 			<param name="ZValue" type="single" pass="in" description="Focus Z Value" />
 		</method>
 		
@@ -1361,31 +1360,38 @@ Custom implementation
 			<param name="FailIfError" type="bool" pass="in" description="If true, the call will fail in case of an error." />
 			<param name="ErrorCode" type="uint32" pass="return" description="Bitfield corresponding to the get_marking_info call, as described in the RTC SDK Documentation." />
 		</method>
-
-		<method name="LaserPowerCalibrationIsEnabled" description="Returns if the laser power calibration table is non-empty.">
-			<param name="CalibrationEnabled" type="bool" pass="return" description="Laser Calibration Is Enabled" />			
-		</method>
 		
 		<method name="LaserPowerCalibrationIsLinear" description="Returns if the laser power calibration table has one entry.">
 			<param name="CalibrationIsLinear" type="bool" pass="return" description="Laser Calibration Is Affine Linear" />			
 		</method>
 
-		<method name="ClearLaserPowerCalibration" description="Clears the laser power calibration table.">
-		</method>
-
-		<method name="GetLaserPowerCalibration" description="Returns the laser power calibration table. Fails if laser calibration is not enabled.">
+		<method name="GetLaserPowerCalibration" description="Returns the laser power calibration table. Fails if laser calibration is not enabled.">		
+			<param name="LaserPowerAt0Percent" type="double" pass="out" description="Laser Power at 0 percent" />			
+			<param name="LaserPowerAt100Percent" type="double" pass="out" description="Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent." />			
 			<param name="CalibrationPoints" type="structarray" class="LaserCalibrationPoint" pass="out" description="Laser Calibration Points" />			
 		</method>
 				
 		<method name="SetLinearLaserPowerCalibration" description="Enables the laser power calibration with an affine linear tranformation.">
-			<param name="PowerOffsetInPercent" type="double" pass="in" description="Additional offset of the Power value." />
-			<param name="PowerOutputScaling" type="double" pass="in" description="Scaling factor of the laser output." />			
+			<param name="LaserPowerAt0Percent" type="double" pass="in" description="Laser Power at 0 percent" />			
+			<param name="LaserPowerAt100Percent" type="double" pass="in" description="Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent." />			
 		</method>
 		
 		<method name="SetPiecewiseLinearLaserPowerCalibration" description="Enables the laser power calibration with multiple calibration point values. Table MUST NOT have negative power entries. Laser Power Output will be linear scaled with the given values within their respective intervals. Any laser power outside of the minimum or maximum Power values will be scaled according to the respective minimum or maximum scaling value.">
-			<param name="CalibrationPoints" type="structarray" class="LaserCalibrationPoint" pass="in" description="Laser Calibration Points. Array will be sorted by Laser Power Keys. Array MUST NOT be empty. Array MUST NOT have duplicate entries (to an accuracy of 0.01 Percent)." />
+			<param name="LaserPowerAt0Percent" type="double" pass="in" description="Laser Power at 0 percent" />			
+			<param name="LaserPowerAt100Percent" type="double" pass="in" description="Laser Power at 100 percent. MUST be larger than Laser Power at 0 percent." />			
+			<param name="CalibrationPoints" type="structarray" class="LaserCalibrationPoint" pass="in" description="Laser Calibration Points that match percentage to power. The percentage values MUST be in sequentially increasing in the array (to an accuracy of 0.001 Percent). The power values MUST be sequentially increasing in the array (to an accuracy of 0.001 Watts).. Array MUST NOT be empty." />
 		</method>
-				
+
+		<method name="MapPowerPercentageToWatts" description="Maps a laser power percentage value to the laser power in watts.">
+			<param name="LaserPowerInPercent" type="double" pass="in" description="Laser Power in Percent" />
+			<param name="LaserPowerInWatts" type="double" pass="return" description="Laser Power in Watts" />
+		</method>
+
+		<method name="MapPowerWattsToPercent" description="Maps a laser power value to the laser power in percent.">
+			<param name="LaserPowerInWatts" type="double" pass="in" description="Laser Power in Watts" />
+			<param name="LaserPowerInPercent" type="double" pass="return" description="Laser Power in Percent" />
+		</method>
+
 		<method name="EnableSpatialLaserPowerModulation" description="Enables a spatial laser power modulation via callback.">
 			<param name="ModulationCallback" type="functiontype" class="SpatialPowerModulationCallback" pass="in" description="Callback to call for modulating the laser power."/>			
 			<param name="UserData" type="pointer" pass="in" description="Userdata that is passed to the callback function"/>

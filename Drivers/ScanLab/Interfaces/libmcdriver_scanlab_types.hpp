@@ -261,6 +261,8 @@ typedef void * LibMCDriver_ScanLab_pvoid;
 #define LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD 1156 /** Pulse Length exceeds control period. */
 #define LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE 1157 /** Pulse Length control not supported by OIE yet. */
 #define LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING 1158 /** Invalid laser power mapping. */
+#define LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOWATTS 1159 /** Could not convert laser power to watts. */
+#define LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOPERCENT 1160 /** Could not convert laser power to percent. */
 
 /*************************************************************************************************************************
  Error strings for LibMCDriver_ScanLab
@@ -434,6 +436,8 @@ inline const char * LIBMCDRIVER_SCANLAB_GETERRORSTRING (LibMCDriver_ScanLabResul
     case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD: return "Pulse Length exceeds control period.";
     case LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE: return "Pulse Length control not supported by OIE yet.";
     case LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING: return "Invalid laser power mapping.";
+    case LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOWATTS: return "Could not convert laser power to watts.";
+    case LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOPERCENT: return "Could not convert laser power to percent.";
     default: return "unknown error";
   }
 }
@@ -583,8 +587,7 @@ namespace LibMCDriver_ScanLab {
   
   typedef struct sLaserCalibrationPoint {
       LibMCDriver_ScanLab_double m_PowerSetPointInPercent;
-      LibMCDriver_ScanLab_double m_PowerOffsetInPercent;
-      LibMCDriver_ScanLab_double m_PowerOutputScaling;
+      LibMCDriver_ScanLab_double m_PowerOutputInWatts;
   } sLaserCalibrationPoint;
   
   typedef struct sMicroVector {
