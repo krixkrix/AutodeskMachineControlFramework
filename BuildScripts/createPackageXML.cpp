@@ -251,6 +251,7 @@ int main(int argc, char* argv[])
 		std::string sPackageName = "Build " + sDevPackagePrefix;
 		std::string sConfigName = sDevPackagePrefix + "_config.xml";
 		std::string sClientName = sDevPackagePrefix + "_core.client";
+		std::string sAPIDocsName = sDevPackagePrefix + "_core.apidocs";
 		std::string sCoreName = sDevPackagePrefix + "_core_libmc." + sExtension;
 		std::string sCoreResourcesName = sDevPackagePrefix + "_core.data";
 		std::string sCoreDataName = sDevPackagePrefix + "_core_libmcdata." + sExtension;
@@ -260,7 +261,7 @@ int main(int argc, char* argv[])
 
 		packageXMLStream << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
 		packageXMLStream << "<amcpackage xmlns=\"http://schemas.autodesk.com/amcpackage/2020/06\">\n";
-		packageXMLStream << "  <build name=\"" << sPackageName << "\" configuration=\"" << sConfigName << "\" coreclient=\"" << sClientName << "\">\n";
+		packageXMLStream << "  <build name=\"" << sPackageName << "\" configuration=\"" << sConfigName << "\" coreclient=\"" << sClientName << " apidocs=\"" << sAPIDocsName << "\">\n";
 
 		packageXMLStream << "    <library name=\"core\" import=\"" << sCoreName << "\" resources=\"" << sCoreResourcesName << "\" />\n";
 		packageXMLStream << "    <library name=\"datamodel\" import=\"" << sCoreDataName << "\" />\n";
