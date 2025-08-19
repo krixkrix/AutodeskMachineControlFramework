@@ -224,7 +224,6 @@ void CMCContext::ParseConfiguration(const std::string & sXMLString)
         auto apiNode = mainNode.child("api");
         bool bHasDocumentationResource = false;
         if (!apiNode.empty()) {
-            m_pSystemState->logger()->logMessage("Loading documentation resource...", LOG_SUBSYSTEM_SYSTEM, AMC::eLogLevel::Message);
 
             auto documentationResourceAttrib = apiNode.attribute("documentationresource");
             std::string sDocumentationResource = documentationResourceAttrib.as_string();
