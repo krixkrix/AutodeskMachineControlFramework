@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
 
 		packageXMLStream << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
 		packageXMLStream << "<amcpackage xmlns=\"http://schemas.autodesk.com/amcpackage/2020/06\">\n";
-		packageXMLStream << "  <build name=\"" << sPackageName << "\" configuration=\"" << sConfigName << "\" coreclient=\"" << sClientName << " apidocs=\"" << sAPIDocsName << "\">\n";
+		packageXMLStream << "  <build name=\"" << sPackageName << "\" configuration=\"" << sConfigName << "\" coreclient=\"" << sClientName << "\" apidocs=\"" << sAPIDocsName << "\">\n";
 
 		packageXMLStream << "    <library name=\"core\" import=\"" << sCoreName << "\" resources=\"" << sCoreResourcesName << "\" />\n";
 		packageXMLStream << "    <library name=\"datamodel\" import=\"" << sCoreDataName << "\" />\n";
