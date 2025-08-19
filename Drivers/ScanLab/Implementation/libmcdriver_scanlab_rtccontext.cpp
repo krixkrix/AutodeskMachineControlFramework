@@ -40,7 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Include custom headers here.
 #include <math.h>
-#include <iostream>
 #include <thread>
 #include <fstream>
 #include <algorithm>
@@ -132,8 +131,10 @@ bool CRTCContextOwnerData::getLaserPowerCalibrationIsLinear()
 
 bool CRTCContextOwnerData::mapLaserPowerFromWattsToPercent(double dLaserPowerInWatts, double& dPercent)
 {
-
+	
 	if (m_wattsToPercent.size() <= 2) {
+		
+
 		// No mapping available, just return linear mapping
 		if (dLaserPowerInWatts < m_d0PercentLaserPowerInWatts) {
 			dPercent = 0.0;
@@ -188,12 +189,12 @@ bool CRTCContextOwnerData::interpolate(const std::vector<sPowerMappingKnot>& pts
 	}
 
 	// Below domain -> clamp
-	if (x <= pts.front().x) {
+	if (x < pts.front().x) {
 		y = pts.front().y;
 		return false;
 	}
 	// Above domain -> clamp
-	if (x >= pts.back().x) {
+	if (x > pts.back().x) {
 		y = pts.back().y;
 		return false;
 	}
@@ -236,9 +237,9 @@ void CRTCContextOwnerData::buildAndValidateMappings(const std::map<double, doubl
 	w2p.reserve(userMap.size() + 2);
 	w2p.push_back({ w0, 0.0 });
 	for (const auto& kv : userMap) {
-		const double w = kv.first;
-		const double p = kv.second;
-
+		const double p = kv.first;
+		const double w = kv.second;
+		
 		if (w < w0 - m_dEpsilon || w > w1 + m_dEpsilon)
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDLASERPOWERMAPPING,
 				"mapping watt value out of bounds: " + std::to_string(w));
@@ -1199,7 +1200,11 @@ void CRTCContext::SetPiecewiseLinearLaserPowerCalibration(const LibMCDriver_Scan
 
 		std::map<double, double> nonLinearPoints;
 
+		for (uint64_t nIndex = 0; nIndex < nCalibrationPointsBufferSize; nIndex++) {
+			auto pPoint = &pCalibrationPointsBuffer[nIndex];
 
+			nonLinearPoints.insert (std::make_pair (pPoint->m_PowerSetPointInPercent, pPoint->m_PowerOutputInWatts));
+		}
 
 		m_pOwnerData->setMaxLaserPowerNonlinearPowerCorrection(dLaserPowerAt0Percent, dLaserPowerAt100Percent, nonLinearPoints);
 
@@ -1226,7 +1231,7 @@ LibMCDriver_ScanLab_double CRTCContext::MapPowerWattsToPercent(const LibMCDriver
 	if (!bSuccess)
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_COULDNOTCONVERTLASERPOWERTOPERCENT, "could not convert laser power to watts: " + std::to_string(dLaserPowerInWatts) + "W");
 
-	return dLaserPowerInWatts;
+	return dLaserPowerInPercent;
 
 }
 
