@@ -872,7 +872,7 @@ void CRTCContext::writePower(double dPowerInPercent, bool bOIEPIDControlFlag)
 				uint32_t nFullPeriodInBits = nHalfPeriodInBits * 2;
 				uint32_t nPulseLength = (uint32_t)round((double)nFullPeriodInBits * dClippedPowerFactor);
 
-				std::cout << "laser pulse modulation: half period " << nHalfPeriodInBits << " bits, pulse length " << nPulseLength << " bits, factor " << dClippedPowerFactor << std::endl;
+				//std::cout << "laser pulse modulation: half period " << nHalfPeriodInBits << " bits, pulse length " << nPulseLength << " bits, factor " << dClippedPowerFactor << std::endl;
 
 				m_pScanLabSDK->n_set_laser_pulses(m_CardNo, nHalfPeriodInBits, nPulseLength);
 				break;
