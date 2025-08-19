@@ -90,6 +90,11 @@ if "%ERRORLEVEL%" neq "0" (
 	goto ERROR
 )
 
+copy /y "%basepath%Artifacts\apidocsdist\apidocspackage.zip" "%builddir%\Output\%GITHASH%_core.apidocs"
+if "%ERRORLEVEL%" neq "0" (
+	goto ERROR
+)
+
 cd "%builddir%"
 
 echo "Building Core Modules"
