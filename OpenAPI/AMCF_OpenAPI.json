@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Autodesk Machine Control Framework - External API Documentation",
-    "description": "This is an initial OpenAPI 3.0 specification of the Autodesk Machine control Framework.",
+    "title": "Autodesk Machine Control Framework - API Documentation",
+    "description": "This is an OpenAPI 3.0 specification of the Autodesk Machine control Framework's Server API.",
     "contact": {
       "email": "alexander.oster@autodesk.com"
     },

@@ -685,6 +685,8 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_QUERYPARAMETERNOTFOUND 669 /** Query parameter not found. */
 #define LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY 670 /** Invalid build job status query. */
 #define LIBMC_ERROR_INVALIDNEWBUILDSTATUS 671 /** Invalid new build status. */
+#define LIBMC_ERROR_INVALIDDEFAULTOPENAPIJSON 672 /** Invalid Default OpenAPI JSON. */
+#define LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON 673 /** Invalid Custom OpenAPI JSON. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1282,6 +1284,8 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_QUERYPARAMETERNOTFOUND: return "Query parameter not found.";
     case LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY: return "Invalid build job status query.";
     case LIBMC_ERROR_INVALIDNEWBUILDSTATUS: return "Invalid new build status.";
+    case LIBMC_ERROR_INVALIDDEFAULTOPENAPIJSON: return "Invalid Default OpenAPI JSON.";
+    case LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON: return "Invalid Custom OpenAPI JSON.";
     default: return "unknown error";
   }
 }

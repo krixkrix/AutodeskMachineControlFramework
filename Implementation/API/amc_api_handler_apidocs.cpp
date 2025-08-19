@@ -38,8 +38,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <iostream>
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "Libraries/libzip/zip.h"
 #include "pugixml.hpp"
+
+#include "Libraries/RapidJSON/document.h"
+#include "Libraries/RapidJSON/stringbuffer.h"
+#include "Libraries/RapidJSON/writer.h"
 
 
 using namespace AMC;
@@ -94,14 +102,137 @@ void CAPIHandler_APIDocs::LoadAPIDocsPackage(PResourcePackage pResourcePackage)
 	for (size_t nIndex = 0; nIndex < nCount; nIndex++) {
 		auto pEntry = pResourcePackage->getEntry(nIndex);
 
+		std::string sNameOriginal = pEntry->getName();
+		std::string sNameLowerCase = AMCCommon::CUtils::toLowerString(sNameOriginal);
+
 		auto apiResponse = std::make_shared<CAPIFixedBufferResponse>(pEntry->getContentType());
-		pResourcePackage->readEntry(pEntry->getName (), apiResponse->getBuffer());
-		m_FilesToServe.insert(std::make_pair(AMCCommon::CUtils::toLowerString (pEntry->getName ()), apiResponse));
+
+		if (sNameLowerCase == "amcf_openapi.json") {
+
+			std::string sOpenAPIContent = pResourcePackage->readEntryUTF8String(sNameOriginal);
+			patchAPIJSON (sOpenAPIContent, apiResponse->getBuffer());
+		
+		}
+		else {
+			pResourcePackage->readEntry(sNameOriginal, apiResponse->getBuffer());
+		}
+
+		m_FilesToServe.insert(std::make_pair(sNameLowerCase, apiResponse));
+
 	}
 
 
-
 }
+
+void CAPIHandler_APIDocs::setCustomDocumentationJSON(const std::string & sCustomDocumentationJSON)
+{
+	m_sCustomDocumentationJSON = sCustomDocumentationJSON;
+}
+
+
+
+    // Parse helper
+    static bool parseJson(const std::string& s, rapidjson::Document& doc) {
+        doc.Parse(s.c_str());
+        return !doc.HasParseError() && doc.IsObject();
+    }
+
+    // Ensure `root[name]` exists and is an object; return it.
+    static rapidjson::Value& getOrCreateObject(rapidjson::Value& root,
+        const char* name,
+        rapidjson::Document::AllocatorType& alloc) {
+        auto it = root.FindMember(name);
+        if (it == root.MemberEnd()) {
+            // create: name + empty object
+            rapidjson::Value key(name, static_cast<rapidjson::SizeType>(std::strlen(name)), alloc);
+            rapidjson::Value obj(rapidjson::kObjectType);
+            root.AddMember(key, obj, alloc);
+            it = root.FindMember(name); // re-find to get a reference
+        }
+        else if (!it->value.IsObject()) {
+            it->value.SetObject();
+        }
+        return it->value;
+    }
+
+    // Deep-merge source object into destination object.
+    // - When both values are objects -> recurse
+    // - Otherwise -> overwrite destination with source
+    static void mergeObjectMembers(rapidjson::Value& dstObj,
+        const rapidjson::Value& srcObj,
+        rapidjson::Document::AllocatorType& alloc) {
+        for (auto m = srcObj.MemberBegin(); m != srcObj.MemberEnd(); ++m) {
+            // Copy the member name into dst's allocator
+            rapidjson::Value key(m->name.GetString(), m->name.GetStringLength(), alloc);
+
+            auto it = dstObj.FindMember(m->name);
+            if (it == dstObj.MemberEnd()) {
+                // New member -> deep copy value
+                rapidjson::Value val;
+                val.CopyFrom(m->value, alloc);
+                dstObj.AddMember(key, val, alloc);
+            }
+            else {
+                // Existing key
+                if (it->value.IsObject() && m->value.IsObject()) {
+                    mergeObjectMembers(it->value, m->value, alloc);
+                }
+                else {
+                    it->value.CopyFrom(m->value, alloc); // overwrite
+                }
+            }
+        }
+    }
+
+
+void CAPIHandler_APIDocs::patchAPIJSON(const std::string& sOpenAPIJSON,
+    std::vector<uint8_t>& apiBuffer)
+{
+    // Fast path: nothing to patch
+    if (m_sCustomDocumentationJSON.empty()) {
+        apiBuffer.assign(sOpenAPIJSON.begin(), sOpenAPIJSON.end());
+        return;
+    }
+
+    rapidjson::Document base;
+    rapidjson::Document custom;
+    if (!parseJson(sOpenAPIJSON, base)) 
+        throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDDEFAULTOPENAPIJSON);
+    
+    if (!parseJson(m_sCustomDocumentationJSON, custom)) 
+        throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON);
+    
+
+    // Start merged := base
+    rapidjson::Document merged(rapidjson::kObjectType);
+    merged.CopyFrom(base, merged.GetAllocator());
+    auto& alloc = merged.GetAllocator();
+
+    // Merge "paths"
+    if (custom.HasMember("paths") && custom["paths"].IsObject()) {
+        rapidjson::Value& dstPaths = getOrCreateObject(merged, "paths", alloc);
+        mergeObjectMembers(dstPaths, custom["paths"], alloc);
+    }
+
+    // Merge "components.schemas"
+    if (custom.HasMember("components") && custom["components"].IsObject()) {
+        const rapidjson::Value& srcComponents = custom["components"];
+        if (srcComponents.HasMember("schemas") && srcComponents["schemas"].IsObject()) {
+            rapidjson::Value& dstComponents = getOrCreateObject(merged, "components", alloc);
+            rapidjson::Value& dstSchemas = getOrCreateObject(dstComponents, "schemas", alloc);
+            mergeObjectMembers(dstSchemas, srcComponents["schemas"], alloc);
+        }
+    }
+
+    // Serialize back to bytes
+    rapidjson::StringBuffer sb;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+    merged.Accept(writer);
+    const char* jsonOut = sb.GetString();
+
+    apiBuffer.assign(jsonOut, jsonOut + std::strlen(jsonOut));
+}
+
 		
 
 

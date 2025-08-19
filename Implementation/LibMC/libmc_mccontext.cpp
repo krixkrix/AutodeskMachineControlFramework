@@ -170,6 +170,7 @@ void CMCContext::ParseConfiguration(const std::string & sXMLString)
             throw ELibMCNoContextException(LIBMC_ERROR_MISSINGMAINNODE);
         }
 
+
         auto xmlnsAttrib = mainNode.attribute("xmlns");
         if (xmlnsAttrib.empty())
             throw ELibMCNoContextException(LIBMC_ERROR_MISSINGXMLSCHEMA);
@@ -219,6 +220,29 @@ void CMCContext::ParseConfiguration(const std::string & sXMLString)
         {
             addDriver(driversNode);
         }
+
+        auto apiNode = mainNode.child("api");
+        bool bHasDocumentationResource = false;
+        if (!apiNode.empty()) {
+            m_pSystemState->logger()->logMessage("Loading documentation resource...", LOG_SUBSYSTEM_SYSTEM, AMC::eLogLevel::Message);
+
+            auto documentationResourceAttrib = apiNode.attribute("documentationresource");
+            std::string sDocumentationResource = documentationResourceAttrib.as_string();
+
+            if (!sDocumentationResource.empty()) {
+
+                m_pSystemState->logger()->logMessage("Loading documentation resource: " + sDocumentationResource, LOG_SUBSYSTEM_SYSTEM, AMC::eLogLevel::Message);
+
+                std::string sAPIDocumentationJSON = m_pCoreResourcePackage->readEntryUTF8String(sDocumentationResource);
+                m_pAPIDocumentationHandler->setCustomDocumentationJSON(sAPIDocumentationJSON);
+
+                bHasDocumentationResource = true;
+            }
+
+        }
+
+        if (!bHasDocumentationResource)
+            m_pSystemState->logger()->logMessage("No custom API definition given.", LOG_SUBSYSTEM_SYSTEM, AMC::eLogLevel::Message);
 
 
         m_pSystemState->logger()->logMessage("Initializing state machines...", LOG_SUBSYSTEM_SYSTEM, AMC::eLogLevel::Message);

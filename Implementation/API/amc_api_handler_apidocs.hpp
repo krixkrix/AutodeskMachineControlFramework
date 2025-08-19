@@ -44,6 +44,8 @@ namespace AMC {
 	private:
 
 		std::map<std::string, PAPIResponse> m_FilesToServe;
+
+		std::string m_sCustomDocumentationJSON;
 			
 	public:
 
@@ -58,6 +60,10 @@ namespace AMC {
 		virtual PAPIResponse handleRequest(const std::string& sURI, const eAPIRequestType requestType, CAPIFormFields & pFormFields, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth) override;
 
 		void LoadAPIDocsPackage (PResourcePackage pResourcePackage);
+
+		void setCustomDocumentationJSON (const std::string & sCustomDocumentationJSON);
+
+		void patchAPIJSON (const std::string & sOpenAPIJSON, std::vector<uint8_t> & apiBuffer);
 
 	};
 
