@@ -99,15 +99,12 @@ cd "%builddir%"
 
 echo "Building Core Modules"
 call cmake ..
-if "%ERRORLEVEL%" neq "0" (
-	goto ERROR
-)
+if errorlevel 1 goto ERROR
 
 REM call cmake -G "MinGW Makefiles" ..
-call cmake --build . --config Release
-if "%ERRORLEVEL%" neq "0" (
-	goto ERROR
-)
+cmake --build . --config Release -- /m
+if errorlevel 1 goto ERROR
+
 
 echo "Building Package XML"
 

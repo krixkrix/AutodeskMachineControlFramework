@@ -36,11 +36,6 @@ project(LibMC)
 option(INCLUDE_DRIVERS "Include the drivers in the build" ON)
 option(INCLUDE_TESTS "Include the test system in the build" OFF)
 
-if(INCLUDE_DRIVERS)
-message(STATUS "Including Drivers in build")
-add_subdirectory(Drivers)
-endif()
-
 set(CMAKE_AMCF_PLUGINNAME Examples/LPBFSystem)
 
 set(CMAKE_AMCF_PROJECTDIR ${PROJECT_BINARY_DIR})
@@ -75,6 +70,10 @@ endif()
 
 message(STATUS "Targetting platform ${TARGETPLATFORM}")
 
+if (MSVC)
+    message(STATUS "Enabling multicore compilation...")
+    add_compile_options(/MP)
+endif()
 
 # Setting platform dependent executables
 if (${TARGETPLATFORM} MATCHES "win64")
@@ -100,6 +99,29 @@ message(STATUS "Global git hash: \"${GLOBALGITHASH}\"")
 file(STRINGS ${PROJECT_BINARY_DIR}/clientdirhash.txt CLIENTDIRHASH)
 message(STATUS "Client hash: \"${CLIENTDIRHASH}\"")
 
+#[[++
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++ Adding Drivers and collecting dependencies
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+]]
+
+
+add_custom_target(finished_drivers ALL)
+add_dependencies(finished_drivers amc_server)
+add_dependencies(finished_drivers amc_win32)
+add_dependencies(finished_drivers copy_distribution_libraries)
+add_dependencies(finished_drivers create_core_resources)
+add_dependencies(finished_drivers create_package_xml)
+add_dependencies(finished_drivers build_configuration_xml)
+add_dependencies(finished_drivers libmc)
+
+
+if(INCLUDE_DRIVERS)
+message(STATUS "Including Drivers in build")
+add_subdirectory(Drivers)
+endif()
 
 #[[++
 
@@ -128,6 +150,8 @@ endif()
 
 
 add_custom_target(copy_framework ALL)
+add_dependencies(copy_framework finished_drivers)
+
 
 file (GLOB framework_files_dev LIST_DIRECTORIES false "${CMAKE_CURRENT_SOURCE_DIR}/Framework/HeadersDev/CppDynamic/*.*")
 foreach(framework_file_dev ${framework_files_dev})
@@ -275,7 +299,8 @@ set(LIBMC_SRC
 )
 
 add_library(libmc SHARED ${LIBMC_SRC})
-add_dependencies(libmc copy_framework)
+
+add_dependencies(libmc copy_distribution_libraries)
 
 # Do not prefix the binary's name with "lib" on Unix systems:
 set_target_properties(libmc PROPERTIES PREFIX "" IMPORT_PREFIX "" )
@@ -378,7 +403,6 @@ source_group("dependencies\\crossguid" FILES ${LIBMCDATA_SRC_DEP_CROSSGUID})
 source_group("dependencies\\zlib" FILES ${LIBMCDATA_SRC_DEP_ZLIB})
 
 add_library(libmcdata SHARED ${LIBMCDATA_SRC})
-add_dependencies(libmcdata copy_framework)
 
 # Do not prefix the binary's name with "lib" on Unix systems:
 set_target_properties(libmcdata PROPERTIES PREFIX "" IMPORT_PREFIX "" )
@@ -485,7 +509,6 @@ add_custom_command(
 ]]
 
 add_custom_target(copy_distribution_libraries ALL)
-add_dependencies(copy_distribution_libraries copy_framework)
 
 add_custom_command(
 	TARGET copy_distribution_libraries POST_BUILD
