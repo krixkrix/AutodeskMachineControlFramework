@@ -128,6 +128,7 @@ copy ..\Output\%GITHASH%_core_libmc.dll Framework\Dist\
 copy ..\Output\%GITHASH%_core_lib3mf.dll Framework\Dist\
 copy ..\Output\%GITHASH%_core_libmcdata.dll Framework\Dist\
 copy ..\Output\%GITHASH%_core.client Framework\Dist\
+copy ..\Output\%GITHASH%_core.apidocs Framework\Dist\
 copy ..\Output\%GITHASH%_*.data Framework\Dist\
 copy ..\Output\%GITHASH%_driver_*.dll Framework\Dist\
 copy ..\..\Framework\HeadersDev\CppDynamic\*.* Framework\HeadersDev\CppDynamic
