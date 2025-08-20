@@ -3,6 +3,9 @@ echo off
 
 set GO111MODULE=off
 
+set STARTTIME=%TIME%
+echo Compilation start time: %STARTTIME%
+
 set basepath=%~dp0
 echo %basepath%
 set builddir=%basepath%build_win64
@@ -154,6 +157,12 @@ echo "FATAL BUILD ERROR!"
 echo "------------------------------------------------------------"
 
 :END
+
+echo Compilation start time: %STARTTIME%
+set ENDTIME=%TIME%
+echo Compilation end time: %ENDTIME%
+
+
 if "%1" neq "NOPAUSE" (
 	pause
 )
