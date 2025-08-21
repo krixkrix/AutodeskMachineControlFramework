@@ -2710,6 +2710,20 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 		SetOIEPIDMode(0);
 	}
 
+
+	int32_t nCustomPreDelaySegmentAttributeID = -1;
+	int32_t nCustomPostDelaySegmentAttributeID = -1;
+	if (pLayer->HasCustomSegmentAttribute("http://schemas.scanlab.com/delay/2023/01", "predelay")) {
+		nCustomPreDelaySegmentAttributeID = (int32_t) pLayer->FindCustomSegmentAttributeID("http://schemas.scanlab.com/delay/2023/01", "predelay");
+	}
+	if (pLayer->HasCustomSegmentAttribute("http://schemas.scanlab.com/delay/2023/01", "postdelay")) {
+		nCustomPostDelaySegmentAttributeID = (int32_t)pLayer->FindCustomSegmentAttributeID("http://schemas.scanlab.com/delay/2023/01", "postdelay");
+	}
+
+	//std::cout << "Custom predelay segment attribute " << nCustomPreDelaySegmentAttributeID << std::endl;
+	//std::cout << "Custom postdelay segment attribute " << nCustomPostDelaySegmentAttributeID << std::endl;
+
+
 	uint32_t nSegmentCount = pLayer->GetSegmentCount();
 	for (uint32_t nSegmentIndex = 0; nSegmentIndex < nSegmentCount; nSegmentIndex++) {
 
@@ -2829,15 +2843,12 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 					// First take the pre segment delay from the profile
 					uint32_t nPreSegmentDelayInTicks = (uint32_t)round(dPreSegmentDelay * 0.1);
 
-					// Check for a Presegment delay override for each segment
-					int64_t nIndividiualPreSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "predelay", -1);
-					if (nIndividiualPreSegmentDelayInMicroseconds >= 0)
-						nPreSegmentDelayInTicks = (uint32_t)(nIndividiualPreSegmentDelayInMicroseconds / 10);
-
 					// Check for a Presegment delay override for each segment in the Scanlab Namespace
-					int64_t nScanlabPreSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/delay/2023/01", "predelay", -1);
-					if (nScanlabPreSegmentDelayInMicroseconds >= 0)
-						nPreSegmentDelayInTicks = (uint32_t)(nScanlabPreSegmentDelayInMicroseconds / 10);
+					if (nCustomPreDelaySegmentAttributeID >= 0) {
+						int64_t nScanlabPreSegmentDelayInMicroseconds = pLayer->GetSegmentIntegerAttribute(nSegmentIndex, (uint32_t)nCustomPreDelaySegmentAttributeID);
+						if (nScanlabPreSegmentDelayInMicroseconds >= 0)
+							nPreSegmentDelayInTicks = (uint32_t)(nScanlabPreSegmentDelayInMicroseconds / 10);
+					}
 
 					if (nPreSegmentDelayInTicks > 0) {
 						if (nPreSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
@@ -2907,15 +2918,14 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 					// First take the pre segment delay from the profile
 					uint32_t nPostSegmentDelayInTicks = (uint32_t)round(dPostSegmentDelay * 0.1);
 
-					// Check for a Postsegment delay override for each segment
-					int64_t nIndividiualPostSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "postdelay", -1);
-					if (nIndividiualPostSegmentDelayInMicroseconds >= 0)
-						nPostSegmentDelayInTicks = (uint32_t)(nIndividiualPostSegmentDelayInMicroseconds / 10);
-
 					// Check for a Postsegment delay override for each segment in the Scanlab Namespace
-					int64_t nScanlabPostSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/delay/2023/01", "postdelay", -1);
-					if (nScanlabPostSegmentDelayInMicroseconds >= 0)
-						nPostSegmentDelayInTicks = (uint32_t)(nScanlabPostSegmentDelayInMicroseconds / 10);
+					if (nCustomPostDelaySegmentAttributeID >= 0) {
+						int64_t nScanlabPostSegmentDelayInMicroseconds = pLayer->GetSegmentIntegerAttribute(nSegmentIndex, (uint32_t)nCustomPostDelaySegmentAttributeID);
+						if (nScanlabPostSegmentDelayInMicroseconds >= 0)
+							nPostSegmentDelayInTicks = (uint32_t)(nScanlabPostSegmentDelayInMicroseconds / 10);
+					}
+
+					//std::cout << "Post Segment Delay: " << nPostSegmentDelayInTicks << std::endl;
 
 					if (nPostSegmentDelayInTicks > 0) {
 						if (nPostSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)

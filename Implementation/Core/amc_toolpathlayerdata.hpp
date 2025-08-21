@@ -72,19 +72,23 @@ namespace AMC {
 
 	class CToolpathCustomSegmentAttribute {
 	private:
-		uint32_t m_nAttributeID;
+		uint32_t m_nInternalAttributeID;
+		uint32_t m_n3MFAttributeID;
 		LibMCEnv::eToolpathAttributeType m_AttributeType;
 		std::string m_sNameSpace;
 		std::string m_sAttributeName;
 
 	public:
 
-		CToolpathCustomSegmentAttribute (const std::string & sNameSpace, const std::string & sAttributeName, LibMCEnv::eToolpathAttributeType attributeType);
+		CToolpathCustomSegmentAttribute (uint32_t nInternalAttributeID, const std::string & sNameSpace, const std::string & sAttributeName, LibMCEnv::eToolpathAttributeType attributeType);
 
 		virtual ~CToolpathCustomSegmentAttribute();
 
-		uint32_t getAttributeID();
-		void setAttributeID(uint32_t nAttributeID);
+		uint32_t getInternalAttributeID();
+
+		uint32_t get3MFAttributeID();
+		void set3MFAttributeID(uint32_t nAttributeID);
+
 		LibMCEnv::eToolpathAttributeType getAttributeType ();
 		std::string getNameSpace();
 		std::string getAttributeName ();
