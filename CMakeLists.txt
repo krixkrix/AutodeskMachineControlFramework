@@ -110,7 +110,6 @@ message(STATUS "Client hash: \"${CLIENTDIRHASH}\"")
 
 add_custom_target(finished_drivers ALL)
 add_dependencies(finished_drivers amc_server)
-add_dependencies(finished_drivers amc_win32)
 add_dependencies(finished_drivers copy_distribution_libraries)
 add_dependencies(finished_drivers create_core_resources)
 add_dependencies(finished_drivers create_package_xml)
