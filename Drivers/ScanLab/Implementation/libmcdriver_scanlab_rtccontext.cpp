@@ -2834,11 +2834,16 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 					if (nIndividiualPreSegmentDelayInMicroseconds >= 0)
 						nPreSegmentDelayInTicks = (uint32_t)(nIndividiualPreSegmentDelayInMicroseconds / 10);
 
+					// Check for a Presegment delay override for each segment in the Scanlab Namespace
+					int64_t nScanlabPreSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/delay/2023/01", "predelay", -1);
+					if (nScanlabPreSegmentDelayInMicroseconds >= 0)
+						nPreSegmentDelayInTicks = (uint32_t)(nScanlabPreSegmentDelayInMicroseconds / 10);
+
 					if (nPreSegmentDelayInTicks > 0) {
 						if (nPreSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
 							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR);
 
-						// Set delay in 10 Microsecond steps, dPreSegmentDelay is in Milliseconds
+						// Set delay in 10 Microsecond steps, dPreSegmentDelay is in Microseconds
 						m_pScanLabSDK->n_long_delay(m_CardNo, nPreSegmentDelayInTicks);
 					}
 				}
@@ -2907,11 +2912,16 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 					if (nIndividiualPostSegmentDelayInMicroseconds >= 0)
 						nPostSegmentDelayInTicks = (uint32_t)(nIndividiualPostSegmentDelayInMicroseconds / 10);
 
+					// Check for a Postsegment delay override for each segment in the Scanlab Namespace
+					int64_t nScanlabPostSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/delay/2023/01", "postdelay", -1);
+					if (nScanlabPostSegmentDelayInMicroseconds >= 0)
+						nPostSegmentDelayInTicks = (uint32_t)(nScanlabPostSegmentDelayInMicroseconds / 10);
+
 					if (nPostSegmentDelayInTicks > 0) {
 						if (nPostSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
 							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR);
 
-						// Set delay in 10 Microsecond steps, dPostSegmentDelay is in Milliseconds
+						// Set delay in 10 Microsecond steps, dPostSegmentDelay is in Microseconds
 						m_pScanLabSDK->n_long_delay(m_CardNo, nPostSegmentDelayInTicks);
 					}
 				}
