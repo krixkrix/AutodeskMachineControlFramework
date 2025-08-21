@@ -14,6 +14,7 @@ set outputdir=%builddir%\Output
 if not exist "%builddir%" (mkdir "%builddir%")
 if not exist "%outputdir%" (mkdir "%outputdir%")
 if not exist "%outputdir%\data" (mkdir "%outputdir%\data")
+if not exist "%outputdir%\temp" (mkdir "%outputdir%\temp")
 if not exist "%builddir%\Artifacts" (mkdir "%builddir%\Artifacts")
 if not exist "%builddir%\DevPackage" (mkdir "%builddir%\DevPackage")
 if not exist "%builddir%\DevPackage\Framework" (mkdir "%builddir%\DevPackage\Framework")

@@ -49,6 +49,8 @@ void writeUsage()
 	std::cout << "   --config <configfile>: Path to ACMF Configuration XML to use. (mandatory)" << std::endl;
 	std::cout << "   --devpackage <githash>: Short git hash of developer package to use. (mandatory)" << std::endl;
 	std::cout << "   --output: Output package xml file to write. (default: GITHASH_package.xml)" << std::endl;
+	std::cout << "   --serveroutput: Server Output xml file to write. (default: amc_server.xml)" << std::endl;
+	std::cout << "   --tempdir: Temporary directory to write into server path. (default: no custom temp dir)" << std::endl;
 }
 
 
