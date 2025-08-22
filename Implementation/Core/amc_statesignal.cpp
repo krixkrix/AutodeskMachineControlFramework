@@ -122,7 +122,7 @@ namespace AMC {
 		std::string sNormalizedUUID = AMCCommon::CUtils::normalizeUUIDString(sSignalUUID);
 		auto it = m_MessageMap.find(sNormalizedUUID);
 		if (it == m_MessageMap.end()) 
-			throw ELibMCInterfaceException(LIBMC_ERROR_SIGNALNOTFOUND, "Signal UUID not found: " + sNormalizedUUID);
+			throw ELibMCInterfaceException(LIBMC_ERROR_SIGNALNOTFOUND, "getMessageByUUIDNoMutex: Signal UUID not found: " + sNormalizedUUID);
 		
 		return it->second.get ();
 	}

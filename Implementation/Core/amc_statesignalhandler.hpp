@@ -57,6 +57,7 @@ namespace AMC {
 		
 		std::map<std::pair <std::string, std::string>, PStateSignalSlot> m_SignalMap;
 		std::map<std::string, PStateSignalSlot> m_SignalUUIDLookupMap;
+		std::mutex m_SignalUUIDMapMutex;
 
 	public:
 
