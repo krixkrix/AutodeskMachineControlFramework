@@ -53,7 +53,7 @@ CSignalHandler::CSignalHandler(AMC::PStateSignalHandler pSignalHandler, std::str
 
 	std::string sParameterData;
 	if (!m_pSignalHandler->findSignalPropertiesByUUID(m_sSignalUUID, m_sInstanceName, m_sSignalName, sParameterData))
-		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_SIGNALNOTFOUND, m_sSignalUUID + " (" + m_sInstanceName + "/" + m_sSignalName + ")");
+		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_SIGNALNOTFOUND, "findSignalPropertiesByUUID: " + m_sSignalUUID + " (" + m_sInstanceName + "/" + m_sSignalName + ")");
 
 	m_pSignalHandler->populateParameterGroup(m_sInstanceName, m_sSignalName, m_pParameterGroup.get());
 	m_pSignalHandler->populateResultGroup(m_sInstanceName, m_sSignalName, m_pResultGroup.get());

@@ -32,10 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __AMC_STATESIGNAL
 #define __AMC_STATESIGNAL
 
-#ifndef _STATESIGNAL_HEADERPROTECTION
-#error Never include amc_statesignal.hpp from outside of amc_statesignal.cpp and amc_statesignalhandler.cpp
-#endif
-
 #include "amc_statesignalparameter.hpp"
 #include "amc_statesignaltypes.hpp"
 #include "amc_parametergroup.hpp"
@@ -46,6 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unordered_map>
 #include <deque>
 #include <set>
+#include <vector>
 #include <list>
 
 #include <queue>
@@ -73,6 +70,8 @@ namespace AMC {
 
 			std::string m_sParameterDataJSON;
 
+			std::string m_sErrorMessage;
+
 		public:
 
 			CStateSignalMessage(const std::string & sUUID, uint32_t nReactionTimeoutInMS, AMC::eAMCSignalPhase initialPhase);
@@ -90,6 +89,10 @@ namespace AMC {
 			std::string getResultDataJSON() const;
 
 			std::string getParameterDataJSON() const;
+
+			std::string getErrorMessage() const;
+
+			void setErrorMessage(const std::string & sErrorMessage);
 
 			void setResultDataJSON(const std::string& sResultDataJSON);
 
@@ -138,7 +141,8 @@ namespace AMC {
 		std::string getInstanceNameInternal() const;
 
 		bool queueIsFull();
-		void clearQueueInternal();
+		size_t clearQueueInternal(std::vector<std::string>& clearedUUIDs);
+		bool eraseMessage(const std::string& sUUID);
 
 		bool addNewInQueueSignalInternal(const std::string& sSignalUUID, const std::string& sParameterData, uint32_t nReactionTimeoutInMS);
 		bool changeSignalPhaseToHandledInternal(const std::string& sSignalUUID, const std::string& sResultData);

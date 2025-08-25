@@ -29,11 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#define _STATESIGNAL_HEADERPROTECTION 
-
 #include "amc_statesignal.hpp"
 #include "common_utils.hpp"
 #include "libmc_exceptiontypes.hpp"
+
+#include <iterator>
 
 namespace AMC {
 	
@@ -81,6 +81,17 @@ namespace AMC {
 		return m_sParameterDataJSON;
 	}
 
+	std::string CStateSignalMessage::getErrorMessage() const
+	{
+		return m_sErrorMessage;
+	}
+
+	void CStateSignalMessage::setErrorMessage(const std::string & sErrorMessage) 
+	{
+		m_sErrorMessage = sErrorMessage;
+	}
+
+
 	void CStateSignalMessage::setResultDataJSON(const std::string& sResultDataJSON)
 	{
 		m_sResultDataJSON = sResultDataJSON;
@@ -122,7 +133,7 @@ namespace AMC {
 		std::string sNormalizedUUID = AMCCommon::CUtils::normalizeUUIDString(sSignalUUID);
 		auto it = m_MessageMap.find(sNormalizedUUID);
 		if (it == m_MessageMap.end()) 
-			throw ELibMCInterfaceException(LIBMC_ERROR_SIGNALNOTFOUND, "getMessageByUUIDNoMutex: Signal UUID not found: " + sNormalizedUUID);
+			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, "getMessageByUUIDNoMutex: Signal UUID not found: " + sNormalizedUUID);
 		
 		return it->second.get ();
 	}
@@ -154,9 +165,29 @@ namespace AMC {
 	}
 
 
-	void CStateSignalSlot::clearQueueInternal()
+	bool CStateSignalSlot::eraseMessage(const std::string& sUUID)
 	{
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
+
+		if (auto iQueueIterator = m_QueueMap.find(sUUID); iQueueIterator != m_QueueMap.end()) {
+			m_Queue.erase(iQueueIterator->second);
+			m_QueueMap.erase(iQueueIterator);
+		}
+		m_InProcess.erase(sUUID);
+		m_Handled.erase(sUUID);
+		m_Failed.erase(sUUID);
+		m_TimedOut.erase(sUUID);
+		m_Cleared.erase(sUUID);
+
+		return m_MessageMap.erase(sUUID) > 0;
+
+	}
+
+	size_t CStateSignalSlot::clearQueueInternal(std::vector<std::string>& clearedUUIDs)
+	{
+		std::lock_guard<std::mutex> lockGuard(m_Mutex);
+
+		size_t nCount = 0;
 
 		while (m_Queue.size() > 0) {
 			auto pMessage = m_Queue.front();
@@ -166,7 +197,14 @@ namespace AMC {
 
 			pMessage->setPhase(AMC::eAMCSignalPhase::Cleared);
 			m_Cleared.insert(sUUID);
+
+			m_MessageMap.erase(sUUID);
+			clearedUUIDs.push_back(sUUID);
+
+			nCount++;
 		}
+
+		return nCount;
 
 	}
 
@@ -246,6 +284,7 @@ namespace AMC {
 		}
 
 		if (messagePhase == eAMCSignalPhase::InProcess) {
+			pMessage->setResultDataJSON(sResultData);
 			pMessage->setPhase(eAMCSignalPhase::Handled);
 			m_Handled.insert(sUUID);
 			m_InProcess.erase(sUUID);
@@ -273,6 +312,7 @@ namespace AMC {
 			
 			pMessage->setResultDataJSON(sResultData);
 			pMessage->setPhase(eAMCSignalPhase::Failed);
+			pMessage->setErrorMessage(sErrorMessage);
 			m_Failed.insert(sUUID);
 
 			return true;
@@ -280,6 +320,8 @@ namespace AMC {
 
 		if (messagePhase == eAMCSignalPhase::InProcess) {
 			pMessage->setPhase(eAMCSignalPhase::Failed);
+			pMessage->setResultDataJSON(sResultData);
+			pMessage->setErrorMessage(sErrorMessage);
 			m_Failed.insert(sUUID);
 			m_InProcess.erase(sUUID);
 			return true;
@@ -354,7 +396,7 @@ namespace AMC {
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
 		LibMCAssertNotNull(pParameterGroup);
 
-		for (auto Definition : m_ParameterDefinitions) {
+		for (auto & Definition : m_ParameterDefinitions) {
 			std::string sType = Definition.getType();
 			std::string sName = Definition.getName();
 			pParameterGroup->addNewTypedParameter(sName, sType, "", "", "");			
@@ -367,7 +409,7 @@ namespace AMC {
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
 		LibMCAssertNotNull(pResultGroup);
 
-		for (auto Definition : m_ResultDefinitions) {
+		for (auto & Definition : m_ResultDefinitions) {
 			std::string sType = Definition.getType();
 			std::string sName = Definition.getName();
 			pResultGroup->addNewTypedParameter(sName, sType, "", "", "");

@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <list>
 #include <mutex>
+#include <unordered_map>
 
 #include "amc_statesignalparameter.hpp"
 #include "amc_statesignaltypes.hpp"
@@ -56,7 +57,8 @@ namespace AMC {
 	private:
 		
 		std::map<std::pair <std::string, std::string>, PStateSignalSlot> m_SignalMap;
-		std::map<std::string, PStateSignalSlot> m_SignalUUIDLookupMap;
+		std::unordered_map<std::string, PStateSignalSlot> m_SignalUUIDLookupMap;
+		std::mutex m_SignalMapMutex;
 		std::mutex m_SignalUUIDMapMutex;
 
 	public:
@@ -69,6 +71,8 @@ namespace AMC {
 		void clearUnhandledSignals(const std::string& sInstanceName);
 
 		void clearUnhandledSignalsOfType(const std::string& sInstanceName, const std::string& sSignalTypeName);
+
+		bool finalizeSignal(const std::string& sUUID);
 
 		bool canTrigger(const std::string& sInstanceName, const std::string& sSignalName);
 

@@ -152,7 +152,9 @@ private:
         AMC::CStateSignalSlot slot("instance", "signal", {}, {}, 1000, 2);
         slot.addNewInQueueSignalInternal("one", "{}", 500);
         slot.addNewInQueueSignalInternal("two", "{}", 500);
-        slot.clearQueueInternal();
+
+        std::vector<std::string> clearedUUIDs;
+        slot.clearQueueInternal(clearedUUIDs);
         assertTrue(slot.getAvailableSignalQueueEntriesInternal() == 2);
     }
 
