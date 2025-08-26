@@ -31,8 +31,8 @@
       "description": "General API end points, data exchange"
     },
     {
-      "name": "ui",
-      "description": "User Interface"
+      "name": "frontend",
+      "description": "Frontent end point"
     },
     {
       "name": "ext",
@@ -514,30 +514,7 @@
         }
       }
     },
-    "/ui/config": {
-      "get": {
-        "tags": [
-          "ui"
-        ],
-        "summary": "Retrieve User Interface Configuration",
-        "description": "Retrieves config from server",
-        "operationId": "getConfig",
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/download/{downloadUUID}": {
+        "/download/{downloadUUID}": {
       "get": {
         "tags": [
           "general"
@@ -570,7 +547,243 @@
           }
         }
       }
+    },
+    "/frontend": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Query the full frontend status",
+        "operationId": "frontendStatus",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontendStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/frontend/pages/{pageUUID}": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Query the status of a single page.",
+        "operationId": "frontendPageStatus",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pageUUID",
+            "in": "path",
+            "description": "Frontend Page UUID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontendPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/frontend/pages/{pageUUID}/subscribe": {
+      "post": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Subscribe to all attribute changes of a page.",
+        "operationId": "frontendPageSubscription",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pageUUID",
+            "in": "path",
+            "description": "Frontend Page UUID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontendSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/frontend/modules/{moduleUUID}": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Query the status of a single module.",
+        "operationId": "frontendModuleStatus",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "moduleUUID",
+            "in": "path",
+            "description": "Frontend Module UUID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontendModule"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }      
+    },
+    "/frontend/modules/{moduleUUID}/subscribe": {
+      "post": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Subscribe to attribute changes of a page.",
+        "operationId": "frontendModuleStatus",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "moduleUUID",
+            "in": "path",
+            "description": "Frontend Module UUID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrontendModule"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }      
     }
+
+
   },
   "components": {
     "securitySchemes": {
@@ -610,7 +823,7 @@
           "protocol": {
             "type": "string",
             "description": "The protocol type, used for identifying error messages. he value of this field should be 'com.autodesk.machinecontrol.error' and must be verified by the client.",
-            "example": "com.autodesk.machinecontrol.error"
+             "example": "com.autodesk.machinecontrol.error"
           },
           "version": {
             "type": "string",
@@ -1017,6 +1230,163 @@
             "example": "8bf469fa-4c36-474f-8ade-8474a1d621bd"
           }
         }
+      },
+
+      "FrontendModule": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the frontend module",
+            "example": "viewer1"
+          },
+          "uuid": {
+            "type": "string",
+            "description": "The uuid of the frontend module",
+            "example": "93892df8-c5dd-486a-835f-b96fdeddd005"
+          },
+          "moduletype": {
+            "type": "string",
+            "description": "The type of the frontend module",
+            "example": "viewer"
+          },
+          "gridcolumn": {
+            "type": "integer",
+            "description": "The column of the module in its parent.",
+            "example": "1"
+          },
+          "gridrow": {
+            "type": "integer",
+            "description": "The row of the module in its parent.",
+            "example": "2"
+          },
+          "gridcolumnspan": {
+            "type": "integer",
+            "description": "The number columns the module takes in its parent.",
+            "example": "1"
+          },
+          "gridrowspan": {
+            "type": "integer",
+            "description": "The number of columns in its parent.",
+            "example": "1"
+          },
+
+          "attributes": {
+            "type": "object"
+          },
+
+          "submodules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrontendModule"
+            },
+            "example": [ ]
+          }
+        }
+      },
+
+      "FrontendPage": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the frontend page (must be unique for the system)",
+            "example": "joblibrary"
+          },
+          "uuid": {
+            "type": "string",
+            "description": "The uuid of the frontend page",
+            "example": "b68d7d3e-e3e4-44d8-af67-e65c84777dda"
+          },
+          "caption": {
+            "type": "string",
+            "description": "The caption of this frontend page (localized)",
+            "example": "Job Library"
+          },
+          "description": {
+            "type": "string",
+            "description": "The description of this frontend page (localized)",
+            "example": "Browse build jobs"
+          },
+          "icon": {
+            "type": "string",
+            "description": "The icon identifier for this page.",
+            "example": "LibraryBig"
+          },
+          "gridcolumns": {
+            "type": "integer",
+            "description": "The number of columns on the page.",
+            "example": "3"
+          },
+          "gridrows": {
+            "type": "integer",
+            "description": "The number of rows on the page",
+            "example": "2"
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrontendModule"
+            }
+          }
+        }
+      },
+
+      "FrontendStatusResponse": {
+        "required": [
+          "protocol",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "description": "The protocol type, used for identifying error messages. he value of this field should be 'com.autodesk.machinecontrol.build' and must be verified by the client.",
+            "example": "com.autodesk.machinecontrol.frontend"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the protocol.",
+            "example": "2.0.0"
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FrontendPage"
+            }
+          }
+        }
+      },
+      "FrontendSubscriptionResponse": {
+        "required": [
+          "protocol",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "description": "The protocol type, used for identifying error messages. he value of this field should be 'com.autodesk.machinecontrol.build' and must be verified by the client.",
+            "example": "com.autodesk.machinecontrol.frontend"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the protocol.",
+            "example": "2.0.0"
+          },
+          "subscriptionuuid": {
+            "type": "string",
+            "description": "Subscription UUID.",
+            "example": "b7800e04-9200-4015-bd35-fd4cf9e00393"
+          }
+        }
+
       },
       "BuildDetailsResponse": {
         "required": [
