@@ -154,6 +154,7 @@ protected:
 
 	LibMCDriver_ScanLab::eOIEOperationMode m_OIEOperationMode;
 
+	std::mutex m_RecordingsMutex;
 	std::map<std::string, PRTCRecordingInstance> m_Recordings;
 
 	std::map<std::string, PGPIOSequenceInstance> m_GPIOSequences;
@@ -382,6 +383,10 @@ public:
 	bool HasRecording(const std::string& sUUID) override;
 
 	IRTCRecording* FindRecording(const std::string& sUUID) override;
+
+	bool ClearRecording(const std::string& sUUID) override;
+
+	void ClearAllRecordings() override;
 
 	void EnableTimelagCompensation(const LibMCDriver_ScanLab_uint32 nTimeLagXYInMicroseconds, const LibMCDriver_ScanLab_uint32 nTimeLagZInMicroseconds) override;
 

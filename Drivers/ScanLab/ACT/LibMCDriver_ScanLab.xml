@@ -528,7 +528,11 @@ Custom implementation
 				
 		<method name="Clear" description="Clears all recording data and channels.">
 		</method>	
-		
+
+		<method name="GetUUID" description="Returns UUID of Recording.">
+			<param name="UUID" type="string" pass="return" description="UUID of Recording." />
+		</method>	
+
 		<method name="AddChannel" description="Adds a new channel to record. Fails if more than 8 channels are recorded. Fails if recording has been already started.">
 			<param name="ChannelName" type="string" pass="in" description="Identifier string. MUST be a non-empty alphanumeric string, with optional scores and underscores. MUST be unique." />
 			<param name="ChannelType" type="enum" class="RTCChannelType" pass="in" description="Channel type enum. MUST NOT be Undefined. Fails if channel type is already recorded. Fails if scan head feedback is not enabled and channel type is ChannelCurrentXRaw, ChannelCurrentYRaw or ChannelCurrentZ." />
@@ -1329,6 +1333,14 @@ Custom implementation
 		<method name="FindRecording" description="Find a recording in the driver memory. Recording MUST have been created with KeepInMemory set to true. Fails if recording does not exist.">
 			<param name="UUID" type="string" pass="in" description="UUID of the recording to find." />		
 			<param name="RecordingInstance" type="class" class="RTCRecording" pass="return" description="Recording instance." />		
+		</method>
+
+		<method name="ClearRecording" description="Clears a recording if it exists in the driver memory. Does nothing if no such recording exists.">
+			<param name="UUID" type="string" pass="in" description="UUID of the recording to clear." />		
+			<param name="RecordingExists" type="bool" pass="return" description="Returns if the recording existed and has been cleared." />		
+		</method>
+
+		<method name="ClearAllRecordings" description="Clears all recordings in the driver memory.">
 		</method>
 
 		<method name="EnableTimelagCompensation" description="Enables timelag compensation.">

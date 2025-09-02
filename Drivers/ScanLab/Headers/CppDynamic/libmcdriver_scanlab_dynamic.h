@@ -366,6 +366,17 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCJob_AddMicrovectorMov
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCRecording_ClearPtr) (LibMCDriver_ScanLab_RTCRecording pRTCRecording);
 
 /**
+* Returns UUID of Recording.
+*
+* @param[in] pRTCRecording - RTCRecording instance.
+* @param[in] nUUIDBufferSize - size of the buffer (including trailing 0)
+* @param[out] pUUIDNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pUUIDBuffer -  buffer of UUID of Recording., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCRecording_GetUUIDPtr) (LibMCDriver_ScanLab_RTCRecording pRTCRecording, const LibMCDriver_ScanLab_uint32 nUUIDBufferSize, LibMCDriver_ScanLab_uint32* pUUIDNeededChars, char * pUUIDBuffer);
+
+/**
 * Adds a new channel to record. Fails if more than 8 channels are recorded. Fails if recording has been already started.
 *
 * @param[in] pRTCRecording - RTCRecording instance.
@@ -1981,6 +1992,24 @@ typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_HasRecordingP
 typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_FindRecordingPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, const char * pUUID, LibMCDriver_ScanLab_RTCRecording * pRecordingInstance);
 
 /**
+* Clears a recording if it exists in the driver memory. Does nothing if no such recording exists.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] pUUID - UUID of the recording to clear.
+* @param[out] pRecordingExists - Returns if the recording existed and has been cleared.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_ClearRecordingPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext, const char * pUUID, bool * pRecordingExists);
+
+/**
+* Clears all recordings in the driver memory.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDriver_ScanLabResult (*PLibMCDriver_ScanLabRTCContext_ClearAllRecordingsPtr) (LibMCDriver_ScanLab_RTCContext pRTCContext);
+
+/**
 * Enables timelag compensation.
 *
 * @param[in] pRTCContext - RTCContext instance.
@@ -3135,6 +3164,7 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCJob_AddFreeVariablePtr m_RTCJob_AddFreeVariable;
 	PLibMCDriver_ScanLabRTCJob_AddMicrovectorMovementPtr m_RTCJob_AddMicrovectorMovement;
 	PLibMCDriver_ScanLabRTCRecording_ClearPtr m_RTCRecording_Clear;
+	PLibMCDriver_ScanLabRTCRecording_GetUUIDPtr m_RTCRecording_GetUUID;
 	PLibMCDriver_ScanLabRTCRecording_AddChannelPtr m_RTCRecording_AddChannel;
 	PLibMCDriver_ScanLabRTCRecording_RemoveChannelPtr m_RTCRecording_RemoveChannel;
 	PLibMCDriver_ScanLabRTCRecording_HasChannelPtr m_RTCRecording_HasChannel;
@@ -3292,6 +3322,8 @@ typedef struct {
 	PLibMCDriver_ScanLabRTCContext_PrepareRecordingPtr m_RTCContext_PrepareRecording;
 	PLibMCDriver_ScanLabRTCContext_HasRecordingPtr m_RTCContext_HasRecording;
 	PLibMCDriver_ScanLabRTCContext_FindRecordingPtr m_RTCContext_FindRecording;
+	PLibMCDriver_ScanLabRTCContext_ClearRecordingPtr m_RTCContext_ClearRecording;
+	PLibMCDriver_ScanLabRTCContext_ClearAllRecordingsPtr m_RTCContext_ClearAllRecordings;
 	PLibMCDriver_ScanLabRTCContext_EnableTimelagCompensationPtr m_RTCContext_EnableTimelagCompensation;
 	PLibMCDriver_ScanLabRTCContext_DisableTimelagCompensationPtr m_RTCContext_DisableTimelagCompensation;
 	PLibMCDriver_ScanLabRTCContext_EnableMarkOnTheFly2DPtr m_RTCContext_EnableMarkOnTheFly2D;

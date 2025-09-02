@@ -2091,6 +2091,8 @@ IRTCRecording* CRTCContext::PrepareRecording(const bool bKeepInMemory, const boo
 	std::string sUUID = pCryptoContext->CreateUUID();
 	auto pInstance = std::make_shared<CRTCRecordingInstance>(sUUID, m_pScanLabSDK, m_CardNo, m_dCorrectionFactor, m_dZCorrectionFactor, RTC_CHUNKSIZE_DEFAULT, bEnableScanheadFeedback, bEnableBacktransformation);
 
+	std::lock_guard<std::mutex> guard(m_RecordingsMutex);
+
 	if (bKeepInMemory)
 		m_Recordings.insert(std::make_pair (pInstance->getUUID(), pInstance));
 
@@ -2099,6 +2101,8 @@ IRTCRecording* CRTCContext::PrepareRecording(const bool bKeepInMemory, const boo
 
 bool CRTCContext::HasRecording(const std::string& sUUID)
 {
+	std::lock_guard<std::mutex> guard(m_RecordingsMutex);
+
 	auto iIter = m_Recordings.find(sUUID);
 	return (iIter != m_Recordings.end());
 }
@@ -2107,6 +2111,8 @@ IRTCRecording* CRTCContext::FindRecording(const std::string& sUUID)
 {
 	auto pCryptoContext = m_pDriverEnvironment->CreateCryptoContext();
 	std::string sNormalizedUUID = pCryptoContext->NormalizeUUIDString(sUUID);
+
+	std::lock_guard<std::mutex> guard(m_RecordingsMutex);
 
 	auto iIter = m_Recordings.find(sNormalizedUUID);
 	if (iIter != m_Recordings.end())
@@ -2119,6 +2125,36 @@ IRTCRecording* CRTCContext::FindRecording(const std::string& sUUID)
 	}
 
 }
+
+bool CRTCContext::ClearRecording(const std::string& sUUID)
+{
+	auto pCryptoContext = m_pDriverEnvironment->CreateCryptoContext();
+	std::string sNormalizedUUID = pCryptoContext->NormalizeUUIDString(sUUID);
+
+	std::lock_guard<std::mutex> guard(m_RecordingsMutex);
+
+	auto iIter = m_Recordings.find(sNormalizedUUID);
+	if (iIter != m_Recordings.end())
+	{
+		iIter->second->clear();
+		m_Recordings.erase(iIter);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void CRTCContext::ClearAllRecordings()
+{
+	std::lock_guard<std::mutex> guard(m_RecordingsMutex);
+	for (auto iIter : m_Recordings)
+		iIter.second->clear();
+
+	m_Recordings.clear();
+}
+
 
 /*void CRTCContext::PrepareRecording()
 {

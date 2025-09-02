@@ -650,6 +650,12 @@ public:
 	virtual void Clear() = 0;
 
 	/**
+	* IRTCRecording::GetUUID - Returns UUID of Recording.
+	* @return UUID of Recording.
+	*/
+	virtual std::string GetUUID() = 0;
+
+	/**
 	* IRTCRecording::AddChannel - Adds a new channel to record. Fails if more than 8 channels are recorded. Fails if recording has been already started.
 	* @param[in] sChannelName - Identifier string. MUST be a non-empty alphanumeric string, with optional scores and underscores. MUST be unique.
 	* @param[in] eChannelType - Channel type enum. MUST NOT be Undefined. Fails if channel type is already recorded. Fails if scan head feedback is not enabled and channel type is ChannelCurrentXRaw, ChannelCurrentYRaw or ChannelCurrentZ.
@@ -1814,6 +1820,18 @@ public:
 	* @return Recording instance.
 	*/
 	virtual IRTCRecording * FindRecording(const std::string & sUUID) = 0;
+
+	/**
+	* IRTCContext::ClearRecording - Clears a recording if it exists in the driver memory. Does nothing if no such recording exists.
+	* @param[in] sUUID - UUID of the recording to clear.
+	* @return Returns if the recording existed and has been cleared.
+	*/
+	virtual bool ClearRecording(const std::string & sUUID) = 0;
+
+	/**
+	* IRTCContext::ClearAllRecordings - Clears all recordings in the driver memory.
+	*/
+	virtual void ClearAllRecordings() = 0;
 
 	/**
 	* IRTCContext::EnableTimelagCompensation - Enables timelag compensation.

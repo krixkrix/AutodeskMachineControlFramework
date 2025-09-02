@@ -379,6 +379,17 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcjo
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcrecording_clear(LibMCDriver_ScanLab_RTCRecording pRTCRecording);
 
 /**
+* Returns UUID of Recording.
+*
+* @param[in] pRTCRecording - RTCRecording instance.
+* @param[in] nUUIDBufferSize - size of the buffer (including trailing 0)
+* @param[out] pUUIDNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pUUIDBuffer -  buffer of UUID of Recording., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcrecording_getuuid(LibMCDriver_ScanLab_RTCRecording pRTCRecording, const LibMCDriver_ScanLab_uint32 nUUIDBufferSize, LibMCDriver_ScanLab_uint32* pUUIDNeededChars, char * pUUIDBuffer);
+
+/**
 * Adds a new channel to record. Fails if more than 8 channels are recorded. Fails if recording has been already started.
 *
 * @param[in] pRTCRecording - RTCRecording instance.
@@ -1992,6 +2003,24 @@ LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcco
 * @return error code or 0 (success)
 */
 LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_findrecording(LibMCDriver_ScanLab_RTCContext pRTCContext, const char * pUUID, LibMCDriver_ScanLab_RTCRecording * pRecordingInstance);
+
+/**
+* Clears a recording if it exists in the driver memory. Does nothing if no such recording exists.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @param[in] pUUID - UUID of the recording to clear.
+* @param[out] pRecordingExists - Returns if the recording existed and has been cleared.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_clearrecording(LibMCDriver_ScanLab_RTCContext pRTCContext, const char * pUUID, bool * pRecordingExists);
+
+/**
+* Clears all recordings in the driver memory.
+*
+* @param[in] pRTCContext - RTCContext instance.
+* @return error code or 0 (success)
+*/
+LIBMCDRIVER_SCANLAB_DECLSPEC LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_clearallrecordings(LibMCDriver_ScanLab_RTCContext pRTCContext);
 
 /**
 * Enables timelag compensation.

@@ -833,6 +833,7 @@ public:
 	}
 	
 	inline void Clear();
+	inline std::string GetUUID();
 	inline void AddChannel(const std::string & sChannelName, const eRTCChannelType eChannelType);
 	inline void RemoveChannel(const std::string & sChannelName);
 	inline bool HasChannel(const std::string & sChannelName);
@@ -1054,6 +1055,8 @@ public:
 	inline PRTCRecording PrepareRecording(const bool bKeepInMemory, const bool bEnableScanheadFeedback, const bool bEnableBacktransformation);
 	inline bool HasRecording(const std::string & sUUID);
 	inline PRTCRecording FindRecording(const std::string & sUUID);
+	inline bool ClearRecording(const std::string & sUUID);
+	inline void ClearAllRecordings();
 	inline void EnableTimelagCompensation(const LibMCDriver_ScanLab_uint32 nTimeLagXYInMicroseconds, const LibMCDriver_ScanLab_uint32 nTimeLagZInMicroseconds);
 	inline void DisableTimelagCompensation();
 	inline void EnableMarkOnTheFly2D(const LibMCDriver_ScanLab_double dScaleXInMMperEncoderStep, const LibMCDriver_ScanLab_double dScaleYInMMperEncoderStep);
@@ -1370,6 +1373,7 @@ public:
 		pWrapperTable->m_RTCJob_AddFreeVariable = nullptr;
 		pWrapperTable->m_RTCJob_AddMicrovectorMovement = nullptr;
 		pWrapperTable->m_RTCRecording_Clear = nullptr;
+		pWrapperTable->m_RTCRecording_GetUUID = nullptr;
 		pWrapperTable->m_RTCRecording_AddChannel = nullptr;
 		pWrapperTable->m_RTCRecording_RemoveChannel = nullptr;
 		pWrapperTable->m_RTCRecording_HasChannel = nullptr;
@@ -1527,6 +1531,8 @@ public:
 		pWrapperTable->m_RTCContext_PrepareRecording = nullptr;
 		pWrapperTable->m_RTCContext_HasRecording = nullptr;
 		pWrapperTable->m_RTCContext_FindRecording = nullptr;
+		pWrapperTable->m_RTCContext_ClearRecording = nullptr;
+		pWrapperTable->m_RTCContext_ClearAllRecordings = nullptr;
 		pWrapperTable->m_RTCContext_EnableTimelagCompensation = nullptr;
 		pWrapperTable->m_RTCContext_DisableTimelagCompensation = nullptr;
 		pWrapperTable->m_RTCContext_EnableMarkOnTheFly2D = nullptr;
@@ -1942,6 +1948,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_RTCRecording_Clear == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCRecording_GetUUID = (PLibMCDriver_ScanLabRTCRecording_GetUUIDPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtcrecording_getuuid");
+		#else // _WIN32
+		pWrapperTable->m_RTCRecording_GetUUID = (PLibMCDriver_ScanLabRTCRecording_GetUUIDPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtcrecording_getuuid");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCRecording_GetUUID == nullptr)
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -3358,6 +3373,24 @@ public:
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_ClearRecording = (PLibMCDriver_ScanLabRTCContext_ClearRecordingPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_clearrecording");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_ClearRecording = (PLibMCDriver_ScanLabRTCContext_ClearRecordingPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_clearrecording");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_ClearRecording == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_RTCContext_ClearAllRecordings = (PLibMCDriver_ScanLabRTCContext_ClearAllRecordingsPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_clearallrecordings");
+		#else // _WIN32
+		pWrapperTable->m_RTCContext_ClearAllRecordings = (PLibMCDriver_ScanLabRTCContext_ClearAllRecordingsPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_clearallrecordings");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_RTCContext_ClearAllRecordings == nullptr)
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_RTCContext_EnableTimelagCompensation = (PLibMCDriver_ScanLabRTCContext_EnableTimelagCompensationPtr) GetProcAddress(hLibrary, "libmcdriver_scanlab_rtccontext_enabletimelagcompensation");
 		#else // _WIN32
 		pWrapperTable->m_RTCContext_EnableTimelagCompensation = (PLibMCDriver_ScanLabRTCContext_EnableTimelagCompensationPtr) dlsym(hLibrary, "libmcdriver_scanlab_rtccontext_enabletimelagcompensation");
@@ -4443,6 +4476,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCRecording_Clear == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtcrecording_getuuid", (void**)&(pWrapperTable->m_RTCRecording_GetUUID));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCRecording_GetUUID == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtcrecording_addchannel", (void**)&(pWrapperTable->m_RTCRecording_AddChannel));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCRecording_AddChannel == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -5069,6 +5106,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_findrecording", (void**)&(pWrapperTable->m_RTCContext_FindRecording));
 		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_FindRecording == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_clearrecording", (void**)&(pWrapperTable->m_RTCContext_ClearRecording));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_ClearRecording == nullptr) )
+			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_clearallrecordings", (void**)&(pWrapperTable->m_RTCContext_ClearAllRecordings));
+		if ( (eLookupError != 0) || (pWrapperTable->m_RTCContext_ClearAllRecordings == nullptr) )
 			return LIBMCDRIVER_SCANLAB_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdriver_scanlab_rtccontext_enabletimelagcompensation", (void**)&(pWrapperTable->m_RTCContext_EnableTimelagCompensation));
@@ -5841,6 +5886,21 @@ public:
 	void CRTCRecording::Clear()
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_RTCRecording_Clear(m_pHandle));
+	}
+	
+	/**
+	* CRTCRecording::GetUUID - Returns UUID of Recording.
+	* @return UUID of Recording.
+	*/
+	std::string CRTCRecording::GetUUID()
+	{
+		LibMCDriver_ScanLab_uint32 bytesNeededUUID = 0;
+		LibMCDriver_ScanLab_uint32 bytesWrittenUUID = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCRecording_GetUUID(m_pHandle, 0, &bytesNeededUUID, nullptr));
+		std::vector<char> bufferUUID(bytesNeededUUID);
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCRecording_GetUUID(m_pHandle, bytesNeededUUID, &bytesWrittenUUID, &bufferUUID[0]));
+		
+		return std::string(&bufferUUID[0]);
 	}
 	
 	/**
@@ -7577,6 +7637,27 @@ public:
 			CheckError(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CRTCRecording>(m_pWrapper, hRecordingInstance);
+	}
+	
+	/**
+	* CRTCContext::ClearRecording - Clears a recording if it exists in the driver memory. Does nothing if no such recording exists.
+	* @param[in] sUUID - UUID of the recording to clear.
+	* @return Returns if the recording existed and has been cleared.
+	*/
+	bool CRTCContext::ClearRecording(const std::string & sUUID)
+	{
+		bool resultRecordingExists = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_ClearRecording(m_pHandle, sUUID.c_str(), &resultRecordingExists));
+		
+		return resultRecordingExists;
+	}
+	
+	/**
+	* CRTCContext::ClearAllRecordings - Clears all recordings in the driver memory.
+	*/
+	void CRTCContext::ClearAllRecordings()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_RTCContext_ClearAllRecordings(m_pHandle));
 	}
 	
 	/**

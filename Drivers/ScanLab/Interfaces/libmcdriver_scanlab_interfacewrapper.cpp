@@ -925,6 +925,54 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcrecording_clear(LibMCDriver_Sca
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcrecording_getuuid(LibMCDriver_ScanLab_RTCRecording pRTCRecording, const LibMCDriver_ScanLab_uint32 nUUIDBufferSize, LibMCDriver_ScanLab_uint32* pUUIDNeededChars, char * pUUIDBuffer)
+{
+	IBase* pIBaseClass = (IBase *)pRTCRecording;
+
+	try {
+		if ( (!pUUIDBuffer) && !(pUUIDNeededChars) )
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		std::string sUUID("");
+		IRTCRecording* pIRTCRecording = dynamic_cast<IRTCRecording*>(pIBaseClass);
+		if (!pIRTCRecording)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		bool isCacheCall = (pUUIDBuffer == nullptr);
+		if (isCacheCall) {
+			sUUID = pIRTCRecording->GetUUID();
+
+			pIRTCRecording->_setCache (new ParameterCache_1<std::string> (sUUID));
+		}
+		else {
+			auto cache = dynamic_cast<ParameterCache_1<std::string>*> (pIRTCRecording->_getCache ());
+			if (cache == nullptr)
+				throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+			cache->retrieveData (sUUID);
+			pIRTCRecording->_setCache (nullptr);
+		}
+		
+		if (pUUIDNeededChars)
+			*pUUIDNeededChars = (LibMCDriver_ScanLab_uint32) (sUUID.size()+1);
+		if (pUUIDBuffer) {
+			if (sUUID.size() >= nUUIDBufferSize)
+				throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_BUFFERTOOSMALL);
+			for (size_t iUUID = 0; iUUID < sUUID.size(); iUUID++)
+				pUUIDBuffer[iUUID] = sUUID[iUUID];
+			pUUIDBuffer[sUUID.size()] = 0;
+		}
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabResult libmcdriver_scanlab_rtcrecording_addchannel(LibMCDriver_ScanLab_RTCRecording pRTCRecording, const char * pChannelName, eLibMCDriver_ScanLabRTCChannelType eChannelType)
 {
 	IBase* pIBaseClass = (IBase *)pRTCRecording;
@@ -5127,6 +5175,59 @@ LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_findrecording(LibMCDriv
 	}
 }
 
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_clearrecording(LibMCDriver_ScanLab_RTCContext pRTCContext, const char * pUUID, bool * pRecordingExists)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		if (pUUID == nullptr)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		if (pRecordingExists == nullptr)
+			throw ELibMCDriver_ScanLabInterfaceException (LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
+		std::string sUUID(pUUID);
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		*pRecordingExists = pIRTCContext->ClearRecording(sUUID);
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_clearallrecordings(LibMCDriver_ScanLab_RTCContext pRTCContext)
+{
+	IBase* pIBaseClass = (IBase *)pRTCContext;
+
+	try {
+		IRTCContext* pIRTCContext = dynamic_cast<IRTCContext*>(pIBaseClass);
+		if (!pIRTCContext)
+			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
+		
+		pIRTCContext->ClearAllRecordings();
+
+		return LIBMCDRIVER_SCANLAB_SUCCESS;
+	}
+	catch (ELibMCDriver_ScanLabInterfaceException & Exception) {
+		return handleLibMCDriver_ScanLabException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDriver_ScanLabResult libmcdriver_scanlab_rtccontext_enabletimelagcompensation(LibMCDriver_ScanLab_RTCContext pRTCContext, LibMCDriver_ScanLab_uint32 nTimeLagXYInMicroseconds, LibMCDriver_ScanLab_uint32 nTimeLagZInMicroseconds)
 {
 	IBase* pIBaseClass = (IBase *)pRTCContext;
@@ -7926,6 +8027,8 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcjob_addmicrovectormovement;
 	if (sProcName == "libmcdriver_scanlab_rtcrecording_clear") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcrecording_clear;
+	if (sProcName == "libmcdriver_scanlab_rtcrecording_getuuid") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcrecording_getuuid;
 	if (sProcName == "libmcdriver_scanlab_rtcrecording_addchannel") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtcrecording_addchannel;
 	if (sProcName == "libmcdriver_scanlab_rtcrecording_removechannel") 
@@ -8240,6 +8343,10 @@ LibMCDriver_ScanLabResult LibMCDriver_ScanLab::Impl::LibMCDriver_ScanLab_GetProc
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_hasrecording;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_findrecording") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_findrecording;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_clearrecording") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_clearrecording;
+	if (sProcName == "libmcdriver_scanlab_rtccontext_clearallrecordings") 
+		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_clearallrecordings;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_enabletimelagcompensation") 
 		*ppProcAddress = (void*) &libmcdriver_scanlab_rtccontext_enabletimelagcompensation;
 	if (sProcName == "libmcdriver_scanlab_rtccontext_disabletimelagcompensation") 
