@@ -28,43 +28,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#ifndef __AMC_UI_MODULE_CONTENTITEM_LAYERVIEW
-#define __AMC_UI_MODULE_CONTENTITEM_LAYERVIEW
 
-#include "header_protection.hpp"
+#ifndef __AMC_UI_FRONTENDDEFINITION
+#define __AMC_UI_FRONTENDDEFINITION
 
-#ifndef __AMCIMPL_UI_MODULE
-#error this header is protected and should only be included in the corresponding implementation CPP files.
-#endif
+#include "common_chrono.hpp"
 
-#include "amc_ui_module_contentitem.hpp"
-#include "pugixml.hpp"
 
 namespace AMC {
 
-	amcDeclareDependingClass(CUIModule_ContentLayerView, PUIModule_ContentLayerView);
-	amcDeclareDependingClass(CUIModuleEnvironment, PUIModuleEnvironment);
-
-	class CUIModule_ContentLayerView : public CUIModule_ContentItem {
-	protected:		
+	class CUIFrontendDefinition {
+	private:
 
 	public:
+		CUIFrontendDefinition();
 
-		static PUIModule_ContentLayerView makeFromXML(const pugi::xml_node& xmlNode, const std::string& sItemName, const std::string& sModulePath, PUIModuleEnvironment pUIModuleEnvironment);
-
-		CUIModule_ContentLayerView(const std::string& sItemName, const std::string & sModulePath);
-
-		virtual ~CUIModule_ContentLayerView();
-
-		void addDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler) override;
+		virtual ~CUIFrontendDefinition();
 
 	};
 
-
 }
 
-
-#endif //__AMC_UI_MODULE_CONTENTITEM_LAYERVIEW
-
-
+#endif //__AMC_UI_FRONTENDDEFINITION
 

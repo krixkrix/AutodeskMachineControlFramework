@@ -76,7 +76,7 @@ std::string CUIModule_LayerViewPlatformItem::findElementPathByUUID(const std::st
 
 
 
-void CUIModule_LayerViewPlatformItem::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
+void CUIModule_LayerViewPlatformItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
 {
 	auto pGroup = pClientVariableHandler->findGroup(getItemPath (), true);
 
@@ -168,9 +168,9 @@ void CUIModule_LayerViewPlatformItem::handleCustomRequest(PAPIAuth pAuth, const 
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 	
 
-	auto pClientVariableHandler = pAuth->getClientVariableHandler();
+	auto pClientVariableHandler = pAuth->getLegacyParameterHandler(true);
 
-	if (requestType == "changelayer") {
+	if ((requestType == "changelayer") && (pClientVariableHandler != nullptr)) {
 		uint64_t nLayer = requestData.getUint64(AMC_API_KEY_UI_TARGETLAYER, 0, UINT32_MAX, LIBMC_ERROR_MISSINGCUSTOMREQUESTLAYER);
 		auto pGroup = pClientVariableHandler->findGroup(getItemPath(), true);
 		pGroup->setIntParameterValueByName(AMC_API_KEY_UI_CURRENTLAYER, nLayer);		
@@ -308,7 +308,7 @@ std::string CUIModule_LayerView::getCaption()
 }
 
 
-void CUIModule_LayerView::writeDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler)
+void CUIModule_LayerView::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
 {
 	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
 	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
@@ -319,7 +319,7 @@ void CUIModule_LayerView::writeDefinitionToJSON(CJSONWriter& writer, CJSONWriter
 	CJSONWriterObject itemObject(writer);
 	itemObject.addString(AMC_API_KEY_UI_ITEMTYPE, "platform");
 	itemObject.addString(AMC_API_KEY_UI_ITEMUUID, m_PlatformItem->getUUID ());
-	m_PlatformItem->addContentToJSON(writer, itemObject, pClientVariableHandler, 0);
+	m_PlatformItem->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
 	itemsNode.addObject(itemObject);
 
 	moduleObject.addArray(AMC_API_KEY_UI_ITEMS, itemsNode);

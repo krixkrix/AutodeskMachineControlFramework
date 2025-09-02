@@ -687,6 +687,8 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_INVALIDNEWBUILDSTATUS 671 /** Invalid new build status. */
 #define LIBMC_ERROR_INVALIDDEFAULTOPENAPIJSON 672 /** Invalid Default OpenAPI JSON. */
 #define LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON 673 /** Invalid Custom OpenAPI JSON. */
+#define LIBMC_ERROR_USEDMODULEISLEGACY 674 /** Used module is legacy. */
+#define LIBMC_ERROR_TRIEDTOACCESSNULLCLIENTPARAMETERS 675 /** Tried to access null client parameters. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1286,6 +1288,8 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDNEWBUILDSTATUS: return "Invalid new build status.";
     case LIBMC_ERROR_INVALIDDEFAULTOPENAPIJSON: return "Invalid Default OpenAPI JSON.";
     case LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON: return "Invalid Custom OpenAPI JSON.";
+    case LIBMC_ERROR_USEDMODULEISLEGACY: return "Used module is legacy.";
+    case LIBMC_ERROR_TRIEDTOACCESSNULLCLIENTPARAMETERS: return "Tried to access null client parameters.";
     default: return "unknown error";
   }
 }

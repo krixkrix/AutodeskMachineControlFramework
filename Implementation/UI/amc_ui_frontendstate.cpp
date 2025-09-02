@@ -28,51 +28,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+#define __AMCIMPL_UI_MODULE
 
-#ifndef __AMC_UI_MODULE_ITEM
-#define __AMC_UI_MODULE_ITEM
+#include "amc_ui_frontendstate.hpp"
+#include "libmc_exceptiontypes.hpp"
 
-#include "header_protection.hpp"
-#include "amc_jsonwriter.hpp"
+using namespace AMC;
 
-
-namespace AMC {
-
-	amcDeclareDependingClass(CUIModule_Item, PUIModule_Item);
-	amcDeclareDependingClass(CParameterHandler, PParameterHandler);
-	amcDeclareDependingClass(CAPIJSONRequest, PAPIJSONRequest);
-	amcDeclareDependingClass(CAPIAuth, PAPIAuth);
-	amcDeclareDependingClass(CUIModule_UIEventHandler, PUIModule_UIEventHandler);
-
-	class CUIModuleItem {
-	protected:		
-
-		std::string m_sItemPath;
-	
-	public:
-
-		CUIModuleItem(const std::string& sItemPath);		
-
-		virtual ~CUIModuleItem();
-
-		virtual void configurePostLoading();
-	
-		virtual std::string getItemPath();
-
-		virtual std::string getUUID () = 0;
-
-		virtual std::string findElementPathByUUID(const std::string & sUUID);
-
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler * pLegacyClientVariableHandler, uint32_t nStateID) = 0;
-
-		virtual void setEventPayloadValue (const std::string & sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler);
-
-		virtual void handleCustomRequest (PAPIAuth pAuth, const std::string & requestType,  const CAPIJSONRequest & requestData, CJSONWriter & response, CUIModule_UIEventHandler* pEventHandler);
-
-	};
+CUIFrontendState::CUIFrontendState(AMCCommon::PChrono pGlobalChrono)
+	: m_pGlobalChrono(pGlobalChrono)
+{
+	m_pLegacyParameterHandler = std::make_shared<CParameterHandler>("", pGlobalChrono);
 
 }
 
+CUIFrontendState::~CUIFrontendState()
+{
 
-#endif //__AMC_UI_MODULE_ITEM
+}
+
+PParameterHandler CUIFrontendState::getLegacyParameterHandler()
+{
+	return m_pLegacyParameterHandler;
+}
+
 

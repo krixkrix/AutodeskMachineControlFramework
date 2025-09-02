@@ -695,7 +695,10 @@
 		<error name="INVALIDBUILDJOBSTATUSQUERY" code="670" description="Invalid build job status query." />		
 		<error name="INVALIDNEWBUILDSTATUS" code="671" description="Invalid new build status." />		
 		<error name="INVALIDDEFAULTOPENAPIJSON" code="672" description="Invalid Default OpenAPI JSON." />		
-		<error name="INVALIDCUSTOMOPENAPIJSON" code="673" description="Invalid Custom OpenAPI JSON." />		
+		<error name="INVALIDCUSTOMOPENAPIJSON" code="673" description="Invalid Custom OpenAPI JSON." />				
+		<error name="USEDMODULEISLEGACY" code="674" description="Used module is legacy." />				
+		<error name="TRIEDTOACCESSNULLCLIENTPARAMETERS" code="675" description="Tried to access null client parameters." />				
+		
 				
 	</errors>
 	

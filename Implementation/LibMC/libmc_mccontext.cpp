@@ -994,7 +994,10 @@ IAPIRequestHandler* CMCContext::CreateAPIRequestHandler(const std::string& sURI,
         if (bCreateNewSession) {
             pAuth = pSessionHandler->createNewAuthenticationSession(m_pSystemState->getGlobalChronoInstance ());
             LibMCAssertNotNull(pAuth);
-            m_pSystemState->uiHandler()->populateClientVariables(pAuth->getClientVariableHandler().get());
+
+			auto pLegacyParameterHandler = pAuth->getLegacyParameterHandler(true);
+            if (pLegacyParameterHandler != nullptr)
+                m_pSystemState->uiHandler()->populateClientVariables (pLegacyParameterHandler);
         }
         else
             pAuth = pSessionHandler->createEmptyAuthenticationSession(m_pSystemState->getGlobalChronoInstance());

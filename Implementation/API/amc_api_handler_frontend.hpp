@@ -1,6 +1,6 @@
 /*++
 
-Copyright (C) 2020 Autodesk Inc.
+Copyright (C) 2025 Autodesk Inc.
 
 All rights reserved.
 
@@ -29,50 +29,58 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifndef __AMC_UI_MODULE_ITEM
-#define __AMC_UI_MODULE_ITEM
+#ifndef __AMC_API_HANDLER_FRONTEND
+#define __AMC_API_HANDLER_FRONTEND
 
-#include "header_protection.hpp"
-#include "amc_jsonwriter.hpp"
+#include "amc_api_handler.hpp"
+#include "amc_logger.hpp"
+#include "amc_api_response.hpp"
 
+#include "amc_systemstate.hpp"
 
 namespace AMC {
 
-	amcDeclareDependingClass(CUIModule_Item, PUIModule_Item);
-	amcDeclareDependingClass(CParameterHandler, PParameterHandler);
-	amcDeclareDependingClass(CAPIJSONRequest, PAPIJSONRequest);
-	amcDeclareDependingClass(CAPIAuth, PAPIAuth);
-	amcDeclareDependingClass(CUIModule_UIEventHandler, PUIModule_UIEventHandler);
+	enum class APIHandler_FrontendType {
+		ftUnknown = 0,
+		ftStatus = 1,
+		ftPageStatus = 2,
+		ftPageSubscription = 3,
+		ftModuleStatus = 4,
+		ftModuleSubscription = 5,
+		ftSubscriptionUpdate = 6,
+		ftSubscriptionKeepAlive = 7,
+		ftSubscriptionReset = 8,
+		ftTriggerEvent = 2,
+	};
 
-	class CUIModuleItem {
-	protected:		
+	class CAPIHandler_Frontend : public CAPIHandler {
+	private:
+		
+		PSystemState m_pSystemState;
 
-		std::string m_sItemPath;
-	
+		APIHandler_FrontendType parseRequest(const std::string& sURI, const eAPIRequestType requestType, std::string & sParameterUUID, std::string & sAdditionalParameter);
+
+		void handleStatusRequest(CJSONWriter& writer, PAPIAuth pAuth);
+
 	public:
 
-		CUIModuleItem(const std::string& sItemPath);		
+		CAPIHandler_Frontend(PSystemState pSystemState);
 
-		virtual ~CUIModuleItem();
+		virtual ~CAPIHandler_Frontend();
+				
+		virtual void checkAuthorizationMode(const std::string& sURI, const eAPIRequestType requestType, bool& bNeedsToBeAuthorized, bool& bCreateNewSession) override;
 
-		virtual void configurePostLoading();
-	
-		virtual std::string getItemPath();
+		virtual std::string getBaseURI () override;
 
-		virtual std::string getUUID () = 0;
+		virtual bool expectsRawBody(const std::string& sURI, const eAPIRequestType requestType) override;
 
-		virtual std::string findElementPathByUUID(const std::string & sUUID);
-
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler * pLegacyClientVariableHandler, uint32_t nStateID) = 0;
-
-		virtual void setEventPayloadValue (const std::string & sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler);
-
-		virtual void handleCustomRequest (PAPIAuth pAuth, const std::string & requestType,  const CAPIJSONRequest & requestData, CJSONWriter & response, CUIModule_UIEventHandler* pEventHandler);
+		virtual PAPIResponse handleRequest(const std::string& sURI, const eAPIRequestType requestType, CAPIFormFields & pFormFields, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth) override;
 
 	};
 
+	
 }
 
 
-#endif //__AMC_UI_MODULE_ITEM
+#endif //__AMC_API_HANDLER_FRONTEND
 

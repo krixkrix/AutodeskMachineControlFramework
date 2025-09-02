@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_api_jsonrequest.hpp"
 #include "amc_api_constants.hpp"
+#include "amc_ui_frontendstate.hpp"
 
 #include "common_utils.hpp"
 
@@ -74,7 +75,7 @@ PAPIAuth CAPISessionHandler::createAuthentication(const std::string& sAuthorizat
 		if (pSession->getToken () != sToken)
 			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDSESSIONTOKEN);
 
-		return std::make_shared<CAPIAuth>(pSession->getUUID(), pSession->getKey(), pSession->createUserInformation(), pSession->isAuthenticated(), pSession->getClientVariableHandler (), pGlobalChrono);
+		return std::make_shared<CAPIAuth>(pSession->getUUID(), pSession->getKey(), pSession->createUserInformation(), pSession->isAuthenticated(), pSession->getFrontendState (), pGlobalChrono);
 	}
 	else {
 		return nullptr;
@@ -90,7 +91,7 @@ PAPIAuth CAPISessionHandler::createNewAuthenticationSession(AMCCommon::PChrono p
 	std::lock_guard<std::mutex> lockGuard(m_Mutex);
 	m_SessionMap.insert (std::make_pair (pSession->getUUID(), pSession));
 
-	return std::make_shared<CAPIAuth>(pSession->getUUID(), pSession->getKey(), pSession->createUserInformation(), pSession->isAuthenticated(), pSession->getClientVariableHandler(), pGlobalChrono);
+	return std::make_shared<CAPIAuth>(pSession->getUUID(), pSession->getKey(), pSession->createUserInformation(), pSession->isAuthenticated(), pSession->getFrontendState(), pGlobalChrono);
 
 }
 

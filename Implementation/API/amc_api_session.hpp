@@ -48,6 +48,7 @@ namespace AMC {
 	amcDeclareDependingClass(CAPISession, PAPISession);
 	amcDeclareDependingClass(CUserInformation, PUserInformation);
 	amcDeclareDependingClass(CParameterHandler, PParameterHandler);
+	amcDeclareDependingClass(CUIFrontendState, PUIFrontendState);
 
 	class CAPISession {
 	private:
@@ -59,7 +60,8 @@ namespace AMC {
 		std::string m_sUserName;
 		std::string m_sHashedPassword;
 		std::string m_sToken;
-		PParameterHandler m_pClientVariableHandler;
+
+		PUIFrontendState m_pFrontendState;
 
 		std::string m_sUserUUID;
 		std::string m_sUserDescription;
@@ -86,7 +88,7 @@ namespace AMC {
 		void authorizeSessionByPassword(const std::string & sSaltedPasswordHash, const std::string & sClientKey);
 		void setUserDetails(const std::string& sUserName, const std::string & sHashedPassword, const std::string& sUserUUID, const std::string& sUserDescription, const std::string& sUserRoleIdentifier, const std::string& sUserLanguageIdentifier);
 
-		PParameterHandler getClientVariableHandler();
+		PUIFrontendState getFrontendState();
 
 		PUserInformation createUserInformation();
 								

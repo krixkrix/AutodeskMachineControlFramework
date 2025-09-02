@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_parameterhandler.hpp"
 #include "common_utils.hpp"
 #include "amc_userinformation.hpp"
+#include "amc_ui_frontendstate.hpp"
 
 #include "libmc_interfaceexception.hpp"
 
@@ -50,7 +51,8 @@ CAPISession::CAPISession(AMCCommon::PChrono pGlobalChrono)
 	m_bAuthenticated(false)
 {
 
-	m_pClientVariableHandler = std::make_shared<CParameterHandler>("", pGlobalChrono);
+	m_pFrontendState = std::make_shared<CUIFrontendState>(pGlobalChrono);
+	
 	
 }
 	
@@ -160,9 +162,9 @@ void CAPISession::setUserDetails(const std::string& sUserName, const std::string
 	m_sUserLanguageIdentifier = sUserLanguageIdentifier;
 }
 
-PParameterHandler CAPISession::getClientVariableHandler()
+PUIFrontendState CAPISession::getFrontendState()
 {
-	return m_pClientVariableHandler;
+	return m_pFrontendState;
 }
 
 PUserInformation CAPISession::createUserInformation()

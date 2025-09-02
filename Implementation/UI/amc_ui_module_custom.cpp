@@ -143,7 +143,7 @@ std::string CUIModule_Custom::getCaption()
 }
 
 
-void CUIModule_Custom::writeDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler)
+void CUIModule_Custom::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
 {
 	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
 	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
@@ -154,7 +154,7 @@ void CUIModule_Custom::writeDefinitionToJSON(CJSONWriter& writer, CJSONWriterObj
 		CJSONWriterObject itemObject(writer);
 		itemObject.addString(AMC_API_KEY_UI_ITEMTYPE, "properties");
 		itemObject.addString(AMC_API_KEY_UI_ITEMUUID, m_pCustomItem->getUUID());
-		m_pCustomItem->addContentToJSON(writer, itemObject, pClientVariableHandler, 0);
+		m_pCustomItem->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
 		itemsNode.addObject(itemObject);
 	}
 
@@ -165,7 +165,7 @@ void CUIModule_Custom::writeDefinitionToJSON(CJSONWriter& writer, CJSONWriterObj
 		itemObject.addString(AMC_API_KEY_UI_ITEMTYPE, "event");
 		itemObject.addString(AMC_API_KEY_UI_ITEMUUID, eventItem->getUUID());
 		itemObject.addString(AMC_API_KEY_UI_ITEMNAME, eventItem->getEventName ());
-		eventItem->addContentToJSON(writer, itemObject, pClientVariableHandler, 0);
+		eventItem->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
 		itemsNode.addObject(itemObject);
 
 	}

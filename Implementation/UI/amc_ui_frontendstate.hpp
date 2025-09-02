@@ -29,77 +29,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifndef __AMC_AUTH
-#define __AMC_AUTH
+#ifndef __AMC_UI_FRONTENDSTATE
+#define __AMC_UI_FRONTENDSTATE
 
-
-#include <memory>
-#include <string>
-#include <map>
-
-#include "common_utils.hpp"
+#include "amc_parameterhandler.hpp"
 #include "common_chrono.hpp"
 
 namespace AMC {
 
-	class CAPIAuth;
-	typedef std::shared_ptr<CAPIAuth> PAPIAuth;
-
-	class CUserInformation;
-	typedef std::shared_ptr<CUserInformation> PUserInformation;
-
-	class CParameterHandler;
-	typedef std::shared_ptr<CParameterHandler> PParameterHandler;
-
-	class CUIFrontendState;
-	typedef std::shared_ptr<CUIFrontendState> PUIFrontendState;
-
-	class CAPIAuth {
+	class CUIFrontendState {
 	private:
 
-		std::string m_sSessionUUID;
-		std::string m_sSessionKey;
-		bool m_bIsAuthorized;
-
-		PUserInformation m_pUserInformation;
-		PUIFrontendState m_pUIFrontendState;
-
-		std::map<std::string, std::pair<std::string, std::string>> m_DownloadTickets;
-
-
-	protected:
+		PParameterHandler m_pLegacyParameterHandler;
+		AMCCommon::PChrono m_pGlobalChrono;
 
 	public:
+		CUIFrontendState(AMCCommon::PChrono pGlobalChrono);
 
-		CAPIAuth(const std::string& sSessionUUID, const std::string& sSessionKey, PUserInformation pUserInformation, bool bIsAuthorized, PUIFrontendState pFrontendState, AMCCommon::PChrono pGlobalChrono);
+		virtual ~CUIFrontendState();
 
-		virtual ~CAPIAuth();
-		
-		PUserInformation getUserInformation ();
+		PParameterHandler getLegacyParameterHandler ();
 
-		std::string getUserName();
-
-		std::string getUserUUID();
-
-		std::string getSessionUUID();
-
-		std::string getSessionKey();
-
-		bool userIsAuthorized();
-
-		bool contextUUIDIsAuthorized(std::string & sContextUUID);
-
-		PUIFrontendState getFrontendState();
-
-		CParameterHandler* getLegacyParameterHandler(bool bAllowNull);
-
-		std::string createStreamDownloadTicket(const std::string & sStreamUUID, const std::string & sDownloadFileName);
-								
 	};
 
-	
 }
 
-
-#endif //__AMC_AUTH
+#endif //__AMC_UI_FRONTENDSTATE
 

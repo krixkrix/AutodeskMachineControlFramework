@@ -67,7 +67,7 @@ std::string CUIModule_LogsItem::findElementPathByUUID(const std::string& sUUID)
 	return "";
 }
 
-void CUIModule_LogsItem::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
+void CUIModule_LogsItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
 {
 	//auto pGroup = pClientVariableHandler->findGroup(getItemPath (), true);
 
@@ -169,7 +169,7 @@ std::string CUIModule_Logs::getCaption()
 }
 
 
-void CUIModule_Logs::writeDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler)
+void CUIModule_Logs::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
 {
 	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
 	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());

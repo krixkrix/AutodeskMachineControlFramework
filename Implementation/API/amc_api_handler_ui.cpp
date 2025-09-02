@@ -334,7 +334,7 @@ void CAPIHandler_UI::handleConfigurationRequest(CJSONWriter& writer, PAPIAuth pA
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-	m_pSystemState->uiHandler()->writeConfigurationToJSON(writer, pAuth->getClientVariableHandler ().get());
+	m_pSystemState->uiHandler()->writeLegacyConfigurationToJSON(writer);
 }
 
 void CAPIHandler_UI::handleStateRequest(CJSONWriter& writer, PAPIAuth pAuth)
@@ -342,7 +342,7 @@ void CAPIHandler_UI::handleStateRequest(CJSONWriter& writer, PAPIAuth pAuth)
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-	m_pSystemState->uiHandler()->writeStateToJSON(writer, pAuth->getClientVariableHandler().get());
+	m_pSystemState->uiHandler()->writeLegacyStateToJSON(writer, pAuth->getLegacyParameterHandler (true));
 }
 
 
@@ -456,7 +456,7 @@ void CAPIHandler_UI::handleContentItemRequest(CJSONWriter& writer, const std::st
 		throw ELibMCInterfaceException(LIBMC_ERROR_MODULEITEMNOTFOUND);
 
 	CJSONWriterObject object(writer);
-	pWidget->addContentToJSON(writer, object, pAuth->getClientVariableHandler ().get(), nStateID);
+	pWidget->addLegacyContentToJSON(writer, object, pAuth->getLegacyParameterHandler (true), nStateID);
 	writer.addString(AMC_API_KEY_UI_ITEMUUID, sParameterUUID);
 	writer.addObject(AMC_API_KEY_UI_CONTENT, object);
 }

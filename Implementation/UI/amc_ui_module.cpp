@@ -133,3 +133,13 @@ std::string CUIModule::getTypeFromXML(pugi::xml_node& xmlNode)
 {
 	return xmlNode.name();
 }
+
+bool CUIModule::isVersion2FrontendModule()
+{
+	return false;
+}
+
+void CUIModule::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState)
+{
+	throw ELibMCCustomException(LIBMC_ERROR_USEDMODULEISLEGACY, m_sName);
+}
