@@ -71,7 +71,7 @@ namespace AMC {
 
 	public:
 
-		CAPIAuth(const std::string& sSessionUUID, const std::string& sSessionKey, PUserInformation pUserInformation, bool bIsAuthorized, PUIFrontendState pFrontendState, AMCCommon::PChrono pGlobalChrono);
+		CAPIAuth(const std::string& sSessionUUID, const std::string& sSessionKey, PUserInformation pUserInformation, bool bIsAuthorized, PUIFrontendState pFrontendState);
 
 		virtual ~CAPIAuth();
 		

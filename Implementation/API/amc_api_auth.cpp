@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace AMC;
 
 
-CAPIAuth::CAPIAuth(const std::string& sSessionUUID, const std::string& sSessionKey, PUserInformation pUserInformation, bool bIsAuthorized, PUIFrontendState pFrontendState, AMCCommon::PChrono pGlobalChrono)
+CAPIAuth::CAPIAuth(const std::string& sSessionUUID, const std::string& sSessionKey, PUserInformation pUserInformation, bool bIsAuthorized, PUIFrontendState pFrontendState)
 	: m_sSessionUUID(AMCCommon::CUtils::normalizeUUIDString(sSessionUUID)), 
 	m_sSessionKey (AMCCommon::CUtils::normalizeSHA256String(sSessionKey)),
 	m_pUserInformation(pUserInformation),

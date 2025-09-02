@@ -33,3 +33,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace AMC;
 
+CUIFrontendDefinitionModuleStore::CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string& sModulePath)
+{
+
+}
+
+CUIFrontendDefinitionModuleStore::~CUIFrontendDefinitionModuleStore()
+{
+
+}
+
+CUIFrontendDefinition::CUIFrontendDefinition(AMCCommon::PChrono pGlobalChrono)
+	: m_pGlobalChrono (pGlobalChrono)
+{
+	if (pGlobalChrono.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+}
+
+CUIFrontendDefinition::~CUIFrontendDefinition()
+{
+
+}
+
+PUIFrontendDefinitionModuleStore CUIFrontendDefinition::registerModuleStore(const std::string& sModuleUUID, const std::string& sPath)
+{
+	return std::make_shared<CUIFrontendDefinitionModuleStore>(sModuleUUID, sPath);
+
+}
+
+
+AMCCommon::PChrono CUIFrontendDefinition::getGlobalChrono()
+{
+	return m_pGlobalChrono;
+}

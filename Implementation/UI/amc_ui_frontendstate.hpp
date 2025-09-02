@@ -33,6 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __AMC_UI_FRONTENDSTATE
 
 #include "amc_parameterhandler.hpp"
+#include "amc_ui_frontenddefinition.hpp"
+
 #include "common_chrono.hpp"
 
 namespace AMC {
@@ -41,10 +43,12 @@ namespace AMC {
 	private:
 
 		PParameterHandler m_pLegacyParameterHandler;
-		AMCCommon::PChrono m_pGlobalChrono;
+		
+
+		PUIFrontendDefinition m_pFrontendDefinition;
 
 	public:
-		CUIFrontendState(AMCCommon::PChrono pGlobalChrono);
+		CUIFrontendState (PUIFrontendDefinition pFrontendDefinition);
 
 		virtual ~CUIFrontendState();
 

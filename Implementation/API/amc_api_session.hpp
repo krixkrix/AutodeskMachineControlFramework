@@ -49,6 +49,7 @@ namespace AMC {
 	amcDeclareDependingClass(CUserInformation, PUserInformation);
 	amcDeclareDependingClass(CParameterHandler, PParameterHandler);
 	amcDeclareDependingClass(CUIFrontendState, PUIFrontendState);
+	amcDeclareDependingClass(CUIFrontendDefinition, PUIFrontendDefinition);
 
 	class CAPISession {
 	private:
@@ -72,7 +73,7 @@ namespace AMC {
 					
 	public:
 
-		CAPISession(AMCCommon::PChrono pGlobalChrono);
+		CAPISession(PUIFrontendDefinition pFrontendDefinition);
 		virtual ~CAPISession();
 
 		std::string getUUID ();		

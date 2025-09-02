@@ -42,7 +42,7 @@ using namespace AMC;
 
 #define APISESSION_RANDOMKEYITERATIONS 16
 
-CAPISession::CAPISession(AMCCommon::PChrono pGlobalChrono)
+CAPISession::CAPISession(PUIFrontendDefinition pFrontendDefinition)
 	: m_sUUID(AMCCommon::CUtils::createUUID()),
 	m_sKey(AMCCommon::CUtils::calculateRandomSHA256String(APISESSION_RANDOMKEYITERATIONS)),
 	m_sToken(AMCCommon::CUtils::calculateRandomSHA256String(APISESSION_RANDOMKEYITERATIONS)),
@@ -51,7 +51,7 @@ CAPISession::CAPISession(AMCCommon::PChrono pGlobalChrono)
 	m_bAuthenticated(false)
 {
 
-	m_pFrontendState = std::make_shared<CUIFrontendState>(pGlobalChrono);
+	m_pFrontendState = std::make_shared<CUIFrontendState>(pFrontendDefinition);
 	
 	
 }

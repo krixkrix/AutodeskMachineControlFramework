@@ -35,10 +35,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace AMC;
 
-CUIFrontendState::CUIFrontendState(AMCCommon::PChrono pGlobalChrono)
-	: m_pGlobalChrono(pGlobalChrono)
+CUIFrontendState::CUIFrontendState(PUIFrontendDefinition pFrontendDefinition)
+	: m_pFrontendDefinition(pFrontendDefinition)
 {
-	m_pLegacyParameterHandler = std::make_shared<CParameterHandler>("", pGlobalChrono);
+	if (pFrontendDefinition.get () == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	m_pLegacyParameterHandler = std::make_shared<CParameterHandler>("", pFrontendDefinition->getGlobalChrono ());
 
 }
 

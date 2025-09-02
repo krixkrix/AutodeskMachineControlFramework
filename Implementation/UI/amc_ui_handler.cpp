@@ -114,10 +114,13 @@ CUIHandler::CUIHandler(LibMCEnv::PWrapper pEnvironmentWrapper, PUISystemState pU
     m_pUISystemState (pUISystemState),
     m_pEnvironmentWrapper (pEnvironmentWrapper)
 {
+
     if (pEnvironmentWrapper.get() == nullptr)
         throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
     if (pUISystemState.get() == nullptr)
         throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+    m_pFrontendDefinition = std::make_shared<CUIFrontendDefinition>(m_pUISystemState->getGlobalChronoInstance ());
 }
 
 CUIHandler::~CUIHandler()
@@ -550,8 +553,8 @@ void CUIHandler::ensureUIEventExists(const std::string& sEventName)
     std::string sDummySessionKey = AMCCommon::CUtils::calculateRandomSHA256String(1);
 
     auto pGlobalChrono = m_pUISystemState->getGlobalChronoInstance();
-	auto pDummyFrontendState = std::make_shared<CUIFrontendState>(pGlobalChrono);
-    auto pDummyAPIAuth = std::make_shared<CAPIAuth>(sDummySessionUUID, sDummySessionKey, CUserInformation::makeEmpty(), false, pDummyFrontendState, pGlobalChrono);
+	//auto pDummyFrontendState = std::make_shared<CUIFrontendState>(pGlobalChrono);
+    auto pDummyAPIAuth = std::make_shared<CAPIAuth>(sDummySessionUUID, sDummySessionKey, CUserInformation::makeEmpty(), false, nullptr);
 
     LibMCEnv::Impl::PUIEnvironment pInternalUIEnvironment = std::make_shared<LibMCEnv::Impl::CUIEnvironment>(this, sSenderUUID, "", pDummyAPIAuth, m_pUISystemState->getTestOutputPath());
     auto pExternalEnvironment = mapInternalUIEnvInstance<LibMCEnv::CUIEnvironment>(pInternalUIEnvironment, m_pEnvironmentWrapper);
@@ -956,4 +959,8 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CUIFrontendState
 
 }
 
+PUIFrontendDefinition CUIHandler::getFrontendDefinition()
+{
+    return m_pFrontendDefinition;
+}
 

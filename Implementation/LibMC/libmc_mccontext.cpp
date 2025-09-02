@@ -992,7 +992,9 @@ IAPIRequestHandler* CMCContext::CreateAPIRequestHandler(const std::string& sURI,
             throw ELibMCNoContextException(LIBMC_ERROR_INVALIDAUTHORIZATION);
 
         if (bCreateNewSession) {
-            pAuth = pSessionHandler->createNewAuthenticationSession(m_pSystemState->getGlobalChronoInstance ());
+            auto pFrontendDefinition = m_pSystemState->uiHandler()->getFrontendDefinition();
+
+            pAuth = pSessionHandler->createNewAuthenticationSession(pFrontendDefinition);
             LibMCAssertNotNull(pAuth);
 
 			auto pLegacyParameterHandler = pAuth->getLegacyParameterHandler(true);
@@ -1000,7 +1002,7 @@ IAPIRequestHandler* CMCContext::CreateAPIRequestHandler(const std::string& sURI,
                 m_pSystemState->uiHandler()->populateClientVariables (pLegacyParameterHandler);
         }
         else
-            pAuth = pSessionHandler->createEmptyAuthenticationSession(m_pSystemState->getGlobalChronoInstance());
+            pAuth = pSessionHandler->createEmptyAuthenticationSession();
 
     }
     else {

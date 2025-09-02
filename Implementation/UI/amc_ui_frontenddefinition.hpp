@@ -34,18 +34,78 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "common_chrono.hpp"
 
+#include "amc_ui_expression.hpp"
+
+#include <memory>
+#include <map>
 
 namespace AMC {
+
+	enum class eUIFrontendDefinitionAttributeType : uint32_t {
+		atUnknown = 0,
+		atString = 1,
+		atNumber = 2,
+		atInteger = 3,
+		atBoolean = 4,
+		atUUID = 5
+	};
+
+	class CUIFrontendDefinitionAttribute {
+	private:
+
+		std::string m_sName;
+		eUIFrontendDefinitionAttributeType m_AttributeType;
+
+	public:
+
+		CUIFrontendDefinitionAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType);
+
+		virtual ~CUIFrontendDefinitionAttribute();
+
+		std::string getName();
+
+		eUIFrontendDefinitionAttributeType getAttributeType();
+	};
+
+	typedef std::shared_ptr<CUIFrontendDefinitionAttribute> PUIFrontendDefinitionAttribute;
+
+
+	class CUIFrontendDefinitionModuleStore {
+	private:
+
+		std::string m_sPath;
+		std::string m_sUUID;
+
+		std::map<std::string, PUIFrontendDefinitionAttribute> m_Attributes;
+
+	public:
+		CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string & sModulePath);
+
+		virtual ~CUIFrontendDefinitionModuleStore();
+
+	};
+
+	typedef std::shared_ptr<CUIFrontendDefinitionModuleStore> PUIFrontendDefinitionModuleStore;
 
 	class CUIFrontendDefinition {
 	private:
 
-	public:
-		CUIFrontendDefinition();
+		std::map<std::string, PUIFrontendDefinitionModuleStore> m_ModuleStores;
+		AMCCommon::PChrono m_pGlobalChrono;
 
-		virtual ~CUIFrontendDefinition();
+	public:
+
+		CUIFrontendDefinition (AMCCommon::PChrono pGlobalChrono);
+
+		virtual ~CUIFrontendDefinition ();
+
+		PUIFrontendDefinitionModuleStore registerModuleStore (const std::string& sModuleUUID, const std::string& sPath);
+
+		AMCCommon::PChrono getGlobalChrono();
 
 	};
+
+	typedef std::shared_ptr<CUIFrontendDefinition> PUIFrontendDefinition;
 
 }
 

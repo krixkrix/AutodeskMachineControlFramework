@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_resourcepackage.hpp"
 #include "amc_ui_interfaces.hpp"
 #include "amc_ui_frontendstate.hpp"
+#include "amc_ui_frontenddefinition.hpp"
 #include "amc_ui_expression.hpp"
 
 #include <memory>
@@ -128,6 +129,8 @@ namespace AMC {
 		LibMCUI::PEventHandler m_pUIEventHandler;
 		LibMCEnv::PWrapper m_pEnvironmentWrapper;
 
+		PUIFrontendDefinition m_pFrontendDefinition;
+
 
 		void addMenuItem_Unsafe (const std::string& sID, const std::string& sIcon, const std::string& sCaption, const std::string & sDescription, const std::string& sTargetPage, const std::string & sEventName);
 		void addToolbarItem_Unsafe (const std::string& sID, const std::string& sIcon, const std::string& sCaption, const std::string& sTargetPage, const std::string& sEventName);
@@ -181,6 +184,8 @@ namespace AMC {
 		// New UI Frontend System
 		/////////////////////////////////////////////////////////////////////////////////////
 		void frontendWriteStatusToJSON (CJSONWriter& writer, CUIFrontendState * pFrontendState);
+
+		PUIFrontendDefinition getFrontendDefinition ();
 
 	};
 	
