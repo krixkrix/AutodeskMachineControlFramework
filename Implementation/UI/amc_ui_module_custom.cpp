@@ -50,7 +50,7 @@ using namespace AMC;
 
 
 CUIModule_Custom::CUIModule_Custom(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode))
+: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -58,9 +58,7 @@ CUIModule_Custom::CUIModule_Custom(pugi::xml_node& xmlNode, const std::string& s
 	if (sPath.empty())
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULEPATH, m_sName);
 
-	m_sModulePath = sPath;
-
-	m_pCustomItem = std::make_shared<CUIModuleCustomItem_Properties>(m_sUUID, m_sModulePath, pUIModuleEnvironment);
+	m_pCustomItem = std::make_shared<CUIModuleCustomItem_Properties>(m_sUUID, getModulePath (), pUIModuleEnvironment);
 
 	pugi::xml_node propertiesNode = xmlNode.child("properties");
 	if (!propertiesNode.empty()) {
@@ -101,7 +99,7 @@ CUIModule_Custom::CUIModule_Custom(pugi::xml_node& xmlNode, const std::string& s
 			if (iIter != m_EventItemNameMap.end ())
 				throw ELibMCCustomException(LIBMC_ERROR_DUPLICATECUSTOMPAGEVENTNAME, m_sName + "/" + sName);
 
-			auto pEventItem = std::make_shared<CUIModuleCustomItem_Event>(sName, m_sModulePath, pUIModuleEnvironment);
+			auto pEventItem = std::make_shared<CUIModuleCustomItem_Event>(sName, getModulePath (), pUIModuleEnvironment);
 
 			m_EventItemNameMap.insert(std::make_pair (pEventItem->getEventName (), pEventItem));
 			m_EventItemUUIDMap.insert(std::make_pair(pEventItem->getUUID(), pEventItem));

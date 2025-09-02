@@ -203,7 +203,7 @@ std::string CUIModule_GridSection::getRowPositionString()
 }
 
 CUIModule_Grid::CUIModule_Grid(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode))
+: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());

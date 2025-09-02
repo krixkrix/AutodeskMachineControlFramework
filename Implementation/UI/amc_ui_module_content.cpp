@@ -59,7 +59,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace AMC;
 
 CUIModule_Content::CUIModule_Content(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-	: CUIModule(getNameFromXML(xmlNode)), m_nNamingIDCounter(1)
+	: CUIModule(getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ()), m_nNamingIDCounter(1)
 {
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
 
@@ -68,8 +68,6 @@ CUIModule_Content::CUIModule_Content(pugi::xml_node& xmlNode, const std::string&
 
 	if (sPath.empty())
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULEPATH, m_sName);
-
-	m_sModulePath = sPath + "." + m_sName;
 	
 	auto headlineAttrib = xmlNode.attribute("headline");
 	if (!headlineAttrib.empty ())

@@ -230,7 +230,7 @@ void CUIModule_LayerViewPlatformItem::populateClientVariables(CParameterHandler*
 
 
 CUIModule_LayerView::CUIModule_LayerView(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode))
+: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());

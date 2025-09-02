@@ -398,7 +398,7 @@ void CUIHandler::loadFromXML(pugi::xml_node& xmlNode, const std::string& sUILibr
         auto pageChildren = pageNode.children();
         for (pugi::xml_node pageChild : pageChildren) {
             
-            auto pModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pPage.get(), m_pCoreResourcePackage);
+            auto pModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pPage.get(), m_pCoreResourcePackage, m_pFrontendDefinition.get ());
             auto pModule = CUIModuleFactory::createModule(pageChild, sPageName, pModuleEnvironment);
             pPage->addModule(pModule);
 
@@ -423,7 +423,7 @@ void CUIHandler::loadFromXML(pugi::xml_node& xmlNode, const std::string& sUILibr
 
         auto pPage = addCustomPage_Unsafe(sPageName, sComponentName);
 
-        auto pCustomModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pPage.get(), m_pCoreResourcePackage);
+        auto pCustomModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pPage.get(), m_pCoreResourcePackage, m_pFrontendDefinition.get ());
         auto pCustomModule = std::make_shared<CUIModule_Custom>(custompageNode, sPageName, pCustomModuleEnvironment);
         pPage->addModule(pCustomModule);
 
@@ -433,7 +433,7 @@ void CUIHandler::loadFromXML(pugi::xml_node& xmlNode, const std::string& sUILibr
             auto modulesChildren = modulesNode.children();
             for (pugi::xml_node moduleChild : modulesChildren) {
 
-                auto pModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pPage.get(), m_pCoreResourcePackage);
+                auto pModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pPage.get(), m_pCoreResourcePackage, m_pFrontendDefinition.get ());
                 auto pModule = CUIModuleFactory::createModule(moduleChild, sPageName, pModuleEnvironment);
                 pPage->addModule(pModule);
 
@@ -460,7 +460,7 @@ void CUIHandler::loadFromXML(pugi::xml_node& xmlNode, const std::string& sUILibr
         auto dialogChildren = dialogNode.children();
         for (pugi::xml_node dialogChild : dialogChildren) {
 
-            auto pModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pDialog.get(), m_pCoreResourcePackage);
+            auto pModuleEnvironment = std::make_shared<CUIModuleEnvironment>(m_pUISystemState, pDialog.get(), m_pCoreResourcePackage, m_pFrontendDefinition.get ());
             auto pModule = CUIModuleFactory::createModule(dialogChild, sDialogName, pModuleEnvironment);
             pDialog->addModule(pModule);
 

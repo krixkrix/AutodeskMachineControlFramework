@@ -127,7 +127,7 @@ void CUIModule_LogsItem::populateClientVariables(CParameterHandler* pClientVaria
 
 
 CUIModule_Logs::CUIModule_Logs(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode))
+: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -137,12 +137,10 @@ CUIModule_Logs::CUIModule_Logs(pugi::xml_node& xmlNode, const std::string& sPath
 	if (sPath.empty())
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULEPATH, m_sName);
 
-	m_sModulePath = sPath + "." + m_sName;
-
 	auto captionAttrib = xmlNode.attribute("caption");
 	m_sCaption = captionAttrib.as_string();
 	
-	m_LogsItem = std::make_shared<CUIModule_LogsItem>(m_sModulePath, pUIModuleEnvironment);
+	m_LogsItem = std::make_shared<CUIModule_LogsItem>(getModulePath (), pUIModuleEnvironment);
 
 }
 

@@ -53,7 +53,8 @@ using namespace AMC;
 #define GRAPHIC_MAXVIEWCOORD +1.0E6
 
 CUIModule_Graphic::CUIModule_Graphic(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode)), m_nNamingIDCounter (1), m_dMinX (0.0), m_dMinY (0.0), m_dMaxX (100.0), m_dMaxY (100.0), m_bShowGrid (false)
+: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ()), 
+  m_nNamingIDCounter (1), m_dMinX (0.0), m_dMinY (0.0), m_dMaxX (100.0), m_dMaxY (100.0), m_bShowGrid (false)
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -63,17 +64,15 @@ CUIModule_Graphic::CUIModule_Graphic(pugi::xml_node& xmlNode, const std::string&
 	if (sPath.empty())
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULEPATH, m_sName);
 
-	m_sModulePath = sPath + "." + m_sName;
-
 	auto children = xmlNode.children();
 	for (auto childNode : children) {
 		std::string sChildName = childNode.name();
 		auto sItemName = readItemNameFromXML(childNode, sChildName);
 
 		if (sChildName == "image")
-			addItem(CUIModule_GraphicImage::makeFromXML(childNode, sItemName, m_sModulePath, pUIModuleEnvironment));
+			addItem(CUIModule_GraphicImage::makeFromXML(childNode, sItemName, getModulePath (), pUIModuleEnvironment));
 		if (sChildName == "svgimage")
-			addItem(CUIModule_GraphicSVGImage::makeFromXML(childNode, sItemName, m_sModulePath, pUIModuleEnvironment));
+			addItem(CUIModule_GraphicSVGImage::makeFromXML(childNode, sItemName, getModulePath (), pUIModuleEnvironment));
 		if (sChildName == "view") {
 			readViewPort(childNode);
 
@@ -164,10 +163,10 @@ void CUIModule_Graphic::populateClientVariables(CParameterHandler* pParameterHan
 std::string CUIModule_Graphic::getDefaultContentName(const std::string& sPrefix)
 {
 	if (sPrefix.empty())
-		throw ELibMCCustomException(LIBMC_ERROR_EMPTYITEMPREFIX, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_EMPTYITEMPREFIX, getModulePath ());
 
 	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sPrefix))
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDITEMPREFIX, m_sModulePath + "." + sPrefix);
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDITEMPREFIX, getModulePath () + "." + sPrefix);
 
 
 	std::string sName = sPrefix + std::to_string(m_nNamingIDCounter);
@@ -185,7 +184,7 @@ std::string CUIModule_Graphic::readItemNameFromXML(const pugi::xml_node& itemNod
 		sItemName = getDefaultContentName(sPrefix);
 
 	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sItemName))
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDITEMPATH, m_sModulePath + "." + sItemName);
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDITEMPATH, getModulePath() + "." + sItemName);
 
 	return sItemName;
 }
@@ -213,34 +212,34 @@ void CUIModule_Graphic::readViewPort(const pugi::xml_node& viewportNode)
 	auto showGridAttrib = viewportNode.attribute("showgrid");
 
 	if (minXattrib.empty())
-		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, getModulePath ());
 	if (minYattrib.empty())
-		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, getModulePath ());
 	if (maxXattrib.empty())
-		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, getModulePath());
 	if (maxYattrib.empty())
-		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_VIEWPORTCOORDMISSING, getModulePath());
 
 	m_dMinX = minXattrib.as_double(-GRAPHIC_INVALIDVIEWCOORD);
 	if ((m_dMinX < GRAPHIC_MINVIEWCOORD) || (m_dMinX > GRAPHIC_MAXVIEWCOORD))
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, m_sModulePath + " " + minXattrib.as_string());
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, getModulePath () + " " + minXattrib.as_string());
 
 	m_dMinY = minYattrib.as_double(-GRAPHIC_INVALIDVIEWCOORD);
 	if ((m_dMinY < GRAPHIC_MINVIEWCOORD) || (m_dMinY > GRAPHIC_MAXVIEWCOORD))
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, m_sModulePath + " " + minYattrib.as_string());
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, getModulePath () + " " + minYattrib.as_string());
 
 	m_dMaxX = maxXattrib.as_double(-GRAPHIC_INVALIDVIEWCOORD);
 	if ((m_dMaxX < GRAPHIC_MINVIEWCOORD) || (m_dMaxX > GRAPHIC_MAXVIEWCOORD))
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, m_sModulePath + " " + maxXattrib.as_string());
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, getModulePath () + " " + maxXattrib.as_string());
 
 	m_dMaxY = maxYattrib.as_double(-GRAPHIC_INVALIDVIEWCOORD);
 	if ((m_dMaxY < GRAPHIC_MINVIEWCOORD) || (m_dMaxY > GRAPHIC_MAXVIEWCOORD))
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, m_sModulePath + " " + maxYattrib.as_string());
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, getModulePath () + " " + maxYattrib.as_string());
 
 	if (m_dMaxX < m_dMinX)
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, getModulePath ());
 	if (m_dMaxY < m_dMinY)
-		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, m_sModulePath);
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDVIEWPORTCOORD, getModulePath ());
 
 	if (!showGridAttrib.empty()) {
 		m_bShowGrid = showGridAttrib.as_bool();

@@ -214,7 +214,7 @@ void CUIModule_GLSceneItem::populateClientVariables(CParameterHandler* pClientVa
 
 
 CUIModule_GLScene::CUIModule_GLScene(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode))
+: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -224,7 +224,6 @@ CUIModule_GLScene::CUIModule_GLScene(pugi::xml_node& xmlNode, const std::string&
 	if (sPath.empty())
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULEPATH, m_sName);
 
-	m_sModulePath = sPath + "." + m_sName;
 
 	auto pResourcePackage = pUIModuleEnvironment->resourcePackage();
 	auto pMeshHandler = pUIModuleEnvironment->meshHandler();
@@ -307,7 +306,7 @@ CUIModule_GLScene::CUIModule_GLScene(pugi::xml_node& xmlNode, const std::string&
 	}
 
 
-	m_pSceneItem = std::make_shared<CUIModule_GLSceneItem>(m_sModulePath, m_sUUID, pUIModuleEnvironment, this);
+	m_pSceneItem = std::make_shared<CUIModule_GLSceneItem>(getModulePath (), m_sUUID, pUIModuleEnvironment, this);
 
 }
 

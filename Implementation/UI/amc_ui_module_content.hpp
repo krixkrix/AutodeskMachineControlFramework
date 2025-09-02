@@ -67,8 +67,6 @@ namespace AMC {
 		std::string m_sTitle;
 		std::string m_sSubtitle;
 
-		std::string m_sModulePath;
-
 		uint32_t m_nNamingIDCounter;
 
 		std::map<std::string, PUIModule_ContentItem> m_ItemMap;

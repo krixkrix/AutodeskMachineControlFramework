@@ -61,8 +61,6 @@ namespace AMC {
 	class CUIModule_Custom : public CUIModule {
 	protected:		
 
-		std::string m_sModulePath;
-
 		PUIModuleCustomItem_Properties m_pCustomItem;
 
 		std::map<std::string, PUIModuleCustomItem_Event> m_EventItemNameMap;

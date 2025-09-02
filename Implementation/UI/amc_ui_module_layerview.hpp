@@ -101,8 +101,6 @@ namespace AMC {
 
 		std::string m_sCaption;
 
-		std::string m_sModulePath;
-
 		PUIModule_LayerViewPlatformItem m_PlatformItem;
 
 	public:

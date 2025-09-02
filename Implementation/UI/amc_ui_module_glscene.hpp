@@ -141,7 +141,6 @@ namespace AMC {
 	protected:		
 
 		std::string m_sCaption;
-		std::string m_sModulePath;
 
 		std::map<std::string, PUIModule_GLSceneModel> m_ModelNameMap;
 		std::map<std::string, PUIModule_GLSceneModel> m_ModelUUIDMap;

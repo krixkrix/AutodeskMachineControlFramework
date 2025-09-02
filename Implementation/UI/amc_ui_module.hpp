@@ -68,9 +68,10 @@ namespace AMC {
 		PUISystemState m_pUISystemState;
 		PResourcePackage m_pResourcePackage;
 		CUIModule_ContentRegistry* m_pContentRegistry;
+		CUIFrontendDefinition* m_pFrontendDefinition;
 
 	public:
-		CUIModuleEnvironment(PUISystemState pUISystemState, CUIModule_ContentRegistry* pContentRegistry, PResourcePackage pResourcePackage);
+		CUIModuleEnvironment(PUISystemState pUISystemState, CUIModule_ContentRegistry* pContentRegistry, PResourcePackage pResourcePackage, CUIFrontendDefinition* pFrontendDefinition);
 		virtual ~CUIModuleEnvironment();
 
 		PStateMachineData stateMachineData();
@@ -84,16 +85,22 @@ namespace AMC {
 
 		AMCCommon::PChrono getGlobalChrono();
 
+		CUIFrontendDefinition* getFrontendDefinition ();
+
 	};
 
 	class CUIModule {
 	protected:
 		std::string m_sName;
 		std::string m_sUUID;
+
+		std::string m_sModulePath;
+
+		PUIFrontendDefinitionModuleStore m_pModuleStore;
 		
 	public:
 
-		CUIModule(const std::string & sName);	
+		CUIModule(const std::string & sName, const std::string& sParentPath, CUIFrontendDefinition * pFrontendDefinition);
 		
 		virtual ~CUIModule();
 
@@ -130,6 +137,7 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 		virtual void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState);
 
+		std::string getModulePath();
 	};
 
 	

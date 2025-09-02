@@ -81,8 +81,6 @@ namespace AMC {
 
 		std::string m_sCaption;
 
-		std::string m_sModulePath;
-
 		PUIModule_LogsItem m_LogsItem;
 
 	public:
