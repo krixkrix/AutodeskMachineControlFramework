@@ -698,8 +698,10 @@
 		<error name="INVALIDCUSTOMOPENAPIJSON" code="673" description="Invalid Custom OpenAPI JSON." />				
 		<error name="USEDMODULEISLEGACY" code="674" description="Used module is legacy." />				
 		<error name="TRIEDTOACCESSNULLCLIENTPARAMETERS" code="675" description="Tried to access null client parameters." />				
-		
-				
+		<error name="INVALIDFRONTENDMODULEPATH" code="676" description="Invalid frontend module path." />				
+		<error name="INVALIDFRONTENDATTRIBUTENAME" code="677" description="Invalid frontend attribute name." />
+		<error name="DUPLICATEFRONTENDATTRIBUTENAME" code="678" description="Duplicate frontend attribute name." />
+						
 	</errors>
 	
 	
