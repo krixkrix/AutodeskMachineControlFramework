@@ -157,7 +157,6 @@ bool CUIModule::isVersion2FrontendModule()
 
 void CUIModule::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState)
 {
-	throw ELibMCCustomException(LIBMC_ERROR_USEDMODULEISLEGACY, m_sName);
 }
 
 std::string CUIModule::getModulePath()
@@ -165,3 +164,27 @@ std::string CUIModule::getModulePath()
 	return m_sModulePath;
 }
 
+PUIFrontendDefinitionAttribute CUIModule::registerUUIDAttribute(const std::string& sAttributeName, const CUIExpression& expression)
+{
+	return m_pModuleStore->registerValue(sAttributeName, eUIFrontendDefinitionAttributeType::atUUID, expression);
+}
+
+PUIFrontendDefinitionAttribute CUIModule::registerIntegerAttribute(const std::string& sAttributeName, const CUIExpression& expression)
+{
+	return m_pModuleStore->registerValue(sAttributeName, eUIFrontendDefinitionAttributeType::atInteger, expression);
+}
+
+PUIFrontendDefinitionAttribute CUIModule::registerNumberAttribute(const std::string& sAttributeName, const CUIExpression& expression)
+{
+	return m_pModuleStore->registerValue(sAttributeName, eUIFrontendDefinitionAttributeType::atNumber, expression);
+}
+
+PUIFrontendDefinitionAttribute CUIModule::registerStringAttribute(const std::string& sAttributeName, const CUIExpression& expression)
+{
+	return m_pModuleStore->registerValue(sAttributeName, eUIFrontendDefinitionAttributeType::atString, expression);
+}
+
+PUIFrontendDefinitionAttribute CUIModule::registerBoolAttribute(const std::string& sAttributeName, const CUIExpression& expression)
+{
+	return m_pModuleStore->registerValue(sAttributeName, eUIFrontendDefinitionAttributeType::atBoolean, expression);
+}

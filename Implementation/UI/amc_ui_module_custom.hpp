@@ -63,6 +63,8 @@ namespace AMC {
 
 		PUIModuleCustomItem_Properties m_pCustomItem;
 
+		std::string m_sParentPath;
+
 		std::map<std::string, PUIModuleCustomItem_Event> m_EventItemNameMap;
 		std::map<std::string, PUIModuleCustomItem_Event> m_EventItemUUIDMap;
 

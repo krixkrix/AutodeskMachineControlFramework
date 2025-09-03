@@ -138,6 +138,12 @@ namespace AMC {
 		virtual void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState);
 
 		std::string getModulePath();
+
+		PUIFrontendDefinitionAttribute registerUUIDAttribute(const std::string& sAttributeName, const CUIExpression & expression);
+		PUIFrontendDefinitionAttribute registerIntegerAttribute(const std::string& sAttributeName, const CUIExpression& expression);
+		PUIFrontendDefinitionAttribute registerNumberAttribute(const std::string& sAttributeName, const CUIExpression& expression);
+		PUIFrontendDefinitionAttribute registerStringAttribute(const std::string& sAttributeName, const CUIExpression& expression);
+		PUIFrontendDefinitionAttribute registerBoolAttribute(const std::string& sAttributeName, const CUIExpression& expression);
 	};
 
 	

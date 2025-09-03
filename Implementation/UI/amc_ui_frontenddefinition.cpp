@@ -30,11 +30,50 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_ui_frontenddefinition.hpp"
 #include "libmc_exceptiontypes.hpp"
+#include "common_utils.hpp"
 
 using namespace AMC;
 
-CUIFrontendDefinitionModuleStore::CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string& sModulePath)
+
+
+CUIFrontendDefinitionAttribute::CUIFrontendDefinitionAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType)
+	: m_sName(sName), m_AttributeType(attributeType)
 {
+	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sName))
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDFRONTENDATTRIBUTENAME, sName);
+}
+
+CUIFrontendDefinitionAttribute::~CUIFrontendDefinitionAttribute()
+{
+
+}
+
+
+std::string CUIFrontendDefinitionAttribute::getName()
+{
+	return m_sName;
+}
+
+eUIFrontendDefinitionAttributeType CUIFrontendDefinitionAttribute::getAttributeType()
+{
+	return m_AttributeType;
+}
+
+CUIFrontendDefinitionExpressionAttribute::CUIFrontendDefinitionExpressionAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression& valueExpression)
+	: CUIFrontendDefinitionAttribute(sName, attributeType), m_ValueExpression(valueExpression)
+{
+}
+
+CUIFrontendDefinitionExpressionAttribute::~CUIFrontendDefinitionExpressionAttribute()
+{
+
+}
+
+CUIFrontendDefinitionModuleStore::CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string& sModulePath)
+	: m_sUUID(AMCCommon::CUtils::normalizeUUIDString(sModuleUUID)), m_sPath(sModulePath)
+{
+	if (!AMCCommon::CUtils::stringIsValidAlphanumericPathString (sModulePath))
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDFRONTENDMODULEPATH, sModulePath);
 
 }
 
@@ -42,6 +81,21 @@ CUIFrontendDefinitionModuleStore::~CUIFrontendDefinitionModuleStore()
 {
 
 }
+
+PUIFrontendDefinitionAttribute CUIFrontendDefinitionModuleStore::registerValue (const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression& valueExpression)
+{
+	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sName))
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDFRONTENDATTRIBUTENAME, sName);
+
+	if (m_Attributes.find(sName) != m_Attributes.end())
+		throw ELibMCCustomException(LIBMC_ERROR_DUPLICATEFRONTENDATTRIBUTENAME, sName);
+
+	auto pAttribute = std::make_shared<CUIFrontendDefinitionExpressionAttribute>(sName, attributeType, valueExpression);
+	m_Attributes.insert(std::make_pair(sName, pAttribute));
+
+	return pAttribute;
+}
+
 
 CUIFrontendDefinition::CUIFrontendDefinition(AMCCommon::PChrono pGlobalChrono)
 	: m_pGlobalChrono (pGlobalChrono)

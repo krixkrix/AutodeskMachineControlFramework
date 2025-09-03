@@ -689,6 +689,9 @@ typedef void * LibMC_pvoid;
 #define LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON 673 /** Invalid Custom OpenAPI JSON. */
 #define LIBMC_ERROR_USEDMODULEISLEGACY 674 /** Used module is legacy. */
 #define LIBMC_ERROR_TRIEDTOACCESSNULLCLIENTPARAMETERS 675 /** Tried to access null client parameters. */
+#define LIBMC_ERROR_INVALIDFRONTENDMODULEPATH 676 /** Invalid frontend module path. */
+#define LIBMC_ERROR_INVALIDFRONTENDATTRIBUTENAME 677 /** Invalid frontend attribute name. */
+#define LIBMC_ERROR_DUPLICATEFRONTENDATTRIBUTENAME 678 /** Duplicate frontend attribute name. */
 
 /*************************************************************************************************************************
  Error strings for LibMC
@@ -1290,6 +1293,9 @@ inline const char * LIBMC_GETERRORSTRING (LibMCResult nErrorCode) {
     case LIBMC_ERROR_INVALIDCUSTOMOPENAPIJSON: return "Invalid Custom OpenAPI JSON.";
     case LIBMC_ERROR_USEDMODULEISLEGACY: return "Used module is legacy.";
     case LIBMC_ERROR_TRIEDTOACCESSNULLCLIENTPARAMETERS: return "Tried to access null client parameters.";
+    case LIBMC_ERROR_INVALIDFRONTENDMODULEPATH: return "Invalid frontend module path.";
+    case LIBMC_ERROR_INVALIDFRONTENDATTRIBUTENAME: return "Invalid frontend attribute name.";
+    case LIBMC_ERROR_DUPLICATEFRONTENDATTRIBUTENAME: return "Duplicate frontend attribute name.";
     default: return "unknown error";
   }
 }

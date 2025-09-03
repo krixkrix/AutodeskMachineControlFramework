@@ -47,7 +47,9 @@ namespace AMC {
 		atNumber = 2,
 		atInteger = 3,
 		atBoolean = 4,
-		atUUID = 5
+		atUUID = 5,
+		atArray = 6,
+		atObjet = 7
 	};
 
 	class CUIFrontendDefinitionAttribute {
@@ -70,6 +72,19 @@ namespace AMC {
 	typedef std::shared_ptr<CUIFrontendDefinitionAttribute> PUIFrontendDefinitionAttribute;
 
 
+	class CUIFrontendDefinitionExpressionAttribute : public CUIFrontendDefinitionAttribute {
+	private:
+		CUIExpression m_ValueExpression;
+
+	public: 
+
+		CUIFrontendDefinitionExpressionAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression& valueExpression);
+
+		virtual ~CUIFrontendDefinitionExpressionAttribute();
+
+	};
+
+
 	class CUIFrontendDefinitionModuleStore {
 	private:
 
@@ -82,6 +97,8 @@ namespace AMC {
 		CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string & sModulePath);
 
 		virtual ~CUIFrontendDefinitionModuleStore();
+
+		PUIFrontendDefinitionAttribute registerValue (const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression & valueExpression);
 
 	};
 
