@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcdriver_scanlab_rtcrecording.hpp"
 #include "libmcdriver_scanlab_gpiosequence.hpp"
 #include "libmcdriver_scanlab_gpiosequenceinstance.hpp"
-#include "libmcdriver_scanlab_oiemeasurementtagmap.hpp"
 
 // Include custom headers here.
 #include <math.h>
@@ -54,10 +53,9 @@ using namespace LibMCDriver_ScanLab::Impl;
 
 #define RTCCONTEXT_LASERPOWERCALIBRATIONUNITS 0.005
 
+
 #define RTCCONTEXT_MIN_LINESUBDIVISIONTHRESHOLD 0.001
 #define RTCCONTEXT_MAX_LINESUBDIVISIONTHRESHOLD 1000000.0
-
-#define RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ 3600UL * 100000UL
 
 CRTCContextOwnerData::CRTCContextOwnerData()
 	: m_nAttributeFilterValue (0), m_OIERecordingMode (LibMCDriver_ScanLab::eOIERecordingMode::OIERecordingDisabled), m_dMaxLaserPowerInWatts (100.0)
@@ -127,7 +125,6 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 	m_CardNo (nCardNo), 
 	m_dCorrectionFactor(10000.0), 
 	m_dZCorrectionFactor(10000.0),
-	m_dDefocusFactor (1.0),
 	m_nLaserIndex (0),
 	m_LaserPort(eLaserPort::Port12BitAnalog1), 
 	m_pDriverEnvironment (pDriverEnvironment),
@@ -152,12 +149,7 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 	m_pModulationCallbackUserData (nullptr),
 	m_bEnableLineSubdivision (false),
 	m_bMeasurementTagging (false),
-	m_dLineSubdivisionThreshold (RTCCONTEXT_MAX_LINESUBDIVISIONTHRESHOLD),
-	m_dLaserPulseHalfPeriodInMS(RTC_TIMINGDEFAULT_LASERPULSEHALFPERIOD),
-    m_dLaserPulseLengthInMS(RTC_TIMINGDEFAULT_LASERPULSELENGTH),
-    m_dStandbyPulseHalfPeriodInMS(RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD),
-    m_dStandbyPulseLengthInMS(RTC_TIMINGDEFAULT_STANDBYPULSELENGTH)
-
+	m_dLineSubdivisionThreshold (RTCCONTEXT_MAX_LINESUBDIVISIONTHRESHOLD)
 
 {
 	if (pOwnerData.get() == nullptr)
@@ -173,11 +165,10 @@ CRTCContext::CRTCContext(PRTCContextOwnerData pOwnerData, uint32_t nCardNo, bool
 
 	m_pScanLabSDK->n_reset_error(m_CardNo, 0xffffffff);
 
-	m_pMeasurementTagMap = std::make_shared<CRTCMeasurementTagMapInstance>();
-	m_CurrentMeasurementTagInfo.m_PartID = 0;
-	m_CurrentMeasurementTagInfo.m_ProfileID = 0;
-	m_CurrentMeasurementTagInfo.m_SegmentID = 0;
-	m_CurrentMeasurementTagInfo.m_VectorID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentPartID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentProfileID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentSegmentID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentVectorID = 0;
 
 }
 
@@ -314,19 +305,6 @@ void CRTCContext::SelectCorrectionTable(const LibMCDriver_ScanLab_uint32 nTableN
 
 }
 
-void CRTCContext::SetCorrectionFactors(const LibMCDriver_ScanLab_double dCorrectionFactorXY, const LibMCDriver_ScanLab_double dCorrectionFactorZ)
-{
-	if (dCorrectionFactorXY > 0.0)
-		m_dCorrectionFactor = dCorrectionFactorXY;
-	else
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR);
-
-	if (dCorrectionFactorZ > 0.0)
-		m_dZCorrectionFactor = dCorrectionFactorZ;
-	else
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCORRECTIONFACTOR);
-}
-
 void CRTCContext::ConfigureLists(const LibMCDriver_ScanLab_uint32 nSizeListA, const LibMCDriver_ScanLab_uint32 nSizeListB)
 {
 	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
@@ -382,9 +360,6 @@ void CRTCContext::SetLaserPulsesInBits(const LibMCDriver_ScanLab_uint32 nHalfPer
 {
 	m_pScanLabSDK->n_set_laser_pulses_ctrl(m_CardNo, nHalfPeriod, nPulseLength);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
-
-	m_dLaserPulseHalfPeriodInMS = nHalfPeriod / 64.0;
-	m_dLaserPulseLengthInMS = nPulseLength / 64.0;
 }
 
 void CRTCContext::SetLaserPulsesInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength)
@@ -404,14 +379,8 @@ void CRTCContext::SetLaserPulsesInMicroSeconds(const LibMCDriver_ScanLab_double 
 
 void CRTCContext::SetStandbyInBits(const LibMCDriver_ScanLab_uint32 nHalfPeriod, const LibMCDriver_ScanLab_uint32 nPulseLength)
 {
-	if (nPulseLength > 2 * nHalfPeriod)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD);
-
 	m_pScanLabSDK->n_set_standby(m_CardNo, nHalfPeriod, nPulseLength);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
-
-	m_dStandbyPulseHalfPeriodInMS = nHalfPeriod / 64.0;
-	m_dStandbyPulseLengthInMS = nPulseLength / 64.0;
 }
 
 void CRTCContext::SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHalfPeriod, const LibMCDriver_ScanLab_double dPulseLength)
@@ -419,48 +388,15 @@ void CRTCContext::SetStandbyInMicroSeconds(const LibMCDriver_ScanLab_double dHal
 	double HalfPeriodBits = round(dHalfPeriod * 64.0);
 	double PulseLengthBits = round(dPulseLength * 64.0);
 
-	if ((HalfPeriodBits < 0) || (HalfPeriodBits >= (double)(1UL << 31)))
+	if ((HalfPeriodBits < 1) || (HalfPeriodBits >= (double)(1UL << 31)))
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
-	if ((PulseLengthBits < 0) || (PulseLengthBits >= (double)(1UL << 31)))
+	if ((PulseLengthBits < 1) || (PulseLengthBits >= (double)(1UL << 31)))
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
 	if (PulseLengthBits > 2 * HalfPeriodBits)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHEXCEEDSCONTROLPERIOD);
+		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
 
 	SetStandbyInBits((uint32_t)HalfPeriodBits, (uint32_t)PulseLengthBits);
 }
-
-void CRTCContext::GetLaserPulsesInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength)
-{
-	nHalfPeriod = (uint32_t)round(m_dLaserPulseHalfPeriodInMS * 64.0);
-	nPulseLength = (uint32_t)round(m_dLaserPulseLengthInMS * 64.0);
-}
-
-void CRTCContext::GetLaserPulsesInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength)
-{
-	dHalfPeriod = m_dLaserPulseHalfPeriodInMS;
-	dPulseLength = m_dLaserPulseLengthInMS;
-}
-
-void CRTCContext::GetStandbyInBits(LibMCDriver_ScanLab_uint32& nHalfPeriod, LibMCDriver_ScanLab_uint32& nPulseLength)
-{
-	nHalfPeriod = (uint32_t)round(m_dStandbyPulseHalfPeriodInMS * 64.0);
-	nPulseLength = (uint32_t)round(m_dStandbyPulseLengthInMS * 64.0);
-
-}
-
-void CRTCContext::GetStandbyInMicroSeconds(LibMCDriver_ScanLab_double& dHalfPeriod, LibMCDriver_ScanLab_double& dPulseLength)
-{
-	dHalfPeriod = m_dStandbyPulseHalfPeriodInMS;
-	dPulseLength = m_dStandbyPulseLengthInMS;
-}
-
-void CRTCContext::writeLaserTimingsToCard()
-{
-	SetLaserPulsesInMicroSeconds(m_dLaserPulseHalfPeriodInMS, m_dLaserPulseLengthInMS);
-	SetStandbyInMicroSeconds(m_dStandbyPulseHalfPeriodInMS, m_dStandbyPulseLengthInMS);
-}
-
-
 
 LibMCDriver_ScanLab_uint32 CRTCContext::GetSerialNumber()
 {
@@ -478,10 +414,10 @@ void CRTCContext::SetStartList(const LibMCDriver_ScanLab_uint32 nListIndex, cons
 	m_pScanLabSDK->n_set_start_list_pos(m_CardNo, nListIndex, nPosition);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
 
-	m_CurrentMeasurementTagInfo.m_PartID = 0;
-	m_CurrentMeasurementTagInfo.m_ProfileID = 0;
-	m_CurrentMeasurementTagInfo.m_SegmentID = 0;
-	m_CurrentMeasurementTagInfo.m_VectorID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentPartID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentProfileID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentSegmentID = 0;
+	m_CurrentMeasurementTagInfo.m_nCurrentVectorID = 0;
 }
 
 void CRTCContext::SetEndOfList()
@@ -501,17 +437,6 @@ void CRTCContext::SetAutoChangePos(const LibMCDriver_ScanLab_uint32 nPosition)
 	m_pScanLabSDK->n_auto_change_pos(m_CardNo, nPosition);
 	m_pScanLabSDK->checkError(m_pScanLabSDK->n_get_last_error(m_CardNo));
 }
-
-void CRTCContext::SetDefocusFactor(const LibMCDriver_ScanLab_double dValue)
-{
-	m_dDefocusFactor = dValue;
-}
-
-LibMCDriver_ScanLab_double CRTCContext::GetDefocusFactor()
-{
-	return m_dDefocusFactor;
-}
-
 
 void CRTCContext::SetDelays(const LibMCDriver_ScanLab_uint32 nMarkDelay, const LibMCDriver_ScanLab_uint32 nJumpDelay, const LibMCDriver_ScanLab_uint32 nPolygonDelay)
 {
@@ -682,9 +607,13 @@ void CRTCContext::writePower(double dPowerInPercent, bool bOIEPIDControlFlag)
 			break;
 		case eLaserPort::Port12BitAnalog1andAnalog2:
 			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_MULTIPLELASERPORTSNOTCOMPATIBLEWITHPID);
-		case eLaserPort::LaserPulseModulation:
-			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_PULSELENGTHCONTROLNOTSUPPORTEDBYOIE);
 		}
+
+		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
+
+		m_pScanLabSDK->n_set_fly_2d(m_CardNo, 1.0, 1.0);
+		m_pScanLabSDK->n_long_delay(m_CardNo, 10);
+		m_pScanLabSDK->n_fly_return(m_CardNo, 0, 0);
 
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
 
@@ -719,17 +648,6 @@ void CRTCContext::writePower(double dPowerInPercent, bool bOIEPIDControlFlag)
 			m_pScanLabSDK->n_set_laser_power(m_CardNo, 0, digitalPowerValue);
 			m_pScanLabSDK->n_set_laser_power(m_CardNo, 1, digitalPowerValue);
 			break;
-		case eLaserPort::LaserPulseModulation: 
-			{
-				uint32_t nHalfPeriodInBits = (uint32_t)round(m_dLaserPulseHalfPeriodInMS * 64.0);
-				uint32_t nFullPeriodInBits = nHalfPeriodInBits * 2;
-				uint32_t nPulseLength = (uint32_t)round((double)nFullPeriodInBits * dClippedPowerFactor);
-
-				std::cout << "laser pulse modulation: half period " << nHalfPeriodInBits << " bits, pulse length " << nPulseLength << " bits, factor " << dClippedPowerFactor << std::endl;
-
-				m_pScanLabSDK->n_set_laser_pulses(m_CardNo, nHalfPeriodInBits, nPulseLength);
-				break;
-			}
 		}
 
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
@@ -860,7 +778,7 @@ void CRTCContext::DrawPolylineOIE(const LibMCDriver_ScanLab_uint64 nPointsBuffer
 	writeSpeeds(fMarkSpeed, fJumpSpeed, fPower, bOIEControlFlag);
 
 	// Z Plane
-	double defocusZ = round(fZValue * m_dZCorrectionFactor * m_dDefocusFactor);
+	double defocusZ = round(fZValue * m_dZCorrectionFactor);
 	int intDefocusZ = (int)defocusZ;
 	m_pScanLabSDK->n_set_defocus_list (m_CardNo, intDefocusZ);
 
@@ -895,7 +813,7 @@ void CRTCContext::DrawHatchesOIE(const LibMCDriver_ScanLab_uint64 nHatchesBuffer
 	writeSpeeds(fMarkSpeed, fJumpSpeed, fPower, bOIEControlFlag);
 
 	// Z Plane
-	double defocusZ = round(fZValue * m_dZCorrectionFactor * m_dDefocusFactor);
+	double defocusZ = round(fZValue * m_dZCorrectionFactor);
 	int intDefocusZ = (int)defocusZ;
 	m_pScanLabSDK->n_set_defocus_list(m_CardNo, intDefocusZ);
 
@@ -942,42 +860,6 @@ void CRTCContext::AddMarkMovement(const LibMCDriver_ScanLab_double dTargetX, con
 	m_nCurrentScanPositionX = intX;
 	m_nCurrentScanPositionY = intY;
 }
-
-
-void CRTCContext::AddMicrovectorMovement(const LibMCDriver_ScanLab_uint64 nMicrovectorArrayBufferSize, const LibMCDriver_ScanLab::sMicroVector* pMicrovectorArrayBuffer)
-{
-	if (nMicrovectorArrayBufferSize > 0) {
-		if (pMicrovectorArrayBuffer == nullptr) 
-			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPARAM);
-		m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
-
-		auto pMicroVector = pMicrovectorArrayBuffer;
-
-		for (uint64_t nIndex = 0; nIndex < nMicrovectorArrayBufferSize; nIndex++) {			
-
-			double dX = round((pMicroVector->m_X - m_dLaserOriginX) * m_dCorrectionFactor);
-			double dY = round((pMicroVector->m_Y - m_dLaserOriginY) * m_dCorrectionFactor);
-
-			int32_t intX = (int32_t)dX;
-			int32_t intY = (int32_t)dY;
-
-			int32_t intDelayLaserOn = -1;
-			int32_t intDelayLaserOff = -1;
-
-			m_pScanLabSDK->n_micro_vector_abs(m_CardNo, intX, intY, intDelayLaserOn, intDelayLaserOff);
-
-			m_nCurrentScanPositionX = intX;
-			m_nCurrentScanPositionY = intY;
-
-			pMicroVector++;
-
-		}
-
-		m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
-
-	}
-}
-
 
 void CRTCContext::AddFreeVariable(const LibMCDriver_ScanLab_uint32 nVariableNo, const LibMCDriver_ScanLab_uint32 nValue)
 {
@@ -1115,7 +997,7 @@ void CRTCContext::DisableLineSubdivision()
 
 double CRTCContext::adjustLaserPowerCalibration(double dLaserPowerInPercent, double dPowerOffsetInPercent, double dPowerOutputScaling)
 {
-	return (dLaserPowerInPercent * dPowerOutputScaling + dPowerOffsetInPercent);
+	return ((dLaserPowerInPercent + dPowerOffsetInPercent) * dPowerOutputScaling);
 }
 
 
@@ -1433,17 +1315,6 @@ void CRTCContext::InitializeForOIE(const LibMCDriver_ScanLab_uint64 nSignalChann
 	m_pScanLabSDK->n_set_multi_mcbsp_in(m_CardNo, 0, 0, 0);
 
 
-	// Check Error
-	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
-
-}
-
-
-void CRTCContext::DisableOnTheFlyForOIE()
-{
-	// Check Error
-	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
-
 	// Workaround: Ensure that MCBSP Mark On The Fly is disabled!
 	SetStartList(1, 0);
 	m_pScanLabSDK->n_set_fly_2d(m_CardNo, 1.0, 1.0);
@@ -1466,7 +1337,6 @@ void CRTCContext::DisableOnTheFlyForOIE()
 
 	if (Busy)
 		throw std::runtime_error("could not properly intialise MCBSP connection to OIE");
-
 
 	// Check Error
 	m_pScanLabSDK->checkGlobalErrorOfCard(m_CardNo);
@@ -1502,11 +1372,12 @@ void CRTCContext::sendFreeVariable0(uint32_t nValue)
 void CRTCContext::sendOIEMeasurementTag(uint32_t nCurrentVectorID)
 {
 	if (m_bMeasurementTagging) {
+		m_CurrentMeasurementTagInfo.m_nCurrentVectorID = nCurrentVectorID;
+		m_MeasurementTags.push_back(m_CurrentMeasurementTagInfo);
 
-		m_CurrentMeasurementTagInfo.m_VectorID = nCurrentVectorID;
-		uint32_t nMeasurementTag = m_pMeasurementTagMap->addTag(m_CurrentMeasurementTagInfo);
+		uint32_t nMeasurementTag = (uint32_t)m_MeasurementTags.size() & ((1UL << 22) - 1);
 
-		m_pScanLabSDK->n_set_free_variable_list(m_CardNo, 1, (uint32_t) (nMeasurementTag & ((1UL << 22) - 1)));
+		m_pScanLabSDK->n_set_free_variable_list(m_CardNo, 1, nMeasurementTag);
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
 
 	}
@@ -1592,9 +1463,7 @@ void CRTCContext::callSetTriggerOIE(uint32_t nPeriod)
 				channelArray.at(nIndex) = 0;
 		}
 
-		uint32_t nBufferRoundtripBit = 1UL << 31;
-
-		m_pScanLabSDK->n_set_trigger8(m_CardNo, nPeriod | nBufferRoundtripBit, channelArray[0], channelArray[1], channelArray[2], channelArray[3], channelArray[4], channelArray[5], channelArray[6], channelArray[7]);
+		m_pScanLabSDK->n_set_trigger8(m_CardNo, nPeriod, channelArray[0], channelArray[1], channelArray[2], channelArray[3], channelArray[4], channelArray[5], channelArray[6], channelArray[7]);
 		m_pScanLabSDK->checkLastErrorOfCard(m_CardNo);
 	}
 	else {
@@ -1763,12 +1632,12 @@ void CRTCContext::SetOIEPIDMode(const LibMCDriver_ScanLab_uint32 nOIEPIDIndex)
 
 void CRTCContext::ClearOIEMeasurementTags()
 {
-	m_pMeasurementTagMap = std::make_shared<CRTCMeasurementTagMapInstance>();
+	m_MeasurementTags.clear();
 }
 
 LibMCDriver_ScanLab_uint32 CRTCContext::GetOIEMaxMeasurementTag()
 {
-	return m_pMeasurementTagMap->getSize ();
+	return (uint32_t)m_MeasurementTags.size();
 }
 
 
@@ -1784,26 +1653,15 @@ void CRTCContext::DisableOIEMeasurementTagging()
 
 void CRTCContext::MapOIEMeasurementTag(const LibMCDriver_ScanLab_uint32 nMeasurementTag, LibMCDriver_ScanLab_uint32& nPartID, LibMCDriver_ScanLab_uint32& nProfileID, LibMCDriver_ScanLab_uint32& nSegmentID, LibMCDriver_ScanLab_uint32& nVectorID)
 {
-	sOIEMeasurementTagData tagData;
-	if (m_pMeasurementTagMap->findTag (nMeasurementTag, tagData)) {
-		nPartID = tagData.m_PartID;
-		nSegmentID = tagData.m_SegmentID;
-		nProfileID = tagData.m_ProfileID;
-		nVectorID = tagData.m_VectorID;
+	if ((nMeasurementTag >= 1) && (nMeasurementTag <= m_MeasurementTags.size())) {
+		auto & record = m_MeasurementTags.at (nMeasurementTag - 1);
+		nPartID = record.m_nCurrentPartID;
+		nSegmentID = record.m_nCurrentSegmentID;
+		nProfileID = record.m_nCurrentProfileID;
+		nVectorID = record.m_nCurrentVectorID;
 
 	} else
 		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDOIEMEASUREMENTTAG, "Invalid OIE Measurement Tag" + std::to_string (nMeasurementTag));
-}
-
-
-
-IOIEMeasurementTagMap* CRTCContext::RetrieveOIEMeasurementTags()
-{
-	auto pCurrentInstance = m_pMeasurementTagMap;
-
-	m_pMeasurementTagMap = std::make_shared<CRTCMeasurementTagMapInstance>();
-
-	return new COIEMeasurementTagMap(pCurrentInstance);
 }
 
 
@@ -2390,141 +2248,6 @@ void CRTCContext::addGPIOSequenceToList(const std::string& sSequenceName)
 
 }
 
-
-double readSkywritingLimitInCosine(LibMCEnv::CToolpathLayer * pLayer, uint32_t nSegmentIndex)
-{
-	double dSkywritingLimit_Cosine = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit", -100.0);
-	double dSkywritingLimit_Degree = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit_degree", -100.0);
-
-	bool bCosineIsInRange = (dSkywritingLimit_Cosine >= -1.0) && (dSkywritingLimit_Cosine <= 1.0);
-	bool bDegreeIsInRange = (dSkywritingLimit_Degree >= 0.0) && (dSkywritingLimit_Degree <= 180.0);
-
-	if (!bCosineIsInRange && !bDegreeIsInRange)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLIMITPROVIDEDINPROFILE);
-	
-	if (bCosineIsInRange) {
-		// Cosine is given
-		return dSkywritingLimit_Cosine;
-
-	}
-	else if (bDegreeIsInRange) {
-		// Degree is given
-		return cos (dSkywritingLimit_Degree / 180.0 * 3.14159265358979);
-	}
-	else {
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLIMITPROVIDEDTWICEINPROFILE);
-	}
-
-}
-
-double readSkywritingTimeLagInMicroseconds(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
-{
-	double dSkywritingTimelag = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "timelag", -100.0);
-	double dSkywritingTimelag_us = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "timelag_us", -100.0);
-
-	bool bTimelagIsInRange = (dSkywritingTimelag >= 0.0) && (dSkywritingTimelag <= 1000000.0);
-	bool bTimelagUsIsInRange = (dSkywritingTimelag_us >= 0.0) && (dSkywritingTimelag_us <= 1000000.0);
-
-	if (!bTimelagIsInRange && !bTimelagUsIsInRange)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGTIMELAGPROVIDEDINPROFILE);
-
-	if (bTimelagIsInRange) {
-		// Cosine is given
-		return dSkywritingTimelag;
-
-	}
-	else if (bTimelagUsIsInRange) {
-		// Degree is given
-		return dSkywritingTimelag_us;
-	}
-	else {
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGTIMELAGPROVIDEDTWICEINPROFILE);
-	}
-}
-
-int64_t readSkywritingLaserOnShiftIn64thus(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
-{
-	int64_t nLaserOnShiftIn64thus = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "laseronshift", -10000000);
-	double nLaserOnShiftInus = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "laseronshift_us", -10000000.0);
-
-	bool bLaserOnShiftIsInRange = (nLaserOnShiftIn64thus > -1000000) && (nLaserOnShiftIn64thus < 1000000);
-	bool bLaserOnShiftUsIsInRange = (nLaserOnShiftInus > -1000000.0) && (nLaserOnShiftInus < 1000000.0);
-
-	if (!bLaserOnShiftIsInRange && !bLaserOnShiftUsIsInRange)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGLASERONSHIFTPROVIDEDINPROFILE);
-
-	if (bLaserOnShiftIsInRange) {
-		return nLaserOnShiftIn64thus;
-	}
-	else if (bLaserOnShiftUsIsInRange) {
-		// Microseconds is given
-		return (int64_t) round(nLaserOnShiftInus * 64.0);
-	}
-	else {
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGLASERONSHIFTPROVIDEDTWICEINPROFILE);
-	}
-}
-
-
-int64_t readSkywritingRunInPhaseInBits(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
-{
-	// We think 1 Million should be enough, even if RTC Documentation says it can go up to 2^32
-	int64_t nMaxNPrev = 1000000;
-
-	// See RTC Documentation set_sky_writing_para for details about the interpretation of the delays
-	double dFactor = 10.0;
-
-	int64_t nPrevInBits = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "nprev", -10000000);
-	double nPrevInMicroseconds = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "nprev_us", -10000000);
-
-	bool bPrevInBitsIsInRange = (nPrevInBits >= 0) && (nPrevInBits < nMaxNPrev);
-	bool bPrevInMicrosecondsIsInRange = (nPrevInMicroseconds >= 0.0) && (nPrevInMicroseconds < (nMaxNPrev * dFactor));
-
-	if (!bPrevInBitsIsInRange && !bPrevInMicrosecondsIsInRange)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPREVPROVIDEDINPROFILE);
-
-	if (bPrevInBitsIsInRange) {
-		return nPrevInBits;
-	}
-	else if (bPrevInMicrosecondsIsInRange) {
-		// Microseconds is given
-		return (int64_t)round(nPrevInMicroseconds / dFactor);
-	}
-	else {
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPREVPROVIDEDTWICEINPROFILE);
-	}
-}
-
-
-int64_t readSkywritingRunOutPhaseInBits(LibMCEnv::CToolpathLayer* pLayer, uint32_t nSegmentIndex)
-{
-	// We think 1 Million should be enough, even if RTC Documentation says it can go up to 2^32
-	int64_t nMaxNPost = 1000000;
-
-	// See RTC Documentation set_sky_writing_para for details about the interpretation of the delays
-	double dFactor = 10.0;
-
-	int64_t nPostInBits = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "npost", -10000000);
-	double nPostInMicroseconds = pLayer->GetSegmentProfileDoubleValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "npost_us", -10000000);
-
-	bool bPostInBitsIsInRange = (nPostInBits >= 0) && (nPostInBits < nMaxNPost);
-	bool bPostInMicrosecondsIsInRange = (nPostInMicroseconds >= 0.0) && (nPostInMicroseconds < (nMaxNPost * dFactor));
-
-	if (!bPostInBitsIsInRange && !bPostInMicrosecondsIsInRange)
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDORNOSKYWRITINGNPOSTPROVIDEDINPROFILE);
-
-	if (bPostInBitsIsInRange) {
-		return nPostInBits;
-	}
-	else if (bPostInMicrosecondsIsInRange) {
-		// Microseconds is given
-		return (int64_t)round(nPostInMicroseconds / dFactor);
-	}
-	else {
-		throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SKYWRITINGNPOSTPROVIDEDTWICEINPROFILE);
-	}
-}
-
 void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordingMode oieRecordingMode, uint32_t nAttributeFilterID, int64_t nAttributeFilterValue, float fMaxLaserPowerInWatts, bool bFailIfNonAssignedDataExists)
 {
 	if (pLayer.get() == nullptr)
@@ -2557,9 +2280,9 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 	uint32_t nSegmentCount = pLayer->GetSegmentCount();
 	for (uint32_t nSegmentIndex = 0; nSegmentIndex < nSegmentCount; nSegmentIndex++) {
 
-		m_CurrentMeasurementTagInfo.m_SegmentID = (uint32_t) (nSegmentIndex + 1);
-		m_CurrentMeasurementTagInfo.m_ProfileID = (uint32_t) pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/oie/2023/08", "measurementid", 0);
-		m_CurrentMeasurementTagInfo.m_PartID = (uint32_t)pLayer->GetSegmentLocalPartID(nSegmentIndex);
+		m_CurrentMeasurementTagInfo.m_nCurrentSegmentID = (uint32_t) (nSegmentIndex + 1);
+		m_CurrentMeasurementTagInfo.m_nCurrentProfileID = (uint32_t) pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/oie/2023/08", "measurementid", 0);
+		m_CurrentMeasurementTagInfo.m_nCurrentPartID = (uint32_t)pLayer->GetSegmentLocalPartID(nSegmentIndex);
 
 		LibMCEnv::eToolpathSegmentType eSegmentType;
 		uint32_t nPointCount;
@@ -2599,8 +2322,6 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 			float fPowerInWatts = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserPower);
 			float fPowerInPercent = (fPowerInWatts * 100.f) / fMaxLaserPowerInWatts;
 			float fLaserFocus = (float)pLayer->GetSegmentProfileTypedValue(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::LaserFocus);
-			double dPreSegmentDelay = (float)pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PreSegmentDelay, 0.0);
-			double dPostSegmentDelay = (float)pLayer->GetSegmentProfileTypedValueDef(nSegmentIndex, LibMCEnv::eToolpathProfileValueType::PostSegmentDelay, 0.0);
 
 			uint32_t nOIEPIDControlIndex = 0;
 			if (m_bEnableOIEPIDControl) {
@@ -2626,20 +2347,14 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 				int64_t nSkywritingMode = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "mode", 0);
 
 				if (nSkywritingMode != 0) {
-
-					double dSkywritingTimeLag = readSkywritingTimeLagInMicroseconds(pLayer.get(), nSegmentIndex);
-
-
-					int64_t nSkywritingLaserOnShift = readSkywritingLaserOnShiftIn64thus(pLayer.get(), nSegmentIndex);
-					int64_t nSkywritingPrev = readSkywritingRunInPhaseInBits (pLayer.get(), nSegmentIndex);
-					int64_t nSkywritingPost = readSkywritingRunOutPhaseInBits (pLayer.get(), nSegmentIndex);
+					double dSkywritingTimeLag = pLayer->GetSegmentProfileDoubleValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "timelag");
+					int64_t nSkywritingLaserOnShift = pLayer->GetSegmentProfileIntegerValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "laseronshift");
+					int64_t nSkywritingPrev = pLayer->GetSegmentProfileIntegerValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "nprev");
+					int64_t nSkywritingPost = pLayer->GetSegmentProfileIntegerValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "npost");
 
 					double dSkywritingLimit = 0.0;
 					if ((nSkywritingMode == 3) || (nSkywritingMode == 4)) {
-
-						dSkywritingLimit = readSkywritingLimitInCosine(pLayer.get(), nSegmentIndex);
-
-
+						dSkywritingLimit = pLayer->GetSegmentProfileDoubleValue(nSegmentIndex, "http://schemas.scanlab.com/skywriting/2023/01", "limit");
 					}
 
 
@@ -2662,35 +2377,16 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 
 				}
 
-				{
-					// Handle pre Segment Delays
+				std::vector<LibMCEnv::sPosition2D> Points;
+				pLayer->GetSegmentPointData(nSegmentIndex, Points);
 
-					// First take the pre segment delay from the profile
-					uint32_t nPreSegmentDelayInTicks = (uint32_t)round(dPreSegmentDelay * 0.1);
-
-					// Check for a Presegment delay override for each segment
-					int64_t nIndividiualPreSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "predelay", -1);
-					if (nIndividiualPreSegmentDelayInMicroseconds >= 0)
-						nPreSegmentDelayInTicks = (uint32_t)(nIndividiualPreSegmentDelayInMicroseconds / 10);
-
-					if (nPreSegmentDelayInTicks > 0) {
-						if (nPreSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
-							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR);
-
-						// Set delay in 10 Microsecond steps, dPreSegmentDelay is in Milliseconds
-						m_pScanLabSDK->n_long_delay(m_CardNo, nPreSegmentDelayInTicks);
-					}
-				}
+				if (nPointCount != Points.size())
+					throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOINTCOUNT);
 
 				switch (eSegmentType) {
+				case LibMCEnv::eToolpathSegmentType::Loop:
 				case LibMCEnv::eToolpathSegmentType::Polyline:
 				{
-
-					std::vector<LibMCEnv::sPosition2D> Points;
-					pLayer->GetSegmentPolylineData(nSegmentIndex, Points);
-
-					if (nPointCount != Points.size())
-						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOINTCOUNT);
 
 					std::vector<sPoint2D> ContourPoints;
 					ContourPoints.resize(nPointCount);
@@ -2712,49 +2408,23 @@ void CRTCContext::addLayerToListEx(LibMCEnv::PToolpathLayer pLayer, eOIERecordin
 						throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDPOINTCOUNT);
 
 					uint64_t nHatchCount = nPointCount / 2;
-
-					std::vector<LibMCEnv::sHatch2D> HatchData;
-					pLayer->GetSegmentHatchData(nSegmentIndex, HatchData);
-
-					std::vector<sHatch2D> RTCHatches;
-					RTCHatches.resize(nHatchCount);
+					std::vector<sHatch2D> Hatches;
+					Hatches.resize(nHatchCount);
 
 					for (uint64_t nHatchIndex = 0; nHatchIndex < nHatchCount; nHatchIndex++) {
-						auto& srcHatch = HatchData.at(nHatchIndex);
-						auto & targetHatch = RTCHatches.at(nHatchIndex);
-						targetHatch.m_X1 = (float)(srcHatch.m_X1 * dUnits);
-						targetHatch.m_Y1 = (float)(srcHatch.m_Y1 * dUnits);
-						targetHatch.m_X2 = (float)(srcHatch.m_X2 * dUnits);
-						targetHatch.m_Y2 = (float)(srcHatch.m_Y2 * dUnits);
+						auto pHatch = &Hatches.at(nHatchIndex);
+						pHatch->m_X1 = (float)(Points[nHatchIndex * 2].m_Coordinates[0] * dUnits);
+						pHatch->m_Y1 = (float)(Points[nHatchIndex * 2].m_Coordinates[1] * dUnits);
+						pHatch->m_X2 = (float)(Points[nHatchIndex * 2 + 1].m_Coordinates[0] * dUnits);
+						pHatch->m_Y2 = (float)(Points[nHatchIndex * 2 + 1].m_Coordinates[1] * dUnits);
 					}
 
-					DrawHatchesOIE(RTCHatches.size(), RTCHatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
+					DrawHatchesOIE(Hatches.size(), Hatches.data(), fMarkSpeedInMMPerSecond, fJumpSpeedInMMPerSecond, fPowerInPercent, fLaserFocus, nOIEPIDControlIndex);
 
 					break;
 				}
 
 				}
-
-				{
-					// Handle PostSegmentDelay
-
-					// First take the pre segment delay from the profile
-					uint32_t nPostSegmentDelayInTicks = (uint32_t)round(dPostSegmentDelay * 0.1);
-
-					// Check for a Postsegment delay override for each segment
-					int64_t nIndividiualPostSegmentDelayInMicroseconds = pLayer->GetSegmentProfileIntegerValueDef(nSegmentIndex, "", "postdelay", -1);
-					if (nIndividiualPostSegmentDelayInMicroseconds >= 0)
-						nPostSegmentDelayInTicks = (uint32_t)(nIndividiualPostSegmentDelayInMicroseconds / 10);
-
-					if (nPostSegmentDelayInTicks > 0) {
-						if (nPostSegmentDelayInTicks > RTCCONTEXT_MAXSEGMENTDELAY_ONEHOURIN100KHZ)
-							throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_SEGMENTDELAYEXCEEDSONEHOUR);
-
-						// Set delay in 10 Microsecond steps, dPostSegmentDelay is in Milliseconds
-						m_pScanLabSDK->n_long_delay(m_CardNo, nPostSegmentDelayInTicks);
-					}
-				}
-
 			}
 
 		}

@@ -82,6 +82,10 @@ std::string CSMCContext::GetIPAddress()
 	return m_pContextInstance->GetIPAddress();
 }
 
+std::string CSMCContext::GetNetmask()
+{
+	return m_pContextInstance->GetNetmask();
+}
 
 LibMCDriver_ScanLabSMC_uint32 CSMCContext::GetSerialNumber()
 {
@@ -126,9 +130,9 @@ bool CSMCContext::GetLaserField(LibMCDriver_ScanLabSMC_double& dMinX, LibMCDrive
 	return false;
 }
 
-ISMCJob* CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts)
+ISMCJob* CSMCContext::BeginJob(const LibMCDriver_ScanLabSMC_double dStartPositionX, const LibMCDriver_ScanLabSMC_double dStartPositionY, const LibMCDriver_ScanLabSMC::eBlendMode eBlendMode)
 {
-	auto pJobInstance = m_pContextInstance->BeginJob(dStartPositionX, dStartPositionY, dMaxPowerInWatts);
+	auto pJobInstance = m_pContextInstance->BeginJob(dStartPositionX, dStartPositionY, eBlendMode);
 	return new CSMCJob (pJobInstance);
 }
 
@@ -139,13 +143,13 @@ ISMCJob* CSMCContext::GetUnfinishedJob()
 }
 
 
-void CSMCContext::DrawLayer(const std::string& sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex, const LibMCDriver_ScanLabSMC_double dMaxPowerInWatts)
+void CSMCContext::DrawLayer(const std::string& sStreamUUID, const LibMCDriver_ScanLabSMC_uint32 nLayerIndex)
 {
 	auto pToolpathAccessor = m_pDriverEnvironment->CreateToolpathAccessor(sStreamUUID);
 
 	auto pLayer = pToolpathAccessor->LoadLayer(nLayerIndex);	
 
-	auto pJob = m_pContextInstance->BeginJob(0.0, 0.0, dMaxPowerInWatts);
+	auto pJob = m_pContextInstance->BeginJob(0.0, 0.0, eBlendMode::MaxAccuracy);
 	pJob->AddLayerToList(pLayer);
 	pJob->Finalize();
 	pJob->Execute(true);

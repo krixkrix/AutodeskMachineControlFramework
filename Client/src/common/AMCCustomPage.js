@@ -51,8 +51,6 @@ export default class AMCApplicationCustomPage extends AMCApplicationPage {
 		this.modules = [];
 		this.moduleMap = new Map ();
 		this.customModule = null;
-		
-		this.isAlwaysActive = false;
 					
 		for (let moduleDefinitionJSON of pageJSON.modules) {
 			
@@ -123,20 +121,6 @@ export default class AMCApplicationCustomPage extends AMCApplicationPage {
 			
 		}
 		
-		
-	}
-	
-	setAlwaysActive (value)
-	{
-		if (value) {
-			
-			this.isAlwaysActive = true;
-			
-		} else {
-			
-			this.isAlwaysActive = false;
-			
-		}
 		
 	}
 

@@ -291,11 +291,6 @@ public:
 
 	}
 
-	void fillScatterplotChannel(AMC::CScatterplot* pScatterplot, const std::string& sChannel, const std::string& sColumn, double dScaleFactor, double dOffset) override
-	{
-		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
-	}
-
 };
 
 
@@ -460,37 +455,6 @@ public:
 
 	}
 
-	void fillScatterplotChannel(AMC::CScatterplot* pScatterplot, const std::string& sChannel, const std::string& sColumn, double dScaleFactor, double dOffset) override
-	{
-		if (pScatterplot == nullptr)
-			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM);
-
-		auto & channelEntries = pScatterplot->getChannelEntries();
-		auto channelIter = channelEntries.find(sChannel);
-
-		if (channelIter == channelEntries.end()) {
-			channelEntries[sChannel][sColumn] = std::vector<double>();
-		}
-		else {
-			auto & columnEntries = channelIter->second;
-
-			if (columnEntries.find(sColumn) == columnEntries.end())
-				columnEntries[sColumn] = std::vector<double>();
-			else {
-				std::string sException = "The channel = " + sChannel + " with the column = " + sColumn + " already exists";
-				throw std::runtime_error(sException.c_str());
-			}
-		}
-
-		auto & vecColumn = channelEntries[sChannel][sColumn];
-
-		vecColumn.resize(m_Rows.size());
-
-		for (size_t nIndex = 0; nIndex < m_Rows.size(); nIndex++) {
-			vecColumn[nIndex] = (double)m_Rows.at(nIndex) * dScaleFactor + dOffset;
-		}
-	}
-
 };
 
 
@@ -646,10 +610,6 @@ public:
 
 	}
 
-	void fillScatterplotChannel(AMC::CScatterplot* pScatterplot, const std::string& sChannel, const std::string& sColumn, double dScaleFactor, double dOffset) override
-	{
-		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
-	}
 
 };
 
@@ -811,13 +771,8 @@ public:
 				entry.m_dY = 0.0;
 			}
 		}
-	}
 
-	void fillScatterplotChannel(AMC::CScatterplot* pScatterplot, const std::string& sChannel, const std::string& sColumn, double dScaleFactor, double dOffset) override
-	{
-		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
 	}
-
 };
 
 
@@ -981,12 +936,6 @@ public:
 		}
 
 	}
-
-	void fillScatterplotChannel(AMC::CScatterplot* pScatterplot, const std::string& sChannel, const std::string& sColumn, double dScaleFactor, double dOffset) override
-	{
-		throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
-	}
-
 };
 
 CDataTableColumn::CDataTableColumn(const std::string& sIdentifier, const std::string& sDescription)
@@ -1599,22 +1548,6 @@ IScatterPlot* CDataTable::CalculateScatterPlot(IDataTableScatterPlotOptions* pSc
 	pYAxisColumn->fillScatterplotYCoordinates(pScatterPlotInstance.get(), dYAxisScaleFactor, dYAxisOffset);
 
 	pScatterPlotInstance->computeBoundaries();
-
-	auto pDataChannelsIterator = pScatterPlotInput->ListDataChannels();
-	while (pDataChannelsIterator->MoveNext()) {
-		auto pDataChannel = dynamic_cast<IScatterPlotDataChannel*>(pDataChannelsIterator->GetCurrent());
-		auto sChannelIdentifier = pDataChannel->GetChannelIdentifier();
-
-		auto pDataColumnsIterator = pDataChannel->ListScatterPlotDataColumns();
-		while (pDataColumnsIterator->MoveNext()){
-			auto pDataColumn = dynamic_cast<IScatterPlotDataColumn*>(pDataColumnsIterator->GetCurrent());
-			auto sColumnIdentifier = pDataColumn->GetColumnIdentifier();
-
-			auto pColumn = findColumn(sColumnIdentifier, false);
-			if (pColumn)
-				pColumn->fillScatterplotChannel(pScatterPlotInstance.get(), sChannelIdentifier, sColumnIdentifier, pDataColumn->GetScaleFactor(), pDataColumn->GetOffsetFactor());
-		}
-	}
 
 	m_pToolpathHandler->storeScatterplot(pScatterPlotInstance);
 

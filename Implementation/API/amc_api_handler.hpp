@@ -66,8 +66,6 @@ namespace AMC {
 
 		std::map<std::string, std::shared_ptr <std::vector<uint8_t>>> m_FileData;
 		std::map<std::string, std::string> m_StringData;
-		std::map<std::string, std::string> m_RequestParameters;
-
 
 	public:
 		CAPIFormFields();
@@ -81,9 +79,6 @@ namespace AMC {
 		std::string getStringField(const std::string& sName);
 		uint64_t getUint64Field(const std::string& sName);
 
-		void addRequestParameter(const std::string& sName, const std::string& sValue);
-		bool hasRequestParameter(const std::string& sName);
-		std::string getRequestParameter(const std::string& sName, bool bFailIfNotExistent);
 
 	};
 

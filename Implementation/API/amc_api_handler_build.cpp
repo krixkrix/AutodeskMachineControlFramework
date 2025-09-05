@@ -75,10 +75,6 @@ APIHandler_BuildType CAPIHandler_Build::parseRequest(const std::string& sURI, co
 			return APIHandler_BuildType::btToolpath;
 		}
 
-		if ((sParameterString.substr(0, 1) == "/") && (sParameterString.length() == 37)) {
-			paramUUID = AMCCommon::CUtils::normalizeUUIDString(sParameterString.substr(1));
-			return APIHandler_BuildType::btBuildJobUpdate;
-		}
 	}
 
 	if (requestType == eAPIRequestType::rtGet) {
@@ -115,8 +111,6 @@ bool CAPIHandler_Build::expectsRawBody(const std::string& sURI, const eAPIReques
 
 	switch (parseRequest(sURI, requestType, jobUUID)) {
 		case APIHandler_BuildType::btToolpath:
-			return true;
-		case APIHandler_BuildType::btBuildJobUpdate:
 			return true;
 
 		default:
@@ -203,6 +197,9 @@ void CAPIHandler_Build::handleToolpathRequest(CJSONWriter& writer, const uint8_t
 					case LibMCEnv::eToolpathSegmentType::Hatch:
 						segmentObject.addString(AMC_API_KEY_TYPE, AMC_API_KEY_HATCH);
 						break;
+					case LibMCEnv::eToolpathSegmentType::Loop:
+						segmentObject.addString(AMC_API_KEY_TYPE, AMC_API_KEY_LOOP);
+						break;
 					case LibMCEnv::eToolpathSegmentType::Polyline:
 						segmentObject.addString(AMC_API_KEY_TYPE, AMC_API_KEY_POLYLINE);
 						break;
@@ -242,39 +239,26 @@ void CAPIHandler_Build::handleToolpathRequest(CJSONWriter& writer, const uint8_t
 }
 
 
-void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& sStatusToQuery)
+void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth)
 {	
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-	LibMCData::eBuildJobStatus buildStatus = LibMCData::eBuildJobStatus::Created;
-	if (sStatusToQuery.empty() || (sStatusToQuery == "validated")) {
-		buildStatus = LibMCData::eBuildJobStatus::Validated;
-	} 
-	else if (sStatusToQuery == "archived") {
-		buildStatus = LibMCData::eBuildJobStatus::Archived;
-	} else 
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDBUILDJOBSTATUSQUERY, sStatusToQuery);
 
 	auto pDataModel = m_pSystemState->getDataModelInstance();
 	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-	auto pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(buildStatus);
+	auto pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(LibMCData::eBuildJobStatus::Validated);
 
 	CJSONWriterArray jobJSONArray(writer);
 
 	while (pBuildJobIterator->MoveNext()) {
 		auto pBuildJob = pBuildJobIterator->GetCurrentJob();
 
-		LibMCData::eBuildJobStatus buildStatus = pBuildJob->GetStatus();
-
 		CJSONWriterObject jobJSON(writer);
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBUUID, pBuildJob->GetUUID());
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTORAGESTREAM, pBuildJob->GetStorageStreamUUID());
-		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName());
+		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName ());
 		jobJSON.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBLAYERCOUNT, pBuildJob->GetLayerCount());
-		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, pBuildJob->GetStatusString());
-		jobJSON.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBSIZE, pBuildJob->GetStorageStreamSize());
-		;
 
 		if (pBuildJob->HasThumbnailStream())
 			jobJSON.addString(AMC_API_KEY_UPLOAD_ITEMBUILDTHUMBNAIL, pBuildJob->GetThumbnailStreamUUID());
@@ -283,13 +267,12 @@ void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAut
 		jobJSON.addInteger(AMC_API_KEY_UI_ITEMBUILDEXECUTIONCOUNT, pBuildJob->GetExecutionCount()); */
 
 		jobJSONArray.addObject(jobJSON);
-		
 	}
 
 	writer.addArray(AMC_API_KEY_UPLOAD_BUILDJOBARRAY, jobJSONArray);
 }
 
-void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& buildUUID)
+void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -328,17 +311,19 @@ void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth
 }
 
 
-void CAPIHandler_Build::writeJobDetailsEx(CJSONWriter& writer, LibMCData::PBuildJob & pBuildJob)
+void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, std::string& buildUUID)
 {
-	if (pBuildJob.get() == nullptr)
+	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	auto pDataModel = m_pSystemState->getDataModelInstance();
+	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
+	auto pBuildJob = pBuildJobHandler->RetrieveJob(buildUUID);
 
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBUUID, pBuildJob->GetUUID());
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTORAGESTREAM, pBuildJob->GetStorageStreamUUID());
 	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBNAME, pBuildJob->GetName());
 	writer.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBLAYERCOUNT, pBuildJob->GetLayerCount());
-	writer.addString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, pBuildJob->GetStatusString());
-	writer.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBSIZE, pBuildJob->GetStorageStreamSize());
 
 	if (pBuildJob->HasThumbnailStream())
 		writer.addString(AMC_API_KEY_UPLOAD_ITEMBUILDTHUMBNAIL, pBuildJob->GetThumbnailStreamUUID());
@@ -379,10 +364,10 @@ void CAPIHandler_Build::writeJobDetailsEx(CJSONWriter& writer, LibMCData::PBuild
 	CJSONWriterArray layerJSONArray(writer);
 	for (uint32_t nLayerIndex = 0; nLayerIndex < nLayerCount; nLayerIndex++) {
 		uint32_t nZMin = pToolpath->getLayerMinZInUnits(nLayerIndex);
-		uint32_t nZMax = pToolpath->getLayerZInUnits(nLayerIndex);
+		uint32_t nZMax = pToolpath->getLayerZInUnits (nLayerIndex);
 
 		if (nZMin >= nZMax)
-			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDTOOLPATHLAYERTHICKNESS, "Invalid toolpath layer thickness in job " + pBuildJob->GetUUID () + ", layer " + std::to_string(nLayerIndex));
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDTOOLPATHLAYERTHICKNESS, "Invalid toolpath layer thickness in job " + buildUUID + ", layer " + std::to_string (nLayerIndex));
 
 		uint32_t nLayerThickness = nZMax - nZMin;
 		if (nLayerIndex > 0) {
@@ -409,22 +394,8 @@ void CAPIHandler_Build::writeJobDetailsEx(CJSONWriter& writer, LibMCData::PBuild
 
 }
 
-void CAPIHandler_Build::handleBuildJobDetailsRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& buildUUID)
-{
-	if (pAuth.get() == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-	auto pDataModel = m_pSystemState->getDataModelInstance();
-	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-	auto pBuildJob = pBuildJobHandler->RetrieveJob(buildUUID);
-
-	writeJobDetailsEx(writer, pBuildJob);
-
-	
-}
-
-
-PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, const std::string& buildDataUUID)
+PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, std::string& buildDataUUID)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -445,46 +416,6 @@ PAPIResponse CAPIHandler_Build::handleGetBuildDataRequest(PAPIAuth pAuth, const 
 }
 
 
-void CAPIHandler_Build::handleUpdateBuildRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth, const std::string& buildUUID)
-{
-	if (pBodyData == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (pAuth.get() == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	CAPIJSONRequest jsonRequest(pBodyData, nBodyDataSize);
-
-	std::string sNewName;
-	if (jsonRequest.hasValue (AMC_API_KEY_UPLOAD_NAME)) 
-		sNewName = jsonRequest.getRawString(AMC_API_KEY_UPLOAD_NAME, LIBMC_ERROR_INVALIDUPLOADNAME);
-
-	std::string sNewStatus;
-	if (jsonRequest.hasValue (AMC_API_KEY_UPLOAD_BUILDJOBSTATUS))
-		sNewStatus = jsonRequest.getRawString(AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, LIBMC_ERROR_INVALIDNEWBUILDSTATUS);
-
-	auto pDataModel = m_pSystemState->getDataModelInstance();
-	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-	auto pBuildJob = pBuildJobHandler->RetrieveJob(buildUUID);
-
-	if (!sNewName.empty())
-		pBuildJob->ChangeName(sNewName);
-
-	if (!sNewStatus.empty()) {
-		if (sNewStatus == "archived") {
-			pBuildJob->ArchiveJob();
-
-		} else if (sNewStatus == "validated") {
-			pBuildJob->UnArchiveJob();		
-		}
-		else {
-			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDNEWBUILDSTATUS, sNewStatus);
-		}
-		
-	}
-
-	writeJobDetailsEx(writer, pBuildJob);
-}
-
 PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAPIRequestType requestType, CAPIFormFields & pFormFields, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
 {
 	std::string paramUUID;
@@ -495,16 +426,14 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 	writeJSONHeader(writer, AMC_API_PROTOCOL_BUILD);
 
 	switch (buildType) {
-	case APIHandler_BuildType::btListJobs: {
-		std::string sStatus = pFormFields.getRequestParameter (AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, false);
-		handleListJobsRequest(writer, pAuth, sStatus);
+	case APIHandler_BuildType::btListJobs:
+		handleListJobsRequest(writer, pAuth);
 		break;
-	}
 	case APIHandler_BuildType::btToolpath:
 		handleToolpathRequest(writer, pBodyData, nBodyDataSize, pAuth);
 		break;
 
-	case APIHandler_BuildType::btListBuildData: 
+	case APIHandler_BuildType::btListBuildData:
 		handleListBuildDataRequest(writer, pAuth, paramUUID);
 		break;
 
@@ -514,10 +443,6 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 
 	case APIHandler_BuildType::btBuildJobDetails:
 		handleBuildJobDetailsRequest(writer, pAuth, paramUUID);
-		break;
-
-	case APIHandler_BuildType::btBuildJobUpdate:
-		handleUpdateBuildRequest(writer, pBodyData, nBodyDataSize, pAuth, paramUUID);
 		break;
 
 	default:

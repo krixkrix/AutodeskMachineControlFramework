@@ -51,8 +51,9 @@ namespace AMC {
 	{
 	}
 	
-	void CStateSignalHandler::addSignalDefinition(const std::string& sInstanceName, const std::string& sSignalName, const std::list<CStateSignalParameter>& Parameters, const std::list<CStateSignalParameter>& Results, uint32_t nSignalReactionTimeOutInMS, uint32_t nSignalQueueSize)
+	void CStateSignalHandler::addSignalDefinition(const std::string& sInstanceName, const std::string& sSignalName, const std::list<CStateSignalParameter>& Parameters, const std::list<CStateSignalParameter>& Results)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		if (sSignalName.length() == 0)
 			throw ELibMCCustomException(LIBMC_ERROR_INVALIDSIGNALNAME, sInstanceName);
@@ -62,22 +63,20 @@ namespace AMC {
 		if (iter != m_SignalMap.end())
 			throw ELibMCCustomException(LIBMC_ERROR_DUPLICATESIGNAL, sInstanceName + "/" + sSignalName);
 
-		auto pSignal = std::make_shared<CStateSignalSlot>(sInstanceName, sSignalName, Parameters, Results, nSignalReactionTimeOutInMS, nSignalQueueSize);
+		auto pSignal = std::make_shared<CStateSignal>(sInstanceName, sSignalName, Parameters, Results);
 		m_SignalMap.insert(std::make_pair(std::make_pair (sInstanceName, sSignalName), pSignal));
 	}
 
-	bool CStateSignalHandler::addNewInQueueSignal(const std::string& sInstanceName, const std::string& sSignalName, const std::string& sSignalUUID, const std::string& sParameterData, uint32_t nResponseTimeOutInMS)
+	bool CStateSignalHandler::triggerSignal(const std::string& sInstanceName, const std::string& sSignalName, const std::string& sParameterData, std::string& sSignalUUID)
 	{
-
-		auto iUUIDIter = m_SignalUUIDLookupMap.find(sSignalUUID);
-		if (iUUIDIter != m_SignalUUIDLookupMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALALREADYTRIGGERED, sSignalUUID);
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
 		if (iter == m_SignalMap.end())
 			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
 
-		if (iter->second->addNewInQueueSignalInternal (sSignalUUID, sParameterData, nResponseTimeOutInMS)) {
+
+		if (iter->second->triggerSignalInternal(sParameterData, sSignalUUID)) {
 			m_SignalUUIDLookupMap.insert(std::make_pair(sSignalUUID, iter->second));
 			return true;
 		}
@@ -88,164 +87,107 @@ namespace AMC {
 
 	bool CStateSignalHandler::hasSignalDefinition(const std::string& sInstanceName, const std::string& sSignalName)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
+
 		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
 		return (iter != m_SignalMap.end());
 	}
 
 
+	bool CStateSignalHandler::checkSignal(const std::string& sInstanceName, const std::string& sSignalName, std::string& sCurrentSignalUUID)
+	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
+
+		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
+		if (iter == m_SignalMap.end())
+			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
+
+		return iter->second->checkSignalInternal(sCurrentSignalUUID);
+	}
+
+	bool CStateSignalHandler::checkSignalUUID(const std::string& sInstanceName, std::string sCurrentSignalUUID)
+	{
+		std::string sNormalizedUUID = AMCCommon::CUtils::normalizeUUIDString(sCurrentSignalUUID);
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
+		auto iIter = m_SignalUUIDLookupMap.find(sNormalizedUUID);
+		if (iIter == m_SignalUUIDLookupMap.end())
+			return false;
+
+		return iIter->second->checkSignalInternal(sNormalizedUUID);
+	}
 
 	void CStateSignalHandler::clearUnhandledSignals(const std::string& sInstanceName)
 	{
-		for (auto it = m_SignalMap.begin(); it != m_SignalMap.end(); it++) {
-			// Check if the first element of the key matches
-			if (it->first.first == sInstanceName) {
-				it->second->clearQueueInternal();
-			}
-		}
-	}
-
-	void CStateSignalHandler::clearUnhandledSignalsOfType(const std::string& sInstanceName, const std::string& sSignalTypeName)
-	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		for (auto it = m_SignalMap.begin(); it != m_SignalMap.end(); it++) {
 			// Check if the first element of the key matches
 			if (it->first.first == sInstanceName) {
-				if (it->second->getNameInternal() == sSignalTypeName) {
-					it->second->clearQueueInternal();
-				}
+				it->second->clearSignalInternal();
 			}
 		}
-
 	}
+
 
 
 	bool CStateSignalHandler::canTrigger(const std::string& sInstanceName, const std::string& sSignalName)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
 		if (iter == m_SignalMap.end())
 			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
 
-		return !iter->second->queueIsFull();
+		return iter->second->canTriggerInternal();
 	}
 
 
-	void CStateSignalHandler::changeSignalPhaseToHandled(const std::string& sSignalUUID, const std::string& sResultData)
+	void CStateSignalHandler::markSignalAsHandled(const std::string& sSignalUUID, const std::string& sResultData)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
 		if (iter == m_SignalUUIDLookupMap.end())
 			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sSignalUUID);
 
-		iter->second->changeSignalPhaseToHandledInternal(sSignalUUID, sResultData);
+		iter->second->markSignalAsHandledInternal(sResultData);
 	}
 
-	void CStateSignalHandler::changeSignalPhaseToInProcess(const std::string& sSignalUUID)
+	bool CStateSignalHandler::signalHasBeenHandled(const std::string& sSignalUUID, const bool clearAllResults, std::string& sResultData)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
 		if (iter == m_SignalUUIDLookupMap.end())
 			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sSignalUUID);
 
-		iter->second->changeSignalPhaseToInProcessInternal (sSignalUUID);
-	}
+		PStateSignal pSignal = iter->second;
+		bool bHasBeendHandled = pSignal->signalHasBeenHandledInternal(sSignalUUID, clearAllResults, sResultData);
 
-	void CStateSignalHandler::changeSignalPhaseToFailed(const std::string& sSignalUUID, const std::string& sResultData, const std::string& sErrorMessage)
-	{
+		if (bHasBeendHandled && clearAllResults)
+			m_SignalUUIDLookupMap.erase(sSignalUUID);
 
-		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
-		if (iter == m_SignalUUIDLookupMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sSignalUUID);
+		return bHasBeendHandled;
 
-		iter->second->changeSignalPhaseToInFailedInternal(sSignalUUID, sResultData, sErrorMessage);
-	}
-
-	AMC::eAMCSignalPhase CStateSignalHandler::getSignalPhase(const std::string& sSignalUUID)
-	{
-
-		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
-		if (iter == m_SignalUUIDLookupMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sSignalUUID);
-
-		return iter->second->getSignalPhaseInternal (sSignalUUID);
-	}
-
-	std::string CStateSignalHandler::peekSignalMessageFromQueue(const std::string& sInstanceName, const std::string& sSignalName)
-	{
-		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
-		if (iter == m_SignalMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
-
-		return iter->second->peekMessageFromQueueInternal();
-
-	}
-
-
-	uint32_t CStateSignalHandler::getAvailableSignalQueueEntryCount(const std::string& sInstanceName, const std::string& sSignalName)
-	{
-
-		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
-		if (iter == m_SignalMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
 		
-		return iter->second->getAvailableSignalQueueEntriesInternal ();
-
-	}
-
-	uint32_t CStateSignalHandler::getTotalSignalQueueSize(const std::string& sInstanceName, const std::string& sSignalName)
-	{
-
-		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
-		if (iter == m_SignalMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
-
-		return iter->second->getTotalSignalQueueSizeInternal();
-
-	}
-
-	uint32_t CStateSignalHandler::getDefaultReactionTimeout(const std::string& sInstanceName, const std::string& sSignalName)
-	{
-
-		auto iter = m_SignalMap.find(std::make_pair(sInstanceName, sSignalName));
-		if (iter == m_SignalMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sInstanceName + "/" + sSignalName);
-
-		return iter->second->getDefaultReactionTimeoutInternal();
 
 
 	}
 
-	uint32_t CStateSignalHandler::getReactionTimeout(const std::string& sSignalUUID)
-	{
-
-		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
-		if (iter == m_SignalUUIDLookupMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sSignalUUID);
-
-		return iter->second->getReactionTimeoutInternal(sSignalUUID);
-
-	}
-
-	std::string CStateSignalHandler::getResultDataJSON(const std::string& sSignalUUID)
-	{
-
-		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
-		if (iter == m_SignalUUIDLookupMap.end())
-			throw ELibMCCustomException(LIBMC_ERROR_SIGNALNOTFOUND, sSignalUUID);
-
-		return iter->second->getResultDataJSONInternal(sSignalUUID);
-
-	}
 
 	bool CStateSignalHandler::findSignalPropertiesByUUID(const std::string& sSignalUUID, std::string& sInstanceName, std::string& sSignalName, std::string& sParameterData)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		auto iter = m_SignalUUIDLookupMap.find(sSignalUUID);
 		if (iter != m_SignalUUIDLookupMap.end()) {
-			sInstanceName = iter->second->getInstanceNameInternal();
-			sSignalName = iter->second->getNameInternal();
-			sParameterData = iter->second->getParameterDataJSONInternal(sSignalUUID);
-			return true;		
+			if (iter->second->getCurrentUUID() == sSignalUUID) {
+				sInstanceName = iter->second->getInstanceNameInternal();
+				sSignalName = iter->second->getNameInternal();
+				sParameterData = iter->second->getParameterDataInternal();
+				return true;
+			}
+		
 		}
 
 		return false;
@@ -255,6 +197,7 @@ namespace AMC {
 
 	void CStateSignalHandler::populateParameterGroup(const std::string& sInstanceName, const std::string& sSignalName, CParameterGroup* pParameterGroup)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		LibMCAssertNotNull(pParameterGroup);
 
@@ -267,6 +210,7 @@ namespace AMC {
 
 	void CStateSignalHandler::populateResultGroup(const std::string& sInstanceName, const std::string& sSignalName, CParameterGroup* pResultGroup)
 	{
+		std::lock_guard <std::mutex> lockGuard(m_Mutex);
 
 		LibMCAssertNotNull(pResultGroup);
 

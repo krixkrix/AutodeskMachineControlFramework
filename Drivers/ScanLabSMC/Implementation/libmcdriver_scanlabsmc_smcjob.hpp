@@ -100,10 +100,6 @@ public:
 
 	LibMCDriver_ScanLabSMC_double GetJobDuration() override;
 
-	void ExecuteLaserInitSequence() override;
-
-	void ExecuteLaserShutdownSequence() override;
-
 };
 
 } // namespace Impl

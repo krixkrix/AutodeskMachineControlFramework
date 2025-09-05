@@ -49,17 +49,12 @@ namespace AMC {
 	class CScatterplot;
 	typedef std::shared_ptr<CScatterplot> PScatterplot;
 
-	typedef std::map<std::string, std::vector<double>> ColumnEntries;
-	typedef std::map<std::string, ColumnEntries> ChannelEntries;
-
 	class CScatterplot {
 	private:
 
 		std::string m_sUUID;
 		
 		std::vector<sScatterplotEntry> m_PointEntries;
-
-		ChannelEntries m_ChannelEntries;
 
 		double m_dMinX;
 		double m_dMinY;
@@ -81,8 +76,6 @@ namespace AMC {
 		uint64_t getEntryCount();
 
 		std::vector<sScatterplotEntry> & getEntries ();
-
-		ChannelEntries& getChannelEntries ();
 
 		void getBoundaries(double& dMinX, double& dMinY, double& dMaxX, double& dMaxY);
 

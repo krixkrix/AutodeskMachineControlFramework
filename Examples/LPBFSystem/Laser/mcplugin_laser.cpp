@@ -313,11 +313,10 @@ __DECLARESTATE(exposure)
 		auto pDriver = __acquireDriver(ScanLabSMC);
 
 
-		double dMaxLaserPower = pStateEnvironment->GetDoubleParameter("cardconfig", "maxlaserpower");
 
 		auto pContext = pDriver->FindContext("smccontext");
 		//pContext->DrawLayer(pBuildJob->GetStorageUUID(), nLayerIndex);
-		auto pJob = pContext->BeginJob (0.0, 0.0, dMaxLaserPower);
+		auto pJob = pContext->BeginJob(0.0, 0.0, LibMCDriver_ScanLabSMC::eBlendMode::Deactivated);
 
 		auto pDataTable = pStateEnvironment->CreateDataTable();
 

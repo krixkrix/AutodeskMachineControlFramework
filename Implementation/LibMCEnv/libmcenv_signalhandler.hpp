@@ -74,15 +74,11 @@ public:
 
 	CSignalHandler(AMC::PStateSignalHandler pSignalHandler, std::string & sSignalUUID, AMCCommon::PChrono pGlobalChrono);
 
-	LibMCEnv::eSignalPhase GetSignalPhase() override;
-
 	void SignalHandled() override;
 
-	void SignalInProcess() override;
-
-	void SignalFailed(const std::string& sErrorMessage) override;
-
 	std::string GetName() override;
+
+	std::string GetSignalID() override;
 
 	std::string GetSignalUUID() override;
 

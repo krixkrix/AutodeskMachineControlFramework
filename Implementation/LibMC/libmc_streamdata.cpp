@@ -45,10 +45,13 @@ using namespace LibMC::Impl;
 **************************************************************************************************************************/
 
 
-CStreamData::CStreamData(const std::string& sMimeType)
-    : m_sMIMEType(sMimeType)
+CStreamData::CStreamData()
+    : m_sMIMEType("image/jpeg")
 {
+    throw ELibMCInterfaceException(LIBMC_ERROR_NOTIMPLEMENTED);
 
+    //AMCCommon::CImportStream_Native importStream("T:/temp/frame1.jpg") ;
+    //importStream.readIntoMemory(m_Buffer);
 }
 
 CStreamData::~CStreamData()
@@ -59,6 +62,8 @@ CStreamData::~CStreamData()
 
 void CStreamData::GetData(LibMC_uint64 nDataBufferSize, LibMC_uint64* pDataNeededCount, LibMC_uint8 * pDataBuffer)
 {
+    std::cout << "GetData" << std::endl;
+
     if (pDataNeededCount != nullptr)
         *pDataNeededCount = m_Buffer.size();
 
@@ -77,10 +82,5 @@ void CStreamData::GetData(LibMC_uint64 nDataBufferSize, LibMC_uint64* pDataNeede
 std::string CStreamData::GetMIMEType()
 {
     return m_sMIMEType;
-}
-
-std::vector<uint8_t>& CStreamData::getBuffer()
-{
-    return m_Buffer;
 }
 

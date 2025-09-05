@@ -38,7 +38,6 @@ Abstract: This is the class declaration of CRaylaseCard
 #include "libmcdriver_raylase_interfaces.hpp"
 #include "libmcdriver_raylase_sdk.hpp"
 #include "libmcdriver_raylase_raylasecardlist.hpp"
-#include "libmcdriver_raylase_nlightdriverimpl.hpp"
 
 namespace LibMCDriver_Raylase {
 namespace Impl {
@@ -46,17 +45,28 @@ namespace Impl {
 #define RAYLASE_LISTONCARDNOTSET 0xffffffff
 #define RAYLASE_MAXLISTONCARDID 256
 
-
-
 class CRaylaseCardImpl;
 typedef std::shared_ptr<CRaylaseCardImpl> PRaylaseCardImpl;
 
-typedef struct _ScanningTimeoutData {
-	LibMCEnv::CDriverEnvironment* m_pDriverEnvironment;
-	uint64_t m_nTimeOutInMilliseconds;
-} sScanningTimeoutData;
 
-
+enum class eNlightDriverBoardIOPins : uint32_t {
+	PRO_START = 1 << 7,
+	PRO_B1 = 1 << 8,
+	PRO_B2 = 1 << 9,
+	PRO_B3 = 1 << 10,
+	PRO_B4 = 1 << 11,
+	PRO_B5 = 1 << 12,
+	PRO_B6 = 1 << 13,
+	PRO_B7 = 1 << 14,
+	SYSTEM_ON = 1 << 15,
+	ENABLE_PROFILE = 1 << 16,
+	ARM_LASER = 1 << 18,
+	CLEAR_ERROR = 1 << 19,
+	ENABLE_AIMING_LASER = 1 << 20,
+	ENABLE_EXTERNAL_CONTROL = 1 << 21,
+	ENABLE_24V = 1 << 22,
+	GATE_IN = 1 << 23
+};
 
 class CRaylaseCardImpl {
 private:
@@ -83,9 +93,6 @@ private:
 	bool m_bSimulatedPilotIsAlarm;
 
 	PRaylaseCoordinateTransform m_pCoordinateTransform;
-	PNLightDriverImpl m_pNLightDriverImpl;
-
-	std::map<std::string, ePartSuppressionMode> m_PartSuppressions;
 
 public:
 	
@@ -121,14 +128,6 @@ public:
 
 	void Disconnect();
 
-	void addPartSuppression(const std::string& sPartUUID, const LibMCDriver_Raylase::ePartSuppressionMode eSuppressionMode);
-
-	void clearAllPartSuppressions();
-
-	void removePartSuppression(const std::string& sPartUUID);
-
-	LibMCDriver_Raylase::ePartSuppressionMode getPartSuppressionMode(const std::string& sPartUUID);
-
 	void assignLaserIndex(uint32_t nLaserIndex);
 
 	uint32_t getAssignedLaserIndex();
@@ -141,13 +140,15 @@ public:
 
 	void abortListExecution();
 
-	rlHandle getHandle ();
+	void initializeNLightLaser();
+
+	void disableNLightLaser();
+
+	void clearNLightError();
+
+	void setNLightLaserMode (uint32_t nLaserMode);
 
 	PRaylaseCoordinateTransform getCoordinateTransform();
-
-	PNLightDriverImpl getNlightImplementation ();
-
-	double getMaxLaserPowerInWatts ();
 
 };
 

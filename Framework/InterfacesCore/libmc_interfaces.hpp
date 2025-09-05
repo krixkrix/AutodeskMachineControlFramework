@@ -283,12 +283,6 @@ public:
 	*/
 	virtual LibMC_uint32 GetIdleDelay() = 0;
 
-	/**
-	* IStreamConnection::GetStreamType - Returns the stream type.
-	* @return Content type of the stream.
-	*/
-	virtual LibMC::eStreamConnectionType GetStreamType() = 0;
-
 };
 
 typedef IBaseSharedPtr<IStreamConnection> PIStreamConnection;
@@ -336,13 +330,6 @@ public:
 	* @param[in] sString - DataString that was sent.
 	*/
 	virtual void SetFormStringField(const std::string & sName, const std::string & sString) = 0;
-
-	/**
-	* IAPIRequestHandler::SetRequestParameter - Sets a request parameter.
-	* @param[in] sName - Name of the parameter.
-	* @param[in] sValue - Value of the parameter.
-	*/
-	virtual void SetRequestParameter(const std::string & sName, const std::string & sValue) = 0;
 
 	/**
 	* IAPIRequestHandler::Handle - handles the request.

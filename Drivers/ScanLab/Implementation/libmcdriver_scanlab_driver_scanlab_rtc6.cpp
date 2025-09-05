@@ -270,35 +270,6 @@ void CDriver_ScanLab_RTC6::InitialiseFromConfiguration(const std::string& sPrese
 
 }
 
-void CDriver_ScanLab_RTC6::SetLaserSignalTimingDefaults(const LibMCDriver_ScanLab_double dLaserPulseHalfPeriod, const LibMCDriver_ScanLab_double dLaserPulseLength, const LibMCDriver_ScanLab_double dStandbyPulseHalfPeriod, const LibMCDriver_ScanLab_double dStandbyPulseLength)
-{
-    if (m_pRTCContext.get() == nullptr)
-        throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_CARDNOTINITIALIZED);
-
-    m_pRTCContext->SetLaserPulsesInMicroSeconds(dLaserPulseHalfPeriod, dLaserPulseLength);
-    m_pRTCContext->SetStandbyInMicroSeconds(dStandbyPulseHalfPeriod, dStandbyPulseLength);
-
-}
-
-void CDriver_ScanLab_RTC6::GetLaserSignalTimingDefaults(LibMCDriver_ScanLab_double& dLaserPulseHalfPeriod, LibMCDriver_ScanLab_double& dLaserPulseLength, LibMCDriver_ScanLab_double& dStandbyPulseHalfPeriod, LibMCDriver_ScanLab_double& dStandbyPulseLength)
-{
-    if (m_pRTCContext.get() == nullptr)
-        throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_CARDNOTINITIALIZED);
-
-    if (!m_SimulationMode) {
-
-        m_pRTCContext->GetLaserPulsesInMicroSeconds(dLaserPulseHalfPeriod, dLaserPulseLength);
-        m_pRTCContext->GetStandbyInMicroSeconds(dStandbyPulseHalfPeriod, dStandbyPulseLength);
-
-    }
-    else {
-        dLaserPulseHalfPeriod = RTC_TIMINGDEFAULT_LASERPULSEHALFPERIOD;
-        dLaserPulseLength = RTC_TIMINGDEFAULT_LASERPULSELENGTH;
-        dStandbyPulseHalfPeriod = RTC_TIMINGDEFAULT_STANDBYPULSEHALFPERIOD;
-        dStandbyPulseLength = RTC_TIMINGDEFAULT_STANDBYPULSELENGTH;
-    }
-
-}
 
 std::string CDriver_ScanLab_RTC6::GetIPAddress()
 {
@@ -428,16 +399,8 @@ void CDriver_ScanLab_RTC6::ConfigureLaserMode(const LibMCDriver_ScanLab::eLaserM
         m_pRTCContext->SetLaserMode(eLaserMode, eLaserPort);
         m_pRTCContext->DisableAutoLaserControl();
         m_pRTCContext->SetLaserControlParameters(false, bFinishLaserPulseAfterOn, bPhaseShiftOfLaserSignal, bLaserOnSignalLowActive, bLaserHalfSignalsLowActive, bSetDigitalInOneHighActive, bOutputSynchronizationActive);
-        
-        auto pContextInstance = dynamic_cast<CRTCContext*> (m_pRTCContext.get());
-        if (pContextInstance == nullptr)
-			throw ELibMCDriver_ScanLabInterfaceException(LIBMCDRIVER_SCANLAB_ERROR_INVALIDCAST);
-
-        pContextInstance->writeLaserTimingsToCard();
-        
-        //This is depreciated now and replaced by the above
-        //m_pRTCContext->SetLaserPulsesInMicroSeconds(5, 5);
-        //m_pRTCContext->SetStandbyInMicroSeconds(1, 1);
+        m_pRTCContext->SetLaserPulsesInMicroSeconds(5, 5);
+        m_pRTCContext->SetStandbyInMicroSeconds(1, 1);
 
     }
 }
