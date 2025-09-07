@@ -37,17 +37,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace AMC;
 
-int main () 
+int main (int argc, char* argv[]) 
 {
 
 	try
 	{
+		bool bTestStartup = false;
+
+		// Parse command line arguments
+		for (int i = 1; i < argc; i++) {
+			std::string sArgument(argv[i]);
+			if (sArgument == "--test-startup") {
+				bTestStartup = true;
+			}
+		}
 
 		std::string sConfigurationFileName = "amc_server.xml";
 
 		auto pServer = std::make_shared <CServer> (std::make_shared <CServerStdIO>());
 
-		pServer->executeBlocking(sConfigurationFileName);
+		if (bTestStartup) {
+			std::cout << "Server startup test mode enabled. Testing initialization..." << std::endl;
+		}
+		
+		pServer->executeBlocking(sConfigurationFileName, bTestStartup);
+		
+		if (bTestStartup) {
+			std::cout << "Server startup test: SUCCESS - All modules loaded and initialized" << std::endl;
+		}
 
 
 	}
