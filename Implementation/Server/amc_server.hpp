@@ -74,7 +74,7 @@ namespace AMC {
 
 			virtual ~CServer();
 						
-			void executeBlocking (const std::string& sConfigurationFileName);
+			void executeBlocking (const std::string& sConfigurationFileName, bool bTestMode = false);
 			
 			void log (const std::string & sMessage);
 

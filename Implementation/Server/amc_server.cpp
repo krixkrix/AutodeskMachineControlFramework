@@ -206,7 +206,7 @@ void onLogMessage(const char* pLogMessage, const char* pSubSystem, LibMCData::eL
 	}
 }
 
-void CServer::executeBlocking(const std::string& sConfigurationFileName)
+void CServer::executeBlocking(const std::string& sConfigurationFileName, bool bTestMode)
 {
 	m_pContext = nullptr;
 	m_pWrapper = nullptr;
@@ -287,6 +287,17 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 		m_sHostName = sHostName;
 
 		m_pContext->StartAllThreads();
+
+		if (bTestMode) {
+			log("TEST STARTUP: All modules loaded and threads started successfully");
+			log("TEST STARTUP: Server ready to serve requests on " + sHostName + ":" + std::to_string(nPort));
+			
+			// In test mode, we stop here instead of starting the HTTP server
+			// Clean shutdown of threads
+			m_pContext->TerminateAllThreads();
+			log("TEST STARTUP: Framework threads terminated successfully");
+			return;
+		}
 
 		try {
 
