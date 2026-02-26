@@ -376,29 +376,108 @@ void CBuildJob::UnArchiveJob()
     m_eJobStatus = LibMCData::eBuildJobStatus::Validated;
 }
 
+void CBuildJob::markAsDeletedInTransaction(AMCData::CSQLTransaction* pTransaction)
+{
+    if (pTransaction == nullptr)
+        throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDPARAM);
+
+    // Allow deletion from both Validated and Archived states
+    auto updateUUID = AMCCommon::CUtils::createUUID();
+    std::string sQuery = "UPDATE buildjobs SET status=?, updateuuid=? WHERE (status=? OR status=?) AND uuid=?";
+    auto pStatement = pTransaction->prepareStatement(sQuery);
+    pStatement->setString(1, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Deleted));
+    pStatement->setString(2, updateUUID);
+    pStatement->setString(3, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Validated));
+    pStatement->setString(4, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Archived));
+    pStatement->setString(5, m_sUUID);
+    pStatement->execute();
+    pStatement = nullptr;
+
+    // Checked inside the transaction, so that a failed status change rolls back everything else.
+    std::string sCheckQuery = "SELECT uuid FROM buildjobs WHERE updateuuid=?";
+    auto pCheckStatement = pTransaction->prepareStatement(sCheckQuery);
+    pCheckStatement->setString(1, updateUUID);
+    if (!pCheckStatement->nextRow())
+        throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_COULDNOTUPDATEBUILDSTATUS);
+    pCheckStatement = nullptr;
+
+    bumpIncrementalID(pTransaction, m_sUUID);
+
+    // Execution list entries show the status of their job, so they must be re-sent to open lists as well.
+    std::string sExecutionsQuery = "SELECT uuid FROM buildjobexecutions WHERE jobuuid=?";
+    auto pExecutionsStatement = pTransaction->prepareStatement(sExecutionsQuery);
+    pExecutionsStatement->setString(1, m_sUUID);
+    std::vector<std::string> executionUUIDs;
+    while (pExecutionsStatement->nextRow())
+        executionUUIDs.push_back(pExecutionsStatement->getColumnString(1));
+    pExecutionsStatement = nullptr;
+
+    for (auto& sExecutionUUID : executionUUIDs) {
+        std::string sBumpQuery = "UPDATE buildjobexecutions SET incremental_id = (SELECT COALESCE(MAX(incremental_id), 0) + 1 FROM buildjobexecutions) WHERE uuid=?";
+        auto pBumpStatement = pTransaction->prepareStatement(sBumpQuery);
+        pBumpStatement->setString(1, sExecutionUUID);
+        pBumpStatement->execute();
+    }
+}
+
 void CBuildJob::DeleteJob()
 {
     // TODO: Physically delete job from disk!
 
     auto pTransaction = m_pSQLHandler->beginTransaction();
-
-    auto updateUUID = AMCCommon::CUtils::createUUID();
-    std::string sQuery = "UPDATE buildjobs SET status=?, updateuuid=? WHERE status=? AND uuid=?";
-    auto pStatement = pTransaction->prepareStatement(sQuery);
-    pStatement->setString(1, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Deleted));
-    pStatement->setString(2, updateUUID);
-    pStatement->setString(3, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Archived));
-    pStatement->setString(4, m_sUUID);
-    pStatement->execute();
-    pStatement = nullptr;
-
-    bumpIncrementalID(pTransaction.get(), m_sUUID);
+    markAsDeletedInTransaction(pTransaction.get());
     pTransaction->commit();
     pTransaction = nullptr;
 
-    ensureUpdate(updateUUID, LIBMCDATA_ERROR_COULDNOTUPDATEBUILDSTATUS);
+    m_eJobStatus = LibMCData::eBuildJobStatus::Deleted;
+}
+
+void CBuildJob::DeleteJobWithStorage()
+{
+    std::string sStorageUUID;
+    if (!m_sStorageStreamUUID.empty())
+        sStorageUUID = AMCCommon::CUtils::normalizeUUIDString(m_sStorageStreamUUID);
+
+    bool bDeleteStorageStream = false;
+
+    auto pTransaction = m_pSQLHandler->beginTransaction();
+    markAsDeletedInTransaction(pTransaction.get());
+
+    if (!sStorageUUID.empty() && (sStorageUUID != AMCCommon::CUtils::createEmptyUUID())) {
+
+        // A build stream may be shared by several jobs (e.g. UIEnvironment::CreateBuildJobFromStorage),
+        // so it is only deleted if no other job that is not deleted references it.
+        std::string sReferenceQuery = "SELECT buildjobs.uuid FROM buildjobs WHERE buildjobs.storagestreamuuid=? AND buildjobs.uuid<>? AND buildjobs.status<>? "
+            "UNION SELECT buildjobdata.jobuuid FROM buildjobdata LEFT JOIN buildjobs ON buildjobs.uuid=buildjobdata.jobuuid WHERE buildjobdata.storagestreamuuid=? AND buildjobdata.jobuuid<>? AND (buildjobs.status IS NULL OR buildjobs.status<>?)";
+        auto pReferenceStatement = pTransaction->prepareStatement(sReferenceQuery);
+        pReferenceStatement->setString(1, sStorageUUID);
+        pReferenceStatement->setString(2, m_sUUID);
+        pReferenceStatement->setString(3, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Deleted));
+        pReferenceStatement->setString(4, sStorageUUID);
+        pReferenceStatement->setString(5, m_sUUID);
+        pReferenceStatement->setString(6, convertBuildJobStatusToString(LibMCData::eBuildJobStatus::Deleted));
+        bDeleteStorageStream = !pReferenceStatement->nextRow();
+        pReferenceStatement = nullptr;
+
+        if (bDeleteStorageStream) {
+            // Delete the DB record too, so that no dangling reference to a missing file remains.
+            std::string sDeleteQuery = "DELETE FROM storage_streams WHERE uuid=?";
+            auto pDeleteStatement = pTransaction->prepareStatement(sDeleteQuery);
+            pDeleteStatement->setString(1, sStorageUUID);
+            pDeleteStatement->execute();
+        }
+    }
+
+    pTransaction->commit();
+    pTransaction = nullptr;
 
     m_eJobStatus = LibMCData::eBuildJobStatus::Deleted;
+
+    // The file is only removed after the commit, so that a rolled back transaction never loses data.
+    if (bDeleteStorageStream)
+        m_pStorageState->deleteStorageStreamFile(sStorageUUID);
+
+    // The thumbnail is intentionally preserved for build history display.
 }
 
 bool CBuildJob::JobCanBeArchived()

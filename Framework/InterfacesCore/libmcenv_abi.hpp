@@ -4740,6 +4740,23 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_hasmetadatastring(LibMCEnv_Build
 */
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_getmetadatastring(LibMCEnv_Build pBuild, const char * pKey, const LibMCEnv_uint32 nValueBufferSize, LibMCEnv_uint32* pValueNeededChars, char * pValueBuffer);
 
+/**
+* Marks the build job as deleted and removes its build file, unless another build job that is not deleted uses that file. Executions, metadata and thumbnail are kept. Build job MUST be of state validated or archived to succeed.
+*
+* @param[in] pBuild - Build instance.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_deletejobwithstorage(LibMCEnv_Build pBuild);
+
+/**
+* Checks if the build job has been deleted.
+*
+* @param[in] pBuild - Build instance.
+* @param[out] pIsDeleted - Returns true if the build job is deleted.
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_isdeleted(LibMCEnv_Build pBuild, bool * pIsDeleted);
+
 /*************************************************************************************************************************
  Class definition for WorkingFileProcess
 **************************************************************************************************************************/

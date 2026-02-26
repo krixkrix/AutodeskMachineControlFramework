@@ -89,16 +89,22 @@ PAPIResponse CAPIHandler_Image::handleRequest(const std::string& sURI, const eAP
 	}
 
 	// Then look in storage for uuid
-	auto pDataModel = m_pSystemState->getDataModelInstance();
-	auto pStorage = pDataModel->CreateStorage();
-	if (pStorage->StreamIsImage(sParameterUUID)) {
+	try {
+		auto pDataModel = m_pSystemState->getDataModelInstance();
+		auto pStorage = pDataModel->CreateStorage();
+		if (pStorage->StreamIsImage(sParameterUUID)) {
 
-		auto pStream = pStorage->RetrieveStream(sParameterUUID);
-		auto sContentType = pStream->GetMIMEType();
+			auto pStream = pStorage->RetrieveStream(sParameterUUID);
+			auto sContentType = pStream->GetMIMEType();
 
-		auto apiResponse = std::make_shared<CAPIFixedBufferResponse>(sContentType);
-		pStream->GetContent(apiResponse->getBuffer());
-		return apiResponse;
+			auto apiResponse = std::make_shared<CAPIFixedBufferResponse>(sContentType);
+			pStream->GetContent(apiResponse->getBuffer());
+			return apiResponse;
+		}
+	}
+	catch (std::exception&) {
+		// The stream record vanished (e.g. deleted together with its build job) or its file
+		// is missing on disk. Fall through to a 404 instead of failing with a server error.
 	}
 
 	// If not found, return 404

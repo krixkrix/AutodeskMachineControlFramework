@@ -1558,7 +1558,10 @@
 			<param name="Name" type="string" pass="in" description="New name of the job. MUST not be empty. MUST have less than 1024 characters." />
 		</method>
 
-		<method name="DeleteJob" description="Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.">
+		<method name="DeleteJob" description="Marks a Job as deleted. The job, its storage stream and all referencing data objects are kept. Job MUST be of state validated or archived to succeed.">
+		</method>
+
+		<method name="DeleteJobWithStorage" description="Marks a Job as deleted and removes its storage stream, unless another job that is not deleted uses that stream. Executions, metadata and thumbnail are kept. Job MUST be of state validated or archived to succeed.">
 		</method>
 
 		<method name="JobCanBeArchived" description="Returns if a job is opened.">

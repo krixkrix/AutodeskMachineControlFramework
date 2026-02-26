@@ -187,6 +187,12 @@ namespace AMCData {
 
 	}
 
+	void CStorageState::deleteStorageStreamFile(const std::string& sStreamUUID)
+	{
+		// Does not fail if the file does not exist (anymore), e.g. if it was already deleted.
+		AMCCommon::CUtils::deleteFileFromDisk(getStreamPath(sStreamUUID), false);
+	}
+
 }
 
 

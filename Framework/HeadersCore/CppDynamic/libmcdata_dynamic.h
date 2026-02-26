@@ -2047,12 +2047,20 @@ typedef LibMCDataResult (*PLibMCDataBuildJob_UnArchiveJobPtr) (LibMCData_BuildJo
 typedef LibMCDataResult (*PLibMCDataBuildJob_ChangeNamePtr) (LibMCData_BuildJob pBuildJob, const char * pName);
 
 /**
-* Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.
+* Marks a Job as deleted. The job, its storage stream and all referencing data objects are kept. Job MUST be of state validated or archived to succeed.
 *
 * @param[in] pBuildJob - BuildJob instance.
 * @return error code or 0 (success)
 */
 typedef LibMCDataResult (*PLibMCDataBuildJob_DeleteJobPtr) (LibMCData_BuildJob pBuildJob);
+
+/**
+* Marks a Job as deleted and removes its storage stream, unless another job that is not deleted uses that stream. Executions, metadata and thumbnail are kept. Job MUST be of state validated or archived to succeed.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataBuildJob_DeleteJobWithStoragePtr) (LibMCData_BuildJob pBuildJob);
 
 /**
 * Returns if a job is opened.
@@ -3904,6 +3912,7 @@ typedef struct {
 	PLibMCDataBuildJob_UnArchiveJobPtr m_BuildJob_UnArchiveJob;
 	PLibMCDataBuildJob_ChangeNamePtr m_BuildJob_ChangeName;
 	PLibMCDataBuildJob_DeleteJobPtr m_BuildJob_DeleteJob;
+	PLibMCDataBuildJob_DeleteJobWithStoragePtr m_BuildJob_DeleteJobWithStorage;
 	PLibMCDataBuildJob_JobCanBeArchivedPtr m_BuildJob_JobCanBeArchived;
 	PLibMCDataBuildJob_AddJobDataPtr m_BuildJob_AddJobData;
 	PLibMCDataBuildJob_ListJobDataByTypePtr m_BuildJob_ListJobDataByType;

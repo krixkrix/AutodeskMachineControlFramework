@@ -345,6 +345,11 @@ void CUIModule_ContentExecutionList::registerFrontendAttributes()
 		expr.setFixedValue(m_sSelectedButtonFieldUUID);
 		registerItemStringAttribute("buttonvalueuuid", expr);
 	}
+	{
+		CUIExpression expr;
+		expr.setFixedValue(m_sDefaultThumbnailResourceUUID);
+		registerItemStringAttribute(AMC_API_KEY_UI_ITEMDEFAULTTHUMBNAIL, expr);
+	}
 
 	registerItemProviderAttribute(AMC_API_KEY_EXECUTIONS_HEADID, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asGlobal,
 		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {

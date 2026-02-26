@@ -3864,6 +3864,17 @@ public:
 	*/
 	virtual std::string GetMetaDataString(const std::string & sKey) = 0;
 
+	/**
+	* IBuild::DeleteJobWithStorage - Marks the build job as deleted and removes its build file, unless another build job that is not deleted uses that file. Executions, metadata and thumbnail are kept. Build job MUST be of state validated or archived to succeed.
+	*/
+	virtual void DeleteJobWithStorage() = 0;
+
+	/**
+	* IBuild::IsDeleted - Checks if the build job has been deleted.
+	* @return Returns true if the build job is deleted.
+	*/
+	virtual bool IsDeleted() = 0;
+
 };
 
 typedef IBaseSharedPtr<IBuild> PIBuild;

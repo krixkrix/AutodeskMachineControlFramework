@@ -81,6 +81,7 @@ export default class AMCApplicationModule_ExecutionList extends Common.AMCApplic
 		this.selectevent            = "";
 		this.selectionvalueuuid     = Common.nullUUID ();
 		this.buttonvalueuuid        = Common.nullUUID ();
+		this.defaultThumbnailUUID   = Common.nullUUID ();
 		this.thumbnailaspectratio   = 1.8;
 		this.thumbnailheight        = "150pt";
 		this.thumbnailwidth         = "";
@@ -136,6 +137,8 @@ export default class AMCApplicationModule_ExecutionList extends Common.AMCApplic
 			this.caption = attrs.caption;
 		if (attrs.visible !== undefined)
 			this.visible = (attrs.visible === "1" || attrs.visible === true || attrs.visible === "true");
+		if (attrs.defaultthumbnail !== undefined)
+			this.defaultThumbnailUUID = attrs.defaultthumbnail;
 
 		if (attrs.executionlistheadid !== undefined)
 			this.listSync.notifyHeadID (parseInt(attrs.executionlistheadid));
@@ -171,7 +174,7 @@ export default class AMCApplicationModule_ExecutionList extends Common.AMCApplic
 					executionBuildStatus:    exec.executionbuildstatus    || "",
 					executionLayerCount:     exec.executionlayercount     || 0,
 					executionJobUUID:        exec.jobuuid                 || "",
-					executionThumbnail:      exec.executionthumbnail      || "00000000-0000-0000-0000-000000000000",
+					executionThumbnail:      exec.executionthumbnail      || this.defaultThumbnailUUID || "00000000-0000-0000-0000-000000000000",
 				});
 			}
 

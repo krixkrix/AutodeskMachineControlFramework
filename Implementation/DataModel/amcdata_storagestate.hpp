@@ -92,6 +92,8 @@ public:
     PStorageWriter findPartialWriter(const std::string& sUUID, bool bFailIfNotExisting);
     void deletePartialWriter(const std::string& sUUID);
 
+    void deleteStorageStreamFile(const std::string& sStreamUUID);
+
 };
 
 typedef std::shared_ptr <CStorageState> PStorageState;

@@ -78,6 +78,9 @@ namespace AMCUnitTest {
 			registerTest("JobGetStorageStreamSize", "Get storage stream size", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobGetStorageStreamSize, this));
 			registerTest("JobGetExecutionCount", "Get execution count", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobGetExecutionCount, this));
 			registerTest("JobDeleteJob", "Delete job", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobDeleteJob, this));
+			registerTest("JobDeleteJobStates", "Delete job only from validated or archived", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobDeleteJobStates, this));
+			registerTest("JobDeleteJobWithStorage", "Delete job with its storage stream", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobDeleteJobWithStorage, this));
+			registerTest("JobDeleteJobWithSharedStorage", "Delete job keeps a shared storage stream", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobDeleteJobWithSharedStorage, this));
 			
 			// Additional Execution tests for coverage
 			registerTest("ExecGetJobName", "Get execution job name", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testExecGetJobName, this));
@@ -595,6 +598,104 @@ namespace AMCUnitTest {
 			assertTrue(sName == "Delete Test", "Job name should match");
 		}
 		
+		void testJobDeleteJobStates()
+		{
+			auto fixture = createFixture("job_delete_states");
+
+			// A job that has not been validated yet cannot be deleted
+			std::string sJobUUID = AMCCommon::CUtils::createUUID();
+			std::string sStreamUUID = createTestStream(fixture, "content");
+			auto pCreatedJob = fixture.m_pBuildJobHandler->CreateJob(sJobUUID, "Created Job", fixture.m_sUserUUID, sStreamUUID, getCurrentTimestamp());
+			bool bFailed = false;
+			try {
+				pCreatedJob->DeleteJob();
+			}
+			catch (...) {
+				bFailed = true;
+			}
+			assertTrue(bFailed, "Deleting a created job should fail");
+			assertTrue(fixture.m_pBuildJobHandler->RetrieveJob(sJobUUID)->GetStatus() == LibMCData::eBuildJobStatus::Created, "Failed delete must not change status");
+
+			auto pValidatedJob = createValidatedJob(fixture, "Validated Job");
+			pValidatedJob->DeleteJob();
+			assertTrue(fixture.m_pBuildJobHandler->RetrieveJob(pValidatedJob->GetUUID())->GetStatus() == LibMCData::eBuildJobStatus::Deleted, "Validated job should be deletable");
+
+			auto pArchivedJob = createValidatedJob(fixture, "Archived Job");
+			pArchivedJob->ArchiveJob();
+			pArchivedJob->DeleteJob();
+			assertTrue(fixture.m_pBuildJobHandler->RetrieveJob(pArchivedJob->GetUUID())->GetStatus() == LibMCData::eBuildJobStatus::Deleted, "Archived job should be deletable");
+		}
+
+		void testJobDeleteJobWithStorage()
+		{
+			auto fixture = createFixture("job_delete_storage");
+
+			auto pJob = createValidatedJob(fixture, "Delete With Storage");
+			std::string sJobUUID = pJob->GetUUID();
+			std::string sStreamUUID = pJob->GetStorageStreamUUID();
+			auto pExec = pJob->CreateBuildJobExecution("Execution", fixture.m_sUserUUID, getCurrentTimestamp());
+			std::string sExecUUID = pExec->GetExecutionUUID();
+
+			std::string sStreamPath = fixture.m_sBasePath + "/" + AMCCommon::CUtils::normalizeUUIDString(sStreamUUID) + ".stream";
+			assertTrue(AMCCommon::CUtils::fileOrPathExistsOnDisk(sStreamPath), "Stream file should exist before deletion");
+			assertTrue(fixture.m_pStorage->StreamIsReady(sStreamUUID), "Stream should be ready before deletion");
+
+			uint64_t nBuildListHeadID = fixture.m_pBuildJobHandler->GetBuildListHeadID();
+			uint64_t nExecutionListHeadID = fixture.m_pBuildJobHandler->GetExecutionListHeadID();
+
+			pJob->DeleteJobWithStorage();
+
+			assertTrue(pJob->GetStatus() == LibMCData::eBuildJobStatus::Deleted, "Job instance should be deleted");
+			assertTrue(fixture.m_pBuildJobHandler->RetrieveJob(sJobUUID)->GetStatus() == LibMCData::eBuildJobStatus::Deleted, "Job should be deleted in database");
+			assertFalse(fixture.m_pStorage->StreamIsReady(sStreamUUID), "Stream record should be deleted");
+			assertFalse(AMCCommon::CUtils::fileOrPathExistsOnDisk(sStreamPath), "Stream file should be deleted");
+
+			// Open build and execution lists must receive the change incrementally
+			assertTrue(fixture.m_pBuildJobHandler->GetBuildListHeadID() > nBuildListHeadID, "Build list head should advance");
+			assertTrue(fixture.m_pBuildJobHandler->GetExecutionListHeadID() > nExecutionListHeadID, "Execution list head should advance");
+
+			bool bJobFound = false;
+			auto pJobIterator = fixture.m_pBuildJobHandler->ListJobsChangedSince(nBuildListHeadID);
+			while (pJobIterator->MoveNext())
+				bJobFound |= (pJobIterator->GetCurrentJob()->GetUUID() == sJobUUID);
+			assertTrue(bJobFound, "Deleted job should be in the build list delta");
+
+			bool bExecFound = false;
+			auto pExecIterator = fixture.m_pBuildJobHandler->ListJobExecutionsChangedSince(nExecutionListHeadID);
+			while (pExecIterator->MoveNext()) {
+				auto pCurrentExec = pExecIterator->GetCurrentJobExecution();
+				if (pCurrentExec->GetExecutionUUID() == sExecUUID) {
+					bExecFound = true;
+					assertTrue(pCurrentExec->GetJobStatus() == LibMCData::eBuildJobStatus::Deleted, "Execution delta should carry the deleted job status");
+				}
+			}
+			assertTrue(bExecFound, "Execution of the deleted job should be in the execution list delta");
+		}
+
+		void testJobDeleteJobWithSharedStorage()
+		{
+			auto fixture = createFixture("job_delete_shared");
+
+			auto pJob1 = createValidatedJob(fixture, "Shared Stream Job 1");
+			std::string sStreamUUID = pJob1->GetStorageStreamUUID();
+
+			std::string sJob2UUID = AMCCommon::CUtils::createUUID();
+			auto pJob2 = fixture.m_pBuildJobHandler->CreateJob(sJob2UUID, "Shared Stream Job 2", fixture.m_sUserUUID, sStreamUUID, getCurrentTimestamp());
+			pJob2->StartValidating();
+			pJob2->FinishValidating(10);
+
+			std::string sStreamPath = fixture.m_sBasePath + "/" + AMCCommon::CUtils::normalizeUUIDString(sStreamUUID) + ".stream";
+
+			pJob1->DeleteJobWithStorage();
+			assertTrue(fixture.m_pStorage->StreamIsReady(sStreamUUID), "Shared stream record must be kept");
+			assertTrue(AMCCommon::CUtils::fileOrPathExistsOnDisk(sStreamPath), "Shared stream file must be kept");
+
+			// Once the last job referencing it is deleted, the stream goes as well
+			pJob2->DeleteJobWithStorage();
+			assertFalse(fixture.m_pStorage->StreamIsReady(sStreamUUID), "Stream record should be deleted with the last job");
+			assertFalse(AMCCommon::CUtils::fileOrPathExistsOnDisk(sStreamPath), "Stream file should be deleted with the last job");
+		}
+
 		// ============= Additional Execution Tests =============
 		
 		void testExecGetJobName()

@@ -1828,9 +1828,14 @@ public:
 	virtual void ChangeName(const std::string & sName) = 0;
 
 	/**
-	* IBuildJob::DeleteJob - Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.
+	* IBuildJob::DeleteJob - Marks a Job as deleted. The job, its storage stream and all referencing data objects are kept. Job MUST be of state validated or archived to succeed.
 	*/
 	virtual void DeleteJob() = 0;
+
+	/**
+	* IBuildJob::DeleteJobWithStorage - Marks a Job as deleted and removes its storage stream, unless another job that is not deleted uses that stream. Executions, metadata and thumbnail are kept. Job MUST be of state validated or archived to succeed.
+	*/
+	virtual void DeleteJobWithStorage() = 0;
 
 	/**
 	* IBuildJob::JobCanBeArchived - Returns if a job is opened.
