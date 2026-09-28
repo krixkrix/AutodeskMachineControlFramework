@@ -74,6 +74,9 @@ namespace AMCUnitTest {
 			registerTest("ListVersionsForXSD", "List versions for specific XSD", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_MachineConfig::testListVersionsForXSD, this));
 			registerTest("FindVersionByUUID", "Find version by UUID", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_MachineConfig::testFindVersionByUUID, this));
 			registerTest("GetLatestVersion", "Get latest configuration version", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_MachineConfig::testGetLatestVersion, this));
+			registerTest("VersionDefaultName", "Default configuration version name", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_MachineConfig::testVersionDefaultName, this));
+			registerTest("VersionCreateNamed", "Create named configuration version", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_MachineConfig::testVersionCreateNamed, this));
+			registerTest("VersionRejectEmptyName", "Reject configuration version without name", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_MachineConfig::testVersionRejectEmptyName, this));
 		}
 
 		void initializeTests() override {
@@ -510,6 +513,72 @@ namespace AMCUnitTest {
 			// Check we can list all versions
 			auto pIterator = pConfigType->ListAllConfigurationVersions();
 			assertTrue(pIterator->Count() >= 1, "Should have at least 1 version");
+		}
+
+		void testVersionDefaultName()
+		{
+			auto fixture = createFixture("ver_default_name");
+
+			auto pConfigType = fixture.m_pDataModel->CreateConfigurationType("http://test.schema/verdefaultname/v1", "Version Default Name Test");
+			auto pXSD = pConfigType->RegisterNewXSD(getSimpleXSD(), 1);
+			auto pVersion = pConfigType->CreateDefaultConfiguration(pXSD->GetUUID(), getSimpleXML(), getCurrentTimestampUTC());
+
+			assertTrue(pVersion->GetName() == "Default configuration", "Default version should be named 'Default configuration'");
+
+			auto pFound = pConfigType->FindConfigurationVersionByUUID(pVersion->GetVersionUUID());
+			assertAssigned(pFound.get(), "Default version should be found by UUID");
+			assertTrue(pFound->GetName() == "Default configuration", "Stored default version name should match");
+		}
+
+		void testVersionCreateNamed()
+		{
+			auto fixture = createFixture("ver_create_named");
+
+			auto pConfigType = fixture.m_pDataModel->CreateConfigurationType("http://test.schema/vercreatenamed/v1", "Version Create Named Test");
+			auto pXSD = pConfigType->RegisterNewXSD(getSimpleXSD(), 1);
+			auto pDefaultVersion = pConfigType->CreateDefaultConfiguration(pXSD->GetUUID(), getSimpleXML(), getCurrentTimestampUTC());
+
+			auto pNewVersion = pDefaultVersion->CreateNewVersion(getSimpleXML(), AMCCommon::CUtils::createUUID(), "  Tuned recoater speed  ");
+			assertTrue(pNewVersion->GetName() == "Tuned recoater speed", "New version name should be trimmed");
+			assertTrue(pNewVersion->GetNumericVersion() == 1, "New version should have numeric version 1");
+
+			auto pFound = pConfigType->FindConfigurationVersionByUUID(pNewVersion->GetVersionUUID());
+			assertAssigned(pFound.get(), "New version should be found by UUID");
+			assertTrue(pFound->GetName() == "Tuned recoater speed", "Stored version name should match");
+
+			bool bFoundInList = false;
+			auto pIterator = pConfigType->ListConfigurationVersionsForXSD(pXSD->GetUUID());
+			while (pIterator->MoveNext()) {
+				auto pListedVersion = pIterator->GetCurrent();
+				if (pListedVersion->GetVersionUUID() == pNewVersion->GetVersionUUID()) {
+					assertTrue(pListedVersion->GetName() == "Tuned recoater speed", "Listed version name should match");
+					bFoundInList = true;
+				}
+			}
+			assertTrue(bFoundInList, "New version should be listed");
+		}
+
+		void testVersionRejectEmptyName()
+		{
+			auto fixture = createFixture("ver_reject_name");
+
+			auto pConfigType = fixture.m_pDataModel->CreateConfigurationType("http://test.schema/verrejectname/v1", "Version Reject Name Test");
+			auto pXSD = pConfigType->RegisterNewXSD(getSimpleXSD(), 1);
+			auto pDefaultVersion = pConfigType->CreateDefaultConfiguration(pXSD->GetUUID(), getSimpleXML(), getCurrentTimestampUTC());
+
+			for (auto sInvalidName : { std::string(""), std::string("   "), std::string(257, 'x') }) {
+				bool bThrown = false;
+				try {
+					pDefaultVersion->CreateNewVersion(getSimpleXML(), AMCCommon::CUtils::createUUID(), sInvalidName);
+				}
+				catch (LibMCData::ELibMCDataException&) {
+					bThrown = true;
+				}
+				assertTrue(bThrown, "Creating a version with an empty or too long name should fail");
+			}
+
+			auto pIterator = pConfigType->ListAllConfigurationVersions();
+			assertTrue(pIterator->Count() == 1, "No version should have been created");
 		}
 	};
 

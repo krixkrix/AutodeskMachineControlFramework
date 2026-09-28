@@ -772,6 +772,7 @@ public:
 			case LIBMCENV_ERROR_VIDEOSTREAMFRAMEENCODINGERROR: return "VIDEOSTREAMFRAMEENCODINGERROR";
 			case LIBMCENV_ERROR_NONONEMPTYLAYERFOUND: return "NONONEMPTYLAYERFOUND";
 			case LIBMCENV_ERROR_TOOLPATHPARTNOTFOUND: return "TOOLPATHPARTNOTFOUND";
+			case LIBMCENV_ERROR_INVALIDCONFIGURATIONVERSIONNAME: return "INVALIDCONFIGURATIONVERSIONNAME";
 		}
 		return "UNKNOWN";
 	}
@@ -1043,6 +1044,7 @@ public:
 			case LIBMCENV_ERROR_VIDEOSTREAMFRAMEENCODINGERROR: return "Video stream frame encoding error.";
 			case LIBMCENV_ERROR_NONONEMPTYLAYERFOUND: return "No non-empty layer found in the given layer range.";
 			case LIBMCENV_ERROR_TOOLPATHPARTNOTFOUND: return "Toolpath part not found.";
+			case LIBMCENV_ERROR_INVALIDCONFIGURATIONVERSIONNAME: return "Invalid configuration version name. Names MUST NOT be empty and MUST NOT be longer than 256 characters.";
 		}
 		return "unknown error";
 	}
@@ -3418,12 +3420,13 @@ public:
 	inline std::string GetXSDUUID();
 	inline LibMCEnv_uint32 GetNumericVersion();
 	inline std::string GetParentUUID();
+	inline std::string GetName();
 	inline std::string GetConfigurationXMLString();
 	inline PXMLDocument GetConfigurationXML();
 	inline std::string GetUserUUID();
 	inline std::string GetTimestamp();
-	inline PMachineConfigurationVersion CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID);
-	inline PMachineConfigurationVersion MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID);
+	inline PMachineConfigurationVersion CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName);
+	inline PMachineConfigurationVersion MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName);
 };
 	
 /*************************************************************************************************************************
@@ -3475,8 +3478,8 @@ public:
 	inline void SetDoubleParameter(const std::string & sPath, const LibMCEnv_double dValue);
 	inline void SetBoolParameter(const std::string & sPath, const bool bValue);
 	inline bool HasChanges();
-	inline PMachineConfigurationVersion Commit(const std::string & sUserUUID);
-	inline PMachineConfigurationVersion CommitAndActivate(const std::string & sUserUUID);
+	inline PMachineConfigurationVersion Commit(const std::string & sUserUUID, const std::string & sName);
+	inline PMachineConfigurationVersion CommitAndActivate(const std::string & sUserUUID, const std::string & sName);
 };
 	
 /*************************************************************************************************************************
@@ -4802,6 +4805,7 @@ public:
 		pWrapperTable->m_MachineConfigurationVersion_GetXSDUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetNumericVersion = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetParentUUID = nullptr;
+		pWrapperTable->m_MachineConfigurationVersion_GetName = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXML = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetUserUUID = nullptr;
@@ -12911,6 +12915,15 @@ public:
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_GetName = (PLibMCEnvMachineConfigurationVersion_GetNamePtr) GetProcAddress(hLibrary, "libmcenv_machineconfigurationversion_getname");
+		#else // _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_GetName = (PLibMCEnvMachineConfigurationVersion_GetNamePtr) dlsym(hLibrary, "libmcenv_machineconfigurationversion_getname");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_MachineConfigurationVersion_GetName == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = (PLibMCEnvMachineConfigurationVersion_GetConfigurationXMLStringPtr) GetProcAddress(hLibrary, "libmcenv_machineconfigurationversion_getconfigurationxmlstring");
 		#else // _WIN32
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = (PLibMCEnvMachineConfigurationVersion_GetConfigurationXMLStringPtr) dlsym(hLibrary, "libmcenv_machineconfigurationversion_getconfigurationxmlstring");
@@ -18920,6 +18933,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetParentUUID == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcenv_machineconfigurationversion_getname", (void**)&(pWrapperTable->m_MachineConfigurationVersion_GetName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetName == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcenv_machineconfigurationversion_getconfigurationxmlstring", (void**)&(pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString));
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -24496,7 +24513,7 @@ public:
 	}
 	
 	/**
-	* CToolpathAccessor::FindNonEmptyLayer - Searches a layer range for the first layer that contains at least one segment. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.
+	* CToolpathAccessor::FindNonEmptyLayer - Searches a layer range for the first layer that contains at least one segment. Segments of parts disabled with Build.DisablePart still count, so a layer that only contains disabled parts is not empty, even though LoadLayer returns it without segments. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.
 	* @param[in] nMinLayerIndex - Lower border of the search range (inclusive).
 	* @param[in] nMaxLayerIndex - Upper border of the search range (inclusive). Clamped to LayerCount - 1. MUST NOT be smaller than MinLayerIndex.
 	* @param[in] bFromMinToMax - If true, the search starts at MinLayerIndex and moves upwards, otherwise it starts at MaxLayerIndex and moves downwards.
@@ -25575,7 +25592,7 @@ public:
 	}
 	
 	/**
-	* CBuild::DisablePart - Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.
+	* CBuild::DisablePart - Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. Layer emptiness (ToolpathAccessor.FindNonEmptyLayer) is not affected. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.
 	* @param[in] sPartUUID - Build item UUID of the part. Fails with TOOLPATHPARTNOTFOUND if the part does not exist.
 	*/
 	void CBuild::DisablePart(const std::string & sPartUUID)
@@ -31897,6 +31914,21 @@ public:
 	}
 	
 	/**
+	* CMachineConfigurationVersion::GetName - Returns the name of the configuration version.
+	* @return Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string.
+	*/
+	std::string CMachineConfigurationVersion::GetName()
+	{
+		LibMCEnv_uint32 bytesNeededName = 0;
+		LibMCEnv_uint32 bytesWrittenName = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_GetName(m_pHandle, 0, &bytesNeededName, nullptr));
+		std::vector<char> bufferName(bytesNeededName);
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_GetName(m_pHandle, bytesNeededName, &bytesWrittenName, &bufferName[0]));
+		
+		return std::string(&bufferName[0]);
+	}
+	
+	/**
 	* CMachineConfigurationVersion::GetConfigurationXMLString - Returns the configuration XML content as string.
 	* @return XML String.
 	*/
@@ -31960,12 +31992,13 @@ public:
 	* CMachineConfigurationVersion::CreateNewVersion - Creates a new configuration version from this one with the same XSD.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to current XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	PMachineConfigurationVersion CMachineConfigurationVersion::CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID)
+	PMachineConfigurationVersion CMachineConfigurationVersion::CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName)
 	{
 		LibMCEnvHandle hCurrentInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_CreateNewVersion(m_pHandle, sXMLString.c_str(), sUserUUID.c_str(), &hCurrentInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_CreateNewVersion(m_pHandle, sXMLString.c_str(), sUserUUID.c_str(), sName.c_str(), &hCurrentInstance));
 		
 		if (!hCurrentInstance) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
@@ -31978,13 +32011,14 @@ public:
 	* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to new XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	PMachineConfigurationVersion CMachineConfigurationVersion::MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID)
+	PMachineConfigurationVersion CMachineConfigurationVersion::MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName)
 	{
 		LibMCEnvHandle hNewXSD = pNewXSD.GetHandle();
 		LibMCEnvHandle hCurrentInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_MigrateToNewXSD(m_pHandle, hNewXSD, sXMLString.c_str(), sUserUUID.c_str(), &hCurrentInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_MigrateToNewXSD(m_pHandle, hNewXSD, sXMLString.c_str(), sUserUUID.c_str(), sName.c_str(), &hCurrentInstance));
 		
 		if (!hCurrentInstance) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
@@ -32262,12 +32296,13 @@ public:
 	/**
 	* CMachineConfiguration::Commit - Commits the current in-memory state as a new configuration version (child of the version this working copy is based on). Does not change the active version. After committing, the working copy is rebased on the new version.
 	* @param[in] sUserUUID - User UUID for logging who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created configuration version.
 	*/
-	PMachineConfigurationVersion CMachineConfiguration::Commit(const std::string & sUserUUID)
+	PMachineConfigurationVersion CMachineConfiguration::Commit(const std::string & sUserUUID, const std::string & sName)
 	{
 		LibMCEnvHandle hVersionInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfiguration_Commit(m_pHandle, sUserUUID.c_str(), &hVersionInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfiguration_Commit(m_pHandle, sUserUUID.c_str(), sName.c_str(), &hVersionInstance));
 		
 		if (!hVersionInstance) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);
@@ -32278,12 +32313,13 @@ public:
 	/**
 	* CMachineConfiguration::CommitAndActivate - Commits the current in-memory state as a new configuration version and sets it as the active version for the type. After committing, the working copy is rebased on the new version.
 	* @param[in] sUserUUID - User UUID for logging who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created and now active configuration version.
 	*/
-	PMachineConfigurationVersion CMachineConfiguration::CommitAndActivate(const std::string & sUserUUID)
+	PMachineConfigurationVersion CMachineConfiguration::CommitAndActivate(const std::string & sUserUUID, const std::string & sName)
 	{
 		LibMCEnvHandle hVersionInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfiguration_CommitAndActivate(m_pHandle, sUserUUID.c_str(), &hVersionInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfiguration_CommitAndActivate(m_pHandle, sUserUUID.c_str(), sName.c_str(), &hVersionInstance));
 		
 		if (!hVersionInstance) {
 			CheckError(LIBMCENV_ERROR_INVALIDPARAM);

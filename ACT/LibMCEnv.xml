@@ -302,6 +302,7 @@
 		<error name="VIDEOSTREAMFRAMEENCODINGERROR" code="10262" description="Video stream frame encoding error." />	
 		<error name="NONONEMPTYLAYERFOUND" code="10263" description="No non-empty layer found in the given layer range." />
 		<error name="TOOLPATHPARTNOTFOUND" code="10264" description="Toolpath part not found." />	
+		<error name="INVALIDCONFIGURATIONVERSIONNAME" code="10265" description="Invalid configuration version name. Names MUST NOT be empty and MUST NOT be longer than 256 characters." />	
 		
 		
 	</errors>
@@ -2329,7 +2330,7 @@
 			<param name="LayerData" type="class" class="ToolpathLayer" pass="return" description="Toolpath layer object." />
 		</method>
 
-		<method name="FindNonEmptyLayer" description="Searches a layer range for the first layer that contains at least one segment. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.">
+		<method name="FindNonEmptyLayer" description="Searches a layer range for the first layer that contains at least one segment. Segments of parts disabled with Build.DisablePart still count, so a layer that only contains disabled parts is not empty, even though LoadLayer returns it without segments. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.">
 			<param name="MinLayerIndex" type="uint32" pass="in" description="Lower border of the search range (inclusive)." />
 			<param name="MaxLayerIndex" type="uint32" pass="in" description="Upper border of the search range (inclusive). Clamped to LayerCount - 1. MUST NOT be smaller than MinLayerIndex." />
 			<param name="FromMinToMax" type="bool" pass="in" description="If true, the search starts at MinLayerIndex and moves upwards, otherwise it starts at MaxLayerIndex and moves downwards." />
@@ -2709,7 +2710,7 @@
 			<param name="ToolpathInstance" type="class" class="ToolpathAccessor" pass="return" description="Toolpath instance." />
 		</method>
 
-		<method name="DisablePart" description="Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.">
+		<method name="DisablePart" description="Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. Layer emptiness (ToolpathAccessor.FindNonEmptyLayer) is not affected. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.">
 			<param name="PartUUID" type="string" pass="in" description="Build item UUID of the part. Fails with TOOLPATHPARTNOTFOUND if the part does not exist." />
 		</method>
 
@@ -5116,6 +5117,10 @@
 			<param name="ParentUUID" type="string" pass="return" description="UUID of the configuration version that is the parent of this version. Returns 00000000-0000-0000-0000-000000000000 if this is the default version." />
 		</method>
 
+		<method name="GetName" description="Returns the name of the configuration version.">
+			<param name="Name" type="string" pass="return" description="Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string." />
+		</method>
+
 		<method name="GetConfigurationXMLString" description="Returns the configuration XML content as string.">
 			<param name="XMLString" type="string" pass="return" description="XML String." />
 		</method>
@@ -5135,6 +5140,7 @@
 		<method name="CreateNewVersion" description="Creates a new configuration version from this one with the same XSD.">
 			<param name="XMLString" type="string" pass="in" description="New XML Configuration String. MUST conform to current XSD." />
 			<param name="UserUUID" type="string" pass="in" description="User UUID for logging the user who initiated the change." />
+			<param name="Name" type="string" pass="in" description="Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters." />
 			<param name="CurrentInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Returns the newly created MachineConfigurationVersion instance." />
 		</method>
 
@@ -5142,6 +5148,7 @@
 			<param name="NewXSD" type="class" class="MachineConfigurationXSD" pass="in" description="New XSD to use. MUST be of the same type as the current. MUST have an increased version number." />
 			<param name="XMLString" type="string" pass="in" description="New XML Configuration String. MUST conform to new XSD." />
 			<param name="UserUUID" type="string" pass="in" description="User UUID for logging the user who initiated the change." />
+			<param name="Name" type="string" pass="in" description="Name of the new version, shown in the configuration history. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters." />
 			<param name="CurrentInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Returns the newly created MachineConfigurationVersion instance." />
 		</method>
 
@@ -5266,11 +5273,13 @@
 
 		<method name="Commit" description="Commits the current in-memory state as a new configuration version (child of the version this working copy is based on). Does not change the active version. After committing, the working copy is rebased on the new version.">
 			<param name="UserUUID" type="string" pass="in" description="User UUID for logging who initiated the change." />
+			<param name="Name" type="string" pass="in" description="Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters." />
 			<param name="VersionInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Returns the newly created configuration version." />
 		</method>
 
 		<method name="CommitAndActivate" description="Commits the current in-memory state as a new configuration version and sets it as the active version for the type. After committing, the working copy is rebased on the new version.">
 			<param name="UserUUID" type="string" pass="in" description="User UUID for logging who initiated the change." />
+			<param name="Name" type="string" pass="in" description="Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters." />
 			<param name="VersionInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Returns the newly created and now active configuration version." />
 		</method>
 

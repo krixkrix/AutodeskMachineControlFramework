@@ -257,11 +257,12 @@ bool CMachineConfiguration::HasChanges()
     return m_bDirty;
 }
 
-IMachineConfigurationVersion * CMachineConfiguration::Commit(const std::string & sUserUUID)
+IMachineConfigurationVersion * CMachineConfiguration::Commit(const std::string & sUserUUID, const std::string & sName)
 {
+    std::string sCheckedName = CMachineConfigurationVersion::checkVersionName(sName);
     std::string sXMLString = m_pXMLDocument->SaveToString(false);
 
-    auto pNewDataVersion = m_pBaseVersion->CreateNewVersion(sXMLString, sUserUUID);
+    auto pNewDataVersion = m_pBaseVersion->CreateNewVersion(sXMLString, sUserUUID, sCheckedName);
     if (pNewDataVersion.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM, "could not create new configuration version");
 
@@ -272,11 +273,12 @@ IMachineConfigurationVersion * CMachineConfiguration::Commit(const std::string &
     return new CMachineConfigurationVersion(pNewDataVersion);
 }
 
-IMachineConfigurationVersion * CMachineConfiguration::CommitAndActivate(const std::string & sUserUUID)
+IMachineConfigurationVersion * CMachineConfiguration::CommitAndActivate(const std::string & sUserUUID, const std::string & sName)
 {
+    std::string sCheckedName = CMachineConfigurationVersion::checkVersionName(sName);
     std::string sXMLString = m_pXMLDocument->SaveToString(false);
 
-    auto pNewDataVersion = m_pBaseVersion->CreateNewVersion(sXMLString, sUserUUID);
+    auto pNewDataVersion = m_pBaseVersion->CreateNewVersion(sXMLString, sUserUUID, sCheckedName);
     if (pNewDataVersion.get() == nullptr)
         throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDPARAM, "could not create new configuration version");
 

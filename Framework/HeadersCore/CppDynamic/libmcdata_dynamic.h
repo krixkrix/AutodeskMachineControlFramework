@@ -2975,6 +2975,17 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_GetNumericVersio
 typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_GetParentUUIDPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCData_uint32 nParentUUIDBufferSize, LibMCData_uint32* pParentUUIDNeededChars, char * pParentUUIDBuffer);
 
 /**
+* Returns the name of the configuration version.
+*
+* @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
+* @param[in] nNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pNameBuffer -  buffer of Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string., may be NULL
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_GetNamePtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCData_uint32 nNameBufferSize, LibMCData_uint32* pNameNeededChars, char * pNameBuffer);
+
+/**
 * Returns the configuration XML content as string.
 *
 * @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
@@ -3013,10 +3024,11 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_GetTimestampPtr)
 * @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
 * @param[in] pXMLString - New XML Configuration String. MUST conform to current XSD.
 * @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pName - Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters. Leading and trailing whitespace is removed.
 * @param[out] pCurrentInstance - Returns the newly created MachineConfigurationVersion instance.
 * @return error code or 0 (success)
 */
-typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_CreateNewVersionPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const char * pXMLString, const char * pUserUUID, LibMCData_MachineConfigurationVersion * pCurrentInstance);
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_CreateNewVersionPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const char * pXMLString, const char * pUserUUID, const char * pName, LibMCData_MachineConfigurationVersion * pCurrentInstance);
 
 /**
 * Creates a new configuration version from this one but with a different XSD.
@@ -3025,10 +3037,11 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_CreateNewVersion
 * @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
 * @param[in] pXMLString - New XML Configuration String. MUST conform to new XSD.
 * @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pName - Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters.
 * @param[out] pCurrentInstance - Returns the newly created MachineConfigurationVersion instance.
 * @return error code or 0 (success)
 */
-typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_MigrateToNewXSDPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, LibMCData_MachineConfigurationXSD pNewXSD, const char * pXMLString, const char * pUserUUID, LibMCData_MachineConfigurationVersion * pCurrentInstance);
+typedef LibMCDataResult (*PLibMCDataMachineConfigurationVersion_MigrateToNewXSDPtr) (LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, LibMCData_MachineConfigurationXSD pNewXSD, const char * pXMLString, const char * pUserUUID, const char * pName, LibMCData_MachineConfigurationVersion * pCurrentInstance);
 
 /*************************************************************************************************************************
  Class definition for MachineConfigurationVersionIterator
@@ -3220,7 +3233,7 @@ typedef LibMCDataResult (*PLibMCDataMachineConfigurationType_FindXSDByNumericVer
 typedef LibMCDataResult (*PLibMCDataMachineConfigurationType_FindXSDByUUIDPtr) (LibMCData_MachineConfigurationType pMachineConfigurationType, const char * pXSDUUID, LibMCData_MachineConfigurationXSD * pXSDInstance);
 
 /**
-* Creates the default configuration for a given XSD version. Fails if a configuration for this XSD already exists.
+* Creates the default configuration for a given XSD version, named 'Default configuration'. Fails if a configuration for this XSD already exists.
 *
 * @param[in] pMachineConfigurationType - MachineConfigurationType instance.
 * @param[in] pXSDUUID - UUID of the XSD to base the default configuration on.
@@ -3905,6 +3918,7 @@ typedef struct {
 	PLibMCDataMachineConfigurationVersion_GetXSDUUIDPtr m_MachineConfigurationVersion_GetXSDUUID;
 	PLibMCDataMachineConfigurationVersion_GetNumericVersionPtr m_MachineConfigurationVersion_GetNumericVersion;
 	PLibMCDataMachineConfigurationVersion_GetParentUUIDPtr m_MachineConfigurationVersion_GetParentUUID;
+	PLibMCDataMachineConfigurationVersion_GetNamePtr m_MachineConfigurationVersion_GetName;
 	PLibMCDataMachineConfigurationVersion_GetConfigurationXMLStringPtr m_MachineConfigurationVersion_GetConfigurationXMLString;
 	PLibMCDataMachineConfigurationVersion_GetUserUUIDPtr m_MachineConfigurationVersion_GetUserUUID;
 	PLibMCDataMachineConfigurationVersion_GetTimestampPtr m_MachineConfigurationVersion_GetTimestamp;

@@ -3646,7 +3646,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_registercustomsegment
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_toolpathaccessor_loadlayer(LibMCEnv_ToolpathAccessor pToolpathAccessor, LibMCEnv_uint32 nLayerIndex, LibMCEnv_ToolpathLayer * pLayerData);
 
 /**
-* Searches a layer range for the first layer that contains at least one segment. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.
+* Searches a layer range for the first layer that contains at least one segment. Segments of parts disabled with Build.DisablePart still count, so a layer that only contains disabled parts is not empty, even though LoadLayer returns it without segments. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.
 *
 * @param[in] pToolpathAccessor - ToolpathAccessor instance.
 * @param[in] nMinLayerIndex - Lower border of the search range (inclusive).
@@ -4444,7 +4444,7 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_toolpathisloaded(LibMCEnv_Build 
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_build_createtoolpathaccessor(LibMCEnv_Build pBuild, LibMCEnv_ToolpathAccessor * pToolpathInstance);
 
 /**
-* Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.
+* Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. Layer emptiness (ToolpathAccessor.FindNonEmptyLayer) is not affected. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.
 *
 * @param[in] pBuild - Build instance.
 * @param[in] pPartUUID - Build item UUID of the part. Fails with TOOLPATHPARTNOTFOUND if the part does not exist.
@@ -9323,6 +9323,17 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_getnumeric
 LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_getparentuuid(LibMCEnv_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCEnv_uint32 nParentUUIDBufferSize, LibMCEnv_uint32* pParentUUIDNeededChars, char * pParentUUIDBuffer);
 
 /**
+* Returns the name of the configuration version.
+*
+* @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
+* @param[in] nNameBufferSize - size of the buffer (including trailing 0)
+* @param[out] pNameNeededChars - will be filled with the count of the written bytes, or needed buffer size.
+* @param[out] pNameBuffer -  buffer of Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string., may be NULL
+* @return error code or 0 (success)
+*/
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_getname(LibMCEnv_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCEnv_uint32 nNameBufferSize, LibMCEnv_uint32* pNameNeededChars, char * pNameBuffer);
+
+/**
 * Returns the configuration XML content as string.
 *
 * @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
@@ -9370,10 +9381,11 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_gettimesta
 * @param[in] pMachineConfigurationVersion - MachineConfigurationVersion instance.
 * @param[in] pXMLString - New XML Configuration String. MUST conform to current XSD.
 * @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 * @param[out] pCurrentInstance - Returns the newly created MachineConfigurationVersion instance.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_createnewversion(LibMCEnv_MachineConfigurationVersion pMachineConfigurationVersion, const char * pXMLString, const char * pUserUUID, LibMCEnv_MachineConfigurationVersion * pCurrentInstance);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_createnewversion(LibMCEnv_MachineConfigurationVersion pMachineConfigurationVersion, const char * pXMLString, const char * pUserUUID, const char * pName, LibMCEnv_MachineConfigurationVersion * pCurrentInstance);
 
 /**
 * Creates a new configuration version from this one but with a different XSD.
@@ -9382,10 +9394,11 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_createnewv
 * @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
 * @param[in] pXMLString - New XML Configuration String. MUST conform to new XSD.
 * @param[in] pUserUUID - User UUID for logging the user who initiated the change.
+* @param[in] pName - Name of the new version, shown in the configuration history. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 * @param[out] pCurrentInstance - Returns the newly created MachineConfigurationVersion instance.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_migratetonewxsd(LibMCEnv_MachineConfigurationVersion pMachineConfigurationVersion, LibMCEnv_MachineConfigurationXSD pNewXSD, const char * pXMLString, const char * pUserUUID, LibMCEnv_MachineConfigurationVersion * pCurrentInstance);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfigurationversion_migratetonewxsd(LibMCEnv_MachineConfigurationVersion pMachineConfigurationVersion, LibMCEnv_MachineConfigurationXSD pNewXSD, const char * pXMLString, const char * pUserUUID, const char * pName, LibMCEnv_MachineConfigurationVersion * pCurrentInstance);
 
 /*************************************************************************************************************************
  Class definition for MachineConfigurationVersionIterator
@@ -9604,20 +9617,22 @@ LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfiguration_haschanges(LibMCE
 *
 * @param[in] pMachineConfiguration - MachineConfiguration instance.
 * @param[in] pUserUUID - User UUID for logging who initiated the change.
+* @param[in] pName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 * @param[out] pVersionInstance - Returns the newly created configuration version.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfiguration_commit(LibMCEnv_MachineConfiguration pMachineConfiguration, const char * pUserUUID, LibMCEnv_MachineConfigurationVersion * pVersionInstance);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfiguration_commit(LibMCEnv_MachineConfiguration pMachineConfiguration, const char * pUserUUID, const char * pName, LibMCEnv_MachineConfigurationVersion * pVersionInstance);
 
 /**
 * Commits the current in-memory state as a new configuration version and sets it as the active version for the type. After committing, the working copy is rebased on the new version.
 *
 * @param[in] pMachineConfiguration - MachineConfiguration instance.
 * @param[in] pUserUUID - User UUID for logging who initiated the change.
+* @param[in] pName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 * @param[out] pVersionInstance - Returns the newly created and now active configuration version.
 * @return error code or 0 (success)
 */
-LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfiguration_commitandactivate(LibMCEnv_MachineConfiguration pMachineConfiguration, const char * pUserUUID, LibMCEnv_MachineConfigurationVersion * pVersionInstance);
+LIBMCENV_DECLSPEC LibMCEnvResult libmcenv_machineconfiguration_commitandactivate(LibMCEnv_MachineConfiguration pMachineConfiguration, const char * pUserUUID, const char * pName, LibMCEnv_MachineConfigurationVersion * pVersionInstance);
 
 /*************************************************************************************************************************
  Class definition for MachineConfigurationType

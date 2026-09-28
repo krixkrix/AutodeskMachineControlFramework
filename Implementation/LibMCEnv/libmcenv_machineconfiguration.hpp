@@ -118,9 +118,9 @@ public:
 
 	bool HasChanges() override;
 
-	IMachineConfigurationVersion * Commit(const std::string & sUserUUID) override;
+	IMachineConfigurationVersion * Commit(const std::string & sUserUUID, const std::string & sName) override;
 
-	IMachineConfigurationVersion * CommitAndActivate(const std::string & sUserUUID) override;
+	IMachineConfigurationVersion * CommitAndActivate(const std::string & sUserUUID, const std::string & sName) override;
 
 };
 

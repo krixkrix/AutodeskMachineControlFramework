@@ -36,7 +36,9 @@ Abstract: This is a stub class definition of CMachineConfigurationVersion
 #include "libmcenv_xmldocument.hpp"
 
 // Include custom headers here.
+#include "common_utils.hpp"
 
+#define MACHINECONFIGURATIONVERSION_MAXNAMELENGTH 256
 
 using namespace LibMCEnv::Impl;
 
@@ -75,6 +77,22 @@ std::string CMachineConfigurationVersion::GetParentUUID()
     return m_pMachineConfigurationVersion->GetParentUUID();
 }
 
+std::string CMachineConfigurationVersion::GetName()
+{
+    return m_pMachineConfigurationVersion->GetName();
+}
+
+std::string CMachineConfigurationVersion::checkVersionName(const std::string& sName)
+{
+    std::string sTrimmedName = AMCCommon::CUtils::trimString(sName);
+    if (sTrimmedName.empty())
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCONFIGURATIONVERSIONNAME, "empty configuration version name");
+    if (sTrimmedName.length() > MACHINECONFIGURATIONVERSION_MAXNAMELENGTH)
+        throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCONFIGURATIONVERSIONNAME, "configuration version name is too long: " + sTrimmedName);
+
+    return sTrimmedName;
+}
+
 std::string CMachineConfigurationVersion::GetConfigurationXMLString()
 {
     return m_pMachineConfigurationVersion->GetConfigurationXMLString();
@@ -99,9 +117,9 @@ std::string CMachineConfigurationVersion::GetTimestamp()
     return m_pMachineConfigurationVersion->GetTimestamp();
 }
 
-IMachineConfigurationVersion* CMachineConfigurationVersion::CreateNewVersion(const std::string& sXMLString, const std::string& sUserUUID)
+IMachineConfigurationVersion* CMachineConfigurationVersion::CreateNewVersion(const std::string& sXMLString, const std::string& sUserUUID, const std::string& sName)
 {
-    auto pNewConfigurationVersion = m_pMachineConfigurationVersion->CreateNewVersion(sXMLString, sUserUUID);
+    auto pNewConfigurationVersion = m_pMachineConfigurationVersion->CreateNewVersion(sXMLString, sUserUUID, checkVersionName(sName));
 
     if (pNewConfigurationVersion.get() == nullptr)
         return nullptr;
@@ -109,7 +127,7 @@ IMachineConfigurationVersion* CMachineConfigurationVersion::CreateNewVersion(con
     return new CMachineConfigurationVersion(pNewConfigurationVersion);
 }
 
-IMachineConfigurationVersion* CMachineConfigurationVersion::MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string& sXMLString, const std::string& sUserUUID)
+IMachineConfigurationVersion* CMachineConfigurationVersion::MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string& sXMLString, const std::string& sUserUUID, const std::string& sName)
 {
     throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_NOTIMPLEMENTED);
 }

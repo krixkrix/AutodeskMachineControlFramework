@@ -2499,6 +2499,12 @@ public:
 	virtual std::string GetParentUUID() = 0;
 
 	/**
+	* IMachineConfigurationVersion::GetName - Returns the name of the configuration version.
+	* @return Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string.
+	*/
+	virtual std::string GetName() = 0;
+
+	/**
 	* IMachineConfigurationVersion::GetConfigurationXMLString - Returns the configuration XML content as string.
 	* @return XML String.
 	*/
@@ -2520,18 +2526,20 @@ public:
 	* IMachineConfigurationVersion::CreateNewVersion - Creates a new configuration version from this one with the same XSD.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to current XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters. Leading and trailing whitespace is removed.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	virtual IMachineConfigurationVersion * CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID) = 0;
+	virtual IMachineConfigurationVersion * CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName) = 0;
 
 	/**
 	* IMachineConfigurationVersion::MigrateToNewXSD - Creates a new configuration version from this one but with a different XSD.
 	* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to new XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	virtual IMachineConfigurationVersion * MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string & sXMLString, const std::string & sUserUUID) = 0;
+	virtual IMachineConfigurationVersion * MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName) = 0;
 
 };
 
@@ -2684,7 +2692,7 @@ public:
 	virtual IMachineConfigurationXSD * FindXSDByUUID(const std::string & sXSDUUID) = 0;
 
 	/**
-	* IMachineConfigurationType::CreateDefaultConfiguration - Creates the default configuration for a given XSD version. Fails if a configuration for this XSD already exists.
+	* IMachineConfigurationType::CreateDefaultConfiguration - Creates the default configuration for a given XSD version, named 'Default configuration'. Fails if a configuration for this XSD already exists.
 	* @param[in] sXSDUUID - UUID of the XSD to base the default configuration on.
 	* @param[in] sDefaultXML - Configuration XML string conforming to the given XSD.
 	* @param[in] sTimeStampUTC - Creation timestamp in UTC.

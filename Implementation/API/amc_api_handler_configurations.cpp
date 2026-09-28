@@ -111,9 +111,15 @@ void CAPIHandler_Configurations::handleListConfigurationsRequest(CJSONWriter& wr
 					}
 				}
 
+				// Versions created before names were introduced have no name.
+				std::string sVersionName = pVersion->GetName();
+				if (sVersionName.empty())
+					sVersionName = "Version " + std::to_string(pVersion->GetNumericVersion());
+
 				CJSONWriterObject entryObject(writer);
 				entryObject.addBool("configurationactive", pVersion->GetVersionUUID() == sActiveUUID);
 				entryObject.addInteger("configurationversion", pVersion->GetNumericVersion());
+				entryObject.addString("configurationname", sVersionName);
 				entryObject.addString("username", sUserName);
 				entryObject.addString("configurationuuid", pVersion->GetVersionUUID());
 				entryObject.addString("configurationtimestamp", pVersion->GetTimestamp());

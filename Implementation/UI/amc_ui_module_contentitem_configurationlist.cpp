@@ -44,6 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcdata_dynamic.hpp"
 
 #include <cstdint>
+#include <map>
 
 using namespace AMC;
 
@@ -234,6 +235,15 @@ void CUIModule_ContentConfigurationList::writeHeadersToJSON(CJSONWriter& writer,
 
 	{
 		CJSONWriterObject headerObject(writer);
+		headerObject.addString(AMC_API_KEY_UI_ITEMTEXT, "Name");
+		headerObject.addString(AMC_API_KEY_UI_ITEMVALUE, AMC_API_KEY_UI_ITEMCONFIGURATIONNAME);
+		headerObject.addBool(AMC_API_KEY_UI_ITEMSORTABLE, true);
+		headerObject.addString(AMC_API_KEY_UI_ITEMWIDTH, "15vw");
+		headersArray.addObject(headerObject);
+	}
+
+	{
+		CJSONWriterObject headerObject(writer);
 		headerObject.addString(AMC_API_KEY_UI_ITEMTEXT, m_ConfigurationTimestampCaption.evaluateStringValue(m_pStateMachineData));
 		headerObject.addString(AMC_API_KEY_UI_ITEMVALUE, AMC_API_KEY_UI_ITEMCONFIGURATIONTIMESTAMP);
 		headerObject.addBool(AMC_API_KEY_UI_ITEMSORTABLE, true);
@@ -357,7 +367,12 @@ void CUIModule_ContentConfigurationList::addLegacyContentToJSON(CJSONWriter& wri
 		auto pConfigurationVersionsIterator = pConfigurationType->ListAllConfigurationVersions();
 
 		auto pActiveConfiguration = pConfigurationType->GetActiveConfigurationVersion();
+		std::string sActiveUUID;
+		if (pActiveConfiguration.get() != nullptr)
+			sActiveUUID = pActiveConfiguration->GetVersionUUID();
 
+		auto pLoginHandler = m_pDataModel->CreateLoginHandler();
+		std::map<std::string, std::string> userNameCache;
 
 		while (pConfigurationVersionsIterator->MoveNext()) {
 
@@ -365,13 +380,38 @@ void CUIModule_ContentConfigurationList::addLegacyContentToJSON(CJSONWriter& wri
 
 			CJSONWriterObject entryObject(writer);
 
-			if(pConfigurationVersion->GetVersionUUID() == pActiveConfiguration->GetVersionUUID())
-				entryObject.addBool("configurationActive", true);
-			else
-				entryObject.addBool("configurationActive", false);
+			entryObject.addBool("configurationActive", pConfigurationVersion->GetVersionUUID() == sActiveUUID);
+
+			// Versions created before names were introduced have no name.
+			std::string sVersionName = pConfigurationVersion->GetName();
+			if (sVersionName.empty())
+				sVersionName = "Version " + std::to_string(pConfigurationVersion->GetNumericVersion());
+
+			// Versions created by the machine itself have the null user UUID.
+			std::string sUserUUID = pConfigurationVersion->GetUserUUID();
+			std::string sUserName;
+			if (!AMCCommon::CUtils::stringIsNonEmptyUUIDString(sUserUUID)) {
+				sUserName = "system";
+			}
+			else {
+				auto iCacheEntry = userNameCache.find(sUserUUID);
+				if (iCacheEntry != userNameCache.end()) {
+					sUserName = iCacheEntry->second;
+				}
+				else {
+					try {
+						sUserName = pLoginHandler->GetUsernameByUUID(sUserUUID);
+					}
+					catch (...) {
+						sUserName = sUserUUID;
+					}
+					userNameCache.insert(std::make_pair(sUserUUID, sUserName));
+				}
+			}
 
 			entryObject.addInteger("configurationVersion", pConfigurationVersion->GetNumericVersion());
-			entryObject.addString("userName", pConfigurationVersion->GetUserUUID());
+			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONNAME, sVersionName);
+			entryObject.addString("userName", sUserName);
 			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONUUID, pConfigurationVersion->GetVersionUUID());
 			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONTIMESTAMP, pConfigurationVersion->GetTimestamp());
 

@@ -2025,11 +2025,12 @@ public:
 	inline std::string GetXSDUUID();
 	inline LibMCData_uint32 GetNumericVersion();
 	inline std::string GetParentUUID();
+	inline std::string GetName();
 	inline std::string GetConfigurationXMLString();
 	inline std::string GetUserUUID();
 	inline std::string GetTimestamp();
-	inline PMachineConfigurationVersion CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID);
-	inline PMachineConfigurationVersion MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID);
+	inline PMachineConfigurationVersion CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName);
+	inline PMachineConfigurationVersion MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName);
 };
 	
 /*************************************************************************************************************************
@@ -2550,6 +2551,7 @@ public:
 		pWrapperTable->m_MachineConfigurationVersion_GetXSDUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetNumericVersion = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetParentUUID = nullptr;
+		pWrapperTable->m_MachineConfigurationVersion_GetName = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetUserUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetTimestamp = nullptr;
@@ -4978,6 +4980,15 @@ public:
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_GetName = (PLibMCDataMachineConfigurationVersion_GetNamePtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationversion_getname");
+		#else // _WIN32
+		pWrapperTable->m_MachineConfigurationVersion_GetName = (PLibMCDataMachineConfigurationVersion_GetNamePtr) dlsym(hLibrary, "libmcdata_machineconfigurationversion_getname");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_MachineConfigurationVersion_GetName == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = (PLibMCDataMachineConfigurationVersion_GetConfigurationXMLStringPtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationversion_getconfigurationxmlstring");
 		#else // _WIN32
 		pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString = (PLibMCDataMachineConfigurationVersion_GetConfigurationXMLStringPtr) dlsym(hLibrary, "libmcdata_machineconfigurationversion_getconfigurationxmlstring");
@@ -6595,6 +6606,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_machineconfigurationversion_getparentuuid", (void**)&(pWrapperTable->m_MachineConfigurationVersion_GetParentUUID));
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetParentUUID == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_machineconfigurationversion_getname", (void**)&(pWrapperTable->m_MachineConfigurationVersion_GetName));
+		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetName == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_machineconfigurationversion_getconfigurationxmlstring", (void**)&(pWrapperTable->m_MachineConfigurationVersion_GetConfigurationXMLString));
@@ -10608,6 +10623,21 @@ public:
 	}
 	
 	/**
+	* CMachineConfigurationVersion::GetName - Returns the name of the configuration version.
+	* @return Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string.
+	*/
+	std::string CMachineConfigurationVersion::GetName()
+	{
+		LibMCData_uint32 bytesNeededName = 0;
+		LibMCData_uint32 bytesWrittenName = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_GetName(m_pHandle, 0, &bytesNeededName, nullptr));
+		std::vector<char> bufferName(bytesNeededName);
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_GetName(m_pHandle, bytesNeededName, &bytesWrittenName, &bufferName[0]));
+		
+		return std::string(&bufferName[0]);
+	}
+	
+	/**
 	* CMachineConfigurationVersion::GetConfigurationXMLString - Returns the configuration XML content as string.
 	* @return XML String.
 	*/
@@ -10656,12 +10686,13 @@ public:
 	* CMachineConfigurationVersion::CreateNewVersion - Creates a new configuration version from this one with the same XSD.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to current XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters. Leading and trailing whitespace is removed.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	PMachineConfigurationVersion CMachineConfigurationVersion::CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID)
+	PMachineConfigurationVersion CMachineConfigurationVersion::CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName)
 	{
 		LibMCDataHandle hCurrentInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_CreateNewVersion(m_pHandle, sXMLString.c_str(), sUserUUID.c_str(), &hCurrentInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_CreateNewVersion(m_pHandle, sXMLString.c_str(), sUserUUID.c_str(), sName.c_str(), &hCurrentInstance));
 		
 		if (!hCurrentInstance) {
 			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
@@ -10674,13 +10705,14 @@ public:
 	* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to new XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	PMachineConfigurationVersion CMachineConfigurationVersion::MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID)
+	PMachineConfigurationVersion CMachineConfigurationVersion::MigrateToNewXSD(classParam<CMachineConfigurationXSD> pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName)
 	{
 		LibMCDataHandle hNewXSD = pNewXSD.GetHandle();
 		LibMCDataHandle hCurrentInstance = nullptr;
-		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_MigrateToNewXSD(m_pHandle, hNewXSD, sXMLString.c_str(), sUserUUID.c_str(), &hCurrentInstance));
+		CheckError(m_pWrapper->m_WrapperTable.m_MachineConfigurationVersion_MigrateToNewXSD(m_pHandle, hNewXSD, sXMLString.c_str(), sUserUUID.c_str(), sName.c_str(), &hCurrentInstance));
 		
 		if (!hCurrentInstance) {
 			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
@@ -10958,7 +10990,7 @@ public:
 	}
 	
 	/**
-	* CMachineConfigurationType::CreateDefaultConfiguration - Creates the default configuration for a given XSD version. Fails if a configuration for this XSD already exists.
+	* CMachineConfigurationType::CreateDefaultConfiguration - Creates the default configuration for a given XSD version, named 'Default configuration'. Fails if a configuration for this XSD already exists.
 	* @param[in] sXSDUUID - UUID of the XSD to base the default configuration on.
 	* @param[in] sDefaultXML - Configuration XML string conforming to the given XSD.
 	* @param[in] sTimeStampUTC - Creation timestamp in UTC.

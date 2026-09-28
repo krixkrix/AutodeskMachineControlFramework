@@ -2037,6 +2037,10 @@
 			<param name="ParentUUID" type="string" pass="return" description="UUID of the configuration version that is the parent of this version. Returns 00000000-0000-0000-0000-000000000000 if this is the default version." />
 		</method>
 
+		<method name="GetName" description="Returns the name of the configuration version.">
+			<param name="Name" type="string" pass="return" description="Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string." />
+		</method>
+
 		<!-- method name="GetSchemaType" description="Returns the schema type string of the configuration.">
 			<param name="SchemaType" type="string" pass="return" description="Schema type of the configuration type." />
 		</method>
@@ -2064,6 +2068,7 @@
 		<method name="CreateNewVersion" description="Creates a new configuration version from this one with the same XSD.">
 			<param name="XMLString" type="string" pass="in" description="New XML Configuration String. MUST conform to current XSD." />
 			<param name="UserUUID" type="string" pass="in" description="User UUID for logging the user who initiated the change." />
+			<param name="Name" type="string" pass="in" description="Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters. Leading and trailing whitespace is removed." />
 			<!--param name="TimeStampUTC" type="string" pass="in" description="Current time in UTC." /-->
 			<param name="CurrentInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Returns the newly created MachineConfigurationVersion instance." />
 		</method>
@@ -2072,6 +2077,7 @@
 			<param name="NewXSD" type="class" class="MachineConfigurationXSD" pass="in" description="New XSD to use. MUST be of the same type as the current. MUST have an increased version number." />
 			<param name="XMLString" type="string" pass="in" description="New XML Configuration String. MUST conform to new XSD." />
 			<param name="UserUUID" type="string" pass="in" description="User UUID for logging the user who initiated the change." />
+			<param name="Name" type="string" pass="in" description="Name of the new version. MUST NOT be empty or only whitespace, and MUST NOT be longer than 256 characters." />
 			<!--param name="TimeStampUTC" type="string" pass="in" description="Current time in UTC." /-->
 			<param name="CurrentInstance" type="class" class="MachineConfigurationVersion" pass="return" description="Returns the newly created MachineConfigurationVersion instance." />
 		</method>
@@ -2177,7 +2183,7 @@
 
 		<!-- CONFIGURATION MANAGEMENT -->
 
-		<method name="CreateDefaultConfiguration" description="Creates the default configuration for a given XSD version. Fails if a configuration for this XSD already exists.">
+		<method name="CreateDefaultConfiguration" description="Creates the default configuration for a given XSD version, named 'Default configuration'. Fails if a configuration for this XSD already exists.">
 			<param name="XSDUUID" type="string" pass="in" description="UUID of the XSD to base the default configuration on." />
 			<param name="DefaultXML" type="string" pass="in" description="Configuration XML string conforming to the given XSD." />
 			<!--param name="UserUUID" type="string" pass="in" description="User UUID for logging who created the default configuration." /-->

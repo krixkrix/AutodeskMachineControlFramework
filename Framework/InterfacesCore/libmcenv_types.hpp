@@ -359,6 +359,7 @@ typedef void * LibMCEnv_pvoid;
 #define LIBMCENV_ERROR_VIDEOSTREAMFRAMEENCODINGERROR 10262 /** Video stream frame encoding error. */
 #define LIBMCENV_ERROR_NONONEMPTYLAYERFOUND 10263 /** No non-empty layer found in the given layer range. */
 #define LIBMCENV_ERROR_TOOLPATHPARTNOTFOUND 10264 /** Toolpath part not found. */
+#define LIBMCENV_ERROR_INVALIDCONFIGURATIONVERSIONNAME 10265 /** Invalid configuration version name. Names MUST NOT be empty and MUST NOT be longer than 256 characters. */
 
 /*************************************************************************************************************************
  Error strings for LibMCEnv
@@ -630,6 +631,7 @@ inline const char * LIBMCENV_GETERRORSTRING (LibMCEnvResult nErrorCode) {
     case LIBMCENV_ERROR_VIDEOSTREAMFRAMEENCODINGERROR: return "Video stream frame encoding error.";
     case LIBMCENV_ERROR_NONONEMPTYLAYERFOUND: return "No non-empty layer found in the given layer range.";
     case LIBMCENV_ERROR_TOOLPATHPARTNOTFOUND: return "Toolpath part not found.";
+    case LIBMCENV_ERROR_INVALIDCONFIGURATIONVERSIONNAME: return "Invalid configuration version name. Names MUST NOT be empty and MUST NOT be longer than 256 characters.";
     default: return "unknown error";
   }
 }

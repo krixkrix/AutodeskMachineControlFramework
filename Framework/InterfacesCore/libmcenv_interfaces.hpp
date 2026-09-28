@@ -3099,7 +3099,7 @@ public:
 	virtual IToolpathLayer * LoadLayer(const LibMCEnv_uint32 nLayerIndex) = 0;
 
 	/**
-	* IToolpathAccessor::FindNonEmptyLayer - Searches a layer range for the first layer that contains at least one segment. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.
+	* IToolpathAccessor::FindNonEmptyLayer - Searches a layer range for the first layer that contains at least one segment. Segments of parts disabled with Build.DisablePart still count, so a layer that only contains disabled parts is not empty, even though LoadLayer returns it without segments. The emptiness of each layer is cached for as long as the toolpath is loaded, so repeated searches are cheap. Fails with NONONEMPTYLAYERFOUND if all layers in the range are empty.
 	* @param[in] nMinLayerIndex - Lower border of the search range (inclusive).
 	* @param[in] nMaxLayerIndex - Upper border of the search range (inclusive). Clamped to LayerCount - 1. MUST NOT be smaller than MinLayerIndex.
 	* @param[in] bFromMinToMax - If true, the search starts at MinLayerIndex and moves upwards, otherwise it starts at MaxLayerIndex and moves downwards.
@@ -3658,7 +3658,7 @@ public:
 	virtual IToolpathAccessor * CreateToolpathAccessor() = 0;
 
 	/**
-	* IBuild::DisablePart - Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.
+	* IBuild::DisablePart - Disables a part of the build. From then on, layers loaded through a toolpath accessor do not contain any segments of this part, so it is no longer exposed. Layer emptiness (ToolpathAccessor.FindNonEmptyLayer) is not affected. The state is kept in memory until EnableAllParts is called or the server restarts. Toolpath MUST have been loaded with LoadToolpath before.
 	* @param[in] sPartUUID - Build item UUID of the part. Fails with TOOLPATHPARTNOTFOUND if the part does not exist.
 	*/
 	virtual void DisablePart(const std::string & sPartUUID) = 0;
@@ -7239,6 +7239,12 @@ public:
 	virtual std::string GetParentUUID() = 0;
 
 	/**
+	* IMachineConfigurationVersion::GetName - Returns the name of the configuration version.
+	* @return Name of the configuration version. Default configurations are named 'Default configuration'. Versions created before names were introduced return an empty string.
+	*/
+	virtual std::string GetName() = 0;
+
+	/**
 	* IMachineConfigurationVersion::GetConfigurationXMLString - Returns the configuration XML content as string.
 	* @return XML String.
 	*/
@@ -7266,18 +7272,20 @@ public:
 	* IMachineConfigurationVersion::CreateNewVersion - Creates a new configuration version from this one with the same XSD.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to current XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	virtual IMachineConfigurationVersion * CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID) = 0;
+	virtual IMachineConfigurationVersion * CreateNewVersion(const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName) = 0;
 
 	/**
 	* IMachineConfigurationVersion::MigrateToNewXSD - Creates a new configuration version from this one but with a different XSD.
 	* @param[in] pNewXSD - New XSD to use. MUST be of the same type as the current. MUST have an increased version number.
 	* @param[in] sXMLString - New XML Configuration String. MUST conform to new XSD.
 	* @param[in] sUserUUID - User UUID for logging the user who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created MachineConfigurationVersion instance.
 	*/
-	virtual IMachineConfigurationVersion * MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string & sXMLString, const std::string & sUserUUID) = 0;
+	virtual IMachineConfigurationVersion * MigrateToNewXSD(IMachineConfigurationXSD* pNewXSD, const std::string & sXMLString, const std::string & sUserUUID, const std::string & sName) = 0;
 
 };
 
@@ -7443,16 +7451,18 @@ public:
 	/**
 	* IMachineConfiguration::Commit - Commits the current in-memory state as a new configuration version (child of the version this working copy is based on). Does not change the active version. After committing, the working copy is rebased on the new version.
 	* @param[in] sUserUUID - User UUID for logging who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created configuration version.
 	*/
-	virtual IMachineConfigurationVersion * Commit(const std::string & sUserUUID) = 0;
+	virtual IMachineConfigurationVersion * Commit(const std::string & sUserUUID, const std::string & sName) = 0;
 
 	/**
 	* IMachineConfiguration::CommitAndActivate - Commits the current in-memory state as a new configuration version and sets it as the active version for the type. After committing, the working copy is rebased on the new version.
 	* @param[in] sUserUUID - User UUID for logging who initiated the change.
+	* @param[in] sName - Name of the new version, shown in the configuration history. Leading and trailing whitespace is removed. Fails with INVALIDCONFIGURATIONVERSIONNAME if the name is empty or longer than 256 characters.
 	* @return Returns the newly created and now active configuration version.
 	*/
-	virtual IMachineConfigurationVersion * CommitAndActivate(const std::string & sUserUUID) = 0;
+	virtual IMachineConfigurationVersion * CommitAndActivate(const std::string & sUserUUID, const std::string & sName) = 0;
 
 };
 
