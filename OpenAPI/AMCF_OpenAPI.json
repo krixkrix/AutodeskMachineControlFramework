@@ -3489,6 +3489,11 @@
             "description": "The numeric version number of the configuration.",
             "example": 3
           },
+          "configurationname": {
+            "type": "string",
+            "description": "Name of the configuration version. Versions created before names were introduced are reported as 'Version <number>'.",
+            "example": "Recoater speed tuned"
+          },
           "configurationactive": {
             "type": "boolean",
             "description": "Whether this is the currently active configuration version.",
@@ -3501,8 +3506,8 @@
           },
           "username": {
             "type": "string",
-            "description": "UUID of the user who created this version.",
-            "example": "bdb3e909-ce8a-4602-910d-f64d60b8b8e3"
+            "description": "Login name of the user who created this version. 'system' for versions created by the machine itself; the user UUID if the user cannot be resolved.",
+            "example": "operator"
           }
         }
       },

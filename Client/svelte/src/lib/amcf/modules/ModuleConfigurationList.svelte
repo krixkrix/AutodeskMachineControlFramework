@@ -53,6 +53,7 @@
 					<Table.Row>
 						<Table.Head class="text-xs font-semibold uppercase tracking-wider w-[70px] text-center">Active</Table.Head>
 						<Table.Head class="text-xs font-semibold uppercase tracking-wider w-[80px] text-center">Version</Table.Head>
+						<Table.Head class="text-xs font-semibold uppercase tracking-wider">Name</Table.Head>
 						<Table.Head class="text-xs font-semibold uppercase tracking-wider w-[140px]">Upload Time</Table.Head>
 						<Table.Head class="text-xs font-semibold uppercase tracking-wider w-[100px]">User</Table.Head>
 						<Table.Head class="text-xs font-semibold uppercase tracking-wider">Actions</Table.Head>
@@ -61,7 +62,7 @@
 				<Table.Body>
 					{#if entries.length === 0}
 						<Table.Row>
-							<Table.Cell colspan={5} class="text-center py-8 text-muted-foreground text-sm">
+							<Table.Cell colspan={6} class="text-center py-8 text-muted-foreground text-sm">
 								{module.loadingtext || 'No configurations available.'}
 							</Table.Cell>
 						</Table.Row>
@@ -74,6 +75,7 @@
 									{/if}
 								</Table.Cell>
 								<Table.Cell class="text-sm text-center py-1.5 tabular-nums">{config.configurationVersion}</Table.Cell>
+								<Table.Cell class="text-sm font-medium py-1.5 max-w-[240px] truncate" title={config.configurationName}>{config.configurationName}</Table.Cell>
 								<Table.Cell class="text-xs text-muted-foreground py-1.5">{formatDate(config.configurationTimestamp)}</Table.Cell>
 								<Table.Cell class="text-sm py-1.5">{config.userName}</Table.Cell>
 								<Table.Cell class="py-1.5">

@@ -59,6 +59,7 @@ export default class AMCApplicationModule_ConfigurationList extends Common.AMCAp
 			this.headers = [
 				{ text: "Active",      value: "configurationActive",    sortable: true,  width: "5vw",  align: "center" },
 				{ text: "Version",     value: "configurationVersion",   sortable: true,  width: "5vw",  align: "center" },
+				{ text: "Name",        value: "configurationName",      sortable: true,  width: "15vw" },
 				{ text: "Upload time", value: "configurationTimestamp", sortable: true,  width: "10vw", align: "center" },
 				{ text: "User",        value: "userName",               sortable: true,  width: "5vw",  align: "center" },
 				{ text: "Actions",     value: "configurationActions",   sortable: true,  width: "20vw", align: "center" },
@@ -182,6 +183,7 @@ export default class AMCApplicationModule_ConfigurationList extends Common.AMCAp
 					newEntries.push({
 						configurationActive:    !!entry.configurationactive,
 						configurationVersion:   entry.configurationversion   || 0,
+						configurationName:      entry.configurationname      || "",
 						userName:               entry.username               || "",
 						configurationUUID:      entry.configurationuuid      || Common.nullUUID (),
 						configurationTimestamp: entry.configurationtimestamp || "",
