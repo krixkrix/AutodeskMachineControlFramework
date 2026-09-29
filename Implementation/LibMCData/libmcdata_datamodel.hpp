@@ -113,6 +113,8 @@ public:
 
 	IUserPreferenceHandler* CreateUserPreferenceHandler() override;
 
+	ISessionMetricsHandler* CreateSessionMetricsHandler() override;
+
 	void SetBaseTempDirectory(const std::string& sTempDirectory) override;
 
 	// DEPRECIATED! DO NOT USE. Use GetInstallationInformationObject instead!

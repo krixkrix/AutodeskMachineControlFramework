@@ -83,6 +83,10 @@ const CONFIG_REQUEST_TIMEOUT_MS = 2000;
 const DEFAULT_REQUEST_TIMEOUT_MS = 10000;
 const MAX_CONSECUTIVE_FAILURES = 5;
 
+// Client reactivity metrics: aggregate /api/frontend roundtrips over this window
+// (see SSE reactivity plan, Phase 0) and push a single summary to the backend.
+const FRONTEND_METRICS_WINDOW_MS = 5000;
+
 export default class AMCApplication extends Common.AMCObject {
 	
 
@@ -102,6 +106,7 @@ export default class AMCApplication extends Common.AMCObject {
 			frontendLookup: {},
 			frontendRequestSerial: 0,
 			navigationRequestSerial: 0,
+			frontendMetrics: this._createEmptyFrontendMetrics (),
 			userUUID: Common.nullUUID (),
 			userLogin: "",
 			userDescription: "",
@@ -898,8 +903,12 @@ export default class AMCApplication extends Common.AMCObject {
 		this.API.frontendRequestSerial++;
 		let requestSerial = this.API.frontendRequestSerial;
 
+		let requestStartMS = this._nowMS ();
+
 		return this.axiosGetRequest("/frontend")
 		.then(resultJSON => {
+			this._recordFrontendMetric (requestStartMS, resultJSON);
+
 			this.API.frontendState = resultJSON.data;
 			this.API.unsuccessfulFrontendCounter = 0;
 
@@ -926,6 +935,121 @@ export default class AMCApplication extends Common.AMCObject {
 			if (this.API.unsuccessfulFrontendCounter > MAX_CONSECUTIVE_FAILURES) {
 				console.warn("[v2 frontend] repeated failure:", this.extractErrorMessage(err));
 			}
+		});
+	}
+
+	// ====================================================================
+	// Phase 0: Client reactivity measurement. Aggregate the /api/frontend
+	// roundtrip durations, response payload sizes and the server-reported
+	// build time over a short window, then push a single summary record to
+	// POST /api/frontend/metrics for storage in the session journal.
+	// ====================================================================
+
+	_nowMS () {
+		if ((typeof performance !== "undefined") && performance && (typeof performance.now === "function"))
+			return performance.now ();
+		return Date.now ();
+	}
+
+	_createEmptyFrontendMetrics () {
+		return {
+			windowStartWallMicros: 0,
+			windowStartMS: 0,
+			count: 0,
+			sumMS: 0,
+			minMS: 0,
+			maxMS: 0,
+			sumSqMS: 0,
+			payloadSumBytes: 0,
+			payloadMaxBytes: 0,
+			serverBuildSumMS: 0
+		};
+	}
+
+	_frontendResponsePayloadBytes (resultJSON) {
+		// Prefer the transport-reported content length; fall back to re-serializing the body.
+		if (resultJSON && resultJSON.headers) {
+			let sContentLength = resultJSON.headers["content-length"] || resultJSON.headers["Content-Length"];
+			let nContentLength = parseInt (sContentLength, 10);
+			if (Number.isFinite (nContentLength) && (nContentLength >= 0))
+				return nContentLength;
+		}
+		try {
+			if (resultJSON && (resultJSON.data !== undefined))
+				return JSON.stringify (resultJSON.data).length;
+		}
+		catch (err) {
+			// Serialization is best-effort only; ignore and report zero.
+		}
+		return 0;
+	}
+
+	_recordFrontendMetric (requestStartMS, resultJSON) {
+		let nowMS = this._nowMS ();
+		let durationMS = nowMS - requestStartMS;
+		if (!(durationMS >= 0))
+			durationMS = 0;
+
+		let payloadBytes = this._frontendResponsePayloadBytes (resultJSON);
+
+		let serverBuildMS = 0;
+		if (resultJSON && resultJSON.data && (typeof resultJSON.data.servertime === "number"))
+			serverBuildMS = resultJSON.data.servertime;
+
+		let metrics = this.API.frontendMetrics;
+		if (metrics.count === 0) {
+			metrics.windowStartWallMicros = Date.now () * 1000;
+			metrics.windowStartMS = nowMS;
+			metrics.minMS = durationMS;
+			metrics.maxMS = durationMS;
+		}
+		else {
+			if (durationMS < metrics.minMS)
+				metrics.minMS = durationMS;
+			if (durationMS > metrics.maxMS)
+				metrics.maxMS = durationMS;
+		}
+
+		metrics.count++;
+		metrics.sumMS += durationMS;
+		metrics.sumSqMS += durationMS * durationMS;
+		metrics.payloadSumBytes += payloadBytes;
+		if (payloadBytes > metrics.payloadMaxBytes)
+			metrics.payloadMaxBytes = payloadBytes;
+		metrics.serverBuildSumMS += serverBuildMS;
+
+		if ((nowMS - metrics.windowStartMS) >= FRONTEND_METRICS_WINDOW_MS)
+			this._flushFrontendMetrics ();
+	}
+
+	_flushFrontendMetrics () {
+		let metrics = this.API.frontendMetrics;
+		if (metrics.count === 0)
+			return;
+
+		// Reset the accumulator immediately so a slow/failing push does not block the next window.
+		this.API.frontendMetrics = this._createEmptyFrontendMetrics ();
+
+		let windowEndWallMicros = Date.now () * 1000;
+
+		let requestBody = {
+			"label": "frontend",
+			"intervalstart": metrics.windowStartWallMicros,
+			"intervalend": windowEndWallMicros,
+			"requestcount": metrics.count,
+			"sumduration": metrics.sumMS,
+			"minduration": metrics.minMS,
+			"maxduration": metrics.maxMS,
+			"sumsqduration": metrics.sumSqMS,
+			"payloadsum": metrics.payloadSumBytes,
+			"payloadmax": metrics.payloadMaxBytes,
+			"serverbuildsum": metrics.serverBuildSumMS
+		};
+
+		this.axiosPostRequest ("/frontend/metrics", requestBody)
+		.catch (err => {
+			// Metrics are best-effort telemetry; never disrupt the UI on failure.
+			console.warn ("[frontend metrics] push failed:", this.extractErrorMessage (err));
 		});
 	}
 

@@ -9299,6 +9299,40 @@ LibMCDataResult libmcdata_userpreferencehandler_deleteuserpreference(LibMCData_U
 
 
 /*************************************************************************************************************************
+ Class implementation for SessionMetricsHandler
+**************************************************************************************************************************/
+LibMCDataResult libmcdata_sessionmetricshandler_addfrontendmetrics(LibMCData_SessionMetricsHandler pSessionMetricsHandler, const char * pSessionUUID, const char * pLabel, LibMCData_uint64 nIntervalStart, LibMCData_uint64 nIntervalEnd, LibMCData_uint32 nRequestCount, LibMCData_double dSumDurationMS, LibMCData_double dMinDurationMS, LibMCData_double dMaxDurationMS, LibMCData_double dSumSqDurationMS, LibMCData_uint64 nPayloadSumBytes, LibMCData_uint64 nPayloadMaxBytes, LibMCData_double dServerBuildSumMS, LibMCData_uint64 nAbsoluteTimeStamp)
+{
+	IBase* pIBaseClass = (IBase *)pSessionMetricsHandler;
+
+	try {
+		if (pSessionUUID == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		if (pLabel == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		std::string sSessionUUID(pSessionUUID);
+		std::string sLabel(pLabel);
+		ISessionMetricsHandler* pISessionMetricsHandler = dynamic_cast<ISessionMetricsHandler*>(pIBaseClass);
+		if (!pISessionMetricsHandler)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		pISessionMetricsHandler->AddFrontendMetrics(sSessionUUID, sLabel, nIntervalStart, nIntervalEnd, nRequestCount, dSumDurationMS, dMinDurationMS, dMaxDurationMS, dSumSqDurationMS, nPayloadSumBytes, nPayloadMaxBytes, dServerBuildSumMS, nAbsoluteTimeStamp);
+
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+
+/*************************************************************************************************************************
  Class implementation for MachineConfigurationVersion
 **************************************************************************************************************************/
 LibMCDataResult libmcdata_machineconfigurationversion_getversionuuid(LibMCData_MachineConfigurationVersion pMachineConfigurationVersion, const LibMCData_uint32 nVersionUUIDBufferSize, LibMCData_uint32* pVersionUUIDNeededChars, char * pVersionUUIDBuffer)
@@ -11248,6 +11282,34 @@ LibMCDataResult libmcdata_datamodel_createuserpreferencehandler(LibMCData_DataMo
 	}
 }
 
+LibMCDataResult libmcdata_datamodel_createsessionmetricshandler(LibMCData_DataModel pDataModel, LibMCData_SessionMetricsHandler * pSessionMetricsHandler)
+{
+	IBase* pIBaseClass = (IBase *)pDataModel;
+
+	try {
+		if (pSessionMetricsHandler == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		IBase* pBaseSessionMetricsHandler(nullptr);
+		IDataModel* pIDataModel = dynamic_cast<IDataModel*>(pIBaseClass);
+		if (!pIDataModel)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		pBaseSessionMetricsHandler = pIDataModel->CreateSessionMetricsHandler();
+
+		*pSessionMetricsHandler = (IBase*)(pBaseSessionMetricsHandler);
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDataResult libmcdata_datamodel_setbasetempdirectory(LibMCData_DataModel pDataModel, const char * pTempDirectory)
 {
 	IBase* pIBaseClass = (IBase *)pDataModel;
@@ -12073,8 +12135,10 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_userpreferencehandler_retrieveuserpreference;
 	if (sProcName == "libmcdata_userpreferencehandler_storeuserpreference") 
 		*ppProcAddress = (void*) &libmcdata_userpreferencehandler_storeuserpreference;
-	if (sProcName == "libmcdata_userpreferencehandler_deleteuserpreference") 
+	if (sProcName == "libmcdata_userpreferencehandler_deleteuserpreference")
 		*ppProcAddress = (void*) &libmcdata_userpreferencehandler_deleteuserpreference;
+	if (sProcName == "libmcdata_sessionmetricshandler_addfrontendmetrics")
+		*ppProcAddress = (void*) &libmcdata_sessionmetricshandler_addfrontendmetrics;
 	if (sProcName == "libmcdata_machineconfigurationversion_getversionuuid") 
 		*ppProcAddress = (void*) &libmcdata_machineconfigurationversion_getversionuuid;
 	if (sProcName == "libmcdata_machineconfigurationversion_getxsduuid") 
@@ -12179,8 +12243,10 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_datamodel_createtelemetryreader;
 	if (sProcName == "libmcdata_datamodel_createpersistencyhandler") 
 		*ppProcAddress = (void*) &libmcdata_datamodel_createpersistencyhandler;
-	if (sProcName == "libmcdata_datamodel_createuserpreferencehandler") 
+	if (sProcName == "libmcdata_datamodel_createuserpreferencehandler")
 		*ppProcAddress = (void*) &libmcdata_datamodel_createuserpreferencehandler;
+	if (sProcName == "libmcdata_datamodel_createsessionmetricshandler")
+		*ppProcAddress = (void*) &libmcdata_datamodel_createsessionmetricshandler;
 	if (sProcName == "libmcdata_datamodel_setbasetempdirectory") 
 		*ppProcAddress = (void*) &libmcdata_datamodel_setbasetempdirectory;
 	if (sProcName == "libmcdata_datamodel_getbasetempdirectory") 

@@ -2014,6 +2014,26 @@
 
 	</class>
 
+	<class name="SessionMetricsHandler" parent="Base" description="Records client reactivity metrics per login session. Each record aggregates the client-side roundtrip measurements (and folded-in server build time and payload sizes) of the frontend polling requests over a short measurement window." multithread="true">
+
+		<method name="AddFrontendMetrics" description="Adds an aggregated frontend metrics record for a measurement window. The moments (count, sum, min, max, sumsq) are stored raw so mean/stddev can be derived and records re-aggregated.">
+			<param name="SessionUUID" type="string" pass="in" description="UUID of the login session the metrics belong to." />
+			<param name="Label" type="string" pass="in" description="Label identifying the measured request family, e.g. 'frontend'." />
+			<param name="IntervalStart" type="uint64" pass="in" description="Start of the measurement window in Microseconds since 1970." />
+			<param name="IntervalEnd" type="uint64" pass="in" description="End of the measurement window in Microseconds since 1970." />
+			<param name="RequestCount" type="uint32" pass="in" description="Number of requests captured in the window." />
+			<param name="SumDurationMS" type="double" pass="in" description="Sum of roundtrip durations in milliseconds." />
+			<param name="MinDurationMS" type="double" pass="in" description="Minimum roundtrip duration in milliseconds." />
+			<param name="MaxDurationMS" type="double" pass="in" description="Maximum roundtrip duration in milliseconds." />
+			<param name="SumSqDurationMS" type="double" pass="in" description="Sum of squared roundtrip durations in milliseconds (for stddev)." />
+			<param name="PayloadSumBytes" type="uint64" pass="in" description="Sum of response payload sizes in bytes." />
+			<param name="PayloadMaxBytes" type="uint64" pass="in" description="Maximum response payload size in bytes." />
+			<param name="ServerBuildSumMS" type="double" pass="in" description="Sum of the server-reported build times in milliseconds." />
+			<param name="AbsoluteTimeStamp" type="uint64" pass="in" description="Absolute Time Stamp in Microseconds since 1970." />
+		</method>
+
+	</class>
+
 	<!-- The MachineConfigurationVersion class is not thread safe and MUST ONLY be used in a single thread context... -->
 	<class name="MachineConfigurationVersion" parent="Base" description="Machine configuration XML version.">
 
@@ -2313,6 +2333,10 @@
 
 		<method name="CreateUserPreferenceHandler" description="creates a user preference handler instance.">
 			<param name="UserPreferenceHandler" type="class" class="UserPreferenceHandler" pass="return" description="UserPreferenceHandler instance." />	
+		</method>
+
+		<method name="CreateSessionMetricsHandler" description="creates a session metrics handler instance.">
+			<param name="SessionMetricsHandler" type="class" class="SessionMetricsHandler" pass="return" description="SessionMetricsHandler instance." />	
 		</method>
 		
 		<method name="SetBaseTempDirectory" description="Sets a custom base temp directory. An empty string defaults to the system temp directory.">

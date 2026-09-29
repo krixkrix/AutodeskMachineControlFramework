@@ -60,6 +60,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define AMC_API_CONTENTTYPE "application/json"
 
+// Frontend reactivity metrics (see amc_api_handler_frontend). The server reports its
+// build time for the status payload; the client folds it into aggregated metrics windows.
+#define AMC_API_KEY_FRONTEND_SERVERTIME "servertime"
+#define AMC_API_KEY_FRONTEND_METRICS_LABEL "label"
+#define AMC_API_KEY_FRONTEND_METRICS_INTERVALSTART "intervalstart"
+#define AMC_API_KEY_FRONTEND_METRICS_INTERVALEND "intervalend"
+#define AMC_API_KEY_FRONTEND_METRICS_REQUESTCOUNT "requestcount"
+#define AMC_API_KEY_FRONTEND_METRICS_SUMDURATION "sumduration"
+#define AMC_API_KEY_FRONTEND_METRICS_MINDURATION "minduration"
+#define AMC_API_KEY_FRONTEND_METRICS_MAXDURATION "maxduration"
+#define AMC_API_KEY_FRONTEND_METRICS_SUMSQDURATION "sumsqduration"
+#define AMC_API_KEY_FRONTEND_METRICS_PAYLOADSUM "payloadsum"
+#define AMC_API_KEY_FRONTEND_METRICS_PAYLOADMAX "payloadmax"
+#define AMC_API_KEY_FRONTEND_METRICS_SERVERBUILDSUM "serverbuildsum"
+#define AMC_API_KEY_FRONTEND_METRICS_RECORDED "recorded"
+
 #define AMC_API_KEY_USERPREFERENCE_DOMAIN "domain"
 #define AMC_API_KEY_USERPREFERENCE_KEY "key"
 #define AMC_API_KEY_USERPREFERENCE_VALUE "value"

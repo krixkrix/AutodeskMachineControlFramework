@@ -84,6 +84,7 @@ class IUserList;
 class ILoginHandler;
 class IPersistencyHandler;
 class IUserPreferenceHandler;
+class ISessionMetricsHandler;
 class IMachineConfigurationVersion;
 class IMachineConfigurationVersionIterator;
 class IMachineConfigurationXSD;
@@ -2469,6 +2470,35 @@ typedef IBaseSharedPtr<IUserPreferenceHandler> PIUserPreferenceHandler;
 
 
 /*************************************************************************************************************************
+ Class interface for SessionMetricsHandler 
+**************************************************************************************************************************/
+
+class ISessionMetricsHandler : public virtual IBase {
+public:
+	/**
+	* ISessionMetricsHandler::AddFrontendMetrics - Adds an aggregated frontend metrics record for a measurement window. The moments (count, sum, min, max, sumsq) are stored raw so mean/stddev can be derived and records re-aggregated.
+	* @param[in] sSessionUUID - UUID of the login session the metrics belong to.
+	* @param[in] sLabel - Label identifying the measured request family, e.g. 'frontend'.
+	* @param[in] nIntervalStart - Start of the measurement window in Microseconds since 1970.
+	* @param[in] nIntervalEnd - End of the measurement window in Microseconds since 1970.
+	* @param[in] nRequestCount - Number of requests captured in the window.
+	* @param[in] dSumDurationMS - Sum of roundtrip durations in milliseconds.
+	* @param[in] dMinDurationMS - Minimum roundtrip duration in milliseconds.
+	* @param[in] dMaxDurationMS - Maximum roundtrip duration in milliseconds.
+	* @param[in] dSumSqDurationMS - Sum of squared roundtrip durations in milliseconds (for stddev).
+	* @param[in] nPayloadSumBytes - Sum of response payload sizes in bytes.
+	* @param[in] nPayloadMaxBytes - Maximum response payload size in bytes.
+	* @param[in] dServerBuildSumMS - Sum of the server-reported build times in milliseconds.
+	* @param[in] nAbsoluteTimeStamp - Absolute Time Stamp in Microseconds since 1970.
+	*/
+	virtual void AddFrontendMetrics(const std::string & sSessionUUID, const std::string & sLabel, const LibMCData_uint64 nIntervalStart, const LibMCData_uint64 nIntervalEnd, const LibMCData_uint32 nRequestCount, const LibMCData_double dSumDurationMS, const LibMCData_double dMinDurationMS, const LibMCData_double dMaxDurationMS, const LibMCData_double dSumSqDurationMS, const LibMCData_uint64 nPayloadSumBytes, const LibMCData_uint64 nPayloadMaxBytes, const LibMCData_double dServerBuildSumMS, const LibMCData_uint64 nAbsoluteTimeStamp) = 0;
+
+};
+
+typedef IBaseSharedPtr<ISessionMetricsHandler> PISessionMetricsHandler;
+
+
+/*************************************************************************************************************************
  Class interface for MachineConfigurationVersion 
 **************************************************************************************************************************/
 
@@ -2889,6 +2919,12 @@ public:
 	* @return UserPreferenceHandler instance.
 	*/
 	virtual IUserPreferenceHandler * CreateUserPreferenceHandler() = 0;
+
+	/**
+	* IDataModel::CreateSessionMetricsHandler - creates a session metrics handler instance.
+	* @return SessionMetricsHandler instance.
+	*/
+	virtual ISessionMetricsHandler * CreateSessionMetricsHandler() = 0;
 
 	/**
 	* IDataModel::SetBaseTempDirectory - Sets a custom base temp directory. An empty string defaults to the system temp directory.

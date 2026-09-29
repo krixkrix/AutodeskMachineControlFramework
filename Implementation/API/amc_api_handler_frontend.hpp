@@ -51,6 +51,7 @@ namespace AMC {
 		ftSubscriptionKeepAlive = 7,
 		ftSubscriptionReset = 8,
 		ftTriggerEvent = 2,
+		ftMetrics = 9,
 	};
 
 	class CAPIHandler_Frontend : public CAPIHandler {
@@ -61,6 +62,10 @@ namespace AMC {
 		APIHandler_FrontendType parseRequest(const std::string& sURI, const eAPIRequestType requestType, std::string & sParameterUUID, std::string & sAdditionalParameter);
 
 		void handleStatusRequest(CJSONWriter& writer, PAPIAuth pAuth);
+
+		// Records an aggregated frontend reactivity metrics window pushed by the client.
+		// The session UUID is stamped server-side from the authenticated session, never trusted from the body.
+		void handleMetricsRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth);
 
 	public:
 

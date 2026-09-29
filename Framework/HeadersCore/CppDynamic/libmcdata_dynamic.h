@@ -2929,6 +2929,31 @@ typedef LibMCDataResult (*PLibMCDataUserPreferenceHandler_StoreUserPreferencePtr
 typedef LibMCDataResult (*PLibMCDataUserPreferenceHandler_DeleteUserPreferencePtr) (LibMCData_UserPreferenceHandler pUserPreferenceHandler, const char * pUserUUID, const char * pDomain, const char * pKey, bool * pPreferenceExisted);
 
 /*************************************************************************************************************************
+ Class definition for SessionMetricsHandler
+**************************************************************************************************************************/
+
+/**
+* Adds an aggregated frontend metrics record for a measurement window. The moments (count, sum, min, max, sumsq) are stored raw so mean/stddev can be derived and records re-aggregated.
+*
+* @param[in] pSessionMetricsHandler - SessionMetricsHandler instance.
+* @param[in] pSessionUUID - UUID of the login session the metrics belong to.
+* @param[in] pLabel - Label identifying the measured request family, e.g. 'frontend'.
+* @param[in] nIntervalStart - Start of the measurement window in Microseconds since 1970.
+* @param[in] nIntervalEnd - End of the measurement window in Microseconds since 1970.
+* @param[in] nRequestCount - Number of requests captured in the window.
+* @param[in] dSumDurationMS - Sum of roundtrip durations in milliseconds.
+* @param[in] dMinDurationMS - Minimum roundtrip duration in milliseconds.
+* @param[in] dMaxDurationMS - Maximum roundtrip duration in milliseconds.
+* @param[in] dSumSqDurationMS - Sum of squared roundtrip durations in milliseconds (for stddev).
+* @param[in] nPayloadSumBytes - Sum of response payload sizes in bytes.
+* @param[in] nPayloadMaxBytes - Maximum response payload size in bytes.
+* @param[in] dServerBuildSumMS - Sum of the server-reported build times in milliseconds.
+* @param[in] nAbsoluteTimeStamp - Absolute Time Stamp in Microseconds since 1970.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataSessionMetricsHandler_AddFrontendMetricsPtr) (LibMCData_SessionMetricsHandler pSessionMetricsHandler, const char * pSessionUUID, const char * pLabel, LibMCData_uint64 nIntervalStart, LibMCData_uint64 nIntervalEnd, LibMCData_uint32 nRequestCount, LibMCData_double dSumDurationMS, LibMCData_double dMinDurationMS, LibMCData_double dMaxDurationMS, LibMCData_double dSumSqDurationMS, LibMCData_uint64 nPayloadSumBytes, LibMCData_uint64 nPayloadMaxBytes, LibMCData_double dServerBuildSumMS, LibMCData_uint64 nAbsoluteTimeStamp);
+
+/*************************************************************************************************************************
  Class definition for MachineConfigurationVersion
 **************************************************************************************************************************/
 
@@ -3499,6 +3524,15 @@ typedef LibMCDataResult (*PLibMCDataDataModel_CreatePersistencyHandlerPtr) (LibM
 typedef LibMCDataResult (*PLibMCDataDataModel_CreateUserPreferenceHandlerPtr) (LibMCData_DataModel pDataModel, LibMCData_UserPreferenceHandler * pUserPreferenceHandler);
 
 /**
+* creates a session metrics handler instance.
+*
+* @param[in] pDataModel - DataModel instance.
+* @param[out] pSessionMetricsHandler - SessionMetricsHandler instance.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataDataModel_CreateSessionMetricsHandlerPtr) (LibMCData_DataModel pDataModel, LibMCData_SessionMetricsHandler * pSessionMetricsHandler);
+
+/**
 * Sets a custom base temp directory. An empty string defaults to the system temp directory.
 *
 * @param[in] pDataModel - DataModel instance.
@@ -3914,6 +3948,7 @@ typedef struct {
 	PLibMCDataUserPreferenceHandler_RetrieveUserPreferencePtr m_UserPreferenceHandler_RetrieveUserPreference;
 	PLibMCDataUserPreferenceHandler_StoreUserPreferencePtr m_UserPreferenceHandler_StoreUserPreference;
 	PLibMCDataUserPreferenceHandler_DeleteUserPreferencePtr m_UserPreferenceHandler_DeleteUserPreference;
+	PLibMCDataSessionMetricsHandler_AddFrontendMetricsPtr m_SessionMetricsHandler_AddFrontendMetrics;
 	PLibMCDataMachineConfigurationVersion_GetVersionUUIDPtr m_MachineConfigurationVersion_GetVersionUUID;
 	PLibMCDataMachineConfigurationVersion_GetXSDUUIDPtr m_MachineConfigurationVersion_GetXSDUUID;
 	PLibMCDataMachineConfigurationVersion_GetNumericVersionPtr m_MachineConfigurationVersion_GetNumericVersion;
@@ -3967,6 +4002,7 @@ typedef struct {
 	PLibMCDataDataModel_CreateTelemetryReaderPtr m_DataModel_CreateTelemetryReader;
 	PLibMCDataDataModel_CreatePersistencyHandlerPtr m_DataModel_CreatePersistencyHandler;
 	PLibMCDataDataModel_CreateUserPreferenceHandlerPtr m_DataModel_CreateUserPreferenceHandler;
+	PLibMCDataDataModel_CreateSessionMetricsHandlerPtr m_DataModel_CreateSessionMetricsHandler;
 	PLibMCDataDataModel_SetBaseTempDirectoryPtr m_DataModel_SetBaseTempDirectory;
 	PLibMCDataDataModel_GetBaseTempDirectoryPtr m_DataModel_GetBaseTempDirectory;
 	PLibMCDataDataModel_SetLogCallbackPtr m_DataModel_SetLogCallback;

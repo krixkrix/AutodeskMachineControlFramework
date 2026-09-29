@@ -89,6 +89,7 @@ class CUserList;
 class CLoginHandler;
 class CPersistencyHandler;
 class CUserPreferenceHandler;
+class CSessionMetricsHandler;
 class CMachineConfigurationVersion;
 class CMachineConfigurationVersionIterator;
 class CMachineConfigurationXSD;
@@ -132,6 +133,7 @@ typedef CUserList CLibMCDataUserList;
 typedef CLoginHandler CLibMCDataLoginHandler;
 typedef CPersistencyHandler CLibMCDataPersistencyHandler;
 typedef CUserPreferenceHandler CLibMCDataUserPreferenceHandler;
+typedef CSessionMetricsHandler CLibMCDataSessionMetricsHandler;
 typedef CMachineConfigurationVersion CLibMCDataMachineConfigurationVersion;
 typedef CMachineConfigurationVersionIterator CLibMCDataMachineConfigurationVersionIterator;
 typedef CMachineConfigurationXSD CLibMCDataMachineConfigurationXSD;
@@ -175,6 +177,7 @@ typedef std::shared_ptr<CUserList> PUserList;
 typedef std::shared_ptr<CLoginHandler> PLoginHandler;
 typedef std::shared_ptr<CPersistencyHandler> PPersistencyHandler;
 typedef std::shared_ptr<CUserPreferenceHandler> PUserPreferenceHandler;
+typedef std::shared_ptr<CSessionMetricsHandler> PSessionMetricsHandler;
 typedef std::shared_ptr<CMachineConfigurationVersion> PMachineConfigurationVersion;
 typedef std::shared_ptr<CMachineConfigurationVersionIterator> PMachineConfigurationVersionIterator;
 typedef std::shared_ptr<CMachineConfigurationXSD> PMachineConfigurationXSD;
@@ -218,6 +221,7 @@ typedef PUserList PLibMCDataUserList;
 typedef PLoginHandler PLibMCDataLoginHandler;
 typedef PPersistencyHandler PLibMCDataPersistencyHandler;
 typedef PUserPreferenceHandler PLibMCDataUserPreferenceHandler;
+typedef PSessionMetricsHandler PLibMCDataSessionMetricsHandler;
 typedef PMachineConfigurationVersion PLibMCDataMachineConfigurationVersion;
 typedef PMachineConfigurationVersionIterator PLibMCDataMachineConfigurationVersionIterator;
 typedef PMachineConfigurationXSD PLibMCDataMachineConfigurationXSD;
@@ -1222,6 +1226,7 @@ private:
 	friend class CLoginHandler;
 	friend class CPersistencyHandler;
 	friend class CUserPreferenceHandler;
+	friend class CSessionMetricsHandler;
 	friend class CMachineConfigurationVersion;
 	friend class CMachineConfigurationVersionIterator;
 	friend class CMachineConfigurationXSD;
@@ -2008,6 +2013,23 @@ public:
 };
 	
 /*************************************************************************************************************************
+ Class CSessionMetricsHandler 
+**************************************************************************************************************************/
+class CSessionMetricsHandler : public CBase {
+public:
+	
+	/**
+	* CSessionMetricsHandler::CSessionMetricsHandler - Constructor for SessionMetricsHandler class.
+	*/
+	CSessionMetricsHandler(CWrapper* pWrapper, LibMCDataHandle pHandle)
+		: CBase(pWrapper, pHandle)
+	{
+	}
+	
+	inline void AddFrontendMetrics(const std::string & sSessionUUID, const std::string & sLabel, const LibMCData_uint64 nIntervalStart, const LibMCData_uint64 nIntervalEnd, const LibMCData_uint32 nRequestCount, const LibMCData_double dSumDurationMS, const LibMCData_double dMinDurationMS, const LibMCData_double dMaxDurationMS, const LibMCData_double dSumSqDurationMS, const LibMCData_uint64 nPayloadSumBytes, const LibMCData_uint64 nPayloadMaxBytes, const LibMCData_double dServerBuildSumMS, const LibMCData_uint64 nAbsoluteTimeStamp);
+};
+	
+/*************************************************************************************************************************
  Class CMachineConfigurationVersion 
 **************************************************************************************************************************/
 class CMachineConfigurationVersion : public CBase {
@@ -2186,6 +2208,7 @@ public:
 	inline PTelemetryReader CreateTelemetryReader(const std::string & sJournalUUID);
 	inline PPersistencyHandler CreatePersistencyHandler();
 	inline PUserPreferenceHandler CreateUserPreferenceHandler();
+	inline PSessionMetricsHandler CreateSessionMetricsHandler();
 	inline void SetBaseTempDirectory(const std::string & sTempDirectory);
 	inline std::string GetBaseTempDirectory();
 	inline void SetLogCallback(const LogCallback pLogCallback, const LibMCData_pvoid pUserData);
@@ -2547,6 +2570,7 @@ public:
 		pWrapperTable->m_UserPreferenceHandler_RetrieveUserPreference = nullptr;
 		pWrapperTable->m_UserPreferenceHandler_StoreUserPreference = nullptr;
 		pWrapperTable->m_UserPreferenceHandler_DeleteUserPreference = nullptr;
+		pWrapperTable->m_SessionMetricsHandler_AddFrontendMetrics = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetVersionUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetXSDUUID = nullptr;
 		pWrapperTable->m_MachineConfigurationVersion_GetNumericVersion = nullptr;
@@ -2600,6 +2624,7 @@ public:
 		pWrapperTable->m_DataModel_CreateTelemetryReader = nullptr;
 		pWrapperTable->m_DataModel_CreatePersistencyHandler = nullptr;
 		pWrapperTable->m_DataModel_CreateUserPreferenceHandler = nullptr;
+		pWrapperTable->m_DataModel_CreateSessionMetricsHandler = nullptr;
 		pWrapperTable->m_DataModel_SetBaseTempDirectory = nullptr;
 		pWrapperTable->m_DataModel_GetBaseTempDirectory = nullptr;
 		pWrapperTable->m_DataModel_SetLogCallback = nullptr;
@@ -4944,6 +4969,15 @@ public:
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_SessionMetricsHandler_AddFrontendMetrics = (PLibMCDataSessionMetricsHandler_AddFrontendMetricsPtr) GetProcAddress(hLibrary, "libmcdata_sessionmetricshandler_addfrontendmetrics");
+		#else // _WIN32
+		pWrapperTable->m_SessionMetricsHandler_AddFrontendMetrics = (PLibMCDataSessionMetricsHandler_AddFrontendMetricsPtr) dlsym(hLibrary, "libmcdata_sessionmetricshandler_addfrontendmetrics");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_SessionMetricsHandler_AddFrontendMetrics == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_MachineConfigurationVersion_GetVersionUUID = (PLibMCDataMachineConfigurationVersion_GetVersionUUIDPtr) GetProcAddress(hLibrary, "libmcdata_machineconfigurationversion_getversionuuid");
 		#else // _WIN32
 		pWrapperTable->m_MachineConfigurationVersion_GetVersionUUID = (PLibMCDataMachineConfigurationVersion_GetVersionUUIDPtr) dlsym(hLibrary, "libmcdata_machineconfigurationversion_getversionuuid");
@@ -5418,6 +5452,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_DataModel_CreateUserPreferenceHandler == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_DataModel_CreateSessionMetricsHandler = (PLibMCDataDataModel_CreateSessionMetricsHandlerPtr) GetProcAddress(hLibrary, "libmcdata_datamodel_createsessionmetricshandler");
+		#else // _WIN32
+		pWrapperTable->m_DataModel_CreateSessionMetricsHandler = (PLibMCDataDataModel_CreateSessionMetricsHandlerPtr) dlsym(hLibrary, "libmcdata_datamodel_createsessionmetricshandler");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_DataModel_CreateSessionMetricsHandler == nullptr)
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6592,6 +6635,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_UserPreferenceHandler_DeleteUserPreference == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdata_sessionmetricshandler_addfrontendmetrics", (void**)&(pWrapperTable->m_SessionMetricsHandler_AddFrontendMetrics));
+		if ( (eLookupError != 0) || (pWrapperTable->m_SessionMetricsHandler_AddFrontendMetrics == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdata_machineconfigurationversion_getversionuuid", (void**)&(pWrapperTable->m_MachineConfigurationVersion_GetVersionUUID));
 		if ( (eLookupError != 0) || (pWrapperTable->m_MachineConfigurationVersion_GetVersionUUID == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -6802,6 +6849,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_datamodel_createuserpreferencehandler", (void**)&(pWrapperTable->m_DataModel_CreateUserPreferenceHandler));
 		if ( (eLookupError != 0) || (pWrapperTable->m_DataModel_CreateUserPreferenceHandler == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_datamodel_createsessionmetricshandler", (void**)&(pWrapperTable->m_DataModel_CreateSessionMetricsHandler));
+		if ( (eLookupError != 0) || (pWrapperTable->m_DataModel_CreateSessionMetricsHandler == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_datamodel_setbasetempdirectory", (void**)&(pWrapperTable->m_DataModel_SetBaseTempDirectory));
@@ -10562,6 +10613,31 @@ public:
 	}
 	
 	/**
+	 * Method definitions for class CSessionMetricsHandler
+	 */
+	
+	/**
+	* CSessionMetricsHandler::AddFrontendMetrics - Adds an aggregated frontend metrics record for a measurement window. The moments (count, sum, min, max, sumsq) are stored raw so mean/stddev can be derived and records re-aggregated.
+	* @param[in] sSessionUUID - UUID of the login session the metrics belong to.
+	* @param[in] sLabel - Label identifying the measured request family, e.g. 'frontend'.
+	* @param[in] nIntervalStart - Start of the measurement window in Microseconds since 1970.
+	* @param[in] nIntervalEnd - End of the measurement window in Microseconds since 1970.
+	* @param[in] nRequestCount - Number of requests captured in the window.
+	* @param[in] dSumDurationMS - Sum of roundtrip durations in milliseconds.
+	* @param[in] dMinDurationMS - Minimum roundtrip duration in milliseconds.
+	* @param[in] dMaxDurationMS - Maximum roundtrip duration in milliseconds.
+	* @param[in] dSumSqDurationMS - Sum of squared roundtrip durations in milliseconds (for stddev).
+	* @param[in] nPayloadSumBytes - Sum of response payload sizes in bytes.
+	* @param[in] nPayloadMaxBytes - Maximum response payload size in bytes.
+	* @param[in] dServerBuildSumMS - Sum of the server-reported build times in milliseconds.
+	* @param[in] nAbsoluteTimeStamp - Absolute Time Stamp in Microseconds since 1970.
+	*/
+	void CSessionMetricsHandler::AddFrontendMetrics(const std::string & sSessionUUID, const std::string & sLabel, const LibMCData_uint64 nIntervalStart, const LibMCData_uint64 nIntervalEnd, const LibMCData_uint32 nRequestCount, const LibMCData_double dSumDurationMS, const LibMCData_double dMinDurationMS, const LibMCData_double dMaxDurationMS, const LibMCData_double dSumSqDurationMS, const LibMCData_uint64 nPayloadSumBytes, const LibMCData_uint64 nPayloadMaxBytes, const LibMCData_double dServerBuildSumMS, const LibMCData_uint64 nAbsoluteTimeStamp)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_SessionMetricsHandler_AddFrontendMetrics(m_pHandle, sSessionUUID.c_str(), sLabel.c_str(), nIntervalStart, nIntervalEnd, nRequestCount, dSumDurationMS, dMinDurationMS, dMaxDurationMS, dSumSqDurationMS, nPayloadSumBytes, nPayloadMaxBytes, dServerBuildSumMS, nAbsoluteTimeStamp));
+	}
+	
+	/**
 	 * Method definitions for class CMachineConfigurationVersion
 	 */
 	
@@ -11390,6 +11466,21 @@ public:
 			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
 		}
 		return std::make_shared<CUserPreferenceHandler>(m_pWrapper, hUserPreferenceHandler);
+	}
+	
+	/**
+	* CDataModel::CreateSessionMetricsHandler - creates a session metrics handler instance.
+	* @return SessionMetricsHandler instance.
+	*/
+	PSessionMetricsHandler CDataModel::CreateSessionMetricsHandler()
+	{
+		LibMCDataHandle hSessionMetricsHandler = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_DataModel_CreateSessionMetricsHandler(m_pHandle, &hSessionMetricsHandler));
+		
+		if (!hSessionMetricsHandler) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CSessionMetricsHandler>(m_pWrapper, hSessionMetricsHandler);
 	}
 	
 	/**

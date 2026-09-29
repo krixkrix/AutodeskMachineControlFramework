@@ -54,6 +54,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "common_chrono.hpp"
 
 #include <cmath>
+#include <cstdint>
 #include <vector>
 #include <memory>
 #include <string>
@@ -100,6 +101,8 @@ APIHandler_FrontendType CAPIHandler_Frontend::parseRequest(const std::string& sU
 
 	if (requestType == eAPIRequestType::rtPost) {
 
+		if ((sParameterString == "/metrics") || (sParameterString == "/metrics/"))
+			return APIHandler_FrontendType::ftMetrics;
 
 	}
 
@@ -120,7 +123,7 @@ bool CAPIHandler_Frontend::expectsRawBody(const std::string& sURI, const eAPIReq
 	std::string sAdditionalParameter;
 	auto uiType = parseRequest(sURI, requestType, sParameterUUID, sAdditionalParameter);
 
-	return (uiType == APIHandler_FrontendType::ftTriggerEvent);
+	return (uiType == APIHandler_FrontendType::ftTriggerEvent) || (uiType == APIHandler_FrontendType::ftMetrics);
 
 }
 
@@ -129,10 +132,61 @@ void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, PAPIAuth pAu
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
+	// Measure how long the server takes to build the status payload so the client can
+	// fold this into its aggregated reactivity metrics (see handleMetricsRequest).
+	auto pGlobalChrono = m_pSystemState->globalChrono();
+	uint64_t nBuildStart = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
+
 	m_pSystemState->uiHandler()->frontendWriteStatusToJSON(writer, pAuth.get());
+
+	uint64_t nBuildEnd = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
+	double dBuildTimeMS = (double)(nBuildEnd - nBuildStart) / 1000.0;
+	writer.addDouble(AMC_API_KEY_FRONTEND_SERVERTIME, dBuildTimeMS);
 }
 
 
+void CAPIHandler_Frontend::handleMetricsRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
+{
+	if (pAuth.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+	if (pBodyData == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	// The session identity is taken from the authenticated session and never trusted from the request body.
+	std::string sSessionUUID = pAuth->getSessionUUID();
+
+	CAPIJSONRequest jsonRequest(pBodyData, nBodyDataSize);
+
+	std::string sLabel = "frontend";
+	if (jsonRequest.hasValue(AMC_API_KEY_FRONTEND_METRICS_LABEL))
+		sLabel = jsonRequest.getNameString(AMC_API_KEY_FRONTEND_METRICS_LABEL, LIBMC_ERROR_INVALIDPARAM);
+
+	uint64_t nIntervalStart = jsonRequest.getUint64(AMC_API_KEY_FRONTEND_METRICS_INTERVALSTART, 0, UINT64_MAX, LIBMC_ERROR_INVALIDPARAM);
+	uint64_t nIntervalEnd = jsonRequest.getUint64(AMC_API_KEY_FRONTEND_METRICS_INTERVALEND, 0, UINT64_MAX, LIBMC_ERROR_INVALIDPARAM);
+	uint64_t nRequestCount = jsonRequest.getUint64(AMC_API_KEY_FRONTEND_METRICS_REQUESTCOUNT, 0, UINT32_MAX, LIBMC_ERROR_INVALIDPARAM);
+	double dSumDurationMS = jsonRequest.getDouble(AMC_API_KEY_FRONTEND_METRICS_SUMDURATION, LIBMC_ERROR_INVALIDPARAM);
+	double dMinDurationMS = jsonRequest.getDouble(AMC_API_KEY_FRONTEND_METRICS_MINDURATION, LIBMC_ERROR_INVALIDPARAM);
+	double dMaxDurationMS = jsonRequest.getDouble(AMC_API_KEY_FRONTEND_METRICS_MAXDURATION, LIBMC_ERROR_INVALIDPARAM);
+	double dSumSqDurationMS = jsonRequest.getDouble(AMC_API_KEY_FRONTEND_METRICS_SUMSQDURATION, LIBMC_ERROR_INVALIDPARAM);
+
+	uint64_t nPayloadSumBytes = 0;
+	if (jsonRequest.hasValue(AMC_API_KEY_FRONTEND_METRICS_PAYLOADSUM))
+		nPayloadSumBytes = jsonRequest.getUint64(AMC_API_KEY_FRONTEND_METRICS_PAYLOADSUM, 0, UINT64_MAX, LIBMC_ERROR_INVALIDPARAM);
+	uint64_t nPayloadMaxBytes = 0;
+	if (jsonRequest.hasValue(AMC_API_KEY_FRONTEND_METRICS_PAYLOADMAX))
+		nPayloadMaxBytes = jsonRequest.getUint64(AMC_API_KEY_FRONTEND_METRICS_PAYLOADMAX, 0, UINT64_MAX, LIBMC_ERROR_INVALIDPARAM);
+	double dServerBuildSumMS = 0.0;
+	if (jsonRequest.hasValue(AMC_API_KEY_FRONTEND_METRICS_SERVERBUILDSUM))
+		dServerBuildSumMS = jsonRequest.getDouble(AMC_API_KEY_FRONTEND_METRICS_SERVERBUILDSUM, LIBMC_ERROR_INVALIDPARAM);
+
+	auto pGlobalChrono = m_pSystemState->globalChrono();
+	auto pDataModel = m_pSystemState->getDataModelInstance();
+	auto pMetricsHandler = pDataModel->CreateSessionMetricsHandler();
+
+	pMetricsHandler->AddFrontendMetrics(sSessionUUID, sLabel, nIntervalStart, nIntervalEnd, (LibMCData_uint32)nRequestCount, dSumDurationMS, dMinDurationMS, dMaxDurationMS, dSumSqDurationMS, nPayloadSumBytes, nPayloadMaxBytes, dServerBuildSumMS, pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970());
+
+	writer.addBoolean(AMC_API_KEY_FRONTEND_METRICS_RECORDED, true);
+}
 
 
 PAPIResponse CAPIHandler_Frontend::handleRequest(const std::string& sURI, const eAPIRequestType requestType, CAPIFormFields & pFormFields, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
@@ -147,6 +201,10 @@ PAPIResponse CAPIHandler_Frontend::handleRequest(const std::string& sURI, const 
 	switch (uiType) {
 	case APIHandler_FrontendType::ftStatus:
 		handleStatusRequest(writer, pAuth);
+		break;
+
+	case APIHandler_FrontendType::ftMetrics:
+		handleMetricsRequest(writer, pBodyData, nBodyDataSize, pAuth);
 		break;
 
 	default:

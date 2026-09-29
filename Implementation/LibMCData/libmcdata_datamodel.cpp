@@ -43,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcdata_loginhandler.hpp"
 #include "libmcdata_persistencyhandler.hpp"
 #include "libmcdata_userpreferencehandler.hpp"
+#include "libmcdata_sessionmetricshandler.hpp"
 #include "libmcdata_installationinformation.hpp"
 #include "libmcdata_machineconfigurationtype.hpp"
 
@@ -57,6 +58,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amcdata_databasemigrator_machineconfiguration.hpp"
 #include "amcdata_databasemigrator_sessions.hpp"
 #include "amcdata_databasemigrator_userpreferences.hpp"
+#include "amcdata_databasemigrator_sessionmetrics.hpp"
 
 #include "common_utils.hpp"
 #include "common_chrono.hpp"
@@ -142,6 +144,7 @@ void CDataModel::InitialiseDatabase(const std::string & sDataDirectory, const Li
     migrator.addMigrationClass(std::make_shared<AMCData::CDatabaseMigrationClass_MachineConfiguration>());
     migrator.addMigrationClass(std::make_shared<AMCData::CDatabaseMigrationClass_Sessions>());
     migrator.addMigrationClass(std::make_shared<AMCData::CDatabaseMigrationClass_UserPreferences>());
+    migrator.addMigrationClass(std::make_shared<AMCData::CDatabaseMigrationClass_SessionMetrics>());
     migrator.migrateDatabaseSchemas(m_pSQLHandler, m_sInstallationUUID, m_sInstallationSecret);
 
     // Store Database type after successful initialisation
@@ -274,6 +277,11 @@ IPersistencyHandler* CDataModel::CreatePersistencyHandler()
 IUserPreferenceHandler* CDataModel::CreateUserPreferenceHandler()
 {
     return new CUserPreferenceHandler(m_pSQLHandler);
+}
+
+ISessionMetricsHandler* CDataModel::CreateSessionMetricsHandler()
+{
+    return new CSessionMetricsHandler(m_pSQLHandler);
 }
 
 void CDataModel::SetBaseTempDirectory(const std::string& sTempDirectory)

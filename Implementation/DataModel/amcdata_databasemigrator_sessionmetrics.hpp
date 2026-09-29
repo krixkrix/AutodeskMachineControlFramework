@@ -28,47 +28,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
 
+#ifndef __AMCDATA_DATABASEMIGRATOR_SESSIONMETRICS
+#define __AMCDATA_DATABASEMIGRATOR_SESSIONMETRICS
 
-#ifndef __AMC_API_JSONREQUEST
-#define __AMC_API_JSONREQUEST
+#include "amcdata_databasemigrator.hpp"
 
-#include <memory>
-#include <string>
-#include <map>
+namespace AMCData {
 
-namespace AMC {
-
-	class CAPIJSONRequest;
-	typedef std::shared_ptr<CAPIJSONRequest> PAPIJSONRequest;
-	
-	class CAPIJSONImpl;
-
-	class CAPIJSONRequest {
-	private:
-
-		std::unique_ptr<CAPIJSONImpl> m_pImpl;
-		static CAPIJSONImpl* __construct(const uint8_t* pBodyData, const size_t nBodySize);
-			
+	class CDatabaseMigrationClass_SessionMetrics : public CDatabaseMigrationClass {
 	public:
-
-		CAPIJSONRequest (const uint8_t * pBodyData, const size_t nBodySize);
-
-		virtual ~CAPIJSONRequest();
-							
-		bool hasValue(const std::string& sKeyName) const;
-		std::string getRawString(const std::string& sKeyName, uint32_t nErrorCode) const;
-
-		std::string getUUID (const std::string & sKeyName, uint32_t nErrorCode) const;
-		std::string getJSONObjectString (const std::string& sKeyName, uint32_t nErrorCode) const;
-		std::string getNameString(const std::string& sKeyName, uint32_t nErrorCode) const;
-		uint64_t getUint64 (const std::string& sKeyName, const uint64_t nMinValue, const uint64_t nMaxValue, uint32_t nErrorCode) const;
-		double getDouble (const std::string& sKeyName, uint32_t nErrorCode) const;
-		std::string getSHA256(const std::string& sKeyName, uint32_t nErrorCode) const;
+		void increaseSchemaVersion (PSQLTransaction pTransaction, uint32_t nCurrentVersionIndex) override;
 	};
-
 	
 }
 
 
-#endif //__AMC_API_JSONREQUEST
-
+#endif //__AMCDATA_DATABASEMIGRATOR_SESSIONMETRICS

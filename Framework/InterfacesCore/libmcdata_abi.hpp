@@ -2942,6 +2942,31 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_userpreferencehandler_storeuserpref
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_userpreferencehandler_deleteuserpreference(LibMCData_UserPreferenceHandler pUserPreferenceHandler, const char * pUserUUID, const char * pDomain, const char * pKey, bool * pPreferenceExisted);
 
 /*************************************************************************************************************************
+ Class definition for SessionMetricsHandler
+**************************************************************************************************************************/
+
+/**
+* Adds an aggregated frontend metrics record for a measurement window. The moments (count, sum, min, max, sumsq) are stored raw so mean/stddev can be derived and records re-aggregated.
+*
+* @param[in] pSessionMetricsHandler - SessionMetricsHandler instance.
+* @param[in] pSessionUUID - UUID of the login session the metrics belong to.
+* @param[in] pLabel - Label identifying the measured request family, e.g. 'frontend'.
+* @param[in] nIntervalStart - Start of the measurement window in Microseconds since 1970.
+* @param[in] nIntervalEnd - End of the measurement window in Microseconds since 1970.
+* @param[in] nRequestCount - Number of requests captured in the window.
+* @param[in] dSumDurationMS - Sum of roundtrip durations in milliseconds.
+* @param[in] dMinDurationMS - Minimum roundtrip duration in milliseconds.
+* @param[in] dMaxDurationMS - Maximum roundtrip duration in milliseconds.
+* @param[in] dSumSqDurationMS - Sum of squared roundtrip durations in milliseconds (for stddev).
+* @param[in] nPayloadSumBytes - Sum of response payload sizes in bytes.
+* @param[in] nPayloadMaxBytes - Maximum response payload size in bytes.
+* @param[in] dServerBuildSumMS - Sum of the server-reported build times in milliseconds.
+* @param[in] nAbsoluteTimeStamp - Absolute Time Stamp in Microseconds since 1970.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_sessionmetricshandler_addfrontendmetrics(LibMCData_SessionMetricsHandler pSessionMetricsHandler, const char * pSessionUUID, const char * pLabel, LibMCData_uint64 nIntervalStart, LibMCData_uint64 nIntervalEnd, LibMCData_uint32 nRequestCount, LibMCData_double dSumDurationMS, LibMCData_double dMinDurationMS, LibMCData_double dMaxDurationMS, LibMCData_double dSumSqDurationMS, LibMCData_uint64 nPayloadSumBytes, LibMCData_uint64 nPayloadMaxBytes, LibMCData_double dServerBuildSumMS, LibMCData_uint64 nAbsoluteTimeStamp);
+
+/*************************************************************************************************************************
  Class definition for MachineConfigurationVersion
 **************************************************************************************************************************/
 
@@ -3510,6 +3535,15 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_datamodel_createpersistencyhandler(
 * @return error code or 0 (success)
 */
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_datamodel_createuserpreferencehandler(LibMCData_DataModel pDataModel, LibMCData_UserPreferenceHandler * pUserPreferenceHandler);
+
+/**
+* creates a session metrics handler instance.
+*
+* @param[in] pDataModel - DataModel instance.
+* @param[out] pSessionMetricsHandler - SessionMetricsHandler instance.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_datamodel_createsessionmetricshandler(LibMCData_DataModel pDataModel, LibMCData_SessionMetricsHandler * pSessionMetricsHandler);
 
 /**
 * Sets a custom base temp directory. An empty string defaults to the system temp directory.
