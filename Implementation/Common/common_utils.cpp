@@ -616,6 +616,55 @@ namespace AMCCommon {
 		return true;
 	}
 
+	bool CUtils::stringIsValidLanguageIdentifier(const std::string& sString)
+	{
+		if (sString.empty() || (sString.length() > 35))
+			return false;
+
+		// Primary language subtag with 2 or 3 letters, followed by subtags of 1 to 8 alphanumeric characters.
+		size_t nSubtagIndex = 0;
+		size_t nSubtagLength = 0;
+		bool bSubtagHasDigit = false;
+
+		for (size_t nIndex = 0; nIndex <= sString.length(); nIndex++) {
+			if ((nIndex == sString.length()) || (sString.at(nIndex) == '-')) {
+				if (nSubtagIndex == 0) {
+					if ((nSubtagLength < 2) || (nSubtagLength > 3) || bSubtagHasDigit)
+						return false;
+				}
+				else {
+					if ((nSubtagLength < 1) || (nSubtagLength > 8))
+						return false;
+				}
+
+				nSubtagIndex++;
+				nSubtagLength = 0;
+				bSubtagHasDigit = false;
+			}
+			else {
+				char cChar = sString.at(nIndex);
+				if ((cChar >= '0') && (cChar <= '9')) {
+					bSubtagHasDigit = true;
+				}
+				else if (!(((cChar >= 'a') && (cChar <= 'z')) || ((cChar >= 'A') && (cChar <= 'Z')))) {
+					return false;
+				}
+
+				nSubtagLength++;
+			}
+		}
+
+		return true;
+	}
+
+	bool CUtils::stringIsValidLanguageStringIdentifier(const std::string& sString)
+	{
+		if (sString.length() > 63)
+			return false;
+
+		return stringIsValidAlphanumericPathString(sString);
+	}
+
 	bool CUtils::stringIsValidFileName(const std::string& sFileName)
 	{
 		if (sFileName.empty())

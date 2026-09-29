@@ -629,7 +629,7 @@ namespace AMCData {
 			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDALERTIDENTIFIER, "invalid alert identifier: " + sIdentifier);
 
 		if (!sDescriptionIdentifier.empty()) {
-			if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sDescriptionIdentifier))
+			if (!AMCCommon::CUtils::stringIsValidLanguageStringIdentifier(sDescriptionIdentifier))
 				throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDALERTDESCRIPTIONIDENTIFIER, "invalid alert description identifier: " + sDescriptionIdentifier);
 		}
 

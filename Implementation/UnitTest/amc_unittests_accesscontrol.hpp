@@ -64,8 +64,8 @@ namespace AMCUnitTest {
 
     private:
 
-        AMC::CStringResource makeString(const std::string& s) {
-            return AMC::CStringResource(s);
+        AMC::CLanguageString makeString(const std::string& s) {
+            return AMC::CLanguageString("", s);
         }
 
         void testAddPermission() {

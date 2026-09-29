@@ -35,6 +35,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_unittests.hpp"
 #include "amc_alerthandler.hpp"
 #include "amc_languagedefinition.hpp"
+#include "amc_languagestring.hpp"
+
+#include "PugiXML/pugixml.hpp"
 
 
 namespace AMCUnitTest {
@@ -48,6 +51,8 @@ namespace AMCUnitTest {
 
 		void registerTests() override {
 			registerTest("AlertDefinitionBasics", "Alert definition properties and translations", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_Alerts::testAlertDefinitionBasics, this));
+			registerTest("LanguageFallback", "Translation lookup through parent languages, inline text and key", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_Alerts::testLanguageFallback, this));
+			registerTest("LanguageStringFromXML", "Language strings read the requested attribute and its i18n key", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_Alerts::testLanguageStringFromXML, this));
 			registerTest("AlertLevelConversions", "Alert level string conversions", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_Alerts::testAlertLevelConversions, this));
 			registerTest("AlertHandlerDefinitions", "Alert handler add/find/validate definitions", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_Alerts::testAlertHandlerDefinitions, this));
 		}
@@ -78,6 +83,75 @@ namespace AMCUnitTest {
 
 			definition.setAckPermissionIdentifier("ack_permission");
 			assertTrue(definition.getAckPermissionIdentifier() == "ack_permission");
+		}
+
+		void testLanguageFallback()
+		{
+			auto pEnglish = std::make_shared<AMC::CLanguageDefinition>("en", nullptr);
+			pEnglish->addTranslation("alerts.dooropen", "Door is open");
+			pEnglish->addTranslation("alerts.empty", "");
+
+			auto pGerman = std::make_shared<AMC::CLanguageDefinition>("de", pEnglish);
+			pGerman->addTranslation("alerts.doorclosed", "Tuer ist geschlossen");
+
+			auto pSwiss = std::make_shared<AMC::CLanguageDefinition>("de-CH", pGerman);
+
+			AMC::CLanguageString doorClosed("alerts.doorclosed", "Door is closed");
+			AMC::CLanguageString doorOpen("alerts.dooropen", "Inline door open");
+			AMC::CLanguageString missing("alerts.missing", "Inline missing");
+			AMC::CLanguageString missingWithoutText("alerts.missingnotext", "");
+			AMC::CLanguageString emptyTranslation("alerts.empty", "Inline empty");
+
+			assertTrue(doorClosed.getTranslatedString(pSwiss.get()) == "Tuer ist geschlossen");
+			assertTrue(doorOpen.getTranslatedString(pSwiss.get()) == "Door is open");
+			assertTrue(missing.getTranslatedString(pSwiss.get()) == "Inline missing");
+			assertTrue(missingWithoutText.getTranslatedString(pSwiss.get()) == "alerts.missingnotext");
+			assertTrue(emptyTranslation.getTranslatedString(pSwiss.get()) == "");
+
+			auto misses = pSwiss->getTranslationMisses();
+			assertTrue(misses.size() == 2);
+			assertTrue(misses.find("alerts.missing") != misses.end());
+			assertTrue(misses.find("alerts.missingnotext") != misses.end());
+			assertTrue(pEnglish->getTranslationMisses().empty());
+
+			bool thrown = false;
+			try {
+				AMC::CLanguageDefinition invalidLanguage("de_CH", nullptr);
+			}
+			catch (...) {
+				thrown = true;
+			}
+			assertTrue(thrown, "Expected CLanguageDefinition to reject non-BCP 47 identifiers");
+
+			thrown = false;
+			try {
+				AMC::CLanguageString invalidKey("alerts..dooropen", "Text");
+			}
+			catch (...) {
+				thrown = true;
+			}
+			assertTrue(thrown, "Expected CLanguageString to reject invalid keys");
+		}
+
+		void testLanguageStringFromXML()
+		{
+			pugi::xml_document document;
+			auto parseResult = document.load_string("<permission displayname=\"Edit settings\" i18n:displayname=\"permissions.editsettings\" description=\"Allows editing\" i18n:description=\"permissions.editsettings_desc\" />");
+			assertTrue(parseResult.status == pugi::status_ok);
+
+			auto permissionNode = document.child("permission");
+
+			AMC::CLanguageString displayName(permissionNode, "displayname");
+			assertTrue(displayName.getCustomValue() == "Edit settings");
+			assertTrue(displayName.getStringIdentifier() == "permissions.editsettings");
+
+			AMC::CLanguageString description(permissionNode, "description");
+			assertTrue(description.getCustomValue() == "Allows editing");
+			assertTrue(description.getStringIdentifier() == "permissions.editsettings_desc");
+
+			AMC::CLanguageString caption(permissionNode, "caption");
+			assertTrue(caption.getCustomValue().empty());
+			assertTrue(caption.getStringIdentifier().empty());
 		}
 
 		void testAlertLevelConversions()

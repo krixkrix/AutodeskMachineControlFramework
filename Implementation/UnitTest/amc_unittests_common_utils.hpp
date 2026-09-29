@@ -56,6 +56,7 @@ namespace AMCUnitTest {
 			registerTest("FilePathFunctions", "Path handling and file/directory helpers", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_CommonUtils::testFilePathFunctions, this));
 			registerTest("TempAndDirectoryFunctions", "Temporary paths, directory content, and OS helpers", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_CommonUtils::testTempAndDirectoryFunctions, this));
 			registerTest("AlphanumericValidation", "Alphanumeric name and path validation", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_CommonUtils::testAlphanumericValidation, this));
+			registerTest("LanguageValidation", "Language identifier and language string identifier validation", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_CommonUtils::testLanguageValidation, this));
 			registerTest("FileNameValidation", "Filename validation for invalid characters and dot-dot", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_CommonUtils::testFileNameValidation, this));
 		}
 
@@ -519,6 +520,37 @@ namespace AMCUnitTest {
 			assertFalse(AMCCommon::CUtils::stringIsValidAlphanumericPathString("abc..def"));
 			assertFalse(AMCCommon::CUtils::stringIsValidAlphanumericPathString(".abc"));
 			assertFalse(AMCCommon::CUtils::stringIsValidAlphanumericPathString("abc."));
+		}
+
+		void testLanguageValidation()
+		{
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageIdentifier("en"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageIdentifier("de-CH"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageIdentifier("pt-BR"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageIdentifier("zh-Hant-TW"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageIdentifier("es-419"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageIdentifier("yue"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier(""));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("e"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("english"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("e1"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("de_CH"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("de-"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("-de"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("de--CH"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageIdentifier("de-abcdefghi"));
+
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("alert_dooropen"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("alerts.dooropen"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("client.common.cancel"));
+			assertTrue(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier(std::string(63, 'a')));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier(""));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier(std::string(64, 'a')));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier(".alerts"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("alerts."));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("alerts..dooropen"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("_alerts"));
+			assertFalse(AMCCommon::CUtils::stringIsValidLanguageStringIdentifier("alerts-dooropen"));
 		}
 
 		void testFileNameValidation()

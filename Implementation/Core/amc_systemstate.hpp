@@ -67,7 +67,6 @@ namespace AMC {
 	class CParameterGroup;
 	class CStateMachineData;
 	class CAccessControl;
-	class CStringResourceHandler;
 	class CLanguageHandler;
 	class CMeshHandler;
 	class CDataSeriesHandler;
@@ -85,7 +84,6 @@ namespace AMC {
 	typedef std::shared_ptr<CParameterGroup> PParameterGroup;
 	typedef std::shared_ptr<CStateMachineData> PStateMachineData;
 	typedef std::shared_ptr<CAccessControl> PAccessControl;
-	typedef std::shared_ptr<CStringResourceHandler> PStringResourceHandler;
 	typedef std::shared_ptr<CLanguageHandler> PLanguageHandler;
 	typedef std::shared_ptr<CAlertHandler> PAlertHandler;
 	typedef std::shared_ptr<CMeshHandler> PMeshHandler;
@@ -109,7 +107,6 @@ namespace AMC {
 		AMC::PStateJournal m_pStateJournal;
 		AMC::PStateMachineData m_pStateMachineData;
 		AMC::PAccessControl m_pAccessControl;
-		AMC::PStringResourceHandler m_pStringResourceHandler;
 		AMC::PLanguageHandler m_pLanguageHandler;
 		AMC::PMeshHandler m_pMeshHandler;
 		AMC::PAlertHandler m_pAlertHandler;
@@ -144,7 +141,6 @@ namespace AMC {
 		CUIHandler* uiHandler();
 		CStateMachineData* stateMachineData();
 		CAccessControl * accessControl ();
-		CStringResourceHandler * stringResourceHandler ();
 		CAlertHandler* alertHandler();
 		CTelemetryHandler* telemetryHandler();
 

@@ -155,14 +155,9 @@ void CUIModule_ContentAlertList::addLegacyContentToJSON(CJSONWriter& writer, CJS
 		std::string sAlertUUID = pAlert->GetUUID();
 		std::string sAlertIdentifier = pAlert->GetIdentifier();
 
-		std::string sAlertCaption;
-		std::string sDescriptionIdentifier = pAlert->GetDescriptionIdentifier();
-		if (!sDescriptionIdentifier.empty()) {
-			sAlertCaption = sDescriptionIdentifier;
-		}
-		else {
-			sAlertCaption = pAlert->GetDescription();
-		}
+		std::string sAlertCaption = pAlert->GetDescription();
+		if (sAlertCaption.empty())
+			sAlertCaption = pAlert->GetDescriptionIdentifier();
 
 		std::string sContextInformation = pAlert->GetReadableContextInformation();
 

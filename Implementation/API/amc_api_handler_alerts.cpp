@@ -68,14 +68,9 @@ void CAPIHandler_Alerts::handleListAlertsRequest(CJSONWriter& writer)
 	while (pAlertIterator->MoveNext()) {
 		auto pAlert = pAlertIterator->GetCurrentAlert();
 
-		std::string sAlertCaption;
-		std::string sDescriptionIdentifier = pAlert->GetDescriptionIdentifier();
-		if (!sDescriptionIdentifier.empty()) {
-			sAlertCaption = sDescriptionIdentifier;
-		}
-		else {
-			sAlertCaption = pAlert->GetDescription();
-		}
+		std::string sAlertCaption = pAlert->GetDescription();
+		if (sAlertCaption.empty())
+			sAlertCaption = pAlert->GetDescriptionIdentifier();
 
 		CJSONWriterObject entryObject(writer);
 		entryObject.addString("alertuuid", pAlert->GetUUID());

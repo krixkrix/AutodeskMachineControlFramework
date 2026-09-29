@@ -208,9 +208,9 @@ namespace AMCUnitTest {
 			auto pDefinition = createDefinition();
 
 			auto pAccessControl = std::make_shared<AMC::CAccessControl>();
-			auto pPermission = pAccessControl->addPermission("perm_edit", AMC::CStringResource("Edit"), AMC::CStringResource(""));
-			pAccessControl->addPermission("perm_admin", AMC::CStringResource("Admin"), AMC::CStringResource(""));
-			auto pRole = pAccessControl->addRole("operator", AMC::CStringResource("Operator"), AMC::CStringResource(""));
+			auto pPermission = pAccessControl->addPermission("perm_edit", AMC::CLanguageString("", "Edit"), AMC::CLanguageString("", ""));
+			pAccessControl->addPermission("perm_admin", AMC::CLanguageString("", "Admin"), AMC::CLanguageString("", ""));
+			auto pRole = pAccessControl->addRole("operator", AMC::CLanguageString("", "Operator"), AMC::CLanguageString("", ""));
 			pRole->addPermission(pPermission);
 
 			std::string sUserUUID = AMCCommon::CUtils::createUUID();
@@ -240,7 +240,7 @@ namespace AMCUnitTest {
 			auto pDefinition = createDefinition();
 
 			AMC::CAccessControl accessControl;
-			accessControl.addPermission("perm_edit", AMC::CStringResource("Edit"), AMC::CStringResource(""));
+			accessControl.addPermission("perm_edit", AMC::CLanguageString("", "Edit"), AMC::CLanguageString("", ""));
 
 			AMC::CUIFrontendState::validateSessionReference("session.flag", pDefinition.get(), &accessControl);
 			AMC::CUIFrontendState::validateSessionReference("$session.uuid", pDefinition.get(), &accessControl);

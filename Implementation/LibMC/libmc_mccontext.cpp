@@ -808,8 +808,8 @@ void CMCContext::loadAccessControl(const pugi::xml_node& xmlNode)
 
     for (pugi::xml_node permissionNode : permissionNodes) {
         auto identifierAttrib = permissionNode.attribute("identifier");
-        CStringResource displaynameAttrib (&permissionNode, "displayname");
-        CStringResource descriptionAttrib(&permissionNode, "description");
+        CLanguageString displaynameAttrib(permissionNode, "displayname");
+        CLanguageString descriptionAttrib(permissionNode, "description");
 
         accessControl->addPermission(identifierAttrib.as_string(), displaynameAttrib, descriptionAttrib);
     }
@@ -828,8 +828,8 @@ void CMCContext::loadAccessControl(const pugi::xml_node& xmlNode)
     auto roleNodes = rolesNode.children("role");
     for (pugi::xml_node roleNode : roleNodes) {
         auto identifierAttrib = roleNode.attribute("identifier");
-        CStringResource displaynameAttrib(&roleNode, "displayname");
-        CStringResource descriptionAttrib(&roleNode, "description");
+        CLanguageString displaynameAttrib(roleNode, "displayname");
+        CLanguageString descriptionAttrib(roleNode, "description");
 
         auto pRole = accessControl->addRole(identifierAttrib.as_string(), displaynameAttrib, descriptionAttrib);
 

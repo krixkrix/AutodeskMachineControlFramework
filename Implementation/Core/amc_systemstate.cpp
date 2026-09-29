@@ -44,7 +44,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_ui_systemstate.hpp"
 #include "amc_statemachinedata.hpp"
 #include "amc_accesscontrol.hpp"
-#include "amc_stringresourcehandler.hpp"
 #include "amc_languagehandler.hpp"
 #include "amc_meshhandler.hpp"
 #include "amc_streamregistry.hpp"
@@ -93,7 +92,6 @@ namespace AMC {
 		m_pDataModel->GetInstallationInformation(m_sInstallationUUID, m_sInstallationSecret);
 
 		m_pAccessControl = std::make_shared<CAccessControl> ();
-		m_pStringResourceHandler = std::make_shared<CStringResourceHandler> ();
 
 		auto pTelemetryWriter = std::make_shared<CTelemetryWriter> (m_pDataModel->CreateTelemetrySession (), m_pGlobalChrono);
 		m_pTelemetryHandler = std::make_shared<CTelemetryHandler> (pTelemetryWriter);
@@ -202,11 +200,6 @@ namespace AMC {
 	CAlertHandler* CSystemState::alertHandler()
 	{
 		return m_pAlertHandler.get();
-	}
-
-	AMC::CStringResourceHandler* CSystemState::stringResourceHandler()
-	{
-		return m_pStringResourceHandler.get();
 	}
 
 	CTelemetryHandler* CSystemState::telemetryHandler()
