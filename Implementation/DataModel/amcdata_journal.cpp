@@ -272,6 +272,29 @@ namespace AMCData {
 		pTelemetryChunkStatement->execute();
 		pTelemetryChunkStatement = nullptr;
 
+		// Client reactivity metrics. Each row aggregates the frontend roundtrips of one login
+		// session over a short window. The moments (count, sum, min, max, sumsq) are stored raw
+		// so that mean/stddev can be derived and rows re-aggregated.
+		std::string sSessionMetricsQuery = "CREATE TABLE `session_metrics` (";
+		sSessionMetricsQuery += "`uuid` varchar ( 64 ) UNIQUE NOT NULL, ";
+		sSessionMetricsQuery += "`loginsessionuuid` varchar ( 64 ) NOT NULL, ";
+		sSessionMetricsQuery += "`label` varchar ( 256 ) NOT NULL, ";
+		sSessionMetricsQuery += "`intervalstart` int NOT NULL, ";
+		sSessionMetricsQuery += "`intervalend` int NOT NULL, ";
+		sSessionMetricsQuery += "`requestcount` int NOT NULL, ";
+		sSessionMetricsQuery += "`sumduration` real NOT NULL, ";
+		sSessionMetricsQuery += "`minduration` real NOT NULL, ";
+		sSessionMetricsQuery += "`maxduration` real NOT NULL, ";
+		sSessionMetricsQuery += "`sumsqduration` real NOT NULL, ";
+		sSessionMetricsQuery += "`payloadsum` int NOT NULL, ";
+		sSessionMetricsQuery += "`payloadmax` int NOT NULL, ";
+		sSessionMetricsQuery += "`serverbuildsum` real NOT NULL, ";
+		sSessionMetricsQuery += "`timestamp` varchar ( 64 ) NOT NULL)";
+
+		auto pSessionMetricsStatement = m_pSQLHandler->prepareStatement(sSessionMetricsQuery);
+		pSessionMetricsStatement->execute();
+		pSessionMetricsStatement = nullptr;
+
 		m_pCurrentJournalFile = createJournalFile();
 		m_pCurrentTelemetryFile = createTelemetryFile();
 
@@ -617,6 +640,33 @@ namespace AMCData {
 	}
 
 
+
+	void CJournal::addSessionMetrics(const std::string& sLoginSessionUUID, const std::string& sLabel, uint64_t nIntervalStart, uint64_t nIntervalEnd, uint32_t nRequestCount, double dSumDurationMS, double dMinDurationMS, double dMaxDurationMS, double dSumSqDurationMS, uint64_t nPayloadSumBytes, uint64_t nPayloadMaxBytes, double dServerBuildSumMS, const std::string& sTimestampUTC)
+	{
+		std::string sNormalizedLoginSessionUUID = AMCCommon::CUtils::normalizeUUIDString(sLoginSessionUUID);
+		std::string sNewUUID = AMCCommon::CUtils::createUUID();
+
+		std::lock_guard<std::mutex> lockGuard(m_LogMutex);
+
+		std::string sQuery = "INSERT INTO session_metrics (uuid, loginsessionuuid, label, intervalstart, intervalend, requestcount, sumduration, minduration, maxduration, sumsqduration, payloadsum, payloadmax, serverbuildsum, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		auto pStatement = m_pSQLHandler->prepareStatement(sQuery);
+		pStatement->setString(1, sNewUUID);
+		pStatement->setString(2, sNormalizedLoginSessionUUID);
+		pStatement->setString(3, sLabel);
+		pStatement->setInt64(4, (int64_t)nIntervalStart);
+		pStatement->setInt64(5, (int64_t)nIntervalEnd);
+		pStatement->setInt64(6, (int64_t)nRequestCount);
+		pStatement->setDouble(7, dSumDurationMS);
+		pStatement->setDouble(8, dMinDurationMS);
+		pStatement->setDouble(9, dMaxDurationMS);
+		pStatement->setDouble(10, dSumSqDurationMS);
+		pStatement->setInt64(11, (int64_t)nPayloadSumBytes);
+		pStatement->setInt64(12, (int64_t)nPayloadMaxBytes);
+		pStatement->setDouble(13, dServerBuildSumMS);
+		pStatement->setString(14, sTimestampUTC);
+		pStatement->execute();
+		pStatement = nullptr;
+	}
 
 	void CJournal::addAlert(const std::string& sUUID, const std::string& sIdentifier, const LibMCData::eAlertLevel eLevel, const std::string& sDescription, const std::string& sDescriptionIdentifier, const std::string& sReadableContextInformation, const bool bNeedsAcknowledgement, const std::string& sTimestampUTC)
 	{

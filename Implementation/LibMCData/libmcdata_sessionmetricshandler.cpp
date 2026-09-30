@@ -42,38 +42,18 @@ using namespace LibMCData::Impl;
  Class definition of CSessionMetricsHandler 
 **************************************************************************************************************************/
 
-CSessionMetricsHandler::CSessionMetricsHandler(AMCData::PSQLHandler pSQLHandler)
-	: m_pSQLHandler(pSQLHandler)
+CSessionMetricsHandler::CSessionMetricsHandler(AMCData::PJournal pJournal)
+	: m_pJournal(pJournal)
 {
-	if (pSQLHandler.get() == nullptr)
+	if (pJournal.get() == nullptr)
 		throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDPARAM);
 
 }
 
 void CSessionMetricsHandler::AddFrontendMetrics(const std::string & sSessionUUID, const std::string & sLabel, const LibMCData_uint64 nIntervalStart, const LibMCData_uint64 nIntervalEnd, const LibMCData_uint32 nRequestCount, const LibMCData_double dSumDurationMS, const LibMCData_double dMinDurationMS, const LibMCData_double dMaxDurationMS, const LibMCData_double dSumSqDurationMS, const LibMCData_uint64 nPayloadSumBytes, const LibMCData_uint64 nPayloadMaxBytes, const LibMCData_double dServerBuildSumMS, const LibMCData_uint64 nAbsoluteTimeStamp)
 {
-	std::string sNormalizedSessionUUID = AMCCommon::CUtils::normalizeUUIDString(sSessionUUID);
 	std::string sTimestamp = AMCCommon::CChrono::convertToISO8601TimeUTC(nAbsoluteTimeStamp);
-	std::string sNewUUID = AMCCommon::CUtils::createUUID();
 
-	std::lock_guard<std::mutex> lockGuard(m_Mutex);
-
-	std::string sInsertQuery = "INSERT INTO session_metrics (uuid, sessionuuid, label, intervalstart, intervalend, requestcount, sumduration, minduration, maxduration, sumsqduration, payloadsum, payloadmax, serverbuildsum, active, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)";
-	auto pInsertStatement = m_pSQLHandler->prepareStatement(sInsertQuery);
-	pInsertStatement->setString(1, sNewUUID);
-	pInsertStatement->setString(2, sNormalizedSessionUUID);
-	pInsertStatement->setString(3, sLabel);
-	pInsertStatement->setInt64(4, (int64_t)nIntervalStart);
-	pInsertStatement->setInt64(5, (int64_t)nIntervalEnd);
-	pInsertStatement->setInt64(6, (int64_t)nRequestCount);
-	pInsertStatement->setDouble(7, dSumDurationMS);
-	pInsertStatement->setDouble(8, dMinDurationMS);
-	pInsertStatement->setDouble(9, dMaxDurationMS);
-	pInsertStatement->setDouble(10, dSumSqDurationMS);
-	pInsertStatement->setInt64(11, (int64_t)nPayloadSumBytes);
-	pInsertStatement->setInt64(12, (int64_t)nPayloadMaxBytes);
-	pInsertStatement->setDouble(13, dServerBuildSumMS);
-	pInsertStatement->setString(14, sTimestamp);
-	pInsertStatement->execute();
+	m_pJournal->addSessionMetrics(sSessionUUID, sLabel, nIntervalStart, nIntervalEnd, nRequestCount, dSumDurationMS, dMinDurationMS, dMaxDurationMS, dSumSqDurationMS, nPayloadSumBytes, nPayloadMaxBytes, dServerBuildSumMS, sTimestamp);
 }
 

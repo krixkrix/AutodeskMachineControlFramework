@@ -44,10 +44,7 @@ Abstract: This is the class declaration of CSessionMetricsHandler
 #pragma warning(disable : 4250)
 #endif
 
-#include "amcdata_sqlhandler.hpp"
-
-// Include custom headers here.
-#include <mutex>
+#include "amcdata_journal.hpp"
 
 
 namespace LibMCData {
@@ -61,12 +58,11 @@ namespace Impl {
 class CSessionMetricsHandler : public virtual ISessionMetricsHandler, public virtual CBase {
 
 protected:
-	std::mutex m_Mutex;
-	AMCData::PSQLHandler m_pSQLHandler;
+	AMCData::PJournal m_pJournal;
 
 public:
 
-	CSessionMetricsHandler(AMCData::PSQLHandler pSQLHandler);
+	CSessionMetricsHandler(AMCData::PJournal pJournal);
 
 	void AddFrontendMetrics(const std::string & sSessionUUID, const std::string & sLabel, const LibMCData_uint64 nIntervalStart, const LibMCData_uint64 nIntervalEnd, const LibMCData_uint32 nRequestCount, const LibMCData_double dSumDurationMS, const LibMCData_double dMinDurationMS, const LibMCData_double dMaxDurationMS, const LibMCData_double dSumSqDurationMS, const LibMCData_uint64 nPayloadSumBytes, const LibMCData_uint64 nPayloadMaxBytes, const LibMCData_double dServerBuildSumMS, const LibMCData_uint64 nAbsoluteTimeStamp) override;
 

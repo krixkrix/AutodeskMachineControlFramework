@@ -176,6 +176,8 @@ namespace AMCData {
 
 		void writeTelemetryChunk(uint64_t nChunkID, uint64_t nStartTimeStamp, uint64_t nEndTimeStamp, uint64_t nTelemetryEntriesBufferSize, const LibMCData::sTelemetryChunkEntry* pTelemetryEntriesBuffer);
 
+		void addSessionMetrics(const std::string& sLoginSessionUUID, const std::string& sLabel, uint64_t nIntervalStart, uint64_t nIntervalEnd, uint32_t nRequestCount, double dSumDurationMS, double dMinDurationMS, double dMaxDurationMS, double dSumSqDurationMS, uint64_t nPayloadSumBytes, uint64_t nPayloadMaxBytes, double dServerBuildSumMS, const std::string& sTimestampUTC);
+
 	};
 
 	typedef std::shared_ptr<CJournal> PJournal;
