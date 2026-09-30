@@ -66,8 +66,6 @@ namespace AMC {
 		
 		virtual ~CUIModule_ContentVideoStream();
 
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		virtual void configurePostLoading() override;
 
 		virtual void populateClientVariables(CParameterHandler* pClientVariableHandler) override;

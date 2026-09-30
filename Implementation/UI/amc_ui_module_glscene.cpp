@@ -137,11 +137,6 @@ PUIModule_GLSceneModel CUIModule_GLSceneInstance::getModel()
 	return m_pModel;
 }
 
-void CUIModule_GLSceneInstance::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& object)
-{
-
-}
-
 void CUIModule_GLSceneInstance::setPosition(CUIExpression positionX, CUIExpression positionY, CUIExpression positionZ)
 {
 	m_Position.at(0) = positionX;
@@ -194,16 +189,6 @@ std::string CUIModule_GLSceneItem::findElementPathByUUID(const std::string& sUUI
 	return "";
 }
 
-void CUIModule_GLSceneItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	auto pGroup = pClientVariableHandler->findGroup(getItemPath(), true);
-
-	auto pStateMachineData = m_pUIModuleEnvironment->stateMachineData();
-
-	m_pScene->writeLegacySceneToJSON(writer, object, pClientVariableHandler);
-
-}
-
 void CUIModule_GLSceneItem::setEventPayloadValue(const std::string& sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler)
 {
 
@@ -217,7 +202,7 @@ void CUIModule_GLSceneItem::populateClientVariables(CParameterHandler* pClientVa
 
 
 CUIModule_GLScene::CUIModule_GLScene(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
+: CUIModule (getNameFromXML(xmlNode), getStaticType(), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -323,6 +308,11 @@ CUIModule_GLScene::CUIModule_GLScene(pugi::xml_node& xmlNode, const std::string&
 	visibleExpr.setFixedValue("1");
 	registerBoolAttribute("visible", visibleExpr);
 
+	registerProviderAttribute(AMC_API_KEY_UI_INSTANCES, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			writeInstancesToJSON(writer, object, sName, pFrontendState);
+		});
+
 }
 
 
@@ -345,48 +335,6 @@ std::string CUIModule_GLScene::getType()
 std::string CUIModule_GLScene::getCaption()
 {
 	return m_sCaption;
-}
-
-void CUIModule_GLScene::writeLegacySceneToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler)
-{
-	CJSONWriterObject sceneNode(writer);
-
-	sceneNode.addString(AMC_API_KEY_UI_ITEMTYPE, "scene");
-	sceneNode.addString(AMC_API_KEY_UI_ITEMUUID, getUUID());
-
-	CJSONWriterArray instancesNode(writer);
-	for (auto instance : m_InstanceNameMap) {
-		CJSONWriterObject instanceObject(writer);
-
-		auto pInstance = instance.second;
-		auto pModel = pInstance->getModel();
-
-		pInstance->addContentToJSON(writer, instanceObject);
-
-		instanceObject.addString(AMC_API_KEY_UI_INSTANCENAME, pInstance->getName());
-		instanceObject.addString(AMC_API_KEY_UI_UUID, pInstance->getUUID());
-		instanceObject.addString(AMC_API_KEY_UI_MESHUUID, pModel->getMeshUUID());
-
-		instancesNode.addObject(instanceObject);
-	}
-	sceneNode.addArray(AMC_API_KEY_UI_INSTANCES, instancesNode);
-	moduleObject.addObject(AMC_API_KEY_UI_SCENE, sceneNode);
-
-}
-
-
-void CUIModule_GLScene::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-	moduleObject.addString(AMC_API_KEY_UI_CAPTION, m_sCaption);
-
-	m_pSceneItem->addLegacyContentToJSON(writer, moduleObject, pLegacyClientVariableHandler, 0);
-}
-
-void CUIModule_GLScene::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
 }
 
 PUIModuleItem CUIModule_GLScene::findLegacyItem(const std::string& sUUID)
@@ -469,14 +417,14 @@ void CUIModule_GLScene::ensureBuildMeshesRegistered(const std::string& sBuildUUI
 }
 
 
-void CUIModule_GLScene::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+void CUIModule_GLScene::writeInstancesToJSON(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CUIFrontendState* pFrontendState)
 {
-	CUIModule::frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
-
 	std::vector<DynamicMeshInstance> dynamicInstances;
 	if (pFrontendState != nullptr) {
 		auto pParamHandler = pFrontendState->getLegacyParameterHandler();
-		auto pGroup = pParamHandler->findGroup(getModulePath(), false);
+		PParameterGroup pGroup;
+		if (pParamHandler.get() != nullptr)
+			pGroup = pParamHandler->findGroup(getModulePath(), false);
 		if (pGroup != nullptr) {
 			std::string sBuildUUID = pGroup->getParameterValueByName("builduuid");
 			try {
@@ -489,36 +437,28 @@ void CUIModule_GLScene::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJS
 		}
 	}
 
-	CJSONWriterArray submodulesArray(writer);
+	CJSONWriterArray instancesArray(writer);
 
 	for (auto& instancePair : m_InstanceNameMap) {
 		auto pInstance = instancePair.second;
 		auto pModel = pInstance->getModel();
 
-		CJSONWriterObject subModuleObject(writer);
-		subModuleObject.addString("moduletype", "glsceneinstance");
-		subModuleObject.addString("uuid", pInstance->getUUID());
-
-		CJSONWriterObject attributesObject(writer);
-		attributesObject.addString("instancename", pInstance->getName());
-		attributesObject.addString("meshuuid", pModel->getMeshUUID());
-		subModuleObject.addObject("attributes", attributesObject);
-
-		submodulesArray.addObject(subModuleObject);
+		CJSONWriterObject instanceObject(writer);
+		instanceObject.addString(AMC_API_KEY_UI_UUID, pInstance->getUUID());
+		instanceObject.addString(AMC_API_KEY_UI_ITEMTYPE, "glsceneinstance");
+		instanceObject.addString(AMC_API_KEY_UI_INSTANCENAME, pInstance->getName());
+		instanceObject.addString(AMC_API_KEY_UI_MESHUUID, pModel->getMeshUUID());
+		instancesArray.addObject(instanceObject);
 	}
 
 	for (auto& dynInst : dynamicInstances) {
-		CJSONWriterObject subModuleObject(writer);
-		subModuleObject.addString("moduletype", "glsceneinstance");
-		subModuleObject.addString("uuid", dynInst.uuid);
-
-		CJSONWriterObject attributesObject(writer);
-		attributesObject.addString("instancename", dynInst.name);
-		attributesObject.addString("meshuuid", dynInst.meshUUID);
-		subModuleObject.addObject("attributes", attributesObject);
-
-		submodulesArray.addObject(subModuleObject);
+		CJSONWriterObject instanceObject(writer);
+		instanceObject.addString(AMC_API_KEY_UI_UUID, dynInst.uuid);
+		instanceObject.addString(AMC_API_KEY_UI_ITEMTYPE, "glsceneinstance");
+		instanceObject.addString(AMC_API_KEY_UI_INSTANCENAME, dynInst.name);
+		instanceObject.addString(AMC_API_KEY_UI_MESHUUID, dynInst.meshUUID);
+		instancesArray.addObject(instanceObject);
 	}
 
-	moduleObject.addArray("submodules", submodulesArray);
+	object.addArray(sName, instancesArray);
 }

@@ -85,15 +85,6 @@ CUIModule_ContentStatusBanner::~CUIModule_ContentStatusBanner()
 {
 }
 
-void CUIModule_ContentStatusBanner::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "statusbanner");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString("severity", m_sSeverity);
-	object.addString("title", m_sTitle);
-	object.addString("description", m_sDescription);
-}
-
 std::string CUIModule_ContentStatusBanner::getItemType()
 {
 	return "statusbanner";

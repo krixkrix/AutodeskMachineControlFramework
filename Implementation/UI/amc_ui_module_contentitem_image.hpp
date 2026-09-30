@@ -67,7 +67,6 @@ namespace AMC {
 		
 		virtual ~CUIModule_ContentImage();
 
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
 
 		virtual void configurePostLoading() override;
 
@@ -78,11 +77,13 @@ namespace AMC {
 		// New UI Frontend System
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 
 	private:
 		// Resolves a resource name or UUID string to a UUID.
 		std::string resolveResourceToUUID(const std::string& sResourceValue);
+
+		// Registers an attribute that is only written if the expression is not empty.
+		void registerOptionalStringAttribute(const std::string& sName, const CUIExpression& expression);
 	};
 
 

@@ -233,52 +233,6 @@ void CUIModule_ContentBuildList::writeButtonsToJSON(CJSONWriter& writer, CJSONWr
 
 
 
-void CUIModule_ContentBuildList::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pLegacyClientVariableHandler, uint32_t nStateID)
-{
-	std::string sLoadingText = m_LoadingText.evaluateStringValue(m_pStateMachineData);
-
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "buildlist");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString(AMC_API_KEY_UI_ITEMLOADINGTEXT, sLoadingText);
-	object.addString(AMC_API_KEY_UI_ITEMSELECTEVENT, m_sSelectEvent);
-	object.addString(AMC_API_KEY_UI_ITEMSELECTIONVALUEUUID, m_sSelectedBuildFieldUUID);
-	object.addString(AMC_API_KEY_UI_ITEMBUTTONVALUEUUID, m_sSelectedButtonFieldUUID);
-	object.addInteger(AMC_API_KEY_UI_ITEMENTRIESPERPAGE, m_nEntriesPerPage);
-
-	writeHeadersToJSON(writer, object);
-	writeButtonsToJSON(writer, object);
-
-	CJSONWriterArray entryArray(writer);
-
-	auto pBuildJobHandler = m_pDataModel->CreateBuildJobHandler();
-	auto pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(LibMCData::eBuildJobStatus::Validated);
-	while (pBuildJobIterator->MoveNext ()) {
-		
-		auto pBuildJob = pBuildJobIterator->GetCurrentJob();
-
-		CJSONWriterObject entryObject(writer);
-		entryObject.addString(AMC_API_KEY_UI_ITEMBUILDNAME, pBuildJob->GetName ());
-		entryObject.addInteger(AMC_API_KEY_UI_ITEMBUILDLAYERS, pBuildJob->GetLayerCount());
-		entryObject.addString(AMC_API_KEY_UI_ITEMBUILDUUID, pBuildJob->GetUUID());
-		entryObject.addString(AMC_API_KEY_UI_ITEMBUILDTIMESTAMP, pBuildJob->GetTimeStamp());
-		if (pBuildJob->HasThumbnailStream ())
-			entryObject.addString(AMC_API_KEY_UI_ITEMBUILDTHUMBNAIL, pBuildJob->GetThumbnailStreamUUID ());
-		else
-			entryObject.addString(AMC_API_KEY_UI_ITEMBUILDTHUMBNAIL, m_sDefaultThumbnailResourceUUID);
-
-		entryObject.addString(AMC_API_KEY_UI_ITEMBUILDUSER, pBuildJob->GetCreatorName());
-		entryObject.addInteger(AMC_API_KEY_UI_ITEMBUILDEXECUTIONCOUNT, pBuildJob->GetExecutionCount());
-
-
-		entryArray.addObject(entryObject);
-
-	}
-
-	object.addArray(AMC_API_KEY_UI_ITEMENTRIES, entryArray);
-
-}
-
-
 void CUIModule_ContentBuildList::populateClientVariables(CParameterHandler* pClientVariableHandler)
 {
 	LibMCAssertNotNull(pClientVariableHandler);
@@ -388,35 +342,22 @@ void CUIModule_ContentBuildList::registerFrontendAttributes()
 		expr.setFixedValue(m_sSelectedButtonFieldUUID);
 		registerItemStringAttribute("buttonvalueuuid", expr);
 	}
-}
-
-void CUIModule_ContentBuildList::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
-	if (m_pDataModel) {
-		auto pBuildJobHandler = m_pDataModel->CreateBuildJobHandler();
-		attributesObject.addInteger("buildlistheadid", (int64_t) pBuildJobHandler->GetBuildListHeadID());
+	{
+		CUIExpression expr;
+		expr.setFixedValue(m_sDefaultThumbnailResourceUUID);
+		registerItemStringAttribute(AMC_API_KEY_UI_ITEMDEFAULTTHUMBNAIL, expr);
 	}
 
-	attributesObject.addString(AMC_API_KEY_UI_ITEMDEFAULTTHUMBNAIL, m_sDefaultThumbnailResourceUUID);
+	registerItemProviderAttribute(AMC_API_KEY_UPLOAD_BUILDJOBBUILDLISTHEADID, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			if (m_pDataModel) {
+				auto pBuildJobHandler = m_pDataModel->CreateBuildJobHandler();
+				object.addInteger(sName, (int64_t)pBuildJobHandler->GetBuildListHeadID());
+			}
+		});
 
-	itemObject.addObject("attributes", attributesObject);
-
-	itemObject.addString(AMC_API_KEY_UI_ITEMSELECTIONVALUEUUID, m_sSelectedBuildFieldUUID);
-	itemObject.addString(AMC_API_KEY_UI_ITEMBUTTONVALUEUUID, m_sSelectedButtonFieldUUID);
-	writeButtonsToJSON(writer, itemObject);
+	registerItemProviderAttribute(AMC_API_KEY_UI_ENTRYBUTTONS, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			writeButtonsToJSON(writer, object);
+		});
 }

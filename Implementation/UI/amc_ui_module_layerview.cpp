@@ -76,119 +76,6 @@ std::string CUIModule_LayerViewPlatformItem::findElementPathByUUID(const std::st
 
 
 
-void CUIModule_LayerViewPlatformItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	auto pGroup = pClientVariableHandler->findGroup(getItemPath (), true);
-
-	auto pStateMachineData = m_pUIModuleEnvironment->stateMachineData ();	
-
-	if (m_SizeX.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_SIZEX, m_SizeX.evaluateStringValue(pStateMachineData));
-	if (m_SizeY.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_SIZEY, m_SizeY.evaluateStringValue(pStateMachineData));
-	if (m_OriginX.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_ORIGINX, m_OriginX.evaluateStringValue(pStateMachineData));
-	if (m_OriginY.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_ORIGINY, m_OriginY.evaluateStringValue(pStateMachineData));
-	if (m_PaddingX.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_PADDINGX, m_PaddingX.evaluateNumberValue(pStateMachineData));
-	if (m_PaddingY.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_PADDINGY, m_PaddingY.evaluateNumberValue(pStateMachineData));
-	if (m_TransformAngle.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_TRANSFORMANGLE, m_TransformAngle.evaluateNumberValue(pStateMachineData));
-	if (m_RotationCenterX.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_ROTATIONCENTERX, m_RotationCenterX.evaluateNumberValue(pStateMachineData));
-	if (m_RotationCenterY.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_ROTATIONCENTERY, m_RotationCenterY.evaluateNumberValue(pStateMachineData));
-	if (m_TranslationX.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_TRANSLATIONX, m_TranslationX.evaluateNumberValue(pStateMachineData));
-	if (m_TranslationY.needsSync())
-		pGroup->setDoubleParameterValueByName(AMC_API_KEY_UI_TRANSLATIONY, m_TranslationY.evaluateNumberValue(pStateMachineData));
-	if (m_ShowCoordinateSystem.needsSync())
-		pGroup->setIntParameterValueByName(AMC_API_KEY_UI_SHOWCOORDINATESYSTEM, m_ShowCoordinateSystem.evaluateIntegerValue(pStateMachineData));
-	if (m_LayerIndex.needsSync())
-		pGroup->setIntParameterValueByName(AMC_API_KEY_UI_CURRENTLAYER, m_LayerIndex.evaluateIntegerValue(pStateMachineData));
-	if (m_LabelVisible.needsSync())
-		pGroup->setIntParameterValueByName(AMC_API_KEY_UI_LABELVISIBLE, m_LabelVisible.evaluateIntegerValue(pStateMachineData));
-	if (m_LabelCaption.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_LABELCAPTION, m_LabelCaption.evaluateStringValue(pStateMachineData));
-	if (m_LabelIcon.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_LABELICON, m_LabelIcon.evaluateStringValue(pStateMachineData));
-	if (m_SliderChangeEvent.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_SLIDERCHANGEEVENT, m_SliderChangeEvent.evaluateStringValue(pStateMachineData));
-	if (m_SliderFixed.needsSync())
-		pGroup->setIntParameterValueByName(AMC_API_KEY_UI_SLIDERFIXED, m_SliderFixed.evaluateIntegerValue(pStateMachineData));
-
-	if (m_BuildUUID.needsSync ())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_BUILDUUID, m_BuildUUID.evaluateStringValue(pStateMachineData));
-	if (m_ExecutionUUID.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_EXECUTIONUUID, m_ExecutionUUID.evaluateStringValue(pStateMachineData));
-	if (m_ScatterplotUUID.needsSync())
-		pGroup->setParameterValueByName(AMC_API_KEY_UI_SCATTERPLOTUUID, m_ScatterplotUUID.evaluateStringValue(pStateMachineData));
-
-
-	object.addDouble(AMC_API_KEY_UI_SIZEX, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_SIZEX));
-	object.addDouble(AMC_API_KEY_UI_SIZEY, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_SIZEY));
-	object.addDouble(AMC_API_KEY_UI_ORIGINX, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_ORIGINX));
-	object.addDouble(AMC_API_KEY_UI_ORIGINY, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_ORIGINY));
-	object.addDouble(AMC_API_KEY_UI_PADDINGX, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_PADDINGX));
-	object.addDouble(AMC_API_KEY_UI_PADDINGY, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_PADDINGY));
-	object.addDouble(AMC_API_KEY_UI_TRANSFORMANGLE, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_TRANSFORMANGLE));
-	object.addDouble(AMC_API_KEY_UI_ROTATIONCENTERX, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_ROTATIONCENTERX));
-	object.addDouble(AMC_API_KEY_UI_ROTATIONCENTERY, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_ROTATIONCENTERY));
-	object.addDouble(AMC_API_KEY_UI_TRANSLATIONX, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_TRANSLATIONX));
-	object.addDouble(AMC_API_KEY_UI_TRANSLATIONY, pGroup->getDoubleParameterValueByName(AMC_API_KEY_UI_TRANSLATIONY));
-	object.addInteger(AMC_API_KEY_UI_SHOWCOORDINATESYSTEM, pGroup->getIntParameterValueByName(AMC_API_KEY_UI_SHOWCOORDINATESYSTEM));
-
-	std::string sBaseImageResource = m_BaseImage.evaluateStringValue(pStateMachineData);
-	if (!sBaseImageResource.empty()) {
-		auto pResourceEntry = m_pUIModuleEnvironment->resourcePackage()->findEntryByName(sBaseImageResource, true);
-		object.addString(AMC_API_KEY_UI_BASEIMAGERESOURCE, pResourceEntry->getUUID());
-	}
-
-	std::string sBuildUUID = pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_BUILDUUID);
-	std::string sExecutionUUID = pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_EXECUTIONUUID);
-	std::string sScatterplotUUID = pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_SCATTERPLOTUUID);
-
-	object.addString(AMC_API_KEY_UI_BUILDUUID, sBuildUUID);
-	object.addString(AMC_API_KEY_UI_EXECUTIONUUID, sExecutionUUID);
-	object.addString(AMC_API_KEY_UI_SCATTERPLOTUUID, sScatterplotUUID);
-	object.addString(AMC_API_KEY_UI_HIGHLIGHTPARTUUID, pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_HIGHLIGHTPARTUUID));
-	object.addInteger(AMC_API_KEY_UI_CURRENTLAYER, pGroup->getIntParameterValueByName(AMC_API_KEY_UI_CURRENTLAYER));
-	object.addInteger(AMC_API_KEY_UI_CURRENTLAYERCOUNTER, pGroup->getChangeCounterOf(AMC_API_KEY_UI_CURRENTLAYER));
-
-	uint32_t nLayerCount = 0;
-	uint64_t nPartStateVersion = 0;
-	if (AMCCommon::CUtils::stringIsNonEmptyUUIDString (sBuildUUID)) {
-		auto pToolpathHandler = m_pUIModuleEnvironment->toolpathHandler();
-		auto pDataModel = m_pUIModuleEnvironment->dataModel();
-		auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-
-		if (pBuildJobHandler->JobExists(sBuildUUID)) {
-			auto pBuildJob = pBuildJobHandler->RetrieveJob(sBuildUUID);
-			auto sStreamUUID = pBuildJob->GetStorageStreamUUID();
-			auto pToolpathEntity = pToolpathHandler->findToolpathEntity(sStreamUUID, false);
-			if (pToolpathEntity != nullptr) {
-				nLayerCount = pToolpathEntity->getLayerCount();
-			}
-			nPartStateVersion = pToolpathHandler->getDisabledPartsVersion(sStreamUUID);
-		}
-	}
-
-	object.addInteger(AMC_API_KEY_UI_LAYERCOUNT, nLayerCount);
-	object.addInteger(AMC_API_KEY_PARTSTATEVERSION, (int64_t)nPartStateVersion);
-
-	object.addInteger(AMC_API_KEY_UI_LABELVISIBLE, pGroup->getIntParameterValueByName(AMC_API_KEY_UI_LABELVISIBLE));
-	object.addString(AMC_API_KEY_UI_LABELCAPTION, pGroup->getParameterValueByName(AMC_API_KEY_UI_LABELCAPTION));
-	object.addString(AMC_API_KEY_UI_LABELICON, pGroup->getParameterValueByName(AMC_API_KEY_UI_LABELICON));
-
-	object.addString(AMC_API_KEY_UI_SLIDERCHANGEEVENT, pGroup->getParameterValueByName(AMC_API_KEY_UI_SLIDERCHANGEEVENT));
-	object.addInteger(AMC_API_KEY_UI_SLIDERFIXED, pGroup->getIntParameterValueByName(AMC_API_KEY_UI_SLIDERFIXED));
-
-
-
-}
-
 void CUIModule_LayerViewPlatformItem::handleCustomRequest(PAPIAuth pAuth, const std::string& requestType, const CAPIJSONRequest& requestData, CJSONWriter& response, CUIModule_UIEventHandler* pEventHandler)
 {
 	if (pAuth == nullptr)
@@ -290,7 +177,7 @@ void CUIModule_LayerViewPlatformItem::syncFrontendClientVariables(CParameterGrou
 
 
 CUIModule_LayerView::CUIModule_LayerView(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ()), m_pUIModuleEnvironment(pUIModuleEnvironment)
+: CUIModule (getNameFromXML(xmlNode), getStaticType(), sPath, pUIModuleEnvironment->getFrontendDefinition ()), m_pUIModuleEnvironment(pUIModuleEnvironment)
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -373,7 +260,6 @@ CUIModule_LayerView::CUIModule_LayerView(pugi::xml_node& xmlNode, const std::str
 	CUIExpression buildUUID;
 	CUIExpression executionUUID;
 	CUIExpression scatterplotUUID;
-	CUIExpression currentLayer;
 
 	CUIExpression labelVisible;
 	CUIExpression labelCaption;
@@ -482,10 +368,49 @@ CUIModule_LayerView::CUIModule_LayerView(pugi::xml_node& xmlNode, const std::str
 	/////////////////////////////////////////////////////////////////////////////////////
 	// New UI Frontend System
 	/////////////////////////////////////////////////////////////////////////////////////
-	registerUUIDAttribute(AMC_API_KEY_UI_BUILDUUID, buildUUID);
 	registerUUIDAttribute(AMC_API_KEY_UI_EXECUTIONUUID, executionUUID);
 	registerUUIDAttribute(AMC_API_KEY_UI_SCATTERPLOTUUID, scatterplotUUID);
-	registerIntegerAttribute(AMC_API_KEY_UI_CURRENTLAYER, currentLayer);
+
+	// Build and layer selection are per-session client variables of the platform item.
+	registerProviderAttribute(AMC_API_KEY_UI_BUILDUUID, eUIFrontendDefinitionAttributeType::atUUID, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			auto pGroup = findSyncedPlatformGroup(pFrontendState, pStateMachineData);
+			if (pGroup.get() != nullptr)
+				object.addString(sName, pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_BUILDUUID));
+		});
+	registerProviderAttribute(AMC_API_KEY_UI_CURRENTLAYER, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			auto pGroup = findSyncedPlatformGroup(pFrontendState, pStateMachineData);
+			if (pGroup.get() != nullptr)
+				object.addInteger(sName, pGroup->getIntParameterValueByName(AMC_API_KEY_UI_CURRENTLAYER));
+		});
+	registerProviderAttribute(AMC_API_KEY_UI_HIGHLIGHTPARTUUID, eUIFrontendDefinitionAttributeType::atUUID, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			auto pGroup = findSyncedPlatformGroup(pFrontendState, pStateMachineData);
+			if (pGroup.get() != nullptr)
+				object.addString(sName, pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_HIGHLIGHTPARTUUID));
+		});
+	registerProviderAttribute(AMC_API_KEY_UI_LAYERCOUNT, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			auto pGroup = findSyncedPlatformGroup(pFrontendState, pStateMachineData);
+			if (pGroup.get() != nullptr) {
+				uint32_t nLayerCount = 0;
+				uint64_t nPartStateVersion = 0;
+				retrieveBuildInformation(pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_BUILDUUID), nLayerCount, nPartStateVersion);
+				object.addInteger(sName, nLayerCount);
+			}
+		});
+	registerProviderAttribute(AMC_API_KEY_PARTSTATEVERSION, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			auto pGroup = findSyncedPlatformGroup(pFrontendState, pStateMachineData);
+			if (pGroup.get() != nullptr) {
+				uint32_t nLayerCount = 0;
+				uint64_t nPartStateVersion = 0;
+				retrieveBuildInformation(pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_BUILDUUID), nLayerCount, nPartStateVersion);
+				object.addInteger(sName, (int64_t)nPartStateVersion);
+			}
+		});
+
 	registerNumberAttribute(AMC_API_KEY_UI_SIZEX, sizeX);
 	registerNumberAttribute(AMC_API_KEY_UI_SIZEY, sizeY);
 	registerNumberAttribute(AMC_API_KEY_UI_ORIGINX, originX);
@@ -583,28 +508,6 @@ std::string CUIModule_LayerView::getCaption()
 }
 
 
-void CUIModule_LayerView::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-	moduleObject.addString(AMC_API_KEY_UI_CAPTION, m_sCaption);
-
-	CJSONWriterArray itemsNode(writer);
-	CJSONWriterObject itemObject(writer);
-	itemObject.addString(AMC_API_KEY_UI_ITEMTYPE, "platform");
-	itemObject.addString(AMC_API_KEY_UI_ITEMUUID, m_PlatformItem->getUUID ());
-	m_PlatformItem->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
-	itemsNode.addObject(itemObject);
-
-	moduleObject.addArray(AMC_API_KEY_UI_ITEMS, itemsNode);
-
-}
-
-void CUIModule_LayerView::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-}
-
 PUIModuleItem CUIModule_LayerView::findLegacyItem(const std::string& sUUID)
 {
 	if (m_PlatformItem->getUUID() == sUUID)
@@ -638,43 +541,39 @@ bool CUIModule_LayerView::isVersion2FrontendModule()
 	return true;
 }
 
-void CUIModule_LayerView::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+PParameterGroup CUIModule_LayerView::findSyncedPlatformGroup(CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
 {
-	CUIModule::frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
+	if ((pFrontendState == nullptr) || (pStateMachineData == nullptr))
+		return nullptr;
 
 	auto pParamHandler = pFrontendState->getLegacyParameterHandler();
-	auto pGroup = pParamHandler->findGroup(m_PlatformItem->getItemPath(), false);
-	if (pGroup == nullptr)
-		return;
+	if (pParamHandler.get() == nullptr)
+		return nullptr;
 
-	if (m_PlatformItem != nullptr) {
+	auto pGroup = pParamHandler->findGroup(m_PlatformItem->getItemPath(), false);
+	if (pGroup.get() != nullptr)
 		m_PlatformItem->syncFrontendClientVariables(pGroup.get(), pStateMachineData);
 
-		CJSONWriterObject cvObject(writer);
+	return pGroup;
+}
 
-		std::string sBuildUUID = pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_BUILDUUID);
-		cvObject.addString(AMC_API_KEY_UI_BUILDUUID, sBuildUUID);
-		cvObject.addString(AMC_API_KEY_UI_HIGHLIGHTPARTUUID, pGroup->getUUIDParameterValueByName(AMC_API_KEY_UI_HIGHLIGHTPARTUUID));
-		cvObject.addInteger(AMC_API_KEY_UI_CURRENTLAYER, pGroup->getIntParameterValueByName(AMC_API_KEY_UI_CURRENTLAYER));
+void CUIModule_LayerView::retrieveBuildInformation(const std::string& sBuildUUID, uint32_t& nLayerCount, uint64_t& nPartStateVersion)
+{
+	nLayerCount = 0;
+	nPartStateVersion = 0;
 
-		uint32_t nLayerCount = 0;
-		uint64_t nPartStateVersion = 0;
-		if (AMCCommon::CUtils::stringIsNonEmptyUUIDString(sBuildUUID)) {
-			auto pToolpathHandler = m_pUIModuleEnvironment->toolpathHandler();
-			auto pDataModel = m_pUIModuleEnvironment->dataModel();
-			auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
-			if (pBuildJobHandler->JobExists(sBuildUUID)) {
-				auto pBuildJob = pBuildJobHandler->RetrieveJob(sBuildUUID);
-				auto sStreamUUID = pBuildJob->GetStorageStreamUUID();
-				auto pToolpathEntity = pToolpathHandler->findToolpathEntity(sStreamUUID, false);
-				if (pToolpathEntity != nullptr)
-					nLayerCount = pToolpathEntity->getLayerCount();
-				nPartStateVersion = pToolpathHandler->getDisabledPartsVersion(sStreamUUID);
-			}
-		}
-		cvObject.addInteger(AMC_API_KEY_UI_LAYERCOUNT, nLayerCount);
-		cvObject.addInteger(AMC_API_KEY_PARTSTATEVERSION, (int64_t)nPartStateVersion);
+	if (!AMCCommon::CUtils::stringIsNonEmptyUUIDString(sBuildUUID))
+		return;
 
-		moduleObject.addObject("clientvariables", cvObject);
+	auto pToolpathHandler = m_pUIModuleEnvironment->toolpathHandler();
+	auto pDataModel = m_pUIModuleEnvironment->dataModel();
+	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
+	if (pBuildJobHandler->JobExists(sBuildUUID)) {
+		auto pBuildJob = pBuildJobHandler->RetrieveJob(sBuildUUID);
+		auto sStreamUUID = pBuildJob->GetStorageStreamUUID();
+		auto pToolpathEntity = pToolpathHandler->findToolpathEntity(sStreamUUID, false);
+		if (pToolpathEntity != nullptr)
+			nLayerCount = pToolpathEntity->getLayerCount();
+		nPartStateVersion = pToolpathHandler->getDisabledPartsVersion(sStreamUUID);
 	}
 }

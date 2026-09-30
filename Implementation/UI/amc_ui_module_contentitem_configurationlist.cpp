@@ -339,122 +339,6 @@ void CUIModule_ContentConfigurationList::addLegacyDefinitionToJSON(CJSONWriter& 
 }
 #endif 
 
-void CUIModule_ContentConfigurationList::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	std::string sLoadingText = m_LoadingText.evaluateStringValue(m_pStateMachineData);
-
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "configurationlist");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString(AMC_API_KEY_UI_ITEMLOADINGTEXT, sLoadingText);
-	object.addString(AMC_API_KEY_UI_ITEMSELECTEVENT, m_sSelectEvent);
-	object.addString(AMC_API_KEY_UI_ITEMSELECTIONVALUEUUID, m_sSelectedConfigurationFieldUUID);
-	object.addString(AMC_API_KEY_UI_ITEMBUTTONVALUEUUID, m_sSelectedButtonFieldUUID);
-	object.addInteger(AMC_API_KEY_UI_ITEMENTRIESPERPAGE, m_nEntriesPerPage);
-
-	writeHeadersToJSON(writer, object);
-	writeButtonsToJSON(writer, object);
-
-	CJSONWriterArray entryArray(writer);
-
-	//auto pConfigurationJobHandler = m_pDataModel->CreateConfigurationJobHandler();
-
-
-	auto pConfigurationType = m_pDataModel->FindConfigurationTypeBySchema(m_sConfigurationSchema);
-
-	if (pConfigurationType.get() != nullptr)
-	{
-
-		auto pConfigurationVersionsIterator = pConfigurationType->ListAllConfigurationVersions();
-
-		auto pActiveConfiguration = pConfigurationType->GetActiveConfigurationVersion();
-		std::string sActiveUUID;
-		if (pActiveConfiguration.get() != nullptr)
-			sActiveUUID = pActiveConfiguration->GetVersionUUID();
-
-		auto pLoginHandler = m_pDataModel->CreateLoginHandler();
-		std::map<std::string, std::string> userNameCache;
-
-		while (pConfigurationVersionsIterator->MoveNext()) {
-
-			auto pConfigurationVersion = pConfigurationVersionsIterator->GetCurrent();
-
-			CJSONWriterObject entryObject(writer);
-
-			entryObject.addBool("configurationActive", pConfigurationVersion->GetVersionUUID() == sActiveUUID);
-
-			// Versions created before names were introduced have no name.
-			std::string sVersionName = pConfigurationVersion->GetName();
-			if (sVersionName.empty())
-				sVersionName = "Version " + std::to_string(pConfigurationVersion->GetNumericVersion());
-
-			// Versions created by the machine itself have the null user UUID.
-			std::string sUserUUID = pConfigurationVersion->GetUserUUID();
-			std::string sUserName;
-			if (!AMCCommon::CUtils::stringIsNonEmptyUUIDString(sUserUUID)) {
-				sUserName = "system";
-			}
-			else {
-				auto iCacheEntry = userNameCache.find(sUserUUID);
-				if (iCacheEntry != userNameCache.end()) {
-					sUserName = iCacheEntry->second;
-				}
-				else {
-					try {
-						sUserName = pLoginHandler->GetUsernameByUUID(sUserUUID);
-					}
-					catch (...) {
-						sUserName = sUserUUID;
-					}
-					userNameCache.insert(std::make_pair(sUserUUID, sUserName));
-				}
-			}
-
-			entryObject.addInteger("configurationVersion", pConfigurationVersion->GetNumericVersion());
-			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONNAME, sVersionName);
-			entryObject.addString("userName", sUserName);
-			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONUUID, pConfigurationVersion->GetVersionUUID());
-			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONTIMESTAMP, pConfigurationVersion->GetTimestamp());
-
-			entryArray.addObject(entryObject);
-		}
-	}
-
-	//--------------------------------------------
-#if 0
-	auto pConfigurationTypeIterator = m_pDataModel->ListRegisteredConfigurationTypes();
-
-	while (pConfigurationTypeIterator->MoveNext ()) {
-		
-		auto pConfigurationJob = pConfigurationTypeIterator->GetCurrent();
-
-		CJSONWriterObject entryObject(writer);
-
-
-		entryObject.addString("configurationVersion", "v1.2.3");
-		entryObject.addString("userName", "test");
-
-		entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONNAME, pConfigurationJob->GetName());
-		//entryObject.addInteger(AMC_API_KEY_UI_ITEMCONFIGURATIONLAYERS, pConfigurationJob->GetLayerCount());
-		entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONUUID, pConfigurationJob->GetUUID());
-		entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONTIMESTAMP, pConfigurationJob->GetTimestamp());
-#if 0
-		if (pConfigurationJob->HasThumbnailStream ())
-			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONTHUMBNAIL, pConfigurationJob->GetThumbnailStreamUUID ());
-		else
-			entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONTHUMBNAIL, m_sDefaultThumbnailResourceUUID);
-
-		entryObject.addString(AMC_API_KEY_UI_ITEMCONFIGURATIONUSER, pConfigurationJob->GetCreatorName());
-		entryObject.addInteger(AMC_API_KEY_UI_ITEMCONFIGURATIONEXECUTIONCOUNT, pConfigurationJob->GetExecutionCount());
-
-#endif
-		entryArray.addObject(entryObject);
-
-	}
-#endif
-	object.addArray(AMC_API_KEY_UI_ITEMENTRIES, entryArray);
-}
-
-
 void CUIModule_ContentConfigurationList::populateClientVariables(CParameterHandler* pClientVariableHandler)
 {
 	LibMCAssertNotNull(pClientVariableHandler);
@@ -562,25 +446,20 @@ void CUIModule_ContentConfigurationList::registerFrontendAttributes()
 	CUIExpression schemaExpr;
 	schemaExpr.setFixedValue(m_sConfigurationSchema);
 	registerItemStringAttribute("schema", schemaExpr);
+
+	registerItemProviderAttribute(AMC_API_KEY_CONFIGURATIONS_HEADID, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			object.addInteger(sName, (int64_t)calculateHeadID());
+		});
+
+	registerItemProviderAttribute(AMC_API_KEY_UI_ENTRYBUTTONS, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			writeButtonsToJSON(writer, object);
+		});
 }
 
-void CUIModule_ContentConfigurationList::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+uint32_t CUIModule_ContentConfigurationList::calculateHeadID()
 {
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
 	uint64_t nConfigurationListHeadID = 1469598103934665603ULL;
 	fnv1aMixString(nConfigurationListHeadID, m_sConfigurationSchema);
 
@@ -604,11 +483,5 @@ void CUIModule_ContentConfigurationList::frontendWriteItemToJSON(CJSONWriter& wr
 		}
 	}
 
-	uint32_t nHeadID = (uint32_t)(nConfigurationListHeadID & 0x7fffffffULL);
-	attributesObject.addInteger(AMC_API_KEY_CONFIGURATIONS_HEADID, (int64_t)nHeadID);
-	itemObject.addObject("attributes", attributesObject);
-
-	itemObject.addString(AMC_API_KEY_UI_ITEMSELECTIONVALUEUUID, m_sSelectedConfigurationFieldUUID);
-	itemObject.addString(AMC_API_KEY_UI_ITEMBUTTONVALUEUUID, m_sSelectedButtonFieldUUID);
-	writeButtonsToJSON(writer, itemObject);
+	return (uint32_t)(nConfigurationListHeadID & 0x7fffffffULL);
 }

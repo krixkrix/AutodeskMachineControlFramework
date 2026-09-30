@@ -107,12 +107,10 @@ namespace AMC {
 		void addRow(PUIModule_ContentStatusListRow pRow);
 		uint32_t getRowCount();
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
 
 		// New UI Frontend System
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 
 	};
 

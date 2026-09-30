@@ -53,7 +53,7 @@ using namespace AMC;
 #define GRAPHIC_MAXVIEWCOORD +1.0E6
 
 CUIModule_Graphic::CUIModule_Graphic(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ()), 
+: CUIModule (getNameFromXML(xmlNode), getStaticType(), sPath, pUIModuleEnvironment->getFrontendDefinition ()), 
   m_nNamingIDCounter (1), m_dMinX (0.0), m_dMinY (0.0), m_dMaxX (100.0), m_dMaxY (100.0), m_bShowGrid (false)
 {
 
@@ -113,8 +113,14 @@ CUIModule_Graphic::CUIModule_Graphic(pugi::xml_node& xmlNode, const std::string&
 	visibleExpr.setFixedValue("1");
 	registerBoolAttribute("visible", visibleExpr);
 
+	m_pModuleStore->setAlwaysWriteSubmodules(true);
+
 	for (auto pItem : m_Items) {
 		pItem->initFrontendModuleStore(pFrontendDefinition);
+
+		auto pItemStore = pItem->getFrontendModuleStore();
+		if ((pItemStore.get() != nullptr) && (!pItemStore->getModuleType().empty()))
+			m_pModuleStore->addChildStore(pItemStore);
 	}
 
 }
@@ -141,33 +147,6 @@ std::string CUIModule_Graphic::getCaption()
 	return m_sCaption;
 }
 
-
-void CUIModule_Graphic::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-	moduleObject.addString(AMC_API_KEY_UI_CAPTION, m_sCaption);
-
-	moduleObject.addDouble(AMC_API_KEY_UI_VIEWMINX, m_dMinX);
-	moduleObject.addDouble(AMC_API_KEY_UI_VIEWMINY, m_dMinY);
-	moduleObject.addDouble(AMC_API_KEY_UI_VIEWMAXX, m_dMaxX);
-	moduleObject.addDouble(AMC_API_KEY_UI_VIEWMAXY, m_dMaxY);
-	moduleObject.addBool(AMC_API_KEY_UI_SHOWGRID, m_bShowGrid);
-
-	CJSONWriterArray itemsNode(writer);
-	for (auto item : m_Items) {
-		CJSONWriterObject itemObject(writer);
-		item->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
-		itemsNode.addObject(itemObject);
-	}
-	moduleObject.addArray(AMC_API_KEY_UI_ITEMS, itemsNode);
-
-}
-
-void CUIModule_Graphic::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-}
 
 PUIModuleItem CUIModule_Graphic::findLegacyItem(const std::string& sUUID)
 {
@@ -254,25 +233,6 @@ bool CUIModule_Graphic::isVersion2FrontendModule()
 {
 	return true;
 }
-
-void CUIModule_Graphic::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	CUIModule::frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
-
-	CJSONWriterArray submodulesArray(writer);
-
-	for (auto& pItem : m_Items) {
-		std::string sItemType = pItem->getItemType();
-		if (!sItemType.empty()) {
-			CJSONWriterObject subModuleObject(writer);
-			pItem->frontendWriteItemToJSON(writer, subModuleObject, pFrontendState, pStateMachineData);
-			submodulesArray.addObject(subModuleObject);
-		}
-	}
-
-	moduleObject.addArray("submodules", submodulesArray);
-}
-
 
 void CUIModule_Graphic::readViewPort(const pugi::xml_node& viewportNode)
 {

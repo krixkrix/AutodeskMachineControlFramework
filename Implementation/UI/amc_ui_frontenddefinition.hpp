@@ -41,11 +41,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <vector>
 #include <mutex>
+#include <functional>
 
 namespace AMC {
 
 	class CParameterGroup;
 	typedef std::shared_ptr<CParameterGroup> PParameterGroup;
+
+	class CUIFrontendState;
+	class CUIFrontendDefinition;
 
 	enum class eUIFrontendDefinitionAttributeType : uint32_t {
 		atUnknown = 0,
@@ -57,6 +61,14 @@ namespace AMC {
 		atArray = 6,
 		atObject = 7
 	};
+
+	enum class eUIFrontendDefinitionAttributeScope : uint32_t {
+		asGlobal = 0,
+		asSession = 1
+	};
+
+	// Writes the value sName into object. Providers must only write under sName (or nothing).
+	typedef std::function<void(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState)> UIFrontendDefinitionProvider;
 
 	class CUIFrontendDefinitionAttribute {
 	private:
@@ -74,10 +86,13 @@ namespace AMC {
 
 		eUIFrontendDefinitionAttributeType getAttributeType();
 
-		virtual void writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIExpressionSessionContext* pSessionContext) = 0;
+		virtual void writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) = 0;
 
 		// Returns the session reference of the attribute value, or an empty string.
 		virtual std::string getSessionReference();
+
+		// Returns true if the value can differ between client sessions.
+		virtual bool isSessionScoped() = 0;
 	};
 
 	typedef std::shared_ptr<CUIFrontendDefinitionAttribute> PUIFrontendDefinitionAttribute;
@@ -93,9 +108,29 @@ namespace AMC {
 
 		virtual ~CUIFrontendDefinitionExpressionAttribute();
 
-		virtual void writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData * pStateMachineData, CUIExpressionSessionContext* pSessionContext) override;
+		virtual void writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData * pStateMachineData, CUIFrontendState* pFrontendState) override;
 
 		virtual std::string getSessionReference() override;
+
+		virtual bool isSessionScoped() override;
+
+	};
+
+
+	class CUIFrontendDefinitionProviderAttribute : public CUIFrontendDefinitionAttribute {
+	private:
+		eUIFrontendDefinitionAttributeScope m_Scope;
+		UIFrontendDefinitionProvider m_Provider;
+
+	public:
+
+		CUIFrontendDefinitionProviderAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider);
+
+		virtual ~CUIFrontendDefinitionProviderAttribute();
+
+		virtual void writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) override;
+
+		virtual bool isSessionScoped() override;
 
 	};
 
@@ -106,6 +141,8 @@ namespace AMC {
 	class CUIFrontendDefinitionModuleStore {
 	private:
 
+		CUIFrontendDefinition* m_pFrontendDefinition;
+
 		std::string m_sPath;
 		std::string m_sUUID;
 		std::string m_sModuleType;
@@ -113,27 +150,51 @@ namespace AMC {
 		std::map<std::string, PUIFrontendDefinitionAttribute> m_Attributes;
 		std::vector<PUIFrontendDefinitionModuleStore> m_ChildStores;
 
+		// Static object level properties (like name or grid placement), written before the attributes.
+		std::vector<std::pair<std::string, UIFrontendDefinitionProvider>> m_StructureProperties;
+
+		bool m_bAlwaysWriteSubmodules;
+
+		void checkNewAttributeName(const std::string& sName);
+
 	public:
-		CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string & sModulePath, const std::string& sModuleType = "");
+		CUIFrontendDefinitionModuleStore(CUIFrontendDefinition* pFrontendDefinition, const std::string& sModuleUUID, const std::string & sModulePath, const std::string& sModuleType);
 
 		virtual ~CUIFrontendDefinitionModuleStore();
 
 		PUIFrontendDefinitionAttribute registerValue (const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression & valueExpression);
 
+		PUIFrontendDefinitionAttribute registerProvider(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider);
+
+		void registerStructureProperty(const std::string& sName, UIFrontendDefinitionProvider provider);
+
 		std::vector<PUIFrontendDefinitionAttribute> getAttributes();
+
+		const std::vector<std::pair<std::string, UIFrontendDefinitionProvider>>& getStructureProperties();
 
 		// Tree structure: the definition layer owns the hierarchy
 		PUIFrontendDefinitionModuleStore addChildStore(const std::string& sChildUUID, const std::string& sChildPath, const std::string& sChildModuleType);
+
+		void addChildStore(PUIFrontendDefinitionModuleStore pChildStore);
 
 		std::vector<PUIFrontendDefinitionModuleStore> getChildStores();
 
 		bool hasChildren();
 
+		// Containers write an empty submodules array, leaves omit it.
+		void setAlwaysWriteSubmodules(bool bAlwaysWriteSubmodules);
+
+		bool getAlwaysWriteSubmodules();
+
 		std::string getModuleType();
+
+		void setModuleType(const std::string& sModuleType);
 
 		std::string getUUID();
 
-		// Collects the session references of this store and all child stores.
+		std::string getPath();
+
+		// Collects the session references of the attributes of this store (not of its children).
 		void collectSessionReferences(std::vector<std::string>& references);
 
 	};
@@ -142,6 +203,7 @@ namespace AMC {
 	private:
 
 		std::vector<PUIFrontendDefinitionModuleStore> m_ModuleStores;
+		std::map<std::string, PUIFrontendDefinitionModuleStore> m_ModuleStoreUUIDMap;
 		AMCCommon::PChrono m_pGlobalChrono;
 
 		// Declared session variables with their default values. Every client session gets a copy.
@@ -160,6 +222,8 @@ namespace AMC {
 		virtual ~CUIFrontendDefinition ();
 
 		PUIFrontendDefinitionModuleStore registerModuleStore (const std::string& sModuleUUID, const std::string& sPath, const std::string& sModuleType = "");
+
+		PUIFrontendDefinitionModuleStore findModuleStore(const std::string& sModuleUUID, bool bMustExist);
 
 		AMCCommon::PChrono getGlobalChrono();	
 

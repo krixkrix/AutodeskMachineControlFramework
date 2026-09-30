@@ -127,16 +127,6 @@ void CUIPage::ensureUIEventExists(const std::string& sEventName)
 // Legacy UI System
 /////////////////////////////////////////////////////////////////////////////////////
 
-void CUIPage::writeLegacyModulesToJSON(CJSONWriter& writer, CJSONWriterArray& moduleArray, CParameterHandler* pLegacyClientVariableHandler)
-{
-	for (auto module : m_Modules) {
-		CJSONWriterObject moduleObject(writer);		
-		module->writeLegacyDefinitionToJSON(writer, moduleObject, pLegacyClientVariableHandler);
-
-		moduleArray.addObject(moduleObject);
-	}
-}
-
 PUIModule CUIPage::findModuleByUUID(const std::string& sUUID)
 {
 	auto iIter = m_ModuleMapOfPage.find(sUUID);

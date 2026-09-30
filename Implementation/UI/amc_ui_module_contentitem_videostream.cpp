@@ -77,41 +77,6 @@ CUIModule_ContentVideoStream::~CUIModule_ContentVideoStream()
 
 
 
-void CUIModule_ContentVideoStream::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "videostream");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-
-	auto pClientVariableGroup = pClientVariableHandler->findGroup(getItemPath(), true);
-
-	// The stream resource is typically a UUID that the state machine sets dynamically
-	// via SetUIProperty, pointing to an active video stream UUID.
-	if (m_StreamResource.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMSTREAMRESOURCE, m_StreamResource.evaluateStringValue(m_pStateMachineData));
-	if (m_AspectRatio.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMASPECTRATIO, m_AspectRatio.evaluateStringValue(m_pStateMachineData));
-	if (m_MaxWidth.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMMAXWIDTH, m_MaxWidth.evaluateStringValue(m_pStateMachineData));
-	if (m_MaxHeight.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMMAXHEIGHT, m_MaxHeight.evaluateStringValue(m_pStateMachineData));
-
-	std::string sStreamUUID = pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMSTREAMRESOURCE);
-
-	// Normalize UUID if it looks like one, otherwise pass it through
-	if (!sStreamUUID.empty() && AMCCommon::CUtils::stringIsUUIDString(sStreamUUID)) {
-		sStreamUUID = AMCCommon::CUtils::normalizeUUIDString(sStreamUUID);
-	}
-
-	object.addString(AMC_API_KEY_UI_ITEMSTREAMRESOURCE, sStreamUUID);
-	object.addString(AMC_API_KEY_UI_ITEMASPECTRATIO, pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMASPECTRATIO));
-	if (!m_MaxWidth.isEmpty(m_pStateMachineData))
-		object.addString(AMC_API_KEY_UI_ITEMMAXWIDTH, pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMMAXWIDTH));
-	if (!m_MaxHeight.isEmpty(m_pStateMachineData))
-		object.addString(AMC_API_KEY_UI_ITEMMAXHEIGHT, pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMMAXHEIGHT));
-
-}
-
-
 void CUIModule_ContentVideoStream::configurePostLoading()
 {
 

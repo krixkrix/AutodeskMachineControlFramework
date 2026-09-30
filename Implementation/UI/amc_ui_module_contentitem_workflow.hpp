@@ -69,6 +69,8 @@ namespace AMC {
 
 		std::vector<SWorkflowCatalogEntry> m_CatalogEntries;
 
+		void writeCatalogToJSON(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName);
+
 	public:
 
 		static PUIModule_ContentWorkflow makeFromXML(const pugi::xml_node& xmlNode, const std::string& sItemName, const std::string& sModulePath);
@@ -79,12 +81,10 @@ namespace AMC {
 
 		void addCatalogEntry(const SWorkflowCatalogEntry& entry);
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
 
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
 
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 
 	};
 

@@ -114,10 +114,6 @@ namespace AMC {
 
 		virtual ~CUIModule_ContentConfigurationList();
 
-		//void addLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler) override;
-
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		virtual void populateClientVariables(CParameterHandler* pClientVariableHandler) override;
 
 		virtual void setEventPayloadValue(const std::string& sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler) override;
@@ -131,7 +127,9 @@ namespace AMC {
 		// New UI Frontend System
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
+
+		// Changes whenever a configuration version is added or activated.
+		uint32_t calculateHeadID();
 
 	};
 

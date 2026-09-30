@@ -168,33 +168,15 @@ CUIModule_GraphicSVGImage::~CUIModule_GraphicSVGImage()
 }
 
 
-void CUIModule_GraphicSVGImage::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
+void CUIModule_GraphicSVGImage::evaluateTransformedPosition(double& dX, double& dY)
 {
 	auto pStateMachineData = m_pUIModuleEnvironment->stateMachineData();
 
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "svgimage");
-	object.addString(AMC_API_KEY_UI_ITEMNAME, m_sItemName);
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-
-	std::string sResourceName = m_ResourceName.evaluateStringValue(pStateMachineData);
-	auto pResourceEntry = m_pUIModuleEnvironment->resourcePackage()->findEntryByName(sResourceName, false);
-
-	if (pResourceEntry.get() != nullptr) {
-		object.addString(AMC_API_KEY_UI_ITEMIMAGEUUID, pResourceEntry->getUUID());
-	}
-
-	double dX = m_X.evaluateNumberValue(pStateMachineData);
-	double dY = m_Y.evaluateNumberValue(pStateMachineData);
+	dX = m_X.evaluateNumberValue(pStateMachineData);
+	dY = m_Y.evaluateNumberValue(pStateMachineData);
 
 	for (auto pTransform : m_Transforms)
 		pTransform->transformPosition(dX, dY, pStateMachineData);
-
-	object.addDouble(AMC_API_KEY_UI_ITEMX, dX);
-	object.addDouble(AMC_API_KEY_UI_ITEMY, dY);
-	object.addDouble(AMC_API_KEY_UI_ITEMZ, m_Z.evaluateNumberValue(pStateMachineData));
-	object.addDouble(AMC_API_KEY_UI_ITEMSCALEX, m_ScaleX.evaluateNumberValue(pStateMachineData));
-	object.addDouble(AMC_API_KEY_UI_ITEMSCALEY, m_ScaleY.evaluateNumberValue(pStateMachineData));
-	object.addDouble(AMC_API_KEY_UI_ITEMANGLE, m_Angle.evaluateNumberValue(pStateMachineData));
 }
 
 void CUIModule_GraphicSVGImage::addTransform(PUIModule_GraphicSVGImageTransform pTransform)
@@ -211,8 +193,23 @@ std::string CUIModule_GraphicSVGImage::getItemType()
 void CUIModule_GraphicSVGImage::registerFrontendAttributes()
 {
 	registerItemStringAttribute("resource", m_ResourceName);
-	registerItemNumberAttribute("x", m_X);
-	registerItemNumberAttribute("y", m_Y);
+
+	// Positions include the motion transforms of the image.
+	m_pItemModuleStore->registerProvider("x", eUIFrontendDefinitionAttributeType::atNumber, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			double dX = 0.0;
+			double dY = 0.0;
+			evaluateTransformedPosition(dX, dY);
+			object.addDouble(sName, dX);
+		});
+	m_pItemModuleStore->registerProvider("y", eUIFrontendDefinitionAttributeType::atNumber, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			double dX = 0.0;
+			double dY = 0.0;
+			evaluateTransformedPosition(dX, dY);
+			object.addDouble(sName, dY);
+		});
+
 	registerItemNumberAttribute("z", m_Z);
 	registerItemNumberAttribute("scalex", m_ScaleX);
 	registerItemNumberAttribute("scaley", m_ScaleY);

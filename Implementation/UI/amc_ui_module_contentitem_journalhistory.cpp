@@ -81,16 +81,6 @@ CUIModule_ContentJournalHistory::~CUIModule_ContentJournalHistory()
 {
 }
 
-void CUIModule_ContentJournalHistory::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "journalhistory");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString("title", m_sTitle);
-	object.addString("defaultvariables", m_sDefaultVariables);
-	object.addBool("compact", m_CompactExpression.evaluateBoolValue(nullptr));
-	object.addInteger("livewindow", m_LiveWindowExpression.evaluateIntegerValue(nullptr));
-}
-
 std::string CUIModule_ContentJournalHistory::getItemType()
 {
 	return "journalhistory";

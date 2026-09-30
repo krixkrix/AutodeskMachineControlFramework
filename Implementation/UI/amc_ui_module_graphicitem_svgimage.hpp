@@ -86,6 +86,8 @@ namespace AMC {
 
 		std::vector <PUIModule_GraphicSVGImageTransform> m_Transforms;
 
+		void evaluateTransformedPosition(double& dX, double& dY);
+
 	public:
 
 		static PUIModule_GraphicSVGImage makeFromXML(const pugi::xml_node& xmlNode, const std::string& sItemName, const std::string& sModulePath, PUIModuleEnvironment pUIModuleEnvironment);
@@ -93,8 +95,6 @@ namespace AMC {
 		CUIModule_GraphicSVGImage(CUIExpression resourceName, CUIExpression x, CUIExpression y, CUIExpression z, CUIExpression scaleX, CUIExpression scaleY, CUIExpression angle, const std::string& sItemName, const std::string& sModulePath, PUIModuleEnvironment pUIModuleEnvironment);
 		
 		virtual ~CUIModule_GraphicSVGImage();
-
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
 
 		void addTransform(PUIModule_GraphicSVGImageTransform pTransform);
 

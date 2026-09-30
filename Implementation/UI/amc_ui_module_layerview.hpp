@@ -90,8 +90,6 @@ namespace AMC {
 
 		virtual std::string findElementPathByUUID(const std::string& sUUID) override;
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-		
 		virtual void populateClientVariables(CParameterHandler* pClientVariableHandler);
 
 		// v2 frontend: applies the synced build references to the per-session client variables.
@@ -118,6 +116,11 @@ namespace AMC {
 
 		PUIModuleEnvironment m_pUIModuleEnvironment;
 
+		// Returns the session's platform client variables after applying the synced references, or nullptr.
+		PParameterGroup findSyncedPlatformGroup(CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData);
+
+		void retrieveBuildInformation(const std::string& sBuildUUID, uint32_t& nLayerCount, uint64_t& nPartStateVersion);
+
 	public:
 
 		/////////////////////////////////////////////////////////////////////////////////////
@@ -138,10 +141,6 @@ namespace AMC {
 		// Legacy UI System
 		/////////////////////////////////////////////////////////////////////////////////////
 		
-		virtual void addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
-		virtual void writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler) override;
-		
 		virtual void populateModuleMap(std::map<std::string, PUIModule>& moduleMap) override;
 
 		virtual void populateLegacyItemMap(std::map<std::string, PUIModuleItem>& itemMap) override;
@@ -155,8 +154,6 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 
 		bool isVersion2FrontendModule() override;
-
-		void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 
 	};
 

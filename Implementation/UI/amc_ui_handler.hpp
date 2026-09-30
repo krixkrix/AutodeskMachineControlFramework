@@ -193,7 +193,6 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Legacy UI System
 		/////////////////////////////////////////////////////////////////////////////////////
-		void writeLegacyStateToJSON(CJSONWriter& writer, CParameterHandler* pLegacyClientVariableHandler);
 		PUIModuleItem findModuleItem(const std::string& sUUID);
 		PUIPage findPageOfModuleItem(const std::string& sUUID);
 		virtual void populateClientVariables(CParameterHandler* pClientVariableHandler);

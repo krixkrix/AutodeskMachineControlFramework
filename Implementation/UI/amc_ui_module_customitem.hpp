@@ -54,6 +54,7 @@ namespace AMC {
 	amcDeclareDependingClass(CUIExpression, PUIExpression);
 	amcDeclareDependingClass(CUIModuleEnvironment, PUIModuleEnvironment);
 	amcDeclareDependingClass(CUIModuleCustomItem_EventParameter, PUIModuleCustomItem_EventParameter);
+	amcDeclareDependingClass(CUIFrontendState, PUIFrontendState);
 		
 
 	class CUIModuleCustomItem_Properties : public CUIModuleItem {
@@ -71,8 +72,6 @@ namespace AMC {
 		virtual ~CUIModuleCustomItem_Properties();
 
 		virtual std::string getUUID () override;
-
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
 
 		// Returns all UUIDs that could be contained in this Item
 		virtual std::list <std::string> getReferenceUUIDs();
@@ -131,7 +130,8 @@ namespace AMC {
 
 		std::string getEventName ();
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
+		// Writes the event parameters with the current values of the session's client variables.
+		void writeParametersToJSON(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CUIFrontendState* pFrontendState);
 
 		// Returns all UUIDs that could be contained in this Item
 		virtual std::list <std::string> getReferenceUUIDs();

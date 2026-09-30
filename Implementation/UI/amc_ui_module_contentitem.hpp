@@ -70,8 +70,6 @@ namespace AMC {
 
 		virtual std::string getUUID () override;
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pLegacyClientVariableHandler, uint32_t nStateID) override;
-
 		// Returns all UUIDs that could be contained in this Item
 		virtual std::list <std::string> getReferenceUUIDs();
 
@@ -90,8 +88,8 @@ namespace AMC {
 		// Returns the item type string for the v2 frontend (e.g. "paragraph", "image").
 		virtual std::string getItemType();
 
-		// Write this item as a submodule in the v2 frontend JSON output.
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData);
+		// Returns the v2 frontend module store of this item, or nullptr if it has not been initialized.
+		PUIFrontendDefinitionModuleStore getFrontendModuleStore();
 
 		// Helpers for registering v2 attributes
 		PUIFrontendDefinitionAttribute registerItemStringAttribute(const std::string& sName, const CUIExpression& expression);
@@ -99,6 +97,7 @@ namespace AMC {
 		PUIFrontendDefinitionAttribute registerItemIntegerAttribute(const std::string& sName, const CUIExpression& expression);
 		PUIFrontendDefinitionAttribute registerItemNumberAttribute(const std::string& sName, const CUIExpression& expression);
 		PUIFrontendDefinitionAttribute registerItemUUIDAttribute(const std::string& sName, const CUIExpression& expression);
+		PUIFrontendDefinitionAttribute registerItemProviderAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider);
 
 	};
 

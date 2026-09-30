@@ -71,13 +71,6 @@ std::string CUIModule_ContentParagraph::getText()
 	return m_sText;
 }
 
-void CUIModule_ContentParagraph::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) 
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "paragraph");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString(AMC_API_KEY_UI_ITEMTEXT, m_sText);
-}
-
 std::string CUIModule_ContentParagraph::getItemType()
 {
 	return "paragraph";

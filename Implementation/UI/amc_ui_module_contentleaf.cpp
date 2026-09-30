@@ -63,7 +63,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace AMC;
 
 CUIModule_ContentLeaf::CUIModule_ContentLeaf(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-	: CUIModule(getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition()),
+	: CUIModule(getNameFromXML(xmlNode), getTypeFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition()),
 	  m_sModuleType(getTypeFromXML(xmlNode)),
 	  m_VisibleExpression(xmlNode, "visible", "1"),
 	  m_pStateMachineData(pUIModuleEnvironment->stateMachineData())
@@ -125,8 +125,14 @@ CUIModule_ContentLeaf::CUIModule_ContentLeaf(pugi::xml_node& xmlNode, const std:
 
 	LibMCAssertNotNull(m_pItem.get());
 
+	m_pModuleStore->setAlwaysWriteSubmodules(true);
+
 	auto pFrontendDefinition = pUIModuleEnvironment->getFrontendDefinition();
 	m_pItem->initFrontendModuleStore(pFrontendDefinition);
+
+	auto pItemStore = m_pItem->getFrontendModuleStore();
+	if ((pItemStore.get() != nullptr) && (!pItemStore->getModuleType().empty()))
+		m_pModuleStore->addChildStore(pItemStore);
 
 	CUIExpression nameExpr;
 	nameExpr.setFixedValue(m_sName);
@@ -164,34 +170,6 @@ std::string CUIModule_ContentLeaf::getCaption()
 /////////////////////////////////////////////////////////////////////////////////////
 // Legacy UI System
 /////////////////////////////////////////////////////////////////////////////////////
-
-void CUIModule_ContentLeaf::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	moduleObject.addString(AMC_API_KEY_UI_UUID, m_sUUID);
-	moduleObject.addBool(AMC_API_KEY_UI_VISIBLE, m_VisibleExpression.evaluateBoolValue(m_pStateMachineData));
-
-	// Write the wrapped item's live state (entities, buttons, imageresource, etc.)
-	// so the Vue client can refresh leaf module data on every poll cycle.
-	if (m_pItem.get() != nullptr)
-		m_pItem->addLegacyContentToJSON(writer, moduleObject, pClientVariableHandler, nStateID);
-}
-
-void CUIModule_ContentLeaf::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_CAPTION, m_sCaption);
-	moduleObject.addBool(AMC_API_KEY_UI_VISIBLE, m_VisibleExpression.evaluateBoolValue(m_pStateMachineData));
-
-	CJSONWriterArray itemsNode(writer);
-	if (m_pItem.get() != nullptr) {
-		CJSONWriterObject itemObject(writer);
-		m_pItem->addLegacyContentToJSON(writer, itemObject, pClientVariableHandler, 0);
-		itemsNode.addObject(itemObject);
-	}
-	moduleObject.addArray(AMC_API_KEY_UI_ITEMS, itemsNode);
-}
 
 void CUIModule_ContentLeaf::populateModuleMap(std::map<std::string, PUIModule>& moduleMap)
 {
@@ -241,20 +219,6 @@ void CUIModule_ContentLeaf::populateLegacyClientVariables(CParameterHandler* pPa
 /////////////////////////////////////////////////////////////////////////////////////
 // New UI Frontend System
 /////////////////////////////////////////////////////////////////////////////////////
-
-void CUIModule_ContentLeaf::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	CUIModule::frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
-
-	CJSONWriterArray submodulesArray(writer);
-	if (m_pItem.get() != nullptr) {
-		CJSONWriterObject subModuleObject(writer);
-		m_pItem->frontendWriteItemToJSON(writer, subModuleObject, pFrontendState, pStateMachineData);
-		submodulesArray.addObject(subModuleObject);
-	}
-
-	moduleObject.addArray("submodules", submodulesArray);
-}
 
 bool CUIModule_ContentLeaf::isVersion2FrontendModule()
 {

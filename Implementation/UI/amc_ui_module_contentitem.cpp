@@ -67,11 +67,6 @@ std::string CUIModule_ContentItem::getUUID()
 	return m_sUUID;
 }
 
-void CUIModule_ContentItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-
-}
-
 std::list <std::string> CUIModule_ContentItem::getReferenceUUIDs()
 {
 	std::list <std::string> resultList;
@@ -107,19 +102,9 @@ std::string CUIModule_ContentItem::getItemType()
 	return "";
 }
 
-void CUIModule_ContentItem::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+PUIFrontendDefinitionModuleStore CUIModule_ContentItem::getFrontendModuleStore()
 {
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	pFrontendState->writeModuleStoreToJSON(writer, itemObject, m_pItemModuleStore.get(), pStateMachineData);
+	return m_pItemModuleStore;
 }
 
 PUIFrontendDefinitionAttribute CUIModule_ContentItem::registerItemStringAttribute(const std::string& sName, const CUIExpression& expression)
@@ -155,4 +140,11 @@ PUIFrontendDefinitionAttribute CUIModule_ContentItem::registerItemUUIDAttribute(
 	if (m_pItemModuleStore == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 	return m_pItemModuleStore->registerValue(sName, eUIFrontendDefinitionAttributeType::atUUID, expression);
+}
+
+PUIFrontendDefinitionAttribute CUIModule_ContentItem::registerItemProviderAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider)
+{
+	if (m_pItemModuleStore == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+	return m_pItemModuleStore->registerProvider(sName, attributeType, scope, provider);
 }

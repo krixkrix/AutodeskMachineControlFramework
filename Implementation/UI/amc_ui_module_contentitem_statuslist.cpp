@@ -227,18 +227,6 @@ void CUIModule_ContentStatusList::writeRowsToJSON(CJSONWriter& writer, CJSONWrit
 }
 
 
-void CUIModule_ContentStatusList::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "statuslist");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString("title", m_sTitle);
-	object.addString(AMC_API_KEY_UI_ITEMLOADINGTEXT, m_sLoadingText);
-
-	CJSONWriterArray rowArray(writer);
-	writeRowsToJSON(writer, rowArray);
-	object.addArray("rows", rowArray);
-}
-
 std::string CUIModule_ContentStatusList::getItemType()
 {
 	return "statuslist";
@@ -253,30 +241,11 @@ void CUIModule_ContentStatusList::registerFrontendAttributes()
 	CUIExpression loadingTextExpr;
 	loadingTextExpr.setFixedValue(m_sLoadingText);
 	registerItemStringAttribute("loadingtext", loadingTextExpr);
-}
 
-void CUIModule_ContentStatusList::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
-	// Embed the live, resolved rows directly into the v2 attributes so the frontend
-	// can render pills/values without a separate polling call.
-	CJSONWriterArray rowArray(writer);
-	writeRowsToJSON(writer, rowArray);
-	attributesObject.addArray("rows", rowArray);
-
-	itemObject.addObject("attributes", attributesObject);
+	registerItemProviderAttribute("rows", eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			CJSONWriterArray rowArray(writer);
+			writeRowsToJSON(writer, rowArray);
+			object.addArray(sName, rowArray);
+		});
 }

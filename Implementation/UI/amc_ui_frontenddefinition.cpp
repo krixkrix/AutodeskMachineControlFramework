@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "amc_ui_frontenddefinition.hpp"
+#include "amc_ui_frontendstate.hpp"
 #include "amc_parametergroup.hpp"
 #include "libmc_exceptiontypes.hpp"
 #include "common_utils.hpp"
@@ -77,8 +78,9 @@ CUIFrontendDefinitionExpressionAttribute::~CUIFrontendDefinitionExpressionAttrib
 
 }
 
-void CUIFrontendDefinitionExpressionAttribute::writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIExpressionSessionContext* pSessionContext)
+void CUIFrontendDefinitionExpressionAttribute::writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState)
 {
+	CUIExpressionSessionContext* pSessionContext = pFrontendState;
 
 	switch (getAttributeType()) {
 		case eUIFrontendDefinitionAttributeType::atBoolean: {
@@ -119,10 +121,40 @@ std::string CUIFrontendDefinitionExpressionAttribute::getSessionReference()
 	return m_ValueExpression.getSessionReference();
 }
 
-
-CUIFrontendDefinitionModuleStore::CUIFrontendDefinitionModuleStore(const std::string& sModuleUUID, const std::string& sModulePath, const std::string& sModuleType)
-	: m_sUUID(AMCCommon::CUtils::normalizeUUIDString(sModuleUUID)), m_sPath(sModulePath), m_sModuleType(sModuleType)
+bool CUIFrontendDefinitionExpressionAttribute::isSessionScoped()
 {
+	return !m_ValueExpression.getSessionReference().empty();
+}
+
+
+CUIFrontendDefinitionProviderAttribute::CUIFrontendDefinitionProviderAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider)
+	: CUIFrontendDefinitionAttribute(sName, attributeType), m_Scope(scope), m_Provider(provider)
+{
+	if (!provider)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+}
+
+CUIFrontendDefinitionProviderAttribute::~CUIFrontendDefinitionProviderAttribute()
+{
+
+}
+
+void CUIFrontendDefinitionProviderAttribute::writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState)
+{
+	m_Provider(writer, attributesObject, getName(), pStateMachineData, pFrontendState);
+}
+
+bool CUIFrontendDefinitionProviderAttribute::isSessionScoped()
+{
+	return (m_Scope == eUIFrontendDefinitionAttributeScope::asSession);
+}
+
+
+CUIFrontendDefinitionModuleStore::CUIFrontendDefinitionModuleStore(CUIFrontendDefinition* pFrontendDefinition, const std::string& sModuleUUID, const std::string& sModulePath, const std::string& sModuleType)
+	: m_pFrontendDefinition(pFrontendDefinition), m_sUUID(AMCCommon::CUtils::normalizeUUIDString(sModuleUUID)), m_sPath(sModulePath), m_sModuleType(sModuleType), m_bAlwaysWriteSubmodules(false)
+{
+	LibMCAssertNotNull(pFrontendDefinition);
+
 	if (!AMCCommon::CUtils::stringIsValidAlphanumericPathString (sModulePath))
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDFRONTENDMODULEPATH, sModulePath);
 
@@ -133,18 +165,48 @@ CUIFrontendDefinitionModuleStore::~CUIFrontendDefinitionModuleStore()
 
 }
 
-PUIFrontendDefinitionAttribute CUIFrontendDefinitionModuleStore::registerValue (const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression& valueExpression)
+void CUIFrontendDefinitionModuleStore::checkNewAttributeName(const std::string& sName)
 {
 	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sName))
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDFRONTENDATTRIBUTENAME, sName);
 
 	if (m_Attributes.find(sName) != m_Attributes.end())
-		throw ELibMCCustomException(LIBMC_ERROR_DUPLICATEFRONTENDATTRIBUTENAME, sName);
+		throw ELibMCCustomException(LIBMC_ERROR_DUPLICATEFRONTENDATTRIBUTENAME, m_sPath + "." + sName);
+}
+
+PUIFrontendDefinitionAttribute CUIFrontendDefinitionModuleStore::registerValue (const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, const CUIExpression& valueExpression)
+{
+	checkNewAttributeName(sName);
 
 	auto pAttribute = std::make_shared<CUIFrontendDefinitionExpressionAttribute>(sName, attributeType, valueExpression);
 	m_Attributes.insert(std::make_pair(sName, pAttribute));
 
 	return pAttribute;
+}
+
+PUIFrontendDefinitionAttribute CUIFrontendDefinitionModuleStore::registerProvider(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider)
+{
+	checkNewAttributeName(sName);
+
+	auto pAttribute = std::make_shared<CUIFrontendDefinitionProviderAttribute>(sName, attributeType, scope, provider);
+	m_Attributes.insert(std::make_pair(sName, pAttribute));
+
+	return pAttribute;
+}
+
+void CUIFrontendDefinitionModuleStore::registerStructureProperty(const std::string& sName, UIFrontendDefinitionProvider provider)
+{
+	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sName))
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDFRONTENDATTRIBUTENAME, sName);
+	if (!provider)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	for (auto& property : m_StructureProperties) {
+		if (property.first == sName)
+			throw ELibMCCustomException(LIBMC_ERROR_DUPLICATEFRONTENDATTRIBUTENAME, m_sPath + "." + sName);
+	}
+
+	m_StructureProperties.push_back(std::make_pair(sName, provider));
 }
 
 
@@ -157,12 +219,26 @@ std::vector<PUIFrontendDefinitionAttribute> CUIFrontendDefinitionModuleStore::ge
 	return attributes;
 }
 
+const std::vector<std::pair<std::string, UIFrontendDefinitionProvider>>& CUIFrontendDefinitionModuleStore::getStructureProperties()
+{
+	return m_StructureProperties;
+}
+
 
 PUIFrontendDefinitionModuleStore CUIFrontendDefinitionModuleStore::addChildStore(const std::string& sChildUUID, const std::string& sChildPath, const std::string& sChildModuleType)
 {
-	auto pChildStore = std::make_shared<CUIFrontendDefinitionModuleStore>(sChildUUID, sChildPath, sChildModuleType);
+	auto pChildStore = m_pFrontendDefinition->registerModuleStore(sChildUUID, sChildPath, sChildModuleType);
 	m_ChildStores.push_back(pChildStore);
 	return pChildStore;
+}
+
+void CUIFrontendDefinitionModuleStore::addChildStore(PUIFrontendDefinitionModuleStore pChildStore)
+{
+	LibMCAssertNotNull(pChildStore.get());
+	if (pChildStore.get() == this)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	m_ChildStores.push_back(pChildStore);
 }
 
 std::vector<PUIFrontendDefinitionModuleStore> CUIFrontendDefinitionModuleStore::getChildStores()
@@ -175,14 +251,34 @@ bool CUIFrontendDefinitionModuleStore::hasChildren()
 	return !m_ChildStores.empty();
 }
 
+void CUIFrontendDefinitionModuleStore::setAlwaysWriteSubmodules(bool bAlwaysWriteSubmodules)
+{
+	m_bAlwaysWriteSubmodules = bAlwaysWriteSubmodules;
+}
+
+bool CUIFrontendDefinitionModuleStore::getAlwaysWriteSubmodules()
+{
+	return m_bAlwaysWriteSubmodules;
+}
+
 std::string CUIFrontendDefinitionModuleStore::getModuleType()
 {
 	return m_sModuleType;
 }
 
+void CUIFrontendDefinitionModuleStore::setModuleType(const std::string& sModuleType)
+{
+	m_sModuleType = sModuleType;
+}
+
 std::string CUIFrontendDefinitionModuleStore::getUUID()
 {
 	return m_sUUID;
+}
+
+std::string CUIFrontendDefinitionModuleStore::getPath()
+{
+	return m_sPath;
 }
 
 void CUIFrontendDefinitionModuleStore::collectSessionReferences(std::vector<std::string>& references)
@@ -192,9 +288,6 @@ void CUIFrontendDefinitionModuleStore::collectSessionReferences(std::vector<std:
 		if (!sReference.empty())
 			references.push_back(sReference);
 	}
-
-	for (auto& pChildStore : m_ChildStores)
-		pChildStore->collectSessionReferences(references);
 }
 
 
@@ -215,10 +308,29 @@ CUIFrontendDefinition::~CUIFrontendDefinition()
 
 PUIFrontendDefinitionModuleStore CUIFrontendDefinition::registerModuleStore(const std::string& sModuleUUID, const std::string& sPath, const std::string& sModuleType)
 {
-	auto pModuleStore = std::make_shared<CUIFrontendDefinitionModuleStore>(sModuleUUID, sPath, sModuleType);
+	auto pModuleStore = std::make_shared<CUIFrontendDefinitionModuleStore>(this, sModuleUUID, sPath, sModuleType);
+
+	auto sNormalizedUUID = pModuleStore->getUUID();
+	if (m_ModuleStoreUUIDMap.find(sNormalizedUUID) != m_ModuleStoreUUIDMap.end())
+		throw ELibMCCustomException(LIBMC_ERROR_DUPLICATEMODULE, sPath + " (" + sNormalizedUUID + ")");
+
 	m_ModuleStores.push_back(pModuleStore);
+	m_ModuleStoreUUIDMap.insert(std::make_pair(sNormalizedUUID, pModuleStore));
 	return pModuleStore;
 
+}
+
+PUIFrontendDefinitionModuleStore CUIFrontendDefinition::findModuleStore(const std::string& sModuleUUID, bool bMustExist)
+{
+	auto sNormalizedUUID = AMCCommon::CUtils::normalizeUUIDString(sModuleUUID);
+	auto iIter = m_ModuleStoreUUIDMap.find(sNormalizedUUID);
+	if (iIter != m_ModuleStoreUUIDMap.end())
+		return iIter->second;
+
+	if (bMustExist)
+		throw ELibMCCustomException(LIBMC_ERROR_MODULENOTFOUND, sNormalizedUUID);
+
+	return nullptr;
 }
 
 

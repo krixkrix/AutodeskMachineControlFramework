@@ -66,8 +66,6 @@ namespace AMC {
 		
 		virtual ~CUIModule_GraphicImage();
 
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		// New UI Frontend System
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;

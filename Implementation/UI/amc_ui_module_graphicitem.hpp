@@ -72,8 +72,6 @@ namespace AMC {
 
 		virtual std::string getUUID () override;
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		// Returns all UUIDs that could be contained in this Item
 		virtual std::list <std::string> getReferenceUUIDs();
 
@@ -86,7 +84,9 @@ namespace AMC {
 		void initFrontendModuleStore(CUIFrontendDefinition* pFrontendDefinition);
 		virtual void registerFrontendAttributes();
 		virtual std::string getItemType();
-		void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData);
+
+		// Returns the v2 frontend module store of this item, or nullptr if it has not been initialized.
+		PUIFrontendDefinitionModuleStore getFrontendModuleStore();
 
 		PUIFrontendDefinitionAttribute registerItemStringAttribute(const std::string& sName, const CUIExpression& expression);
 		PUIFrontendDefinitionAttribute registerItemNumberAttribute(const std::string& sName, const CUIExpression& expression);

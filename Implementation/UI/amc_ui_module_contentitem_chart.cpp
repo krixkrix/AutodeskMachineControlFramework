@@ -81,59 +81,38 @@ std::string CUIModule_ContentChart::getItemType()
 
 void CUIModule_ContentChart::registerFrontendAttributes()
 {
-	// Chart has no expression-based attributes at construction (dataseries is set at runtime)
+	// The data series is set at runtime through the client variables of each session.
+	registerItemProviderAttribute(AMC_API_KEY_UI_DATASERIES, eUIFrontendDefinitionAttributeType::atUUID, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			object.addString(sName, getDataSeriesUUID(pFrontendState));
+		});
+
+	registerItemProviderAttribute(AMC_API_KEY_UI_VERSION, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			uint32_t nDataSeriesVersion = 0;
+			std::string sDataSeriesUUID = getDataSeriesUUID(pFrontendState);
+			if (!sDataSeriesUUID.empty()) {
+				auto pDataSeries = m_pDataSeriesHandler->findDataSeries(sDataSeriesUUID, false);
+				if (pDataSeries.get() != nullptr)
+					nDataSeriesVersion = pDataSeries->getVersion();
+			}
+			object.addInteger(sName, nDataSeriesVersion);
+		});
 }
 
-void CUIModule_ContentChart::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+std::string CUIModule_ContentChart::getDataSeriesUUID(CUIFrontendState* pFrontendState)
 {
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
 	std::string sDataSeriesUUID = AMCCommon::CUtils::createEmptyUUID();
-	uint32_t nDataSeriesVersion = 0;
 
-	auto pLegacyParameterHandler = pFrontendState->getLegacyParameterHandler();
-	if (pLegacyParameterHandler.get() != nullptr) {
-		auto pGroup = pLegacyParameterHandler->findGroup(getItemPath(), false);
-		if (pGroup.get() != nullptr) {
-			sDataSeriesUUID = pGroup->getParameterValueByName("dataseries");
+	if (pFrontendState != nullptr) {
+		auto pLegacyParameterHandler = pFrontendState->getLegacyParameterHandler();
+		if (pLegacyParameterHandler.get() != nullptr) {
+			auto pGroup = pLegacyParameterHandler->findGroup(getItemPath(), false);
+			if (pGroup.get() != nullptr) {
+				sDataSeriesUUID = pGroup->getParameterValueByName("dataseries");
+			}
 		}
 	}
 
-	if (!sDataSeriesUUID.empty()) {
-		auto pDataSeries = m_pDataSeriesHandler->findDataSeries(sDataSeriesUUID, false);
-		if (pDataSeries.get() != nullptr)
-			nDataSeriesVersion = pDataSeries->getVersion();
-	}
-
-	attributesObject.addString(AMC_API_KEY_UI_DATASERIES, sDataSeriesUUID);
-	attributesObject.addInteger(AMC_API_KEY_UI_VERSION, nDataSeriesVersion);
-	itemObject.addObject("attributes", attributesObject);
-}
-
-void CUIModule_ContentChart::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	auto pGroup = pClientVariableHandler->findGroup(getItemPath(), true);
-	std::string sDataSeriesUUID = pGroup->getParameterValueByName("dataseries");
-
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "chart");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	if (!sDataSeriesUUID.empty()) {
-		object.addString(AMC_API_KEY_UI_DATASERIES, sDataSeriesUUID);
-		auto pDataSeries = m_pDataSeriesHandler->findDataSeries(sDataSeriesUUID, false);
-		if (pDataSeries.get() != nullptr)
-			object.addInteger(AMC_API_KEY_UI_VERSION, pDataSeries->getVersion());
-	}
+	return sDataSeriesUUID;
 }

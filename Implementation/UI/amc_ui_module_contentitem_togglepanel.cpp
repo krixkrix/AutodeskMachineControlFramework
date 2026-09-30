@@ -188,17 +188,6 @@ void CUIModule_ContentTogglePanel::writeTogglesToJSON(CJSONWriter& writer, CJSON
 }
 
 
-void CUIModule_ContentTogglePanel::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "togglepanel");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addInteger("columns", m_nColumns);
-
-	CJSONWriterArray toggleArray(writer);
-	writeTogglesToJSON(writer, toggleArray);
-	object.addArray("toggles", toggleArray);
-}
-
 std::string CUIModule_ContentTogglePanel::getItemType()
 {
 	return "togglepanel";
@@ -209,29 +198,11 @@ void CUIModule_ContentTogglePanel::registerFrontendAttributes()
 	CUIExpression columnsExpr;
 	columnsExpr.setFixedValue(std::to_string(m_nColumns));
 	registerItemIntegerAttribute("columns", columnsExpr);
-}
 
-void CUIModule_ContentTogglePanel::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
-	// Embed the live, resolved toggle states directly into the v2 attributes.
-	CJSONWriterArray toggleArray(writer);
-	writeTogglesToJSON(writer, toggleArray);
-	attributesObject.addArray("toggles", toggleArray);
-
-	itemObject.addObject("attributes", attributesObject);
+	registerItemProviderAttribute("toggles", eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			CJSONWriterArray toggleArray(writer);
+			writeTogglesToJSON(writer, toggleArray);
+			object.addArray(sName, toggleArray);
+		});
 }

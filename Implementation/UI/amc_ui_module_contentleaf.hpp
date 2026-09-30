@@ -75,8 +75,6 @@ namespace AMC {
 		// Legacy UI System
 		/////////////////////////////////////////////////////////////////////////////////////
 
-		virtual void addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-		virtual void writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler) override;
 		virtual void populateModuleMap(std::map<std::string, PUIModule>& moduleMap) override;
 		virtual void populateLegacyItemMap(std::map<std::string, PUIModuleItem>& itemMap) override;
 		virtual PUIModuleItem findLegacyItem(const std::string& sUUID) override;
@@ -87,7 +85,6 @@ namespace AMC {
 		// New UI Frontend System
 		/////////////////////////////////////////////////////////////////////////////////////
 
-		void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 		bool isVersion2FrontendModule() override;
 	};
 

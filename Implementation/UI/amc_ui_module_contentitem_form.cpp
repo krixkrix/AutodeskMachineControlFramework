@@ -1189,26 +1189,6 @@ CUIModule_ContentForm::~CUIModule_ContentForm()
 }
 
 
-void CUIModule_ContentForm::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "form");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addBool(AMC_API_KEY_UI_VISIBLE, m_bVisible);
-
-	CJSONWriterArray entityArray(writer);
-	auto pGroup = pClientVariableHandler->findGroup(getItemPath(), true);
-	auto bVisible = pGroup->getBoolParameterValueByName(AMC_API_KEY_UI_VISIBLE);
-	object.addBool(AMC_API_KEY_UI_VISIBLE, bVisible);
-
-	for (auto pEntity : m_Entities) {
-		CJSONWriterObject entityObject(writer);
-		pEntity->addContentToJSON(writer, entityObject, pClientVariableHandler);
-		entityArray.addObject(entityObject);
-	}
-
-	object.addArray(AMC_API_KEY_UI_FORMENTITIES, entityArray);
-}
-
 void CUIModule_ContentForm::populateClientVariables(CParameterHandler* pClientVariableHandler)
 {
 	LibMCAssertNotNull(pClientVariableHandler);

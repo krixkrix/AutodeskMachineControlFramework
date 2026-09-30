@@ -383,8 +383,6 @@ namespace AMC {
 
 		virtual ~CUIModule_ContentForm();
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		void addEntity(PUIModule_ContentFormEntity pEntity);
 		
 		std::string getName();

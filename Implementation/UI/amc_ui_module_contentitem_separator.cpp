@@ -74,14 +74,6 @@ CUIModule_ContentSeparator::~CUIModule_ContentSeparator()
 {
 }
 
-void CUIModule_ContentSeparator::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "separator");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString("orientation", m_sOrientation);
-	object.addString("variant", m_sVariant);
-}
-
 std::string CUIModule_ContentSeparator::getItemType()
 {
 	return "separator";

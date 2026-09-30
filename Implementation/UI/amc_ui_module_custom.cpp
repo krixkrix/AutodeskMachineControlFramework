@@ -50,7 +50,7 @@ using namespace AMC;
 
 
 CUIModule_Custom::CUIModule_Custom(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ())
+: CUIModule (getNameFromXML(xmlNode), getStaticType(), sPath, pUIModuleEnvironment->getFrontendDefinition ())
 {
 
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
@@ -125,6 +125,22 @@ CUIModule_Custom::CUIModule_Custom(pugi::xml_node& xmlNode, const std::string& s
 
 	}
 
+	m_pModuleStore->setAlwaysWriteSubmodules(true);
+
+	for (auto& eventItemPair : m_EventItemNameMap) {
+		auto pEventItem = eventItemPair.second;
+		auto pEventStore = m_pModuleStore->addChildStore(pEventItem->getUUID(), pEventItem->getItemPath(), "event");
+
+		CUIExpression eventNameExpr;
+		eventNameExpr.setFixedValue(pEventItem->getEventName());
+		pEventStore->registerValue("eventname", eUIFrontendDefinitionAttributeType::atString, eventNameExpr);
+
+		pEventStore->registerProvider("parameters", eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asSession,
+			[pEventItem](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+				pEventItem->writeParametersToJSON(writer, object, sName, pFrontendState);
+			});
+	}
+
 }
 
 
@@ -149,41 +165,6 @@ std::string CUIModule_Custom::getCaption()
 	return "custom";
 }
 
-
-void CUIModule_Custom::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-
-	CJSONWriterArray itemsNode(writer);
-	{
-		CJSONWriterObject itemObject(writer);
-		itemObject.addString(AMC_API_KEY_UI_ITEMTYPE, "properties");
-		itemObject.addString(AMC_API_KEY_UI_ITEMUUID, m_pCustomItem->getUUID());
-		m_pCustomItem->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
-		itemsNode.addObject(itemObject);
-	}
-
-	for (auto eventItemIter : m_EventItemNameMap) {
-
-		auto eventItem = eventItemIter.second;
-		CJSONWriterObject itemObject(writer);
-		itemObject.addString(AMC_API_KEY_UI_ITEMTYPE, "event");
-		itemObject.addString(AMC_API_KEY_UI_ITEMUUID, eventItem->getUUID());
-		itemObject.addString(AMC_API_KEY_UI_ITEMNAME, eventItem->getEventName ());
-		eventItem->addLegacyContentToJSON(writer, itemObject, pLegacyClientVariableHandler, 0);
-		itemsNode.addObject(itemObject);
-
-	}
-
-	moduleObject.addArray(AMC_API_KEY_UI_ITEMS, itemsNode);
-
-}
-
-void CUIModule_Custom::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-}
 
 PUIModuleItem CUIModule_Custom::findLegacyItem(const std::string& sUUID)
 {
@@ -234,30 +215,5 @@ void CUIModule_Custom::populateLegacyClientVariables(CParameterHandler* pParamet
 bool CUIModule_Custom::isVersion2FrontendModule()
 {
 	return true;
-}
-
-void CUIModule_Custom::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	// Base class writes moduletype, uuid, name, and all registered attributes (including custom properties)
-	CUIModule::frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
-
-	// Write events as submodules
-	CJSONWriterArray submodulesArray(writer);
-
-	for (auto& eventItemPair : m_EventItemNameMap) {
-		auto pEventItem = eventItemPair.second;
-
-		CJSONWriterObject eventObject(writer);
-		eventObject.addString("moduletype", "event");
-		eventObject.addString("uuid", pEventItem->getUUID());
-
-		CJSONWriterObject attributesObject(writer);
-		attributesObject.addString("eventname", pEventItem->getEventName());
-		eventObject.addObject("attributes", attributesObject);
-
-		submodulesArray.addObject(eventObject);
-	}
-
-	moduleObject.addArray("submodules", submodulesArray);
 }
 

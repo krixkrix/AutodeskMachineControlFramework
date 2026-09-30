@@ -80,8 +80,6 @@ namespace AMC {
 
 		virtual ~CUIModule_ContentPartList();
 
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		virtual void populateClientVariables(CParameterHandler* pClientVariableHandler) override;
 
 		virtual void setEventPayloadValue(const std::string& sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler) override;
@@ -92,8 +90,6 @@ namespace AMC {
 
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
-
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 
 	};
 

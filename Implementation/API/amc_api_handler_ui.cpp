@@ -195,10 +195,6 @@ APIHandler_UIType CAPIHandler_UI::parseRequest(const std::string& sURI, const eA
 			return APIHandler_UIType::utConfiguration;
 		}
 
-		if ((sParameterString == "/state/") || (sParameterString == "/state")) {
-			return APIHandler_UIType::utState;
-		}
-
 		if (sParameterString.length() == 43) {
 			if (sParameterString.substr(0, 7) == "/image/") {
 				sParameterUUID = AMCCommon::CUtils::normalizeUUIDString(sParameterString.substr(7, 36));
@@ -220,19 +216,6 @@ APIHandler_UIType CAPIHandler_UI::parseRequest(const std::string& sURI, const eA
 			}
 		}
 
-
-		if (sParameterString.length() >= 49) {
-			if (sParameterString.substr(0, 13) == "/contentitem/") {
-				sParameterUUID = AMCCommon::CUtils::normalizeUUIDString(sParameterString.substr(13, 36));
-				if (sParameterString.length() > 49) {
-					if (sParameterString.at(49) == '/') {
-						sAdditionalParameter = sParameterString.substr(50);
-					}
-				}
-
-				return APIHandler_UIType::utContentItem;
-			}
-		}
 
 		if (sParameterString.length() == 50) {
 			if (sParameterString.substr(0, 14) == "/meshgeometry/") {
@@ -260,19 +243,6 @@ APIHandler_UIType CAPIHandler_UI::parseRequest(const std::string& sURI, const eA
 				sParameterUUID = AMCCommon::CUtils::normalizeUUIDString(sParameterString.substr(18, 36));
 				sAdditionalParameter = sParameterString.substr(55);
 				return APIHandler_UIType::utPointChannel;
-			}
-		}
-
-		if (sParameterString.length() >= 43) {
-			if (sParameterString.substr(0, 8) == "/module/") {
-				sParameterUUID = AMCCommon::CUtils::normalizeUUIDString(sParameterString.substr(8, 36));
-				if (sParameterString.length() > 43) {
-					if (sParameterString.at(43) == '/') {
-						sAdditionalParameter = sParameterString.substr(44);
-					}
-				}
-
-				return APIHandler_UIType::utModule;
 			}
 		}
 	}
@@ -347,14 +317,6 @@ void CAPIHandler_UI::handleConfigurationRequest(CJSONWriter& writer, PAPIAuth pA
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
 	m_pSystemState->uiHandler()->writeConfigurationToJSON(writer);
-}
-
-void CAPIHandler_UI::handleStateRequest(CJSONWriter& writer, PAPIAuth pAuth)
-{
-	if (pAuth.get() == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	m_pSystemState->uiHandler()->writeLegacyStateToJSON(writer, pAuth->getLegacyParameterHandler (true));
 }
 
 
@@ -457,36 +419,6 @@ PAPIResponse CAPIHandler_UI::handleChartRequest(const std::string& sParameterUUI
 
 }
 
-
-void CAPIHandler_UI::handleContentItemRequest(CJSONWriter& writer, const std::string& sParameterUUID, PAPIAuth pAuth, uint32_t nStateID)
-{
-	if (pAuth.get() == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	auto pWidget = m_pSystemState->uiHandler()->findModuleItem (sParameterUUID);
-	if (pWidget.get () == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_MODULEITEMNOTFOUND);
-
-	CJSONWriterObject object(writer);
-	pWidget->addLegacyContentToJSON(writer, object, pAuth->getLegacyParameterHandler (true), nStateID);
-	writer.addString(AMC_API_KEY_UI_ITEMUUID, sParameterUUID);
-	writer.addObject(AMC_API_KEY_UI_CONTENT, object);
-}
-
-void CAPIHandler_UI::handleModuleRequest(CJSONWriter& writer, const std::string& sParameterUUID, PAPIAuth pAuth, uint32_t nStateID)
-{
-	if (pAuth.get() == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	 
-	auto pWidget = m_pSystemState->uiHandler()->findModule(sParameterUUID);
-	if (pWidget.get() == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_MODULENOTFOUND, "Module UUID = " + sParameterUUID);
-	
-	CJSONWriterObject object(writer);
-	pWidget->addContentToJSON(writer, object, pAuth->getLegacyParameterHandler(true), nStateID);
-	writer.addString(AMC_API_KEY_UI_ITEMUUID, sParameterUUID);
-	writer.addObject(AMC_API_KEY_UI_CONTENT, object);
-}
 
 void CAPIHandler_UI::handleEventRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
 {
@@ -603,22 +535,6 @@ PAPIResponse CAPIHandler_UI::handleRequest(const std::string& sURI, const eAPIRe
 		handleConfigurationRequest(writer, pAuth);
 		break;
 
-	case APIHandler_UIType::utState:
-		handleStateRequest(writer, pAuth);
-		break;
-
-	case APIHandler_UIType::utContentItem: {
-		int64_t nStateID = 0;
-		if (!sAdditionalParameter.empty()) {
-			nStateID = std::stoi(sAdditionalParameter);
-
-			if ((nStateID < 0) || (nStateID > INT32_MAX))
-				throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCONTENTSTATEID, "Invalid content state id: " + sAdditionalParameter);
-		}
-		handleContentItemRequest(writer, sParameterUUID, pAuth, (uint32_t) nStateID);
-		break;
-	}
-
 	case APIHandler_UIType::utImage:
 		return handleImageRequest(sParameterUUID, pAuth);
 
@@ -656,19 +572,6 @@ PAPIResponse CAPIHandler_UI::handleRequest(const std::string& sURI, const eAPIRe
 
 	case APIHandler_UIType::utPointChannel: {
 		handlePointChannelDataRequest(writer, sParameterUUID, sAdditionalParameter, pAuth);
-		break;
-	}
-
-	case APIHandler_UIType::utModule: {
-
-		int64_t nStateID = 0;
-		if (!sAdditionalParameter.empty()) {
-			nStateID = std::stoi(sAdditionalParameter);
-
-			if ((nStateID < 0) || (nStateID > INT32_MAX))
-				throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCONTENTSTATEID, "Invalid content state id: " + sAdditionalParameter);
-		}
-		handleModuleRequest(writer, sParameterUUID, pAuth, (uint32_t)nStateID);
 		break;
 	}
 

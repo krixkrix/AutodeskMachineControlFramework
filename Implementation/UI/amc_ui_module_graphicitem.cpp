@@ -68,11 +68,6 @@ std::string CUIModuleGraphicItem::getUUID()
 }
 
 
-void CUIModuleGraphicItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-
-}
-
 std::list <std::string> CUIModuleGraphicItem::getReferenceUUIDs()
 {
 	std::list <std::string> resultList;
@@ -94,7 +89,7 @@ void CUIModuleGraphicItem::populateClientVariables(CParameterHandler* pParameter
 void CUIModuleGraphicItem::initFrontendModuleStore(CUIFrontendDefinition* pFrontendDefinition)
 {
 	LibMCAssertNotNull(pFrontendDefinition);
-	m_pItemModuleStore = pFrontendDefinition->registerModuleStore(m_sUUID, getItemPath());
+	m_pItemModuleStore = pFrontendDefinition->registerModuleStore(m_sUUID, getItemPath(), getItemType());
 	registerFrontendAttributes();
 }
 
@@ -107,22 +102,9 @@ std::string CUIModuleGraphicItem::getItemType()
 	return "";
 }
 
-void CUIModuleGraphicItem::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+PUIFrontendDefinitionModuleStore CUIModuleGraphicItem::getFrontendModuleStore()
 {
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	std::string sItemType = getItemType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_sUUID);
-
-	CJSONWriterObject attributesObject(writer);
-	if (m_pItemModuleStore != nullptr)
-		pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-	itemObject.addObject("attributes", attributesObject);
+	return m_pItemModuleStore;
 }
 
 PUIFrontendDefinitionAttribute CUIModuleGraphicItem::registerItemStringAttribute(const std::string& sName, const CUIExpression& expression)

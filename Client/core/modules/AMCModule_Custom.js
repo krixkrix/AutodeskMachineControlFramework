@@ -120,6 +120,14 @@ class AMCApplicationItem_Custom_Event extends Common.AMCApplicationItem {
 		if (attrs.eventname !== undefined)
 			this.name = attrs.eventname;
 
+		if (Array.isArray (attrs.parameters)) {
+			this.parameters = attrs.parameters;
+			this.parameterNameMap = new Map ();
+			for (let parameter of this.parameters) {
+				this.parameterNameMap.set (parameter.name, parameter.uuid);
+			}
+		}
+
 		this.moduleInstance.rebuildEventMap ();
 		return true;
 	}

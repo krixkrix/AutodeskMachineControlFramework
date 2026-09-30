@@ -94,13 +94,6 @@ CUIModule_ContentStateMachineGraph::~CUIModule_ContentStateMachineGraph()
 }
 
 
-void CUIModule_ContentStateMachineGraph::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "statemachinegraph");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-}
-
-
 void CUIModule_ContentStateMachineGraph::configurePostLoading()
 {
 }
@@ -125,28 +118,21 @@ std::string CUIModule_ContentStateMachineGraph::getItemType()
 
 void CUIModule_ContentStateMachineGraph::registerFrontendAttributes()
 {
-}
+	CUIExpression stateMachineExpr;
+	stateMachineExpr.setFixedValue(m_sStateMachineName);
+	registerItemStringAttribute("statemachine", stateMachineExpr);
 
-void CUIModule_ContentStateMachineGraph::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	itemObject.addString("moduletype", getItemType());
-	itemObject.addString("uuid", m_sUUID);
-
-	CJSONWriterObject attributesObject(writer);
-
-	attributesObject.addString("statemachine", m_sStateMachineName);
-
-	std::string sActiveState;
-	try {
-		sActiveState = pStateMachineData->getInstanceStateName(m_sStateMachineName);
-	}
-	catch (...) {
-		sActiveState = "";
-	}
-	attributesObject.addString("activestate", sActiveState);
+	registerItemProviderAttribute("activestate", eUIFrontendDefinitionAttributeType::atString, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			std::string sActiveState;
+			try {
+				sActiveState = pStateMachineData->getInstanceStateName(m_sStateMachineName);
+			}
+			catch (...) {
+				sActiveState = "";
+			}
+			object.addString(sName, sActiveState);
+		});
 
 	if (!m_NodePositions.empty()) {
 		std::stringstream posStream;
@@ -155,8 +141,9 @@ void CUIModule_ContentStateMachineGraph::frontendWriteItemToJSON(CJSONWriter& wr
 				posStream << ";";
 			posStream << m_NodePositions[i].sStateName << ":" << m_NodePositions[i].dX << ":" << m_NodePositions[i].dY;
 		}
-		attributesObject.addString("nodepositions", posStream.str());
-	}
 
-	itemObject.addObject("attributes", attributesObject);
+		CUIExpression nodePositionsExpr;
+		nodePositionsExpr.setFixedValue(posStream.str());
+		registerItemStringAttribute("nodepositions", nodePositionsExpr);
+	}
 }

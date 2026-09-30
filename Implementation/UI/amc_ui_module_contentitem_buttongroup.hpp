@@ -157,8 +157,6 @@ namespace AMC {
 
 		virtual ~CUIModule_ContentButtonGroup();
 
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pLegacyClientVariableHandler, uint32_t nStateID) override;
-
 		PUIModule_ContentButton addButton(const CUIExpression& Caption, const CUIExpression& TargetPage, const CUIExpression& Event, const std::string& sButtonName, const CUIExpression& IconName, const CUIExpression& DisabledExpression, const CUIExpression& VisibleExpression, const std::string& sEventFormValueSetting);
 
 		virtual void configurePostLoading() override;

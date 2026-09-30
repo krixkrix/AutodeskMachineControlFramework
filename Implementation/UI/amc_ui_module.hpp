@@ -109,15 +109,13 @@ namespace AMC {
 		// General module functionality
 		/////////////////////////////////////////////////////////////////////////////////////
 
-		CUIModule(const std::string & sName, const std::string& sParentPath, CUIFrontendDefinition * pFrontendDefinition);
+		CUIModule(const std::string & sName, const std::string & sModuleType, const std::string& sParentPath, CUIFrontendDefinition * pFrontendDefinition);
 		
 		virtual ~CUIModule();
 
 		std::string getName();
 
 		virtual std::string getType() = 0;
-
-		virtual void addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID) = 0;
 
 		virtual std::string getCaption() = 0;
 
@@ -137,8 +135,6 @@ namespace AMC {
 
 		virtual void populateLegacyClientVariables(CParameterHandler* pParameterHandler);
 
-		virtual void writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler);
-
 		virtual PUIModuleItem findLegacyItem(const std::string& sUUID);
 
 		virtual void configureLegacyPostLoading();
@@ -147,9 +143,12 @@ namespace AMC {
 		// New UI Frontend System
 		/////////////////////////////////////////////////////////////////////////////////////
 
-		virtual void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData *pStateMachineData);
+		// Writes the module store tree of this module.
+		void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData *pStateMachineData);
 
 		virtual bool isVersion2FrontendModule();
+
+		PUIFrontendDefinitionModuleStore getFrontendModuleStore();
 
 		std::string getModulePath();
 
@@ -161,6 +160,7 @@ namespace AMC {
 		PUIFrontendDefinitionAttribute registerNumberAttribute(const std::string& sAttributeName, const CUIExpression& expression);
 		PUIFrontendDefinitionAttribute registerStringAttribute(const std::string& sAttributeName, const CUIExpression& expression);
 		PUIFrontendDefinitionAttribute registerBoolAttribute(const std::string& sAttributeName, const CUIExpression& expression);
+		PUIFrontendDefinitionAttribute registerProviderAttribute(const std::string& sAttributeName, eUIFrontendDefinitionAttributeType attributeType, eUIFrontendDefinitionAttributeScope scope, UIFrontendDefinitionProvider provider);
 	};
 
 	

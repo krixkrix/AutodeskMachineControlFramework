@@ -102,8 +102,6 @@ namespace AMC {
 
 		PUIModule_GLSceneModel getModel();
 
-		void addContentToJSON(CJSONWriter& writer, CJSONWriterObject& object);
-
 		void setPosition(CUIExpression positionX, CUIExpression positionY, CUIExpression positionZ);
 
 		void getPosition(CUIExpression & positionX, CUIExpression & positionY, CUIExpression & positionZ);
@@ -127,8 +125,6 @@ namespace AMC {
 		virtual std::string getUUID() override;
 
 		virtual std::string findElementPathByUUID(const std::string& sUUID) override;
-
-		virtual void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
 
 		virtual void setEventPayloadValue(const std::string& sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler) override;
 
@@ -161,6 +157,8 @@ namespace AMC {
 
 		void ensureBuildMeshesRegistered(const std::string& sBuildUUID, std::vector<DynamicMeshInstance>& instances);
 
+		void writeInstancesToJSON(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CUIFrontendState* pFrontendState);
+
 	public:
 
 		/////////////////////////////////////////////////////////////////////////////////////
@@ -181,13 +179,7 @@ namespace AMC {
 		// Legacy UI System
 		/////////////////////////////////////////////////////////////////////////////////////
 		
-		virtual void addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
-		void writeLegacySceneToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler);
-
 		virtual void populateModuleMap(std::map<std::string, PUIModule>& moduleMap) override;
-
-		virtual void writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler) override;
 
 		virtual void populateLegacyItemMap(std::map<std::string, PUIModuleItem>& itemMap) override;
 
@@ -198,8 +190,6 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// New UI Frontend System
 		/////////////////////////////////////////////////////////////////////////////////////
-
-		void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
 
 		bool isVersion2FrontendModule() override;
 

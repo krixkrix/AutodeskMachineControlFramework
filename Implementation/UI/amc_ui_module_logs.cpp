@@ -72,44 +72,6 @@ std::string CUIModule_LogsItem::findElementPathByUUID(const std::string& sUUID)
 }
 
 
-void CUIModule_LogsItem::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	//auto pGroup = pClientVariableHandler->findGroup(getItemPath (), true);
-
-	auto pStateMachineData = m_pUIModuleEnvironment->stateMachineData ();
-	uint32_t nMaxEntriesToRetrieve = 128;
-
-	CJSONWriterArray jsonLogEntryArray(writer);
-
-	auto pLogger = m_pUIModuleEnvironment->getLogger();
-	if (pLogger->supportsLogMessagesRetrieval()) {
-		std::vector<CLoggerEntry> loggerEntries;
-		uint32_t nEndID = pLogger->getLogMessageHeadID();
-		uint32_t nStartID = nStateID;
-		if ((nStartID + nMaxEntriesToRetrieve) < nEndID)
-			nStartID = nEndID - nMaxEntriesToRetrieve;
-
-		pLogger->retrieveLogMessages(loggerEntries, nStartID, nEndID, LibMCData::eLogLevel::Message);
-
-		for (auto loggerEntry : loggerEntries) {
-			CJSONWriterObject jsonEntryObject(writer);
-
-			jsonEntryObject.addInteger (AMC_API_KEY_UI_LOGENTRYID, loggerEntry.getID ());
-			jsonEntryObject.addString(AMC_API_KEY_UI_LOGSUBSYSTEM, loggerEntry.getSubSystem());
-			jsonEntryObject.addString(AMC_API_KEY_UI_LOGTIMESTAMP, loggerEntry.getTimeStamp());
-			jsonEntryObject.addString(AMC_API_KEY_UI_LOGMESSAGE, loggerEntry.getMessage());
-			jsonEntryObject.addString(AMC_API_KEY_UI_LOGLEVEL, loggerEntry.getlogLevelString());
-
-			jsonLogEntryArray.addObject(jsonEntryObject);
-		}
-
-	}
-
-
-	object.addArray(AMC_API_KEY_UI_LOGENTRIES, jsonLogEntryArray);
-
-}
-
 void CUIModule_LogsItem::setEventPayloadValue(const std::string& sEventName, const std::string& sPayloadUUID, const std::string& sPayloadValue, CParameterHandler* pClientVariableHandler)
 {
 
@@ -120,7 +82,7 @@ void CUIModule_LogsItem::setEventPayloadValue(const std::string& sEventName, con
 /////////////////////////////////////////////////////////////////////////////////////
 
 CUIModule_Logs::CUIModule_Logs(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-: CUIModule (getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ()),
+: CUIModule (getNameFromXML(xmlNode), getStaticType(), sPath, pUIModuleEnvironment->getFrontendDefinition ()),
   m_pUIModuleEnvironment (pUIModuleEnvironment)
 {
 
@@ -163,6 +125,13 @@ CUIModule_Logs::CUIModule_Logs(pugi::xml_node& xmlNode, const std::string& sPath
 	visibleExpr.setFixedValue("1");
 	registerBoolAttribute("visible", visibleExpr);
 
+	registerProviderAttribute("logheadid", eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			auto pLogger = m_pUIModuleEnvironment->getLogger();
+			if (pLogger->supportsLogMessagesRetrieval())
+				object.addInteger(sName, pLogger->getLogMessageHeadID());
+		});
+
 	m_LogsItem = std::make_shared<CUIModule_LogsItem>(getModulePath (), pUIModuleEnvironment);
 
 }
@@ -194,20 +163,6 @@ std::string CUIModule_Logs::getCaption()
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-void CUIModule_Logs::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-	moduleObject.addString(AMC_API_KEY_UI_CAPTION, m_sCaption);
-
-
-}
-
-void CUIModule_Logs::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-}
-
 PUIModuleItem CUIModule_Logs::findLegacyItem(const std::string& sUUID)
 {
 	if (sUUID == m_sUUID)
@@ -237,23 +192,4 @@ void CUIModule_Logs::populateLegacyItemMap(std::map<std::string, PUIModuleItem>&
 bool CUIModule_Logs::isVersion2FrontendModule()
 {
 	return true;
-}
-
-void CUIModule_Logs::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	moduleObject.addString("moduletype", getType());
-	moduleObject.addString("uuid", m_sUUID);
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pModuleStore.get(), pStateMachineData);
-
-	auto pLogger = m_pUIModuleEnvironment->getLogger();
-	if (pLogger->supportsLogMessagesRetrieval()) {
-		attributesObject.addInteger("logheadid", pLogger->getLogMessageHeadID());
-	}
-
-	moduleObject.addObject("attributes", attributesObject);
 }

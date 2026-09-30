@@ -138,8 +138,6 @@ namespace AMC {
 
 		virtual ~CUIModule_ContentParameterList();
 
-		void addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID) override;
-
 		void addEntry(const std::string& sInstance, const std::string& sParameterGroup, const std::string& sParameter, bool bEditable = false, const std::string& sMin = "", const std::string& sMax = "", const std::string& sStep = "");
 
 		uint32_t getEntryCount();
@@ -151,8 +149,6 @@ namespace AMC {
 		// New UI Frontend System
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
-		virtual void frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData) override;
-
 	};
 
 

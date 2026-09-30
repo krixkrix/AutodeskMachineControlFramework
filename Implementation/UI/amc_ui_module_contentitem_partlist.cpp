@@ -94,15 +94,6 @@ CUIModule_ContentPartList::~CUIModule_ContentPartList()
 {
 }
 
-void CUIModule_ContentPartList::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "partlist");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString("builduuid", m_sBuildUUID);
-	object.addString(AMC_API_KEY_UI_ITEMSELECTEVENT, m_sSelectEvent);
-	object.addString(AMC_API_KEY_UI_ITEMSELECTIONVALUEUUID, m_sSelectedPartFieldUUID);
-}
-
 void CUIModule_ContentPartList::populateClientVariables(CParameterHandler* pClientVariableHandler)
 {
 	LibMCAssertNotNull(pClientVariableHandler);
@@ -154,35 +145,19 @@ void CUIModule_ContentPartList::registerFrontendAttributes()
 	CUIExpression selectionValueExpression;
 	selectionValueExpression.setFixedValue(m_sSelectedPartFieldUUID);
 	registerItemStringAttribute("selectionvalueuuid", selectionValueExpression);
-}
 
-void CUIModule_ContentPartList::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
-	uint64_t nPartStateVersion = 0;
-	std::string sBuildUUID = m_BuildUUIDExpression.evaluateStringValue(pStateMachineData, pFrontendState);
-	if (AMCCommon::CUtils::stringIsNonEmptyUUIDString(sBuildUUID)) {
-		auto pBuildJobHandler = m_pUIModuleEnvironment->dataModel()->CreateBuildJobHandler();
-		if (pBuildJobHandler->JobExists(sBuildUUID)) {
-			auto pBuildJob = pBuildJobHandler->RetrieveJob(sBuildUUID);
-			nPartStateVersion = m_pUIModuleEnvironment->toolpathHandler()->getDisabledPartsVersion(pBuildJob->GetStorageStreamUUID());
-		}
-	}
-	attributesObject.addInteger(AMC_API_KEY_PARTSTATEVERSION, (int64_t)nPartStateVersion);
-
-	itemObject.addObject("attributes", attributesObject);
+	// The build UUID expression may reference session variables.
+	registerItemProviderAttribute(AMC_API_KEY_PARTSTATEVERSION, eUIFrontendDefinitionAttributeType::atInteger, eUIFrontendDefinitionAttributeScope::asSession,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			uint64_t nPartStateVersion = 0;
+			std::string sBuildUUID = m_BuildUUIDExpression.evaluateStringValue(pStateMachineData, pFrontendState);
+			if (AMCCommon::CUtils::stringIsNonEmptyUUIDString(sBuildUUID)) {
+				auto pBuildJobHandler = m_pUIModuleEnvironment->dataModel()->CreateBuildJobHandler();
+				if (pBuildJobHandler->JobExists(sBuildUUID)) {
+					auto pBuildJob = pBuildJobHandler->RetrieveJob(sBuildUUID);
+					nPartStateVersion = m_pUIModuleEnvironment->toolpathHandler()->getDisabledPartsVersion(pBuildJob->GetStorageStreamUUID());
+				}
+			}
+			object.addInteger(sName, (int64_t)nPartStateVersion);
+		});
 }

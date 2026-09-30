@@ -84,49 +84,6 @@ CUIModule_ContentImage::~CUIModule_ContentImage()
 
 
 
-void CUIModule_ContentImage::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "image");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-
-	std::string sResourceUUID = AMCCommon::CUtils::createEmptyUUID();
-
-	auto pClientVariableGroup = pClientVariableHandler->findGroup(getItemPath(), true);
-	if (m_ImageResource.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMIMAGERESOURCE, m_ImageResource.evaluateStringValue(m_pStateMachineData)); 
-	if (m_AspectRatio.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMASPECTRATIO, m_AspectRatio.evaluateStringValue(m_pStateMachineData));
-	if (m_MaxWidth.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMMAXWIDTH, m_MaxWidth.evaluateStringValue(m_pStateMachineData));
-	if (m_MaxHeight.needsSync())
-		pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMMAXHEIGHT, m_MaxHeight.evaluateStringValue(m_pStateMachineData));
-
-	std::string sResourceName = pClientVariableGroup->getParameterValueByName (AMC_API_KEY_UI_ITEMIMAGERESOURCE);
-	if (!sResourceName.empty()) {
-
-		bool bIsUUID = AMCCommon::CUtils::stringIsUUIDString(sResourceName);
-		if (bIsUUID) {
-			sResourceUUID = AMCCommon::CUtils::normalizeUUIDString(sResourceName);
-		} else {
-
-			auto pEntry = m_pResourcePackage->findEntryByName(sResourceName, false);
-			if (pEntry.get() != nullptr) {
-				sResourceUUID = pEntry->getUUID();
-			}
-		}
-	}
-	pClientVariableGroup->setParameterValueByName(AMC_API_KEY_UI_ITEMIMAGEUUID, sResourceUUID);
-
-	object.addString(AMC_API_KEY_UI_ITEMIMAGERESOURCE, sResourceUUID);
-	object.addString(AMC_API_KEY_UI_ITEMASPECTRATIO, pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMASPECTRATIO));
-	if (!m_MaxWidth.isEmpty(m_pStateMachineData))
-		object.addString(AMC_API_KEY_UI_ITEMMAXWIDTH, pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMMAXWIDTH));
-	if (!m_MaxHeight.isEmpty(m_pStateMachineData))
-		object.addString(AMC_API_KEY_UI_ITEMMAXHEIGHT, pClientVariableGroup->getParameterValueByName(AMC_API_KEY_UI_ITEMMAXHEIGHT));
-
-}
-
-
 void CUIModule_ContentImage::configurePostLoading()
 {
 
@@ -161,10 +118,24 @@ std::string CUIModule_ContentImage::getItemType()
 
 void CUIModule_ContentImage::registerFrontendAttributes()
 {
-	registerItemStringAttribute("resource", m_ImageResource);
-	registerItemStringAttribute("aspectratio", m_AspectRatio);
-	registerItemStringAttribute("maxwidth", m_MaxWidth);
-	registerItemStringAttribute("maxheight", m_MaxHeight);
+	// The resource is resolved from a resource name to its UUID.
+	registerItemProviderAttribute("resource", eUIFrontendDefinitionAttributeType::atUUID, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			object.addString(sName, resolveResourceToUUID(m_ImageResource.evaluateStringValue(pStateMachineData)));
+		});
+
+	registerOptionalStringAttribute("aspectratio", m_AspectRatio);
+	registerOptionalStringAttribute("maxwidth", m_MaxWidth);
+	registerOptionalStringAttribute("maxheight", m_MaxHeight);
+}
+
+void CUIModule_ContentImage::registerOptionalStringAttribute(const std::string& sName, const CUIExpression& expression)
+{
+	registerItemProviderAttribute(sName, eUIFrontendDefinitionAttributeType::atString, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[optionalExpression = expression](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sAttributeName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) mutable {
+			if (!optionalExpression.isEmpty(pStateMachineData))
+				object.addString(sAttributeName, optionalExpression.evaluateStringValue(pStateMachineData));
+		});
 }
 
 std::string CUIModule_ContentImage::resolveResourceToUUID(const std::string& sResourceValue)
@@ -184,33 +155,3 @@ std::string CUIModule_ContentImage::resolveResourceToUUID(const std::string& sRe
 	return AMCCommon::CUtils::createEmptyUUID();
 }
 
-
-void CUIModule_ContentImage::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
-	std::string sItemType = getItemType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_sUUID);
-
-	// Write attributes manually so we can resolve "resource" name -> UUID.
-	// (Cannot use base writeModuleAttributesToJSON because AddMember creates
-	// duplicate keys rather than overwriting.)
-	CJSONWriterObject attributesObject(writer);
-
-	std::string sResourceValue = m_ImageResource.evaluateStringValue(pStateMachineData);
-	attributesObject.addString("resource", resolveResourceToUUID(sResourceValue));
-
-	if (!m_AspectRatio.isEmpty(pStateMachineData))
-		attributesObject.addString("aspectratio", m_AspectRatio.evaluateStringValue(pStateMachineData));
-	if (!m_MaxWidth.isEmpty(pStateMachineData))
-		attributesObject.addString("maxwidth", m_MaxWidth.evaluateStringValue(pStateMachineData));
-	if (!m_MaxHeight.isEmpty(pStateMachineData))
-		attributesObject.addString("maxheight", m_MaxHeight.evaluateStringValue(pStateMachineData));
-
-	itemObject.addObject("attributes", attributesObject);
-}

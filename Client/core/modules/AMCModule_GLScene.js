@@ -92,17 +92,11 @@ export default class AMCApplicationModule_GLScene extends Common.AMCApplicationM
 				this.visible = (attrs.visible === true || attrs.visible === "1" || attrs.visible === "true");
 		}
 
-		let v2Entry = this.page.application.getV2Entry (this.uuid);
 		let instances = [];
 
-		if (v2Entry && v2Entry.submodules) {
-			for (let submodule of v2Entry.submodules) {
-				if (submodule.moduletype === "glsceneinstance") {
-					let instance = Object.assign ({}, submodule.attributes || {});
-					instance.uuid = submodule.uuid || "";
-					instance.type = submodule.moduletype;
-					instances.push (instance);
-				}
+		if (attrs && Array.isArray (attrs.instances)) {
+			for (let instanceJSON of attrs.instances) {
+				instances.push (Object.assign ({}, instanceJSON));
 			}
 		}
 

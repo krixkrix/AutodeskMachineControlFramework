@@ -48,7 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace AMC;
 
 CUIModule_Content::CUIModule_Content(pugi::xml_node& xmlNode, const std::string& sPath, PUIModuleEnvironment pUIModuleEnvironment)
-	: CUIModule(getNameFromXML(xmlNode), sPath, pUIModuleEnvironment->getFrontendDefinition ()), m_nNamingIDCounter(1)
+	: CUIModule(getNameFromXML(xmlNode), getStaticType(), sPath, pUIModuleEnvironment->getFrontendDefinition ()), m_nNamingIDCounter(1)
 {
 	LibMCAssertNotNull(pUIModuleEnvironment.get());
 
@@ -57,6 +57,8 @@ CUIModule_Content::CUIModule_Content(pugi::xml_node& xmlNode, const std::string&
 
 	if (sPath.empty())
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULEPATH, m_sName);
+
+	m_pModuleStore->setAlwaysWriteSubmodules(true);
 	
 	auto headlineAttrib = xmlNode.attribute("headline");
 	if (!headlineAttrib.empty ())
@@ -208,40 +210,6 @@ void CUIModule_Content::populateLegacyClientVariables(CParameterHandler* pParame
 
 }
 
-void CUIModule_Content::writeLegacyDefinitionToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pLegacyClientVariableHandler)
-{
-	moduleObject.addString(AMC_API_KEY_UI_MODULENAME, getName());
-	moduleObject.addString(AMC_API_KEY_UI_MODULETYPE, getType());
-	moduleObject.addString(AMC_API_KEY_UI_MODULEUUID, getUUID());
-	moduleObject.addString(AMC_API_KEY_UI_HEADLINE, m_sHeadLine);
-	moduleObject.addString(AMC_API_KEY_UI_TITLE, m_sTitle);
-	moduleObject.addString(AMC_API_KEY_UI_SUBTITLE, m_sSubtitle);
-	moduleObject.addString(AMC_API_KEY_UI_CAPTION, m_sCaption);
-	moduleObject.addBool(AMC_API_KEY_UI_VISIBLE, m_bVisible);
-	moduleObject.addString("cardstyle", m_sCardStyle);
-	moduleObject.addString("cardcolor", m_sCardColor);
-	moduleObject.addInteger("spacing",   (int64_t) m_nSpacing);
-	moduleObject.addInteger("elevation", (int64_t) m_nElevation);
-
-	CJSONWriterArray modulesNode(writer);
-	for (auto pSubModule : m_SubModules) {
-		CJSONWriterObject subModuleObject(writer);
-		pSubModule->writeLegacyDefinitionToJSON(writer, subModuleObject, pLegacyClientVariableHandler);
-		modulesNode.addObject(subModuleObject);
-	}
-	moduleObject.addArray(AMC_API_KEY_UI_MODULES, modulesNode);
-
-}
-
-void CUIModule_Content::addContentToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	moduleObject.addString(AMC_API_KEY_UI_UUID, m_sUUID);
-
-	auto pGroup = pClientVariableHandler->findGroup(m_sModulePath, true);
-	auto bVisible = pGroup->getBoolParameterValueByName(AMC_API_KEY_UI_VISIBLE);
-	moduleObject.addBool(AMC_API_KEY_UI_VISIBLE, bVisible);
-}
-
 PUIModuleItem CUIModule_Content::findLegacyItem(const std::string& sUUID)
 {
 	for (auto pSubModule : m_SubModules) {
@@ -259,6 +227,9 @@ void CUIModule_Content::addSubModule(PUIModule pSubModule)
 
 	m_SubModules.push_back(pSubModule);
 	m_SubModuleMap.insert(std::make_pair(pSubModule->getUUID(), pSubModule));
+
+	if (pSubModule->isVersion2FrontendModule())
+		m_pModuleStore->addChildStore(pSubModule->getFrontendModuleStore());
 
 }
 
@@ -320,21 +291,4 @@ std::string CUIModule_Content::readSubModuleNameFromXML(const pugi::xml_node& mo
 bool CUIModule_Content::isVersion2FrontendModule()
 {
 	return true;
-}
-
-void CUIModule_Content::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	CUIModule::frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
-
-	CJSONWriterArray submodulesArray(writer);
-
-	for (auto& pSubModule : m_SubModules) {
-		if (pSubModule->isVersion2FrontendModule()) {
-			CJSONWriterObject subModuleObject(writer);
-			pSubModule->frontendWriteModuleStatusToJSON(writer, subModuleObject, pFrontendState, pStateMachineData);
-			submodulesArray.addObject(subModuleObject);
-		}
-	}
-
-	moduleObject.addArray("submodules", submodulesArray);
 }

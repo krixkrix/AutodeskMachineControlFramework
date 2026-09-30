@@ -80,28 +80,6 @@ CUIModule_GraphicImage::~CUIModule_GraphicImage()
 }
 
 
-void CUIModule_GraphicImage::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	auto pStateMachineData = m_pUIModuleEnvironment->stateMachineData();
-
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "image");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-
-	std::string sResourceName = m_ResourceName.evaluateStringValue(pStateMachineData);
-	auto pResourceEntry = m_pUIModuleEnvironment->resourcePackage()->findEntryByName(sResourceName, false);
-
-	if (pResourceEntry.get() != nullptr) {
-		object.addString(AMC_API_KEY_UI_ITEMIMAGEUUID, pResourceEntry->getUUID ());
-	}
-	if (!m_MaxWidth.isEmpty (pStateMachineData))
-		object.addDouble(AMC_API_KEY_UI_ITEMMAXWIDTH, m_MaxWidth.evaluateNumberValue(pStateMachineData));
-	if (!m_MaxHeight.isEmpty(pStateMachineData))
-		object.addDouble(AMC_API_KEY_UI_ITEMMAXHEIGHT, m_MaxHeight.evaluateNumberValue(pStateMachineData));
-
-	object.addDouble(AMC_API_KEY_UI_ITEMX, m_X.evaluateNumberValue(pStateMachineData));
-	object.addDouble(AMC_API_KEY_UI_ITEMY, m_Y.evaluateNumberValue (pStateMachineData));
-}
-
 std::string CUIModule_GraphicImage::getItemType()
 {
 	return "image";

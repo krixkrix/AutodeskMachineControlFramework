@@ -106,12 +106,6 @@ void CUIModule_ContentWorkflow::addCatalogEntry(const SWorkflowCatalogEntry& ent
 	m_CatalogEntries.push_back(entry);
 }
 
-void CUIModule_ContentWorkflow::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "workflow");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-}
-
 std::string CUIModule_ContentWorkflow::getItemType()
 {
 	return "workflow";
@@ -119,25 +113,14 @@ std::string CUIModule_ContentWorkflow::getItemType()
 
 void CUIModule_ContentWorkflow::registerFrontendAttributes()
 {
+	registerItemProviderAttribute("catalog", eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			writeCatalogToJSON(writer, object, sName);
+		});
 }
 
-void CUIModule_ContentWorkflow::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+void CUIModule_ContentWorkflow::writeCatalogToJSON(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName)
 {
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
-
 	CJSONWriterArray catalogArray(writer);
 	for (const auto& entry : m_CatalogEntries) {
 		CJSONWriterObject entryObject(writer);
@@ -164,6 +147,5 @@ void CUIModule_ContentWorkflow::frontendWriteItemToJSON(CJSONWriter& writer, CJS
 		catalogArray.addObject(entryObject);
 	}
 
-	attributesObject.addArray("catalog", catalogArray);
-	itemObject.addObject("attributes", attributesObject);
+	object.addArray(sName, catalogArray);
 }

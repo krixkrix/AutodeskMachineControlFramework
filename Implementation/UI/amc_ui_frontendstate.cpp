@@ -270,11 +270,14 @@ void CUIFrontendState::writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterOb
 	moduleObject.addString("moduletype", pModuleStore->getModuleType());
 	moduleObject.addString("uuid", pModuleStore->getUUID());
 
+	for (auto& structureProperty : pModuleStore->getStructureProperties())
+		structureProperty.second(writer, moduleObject, structureProperty.first, pStateMachineData, this);
+
 	CJSONWriterObject attributesObject(writer);
 	writeModuleAttributesToJSON(writer, attributesObject, pModuleStore, pStateMachineData);
 	moduleObject.addObject("attributes", attributesObject);
 
-	if (pModuleStore->hasChildren()) {
+	if (pModuleStore->hasChildren() || pModuleStore->getAlwaysWriteSubmodules()) {
 		CJSONWriterArray submodulesArray(writer);
 
 		auto childStores = pModuleStore->getChildStores();

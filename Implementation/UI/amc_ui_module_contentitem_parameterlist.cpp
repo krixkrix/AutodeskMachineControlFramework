@@ -279,52 +279,6 @@ void CUIModule_ContentParameterList::writeColumnsToJSON(CJSONWriter& writer, CJS
 }
 
 
-void CUIModule_ContentParameterList::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "parameterlist");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString(AMC_API_KEY_UI_ITEMLOADINGTEXT, m_sLoadingText);
-	object.addString(AMC_API_KEY_UI_ITEMEDITEVENT, m_sEditEvent);
-	object.addInteger(AMC_API_KEY_UI_ITEMENTRIESPERPAGE, m_nEntriesPerPage);
-
-	writeColumnsToJSON(writer, object);
-
-	CJSONWriterArray entriesArray(writer);
-	object.addArray(AMC_API_KEY_UI_ITEMENTRIES, entriesArray);
-
-
-	CJSONWriterArray entryArray(writer);
-
-	for (auto entry : m_List) {
-		auto pParameterHandler = m_pStateMachineData->getParameterHandler(entry->getInstance ());
-		auto sParameterHandlerDescription = pParameterHandler->getDescription();
-
-		if (entry->isFullInstance()) {
-
-			uint32_t nGroupCount = pParameterHandler->getGroupCount();
-			for (uint32_t nGroupIndex = 0; nGroupIndex < nGroupCount; nGroupIndex++) {
-				auto pParameterGroup = pParameterHandler->getGroup(nGroupIndex);
-				addParameterGroupToJSON(writer, pParameterGroup, entryArray, true, "", entry->getInstance(), sParameterHandlerDescription, entry.get());
-
-			}
-
-		}
-		else {
-
-			auto pParameterGroup = pParameterHandler->findGroup(entry->getParameterGroup(), true);
-			addParameterGroupToJSON(writer, pParameterGroup, entryArray, entry->isFullGroup(), entry->getParameter(), entry->getInstance(), sParameterHandlerDescription, entry.get());
-
-		}
-
-
-	}
-
-	object.addArray (AMC_API_KEY_UI_ITEMENTRIES, entryArray);
-
-}
-
-
 void CUIModule_ContentParameterList::addEntry(const std::string& sInstance, const std::string& sParameterGroup, const std::string& sParameter, bool bEditable, const std::string& sMin, const std::string& sMax, const std::string& sStep)
 {
 	if (m_List.size() >= AMC_CONTENT_MAXENTRYCOUNT)
@@ -356,7 +310,7 @@ void CUIModule_ContentParameterList::loadFromXML(const pugi::xml_node& xmlNode)
 	m_sEditEvent = editEventAttrib.as_string();
 
 	// Optional stable preference key override. Falls back to the config-derived
-	// item path (see frontendWriteItemToJSON) when neither attribute is given.
+	// item path (see registerFrontendAttributes) when neither attribute is given.
 	auto preferenceKeyAttrib = xmlNode.attribute("preferencekey");
 	if (!preferenceKeyAttrib.empty())
 		m_sPreferenceKey = preferenceKeyAttrib.as_string();
@@ -442,62 +396,41 @@ void CUIModule_ContentParameterList::registerFrontendAttributes()
 	CUIExpression editEventExpr;
 	editEventExpr.setFixedValue(m_sEditEvent);
 	registerItemStringAttribute("editevent", editEventExpr);
-	// Per-column configuration is emitted as a structured array directly in
-	// frontendWriteItemToJSON (see writeColumnsToJSON), not as scalar attributes.
-}
-
-
-void CUIModule_ContentParameterList::frontendWriteItemToJSON(CJSONWriter& writer, CJSONWriterObject& itemObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
-{
-	if (pFrontendState == nullptr)
-		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-	if (m_pItemModuleStore == nullptr)
-		return;
-
-	std::string sItemType = m_pItemModuleStore->getModuleType();
-	if (sItemType.empty())
-		return;
-
-	itemObject.addString("moduletype", sItemType);
-	itemObject.addString("uuid", m_pItemModuleStore->getUUID());
-
-	CJSONWriterObject attributesObject(writer);
-	pFrontendState->writeModuleAttributesToJSON(writer, attributesObject, m_pItemModuleStore.get(), pStateMachineData);
 
 	// Stable per-list identifier used by the frontend to scope persisted view
 	// preferences. Prefer the authored override, otherwise use the config-derived
 	// item path (restart-invariant, unlike the generated module/item UUID).
-	std::string sPreferenceKey = m_sPreferenceKey;
-	if (sPreferenceKey.empty())
-		sPreferenceKey = getItemPath();
-	attributesObject.addString("preferencekey", sPreferenceKey);
+	CUIExpression preferenceKeyExpr;
+	preferenceKeyExpr.setFixedValue(m_sPreferenceKey.empty() ? getItemPath() : m_sPreferenceKey);
+	registerItemStringAttribute("preferencekey", preferenceKeyExpr);
 
-	// Embed the per-column configuration so the frontend can build headers with
-	// visibility, widths and resize flags.
-	writeColumnsToJSON(writer, attributesObject);
+	registerItemProviderAttribute(AMC_API_KEY_UI_ITEMCOLUMNS, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			writeColumnsToJSON(writer, object);
+		});
 
-	// Embed live parameter entries directly into the v2 attributes so the
-	// frontend can consume them without a separate polling call.
-	CJSONWriterArray entryArray(writer);
+	registerItemProviderAttribute(AMC_API_KEY_UI_ITEMENTRIES, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
+		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
+			CJSONWriterArray entryArray(writer);
 
-	for (auto entry : m_List) {
-		auto pParameterHandler = m_pStateMachineData->getParameterHandler(entry->getInstance());
-		auto sParameterHandlerDescription = pParameterHandler->getDescription();
+			for (auto entry : m_List) {
+				auto pParameterHandler = m_pStateMachineData->getParameterHandler(entry->getInstance());
+				auto sParameterHandlerDescription = pParameterHandler->getDescription();
 
-		if (entry->isFullInstance()) {
-			uint32_t nGroupCount = pParameterHandler->getGroupCount();
-			for (uint32_t nGroupIndex = 0; nGroupIndex < nGroupCount; nGroupIndex++) {
-				auto pParameterGroup = pParameterHandler->getGroup(nGroupIndex);
-				addParameterGroupToJSON(writer, pParameterGroup, entryArray, true, "", entry->getInstance(), sParameterHandlerDescription, entry.get());
+				if (entry->isFullInstance()) {
+					uint32_t nGroupCount = pParameterHandler->getGroupCount();
+					for (uint32_t nGroupIndex = 0; nGroupIndex < nGroupCount; nGroupIndex++) {
+						auto pParameterGroup = pParameterHandler->getGroup(nGroupIndex);
+						addParameterGroupToJSON(writer, pParameterGroup, entryArray, true, "", entry->getInstance(), sParameterHandlerDescription, entry.get());
+					}
+				}
+				else {
+					auto pParameterGroup = pParameterHandler->findGroup(entry->getParameterGroup(), true);
+					addParameterGroupToJSON(writer, pParameterGroup, entryArray, entry->isFullGroup(), entry->getParameter(), entry->getInstance(), sParameterHandlerDescription, entry.get());
+				}
 			}
-		}
-		else {
-			auto pParameterGroup = pParameterHandler->findGroup(entry->getParameterGroup(), true);
-			addParameterGroupToJSON(writer, pParameterGroup, entryArray, entry->isFullGroup(), entry->getParameter(), entry->getInstance(), sParameterHandlerDescription, entry.get());
-		}
-	}
 
-	attributesObject.addArray("entries", entryArray);
-	itemObject.addObject("attributes", attributesObject);
+			object.addArray(sName, entryArray);
+		});
 }
 

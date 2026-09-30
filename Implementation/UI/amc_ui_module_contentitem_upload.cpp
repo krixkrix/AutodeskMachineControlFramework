@@ -75,21 +75,6 @@ CUIModule_ContentUpload::~CUIModule_ContentUpload()
 
 }
 
-void CUIModule_ContentUpload::addLegacyContentToJSON(CJSONWriter& writer, CJSONWriterObject& object, CParameterHandler* pClientVariableHandler, uint32_t nStateID)
-{
-	object.addString(AMC_API_KEY_UI_ITEMTYPE, "upload");
-	object.addString(AMC_API_KEY_UI_ITEMUUID, m_sUUID);
-	object.addString(AMC_API_KEY_UI_ITEMUPLOADCLASS, m_UploadClass.evaluateStringValue (m_pStateMachineData));
-	object.addString(AMC_API_KEY_UI_ITEMUPLOADCAPTION, m_UploadCaption.evaluateStringValue (m_pStateMachineData));
-	object.addInteger(AMC_API_KEY_UI_ITEMUPLOADISINITIAL, 1);
-	object.addInteger(AMC_API_KEY_UI_ITEMUPLOADISSAVING, 0);
-	object.addString(AMC_API_KEY_UI_ITEMUPLOADFILENAME, "");
-	object.addString(AMC_API_KEY_UI_ITEMUPLOADSUCCESSEVENT, m_sSuccessEvent);
-	object.addString(AMC_API_KEY_UI_ITEMUPLOADFAILUREEVENT, m_sFailureEvent);
-	object.addString(AMC_API_KEY_UI_ITEMUPLOADACCEPTEDTYPES, m_sAcceptedTypes);
-}
-
-
 void CUIModule_ContentUpload::configurePostLoading()
 {
 	if (!m_sSuccessEvent.empty())
