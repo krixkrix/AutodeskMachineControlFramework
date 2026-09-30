@@ -67,6 +67,7 @@ namespace AMC {
 			uint32_t m_nPort;
 			bool m_bUseHTTPS;
 			bool m_bServiceHasBeenStarted;
+			bool m_bFatalErrorOccurred;
 
 			std::vector<std::pair<std::string, std::string>> m_ParameterOverrides;
 		
@@ -89,6 +90,8 @@ namespace AMC {
 			std::string getServerURL ();
 
 			bool getServiceHasBeenStarted();
+
+			bool getFatalErrorOccurred();
 			
 	};
 	

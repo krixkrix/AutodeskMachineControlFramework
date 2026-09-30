@@ -118,6 +118,9 @@ int main(int argc, char* argv[])
 
 		pServer->executeBlocking(sConfigurationFileName);
 
+		if (pServer->getFatalErrorOccurred())
+			return -1;
+
 
 	}
 	catch (std::exception& E)

@@ -45,6 +45,17 @@ using namespace AMC;
 
 #define PEMMAXLENGTH (1024 * 1024)
 
+// httplib's defaults (SO_REUSEADDR on Windows, SO_REUSEPORT on Linux) let a second process bind an already used port without an error.
+static void setExclusiveServerSocketOptions(socket_t sock)
+{
+	int nEnable = 1;
+#ifdef _WIN32
+	setsockopt(sock, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<char*>(&nEnable), sizeof(nEnable));
+#else
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<void*>(&nEnable), sizeof(nEnable));
+#endif
+}
+
 #ifdef _WIN32
 class CX509Certificate {
 private:
@@ -162,7 +173,7 @@ public:
 #endif // _WIN32
 
 CServer::CServer(PServerIO pServerIO)
-	: m_pServerIO (pServerIO), m_pListeningServerInstance (nullptr), m_nPort (0), m_bUseHTTPS (false), m_bServiceHasBeenStarted (false)
+	: m_pServerIO (pServerIO), m_pListeningServerInstance (nullptr), m_nPort (0), m_bUseHTTPS (false), m_bServiceHasBeenStarted (false), m_bFatalErrorOccurred (false)
 {
 	if (pServerIO.get() == nullptr)
 		throw LibMC::ELibMCException(LIBMC_ERROR_INVALIDPARAM, "invalid parameter");
@@ -213,6 +224,7 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 	m_pDataModel = nullptr;
 	m_pDataWrapper = nullptr;
 	m_pListeningServerInstance = nullptr;
+	m_bFatalErrorOccurred = false;
 
 	try {
 		uint32_t nMajorDataVersion = 0;
@@ -561,11 +573,15 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 					sslsvr.Post("(.*?)", requestHandler);
 					sslsvr.Put("(.*?)", requestHandler);
 					sslsvr.Options("(.*?)", requestHandler);
+					sslsvr.set_socket_options(setExclusiveServerSocketOptions);
+
+					if (!sslsvr.bind_to_port(sHostName.c_str(), nPort))
+						throw std::runtime_error("could not bind to " + sHostName + ":" + std::to_string(nPort) + " (is the port already in use by another process?)");
 
 					m_bServiceHasBeenStarted = true;
 
 					m_pListeningServerInstance = &sslsvr;
-					sslsvr.listen(sHostName.c_str(), nPort);
+					sslsvr.listen_after_bind();
 					m_pListeningServerInstance = nullptr;
 
 					this->log("Terminating all threads...");
@@ -595,11 +611,16 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 					svr.Post("(.*?)", requestHandler);
 					svr.Put("(.*?)", requestHandler);
 					svr.Options("(.*?)", requestHandler);
+					svr.set_socket_options(setExclusiveServerSocketOptions);
+
+					if (!svr.bind_to_port(sHostName.c_str(), nPort))
+						throw std::runtime_error("could not bind to " + sHostName + ":" + std::to_string(nPort) + " (is the port already in use by another process?)");
+
 					m_pListeningServerInstance = &svr;
 
 					m_bServiceHasBeenStarted = true;
 
-					svr.listen(sHostName.c_str(), nPort);
+					svr.listen_after_bind();
 					m_pListeningServerInstance = nullptr;
 
 					this->log("Terminating all threads...");
@@ -618,18 +639,20 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 
 			
 
-			this->log("Failed to listen on " + sHostName + ":" + std::to_string(nPort));
+			this->log("Stopped listening on " + sHostName + ":" + std::to_string(nPort));
 
 		}
 		catch (std::exception& E) {
 
 			m_pListeningServerInstance = nullptr;
+			m_bFatalErrorOccurred = true;
 			this->log("Fatal error while listening on " + sHostName + ":" + std::to_string(nPort));
 			this->log(E.what());
 		}
 
 	}
 	catch (std::exception& E) {
+		m_bFatalErrorOccurred = true;
 		this->log("Fatal initialization error: " + std::string (E.what ()));
 	}
 }
@@ -705,5 +728,10 @@ std::string CServer::getServerURL()
 bool CServer::getServiceHasBeenStarted()
 {
 	return m_bServiceHasBeenStarted;
+}
+
+bool CServer::getFatalErrorOccurred()
+{
+	return m_bFatalErrorOccurred;
 }
 
