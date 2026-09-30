@@ -61,7 +61,8 @@ namespace AMC {
 
 		APIHandler_FrontendType parseRequest(const std::string& sURI, const eAPIRequestType requestType, std::string & sParameterUUID, std::string & sAdditionalParameter);
 
-		void handleStatusRequest(CJSONWriter& writer, PAPIAuth pAuth);
+		// Clients that pass the "pages" query parameter only receive modules for the listed pages and the dialogs in "dialogs".
+		void handleStatusRequest(CJSONWriter& writer, CAPIFormFields& pFormFields, PAPIAuth pAuth);
 
 		// Records an aggregated frontend reactivity metrics window pushed by the client.
 		// The session UUID is stamped server-side from the authenticated session, never trusted from the body.

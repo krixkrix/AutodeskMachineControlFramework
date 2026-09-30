@@ -63,6 +63,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Frontend reactivity metrics (see amc_api_handler_frontend). The server reports its
 // build time for the status payload; the client folds it into aggregated metrics windows.
 #define AMC_API_KEY_FRONTEND_SERVERTIME "servertime"
+#define AMC_API_KEY_FRONTEND_ACTIVEPAGES "pages"
+#define AMC_API_KEY_FRONTEND_ACTIVEDIALOGS "dialogs"
 #define AMC_API_KEY_FRONTEND_METRICS_LABEL "label"
 #define AMC_API_KEY_FRONTEND_METRICS_INTERVALSTART "intervalstart"
 #define AMC_API_KEY_FRONTEND_METRICS_INTERVALEND "intervalend"

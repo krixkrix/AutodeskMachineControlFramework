@@ -58,6 +58,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <memory>
 #include <string>
+#include <set>
+#include <sstream>
 #include <iostream>
 
 
@@ -127,7 +129,7 @@ bool CAPIHandler_Frontend::expectsRawBody(const std::string& sURI, const eAPIReq
 
 }
 
-void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, PAPIAuth pAuth)
+void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, CAPIFormFields& pFormFields, PAPIAuth pAuth)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -137,7 +139,25 @@ void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, PAPIAuth pAu
 	auto pGlobalChrono = m_pSystemState->globalChrono();
 	uint64_t nBuildStart = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
 
-	m_pSystemState->uiHandler()->frontendWriteStatusToJSON(writer, pAuth.get());
+	auto splitNames = [](const std::string& sValue) -> std::set<std::string> {
+		std::set<std::string> names;
+		std::stringstream stream(sValue);
+		std::string sName;
+		while (std::getline(stream, sName, ',')) {
+			if (!sName.empty())
+				names.insert(sName);
+		}
+		return names;
+	};
+
+	if (pFormFields.hasRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES)) {
+		auto activePageNames = splitNames(pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES, false));
+		auto activeDialogNames = splitNames(pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEDIALOGS, false));
+		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(writer, pAuth.get(), &activePageNames, &activeDialogNames);
+	}
+	else {
+		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(writer, pAuth.get(), nullptr, nullptr);
+	}
 
 	uint64_t nBuildEnd = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
 	double dBuildTimeMS = (double)(nBuildEnd - nBuildStart) / 1000.0;
@@ -200,7 +220,7 @@ PAPIResponse CAPIHandler_Frontend::handleRequest(const std::string& sURI, const 
 
 	switch (uiType) {
 	case APIHandler_FrontendType::ftStatus:
-		handleStatusRequest(writer, pAuth);
+		handleStatusRequest(writer, pFormFields, pAuth);
 		break;
 
 	case APIHandler_FrontendType::ftMetrics:

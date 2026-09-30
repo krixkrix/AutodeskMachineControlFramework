@@ -183,7 +183,7 @@ void CUIPage::populateClientVariables(CParameterHandler* pParameterHandler)
 // New UI Frontend System
 /////////////////////////////////////////////////////////////////////////////////////
 
-void CUIPage::frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObject& pageObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+void CUIPage::frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObject& pageObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData, bool bWriteModules)
 {
 
 	pageObject.addString("name", m_sName);
@@ -199,6 +199,9 @@ void CUIPage::frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObje
 
 	pageObject.addInteger("gridcolumns", m_nGridColumns);
 	pageObject.addInteger("gridrows", m_nGridRows);
+
+	if (!bWriteModules)
+		return;
 
 	CJSONWriterArray moduleArray(writer);
 

@@ -105,6 +105,7 @@ export default class AMCApplication extends Common.AMCObject {
 			frontendState: null,
 			frontendLookup: {},
 			frontendRequestSerial: 0,
+			frontendAppliedSerial: 0,
 			navigationRequestSerial: 0,
 			frontendMetrics: this._createEmptyFrontendMetrics (),
 			userUUID: Common.nullUUID (),
@@ -523,12 +524,7 @@ export default class AMCApplication extends Common.AMCObject {
 			legacy.scene = {
 				type: "scene",
 				uuid: v2.uuid || "",
-				instances: subs.map(sub => {
-					let inst = Object.assign({}, sub.attributes || {});
-					inst.uuid = sub.uuid || "";
-					inst.type = sub.moduletype || "glsceneinstance";
-					return inst;
-				})
+				instances: Array.isArray(attrs.instances) ? attrs.instances.map(inst => Object.assign({}, inst)) : []
 			};
 
 		} else if (moduleType === "graphic") {
@@ -549,12 +545,11 @@ export default class AMCApplication extends Common.AMCObject {
 			} else if (attrs.platformuuid) {
 				// v2 mode: all platform data is in the module-level attributes.
 				// Synthesise a minimal platform item so the JS module can create it.
-				// layercount starts at 0 and will be refreshed via the legacy polling path.
 				legacy.items = [{
 					type:               "platform",
 					uuid:               attrs.platformuuid,
 					currentlayer:       parseInt(attrs.currentlayer)  || 0,
-					layercount:         0,
+					layercount:         parseInt(attrs.layercount)    || 0,
 					builduuid:          attrs.builduuid          || "00000000-0000-0000-0000-000000000000",
 					executionuuid:      attrs.executionuuid      || "00000000-0000-0000-0000-000000000000",
 					scatterplotuuid:    attrs.scatterplotuuid    || "00000000-0000-0000-0000-000000000000",
@@ -681,16 +676,6 @@ export default class AMCApplication extends Common.AMCObject {
 						legacy[key] = subAttrs[key];
 				}
 			}
-			// Copy top-level properties for buildlist / executionlist (buttons, selection UUIDs).
-			// These may appear on the parent (v2) or the first submodule (sub0).
-			let sub0 = (subs.length > 0) ? subs[0] : {};
-			if (v2.entrybuttons || sub0.entrybuttons)
-				legacy.entrybuttons = v2.entrybuttons || sub0.entrybuttons;
-			if (v2.selectionvalueuuid || sub0.selectionvalueuuid)
-				legacy.selectionvalueuuid = v2.selectionvalueuuid || sub0.selectionvalueuuid;
-			if (v2.buttonvalueuuid || sub0.buttonvalueuuid)
-				legacy.buttonvalueuuid = v2.buttonvalueuuid || sub0.buttonvalueuuid;
-
 			// resource aliases
 			if ((moduleType === "image") && (legacy.imageresource === undefined) && (legacy.resource !== undefined))
 				legacy.imageresource = legacy.resource;
@@ -905,9 +890,25 @@ export default class AMCApplication extends Common.AMCObject {
 
 		let requestStartMS = this._nowMS ();
 
-		return this.axiosGetRequest("/frontend")
+		// The server only writes modules for the listed pages and dialogs; all other
+		// pages and dialogs carry just their header and visibility.
+		let activePageNames = this.AppContent.Pages.concat (this.AppContent.CustomPages)
+			.filter (page => this.pageIsActive (page))
+			.map (page => page.name);
+		let activeDialogNames = this.AppContent.Dialogs
+			.filter (dialog => dialog.isActive ())
+			.map (dialog => dialog.name);
+
+		return this.axiosGetRequest("/frontend", {
+			params: { pages: activePageNames.join (","), dialogs: activeDialogNames.join (",") }
+		})
 		.then(resultJSON => {
 			this._recordFrontendMetric (requestStartMS, resultJSON);
+
+			// Polls and navigation refreshes overlap; never let an older response replace a newer one.
+			if (requestSerial < this.API.frontendAppliedSerial)
+				return;
+			this.API.frontendAppliedSerial = requestSerial;
 
 			this.API.frontendState = resultJSON.data;
 			this.API.unsuccessfulFrontendCounter = 0;
@@ -920,11 +921,16 @@ export default class AMCApplication extends Common.AMCObject {
 
 			// Build a flat uuid -> { moduletype, attributes, submodules } map
 			this.API.frontendLookup = {};
-			if (resultJSON.data && resultJSON.data.pages) {
-				for (let page of resultJSON.data.pages) {
-					if (page.modules) {
-						for (let mod of page.modules) {
-							this._indexFrontendModule(mod);
+			if (resultJSON.data) {
+				let pageLists = [resultJSON.data.pages, resultJSON.data.custompages, resultJSON.data.dialogs];
+				for (let pageList of pageLists) {
+					if (!pageList)
+						continue;
+					for (let page of pageList) {
+						if (page.modules) {
+							for (let mod of page.modules) {
+								this._indexFrontendModule(mod);
+							}
 						}
 					}
 				}
@@ -1165,58 +1171,13 @@ export default class AMCApplication extends Common.AMCObject {
 		
 		if (item.isActive ()) {
 
-			// Phase 2: If item supports v2 and we have v2 data, use it
-			// instead of the legacy /ui/contentitem/ call.
-			if (item.usesV2Frontend) {
-				let v2Entry = this.getV2Entry(item.uuid);
-				if (v2Entry && v2Entry.attributes) {
-					let attrs = Object.assign({}, v2Entry.attributes, v2Entry.clientvariables || {});
-					item.updateFromV2Attributes(attrs);
-					item.setRefreshFlag();
-					return;
-				}
-			}
+			// Items are updated only from the v2 frontend state; an item without an entry
+			// keeps its current state until the next /api/frontend response contains it.
+			let v2Entry = this.getV2Entry(item.uuid);
+			if (v2Entry && v2Entry.attributes)
+				item.updateFromV2Attributes(Object.assign({}, v2Entry.attributes));
 
-			// Legacy fallback: poll /ui/contentitem/{uuid}
-			let headers = {}
-			let authToken = this.API.authToken;
-
-			if (authToken != Common.nullToken ())
-				headers.Authorization = "Bearer " + authToken;
-
-			let stateidstring = "";
-			if (item.stateid > 0)
-				stateidstring = "/" + item.stateid;
-			
-			let url = this.API.baseURL + "/contentitem/" + Assert.UUIDValue (item.uuid) + stateidstring;
-			axios({
-				method: "GET",
-				"headers": headers,
-				url: url
-			})
-			.then(resultJSON => {
-							
-				if (resultJSON.data) {
-					if (resultJSON.data.content) {
-						item.updateFromJSON (resultJSON.data.content);					
-					}				
-				}
-							
-				this.unsuccessfulUpdateCounter = 0;
-				item.setRefreshFlag ();
-
-			})
-			.catch(err => {
-
-				this.unsuccessfulUpdateCounter = this.unsuccessfulUpdateCounter + 1;
-				if (this.unsuccessfulUpdateCounter > MAX_CONSECUTIVE_FAILURES) {
-					this.setStatusToError(err.message);
-				} else {
-					item.setRefreshFlag ();
-				}
-
-			});
-		
+			item.setRefreshFlag();
 		}
 
     }
@@ -1249,64 +1210,16 @@ export default class AMCApplication extends Common.AMCObject {
 
 		if (module.isActive()) {
 
-			// If the module supports v2 and we have a v2 entry, build merged effective
-			// attributes and use them instead of the legacy /ui/module/ polling endpoint.
 			// Item payload (entries, etc.) lives in submodule[0]; display attrs
 			// (caption, visible) live at the module level.  Module-level attrs win.
-			if (module.usesV2Frontend) {
-				let v2Entry = this.getV2Entry(module.uuid);
-				if (v2Entry) {
-					let subAttrs = (v2Entry.submodules && v2Entry.submodules.length > 0)
-						? (v2Entry.submodules[0].attributes || {})
-						: {};
-				let effectiveAttrs = Object.assign({}, subAttrs, v2Entry.attributes || {}, v2Entry.clientvariables || {});
+			let v2Entry = this.getV2Entry(module.uuid);
+			if (v2Entry) {
+				let subAttrs = (v2Entry.submodules && v2Entry.submodules.length > 0)
+					? (v2Entry.submodules[0].attributes || {})
+					: {};
+				let effectiveAttrs = Object.assign({}, subAttrs, v2Entry.attributes || {});
 				module.updateFromV2Attributes(effectiveAttrs);
-					return;
-				}
 			}
-
-			// Legacy fallback: poll /ui/module/{uuid}
-			let headers = {};
-			let authToken = this.API.authToken;
-
-			if (authToken != Common.nullToken())
-				headers.Authorization = "Bearer " + authToken;
-
-			// Optional state segment
-			let stateidstring = "";
-			if (module.stateid > 0)
-				stateidstring = "/" + module.stateid;
-
-			// Build request URL for modules
-			let url = this.API.baseURL + "/module/" + Assert.UUIDValue(module.uuid) + stateidstring;
-
-			axios({
-				method: "GET",
-				"headers": headers,
-				url: url
-			})
-			.then(resultJSON => {
-
-				// Update module from server payload (if present)
-				if (resultJSON.data) {
-					if (resultJSON.data.content) {
-						if (module && typeof module.updateFromJSON === "function") {
-							module.updateFromJSON(resultJSON.data.content);
-						}
-					}
-				}
-
-				// Reset failure counter on success
-				this.unsuccessfulUpdateCounter = 0;
-			})
-			.catch(err => {
-
-				// Increment failure counter and react accordingly
-				this.unsuccessfulUpdateCounter = this.unsuccessfulUpdateCounter + 1;
-				if (this.unsuccessfulUpdateCounter > MAX_CONSECUTIVE_FAILURES) {
-					this.setStatusToError(err.message);
-				}
-			});
 		}
 	}
 
@@ -1601,8 +1514,21 @@ export default class AMCApplication extends Common.AMCObject {
 			this.AppState.appResizeEvent ();
 		
 		this.updateContentItems ();
+		this._refreshFrontendStateAfterNavigation ();
 
     }
+
+	// Modules of pages and dialogs that were not active during the last poll have
+	// not received data yet, so fetch it immediately instead of waiting for the next poll.
+	_refreshFrontendStateAfterNavigation () {
+		this.retrieveFrontendState ()
+		.then (() => {
+			this.updateModules ();
+			this.updateContentItems ();
+			if (this.AppState.appResizeEvent)
+				this.AppState.appResizeEvent ();
+		});
+	}
 
     closeAllDialogs() {
         let dialog;
@@ -1628,6 +1554,7 @@ export default class AMCApplication extends Common.AMCObject {
 			this.AppState.appResizeEvent ();
 		
 		this.updateContentItems ();
+		this._refreshFrontendStateAfterNavigation ();
 		
     }
 	

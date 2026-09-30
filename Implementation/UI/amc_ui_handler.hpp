@@ -43,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <vector>
 #include <string>
+#include <set>
 #include <mutex>
 
 namespace LibMCUI {
@@ -201,7 +202,9 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// New UI Frontend System
 		/////////////////////////////////////////////////////////////////////////////////////
-		void frontendWriteStatusToJSON (CJSONWriter& writer, CAPIAuth * pAuth);
+		// If pActivePageNames is null, all pages, custom pages and dialogs are written with their modules.
+		// Otherwise only the named pages/custom pages and the dialogs named in pActiveDialogNames carry modules.
+		void frontendWriteStatusToJSON (CJSONWriter& writer, CAPIAuth * pAuth, const std::set<std::string>* pActivePageNames, const std::set<std::string>* pActiveDialogNames);
 
 		PUIFrontendDefinition getFrontendDefinition ();
 

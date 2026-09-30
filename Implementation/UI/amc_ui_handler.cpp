@@ -1034,7 +1034,7 @@ void CUIHandler::writeConfigurationToJSON(CJSONWriter& writer)
 /////////////////////////////////////////////////////////////////////////////////////
 // New UI Frontend System
 /////////////////////////////////////////////////////////////////////////////////////
-void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth)
+void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth, const std::set<std::string>* pActivePageNames, const std::set<std::string>* pActiveDialogNames)
 {
     LibMCAssertNotNull(pAuth);
 
@@ -1074,11 +1074,17 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth)
     }
     writer.addArray(AMC_API_KEY_UI_TOOLBARITEMS, toolbarItems);
 
+    auto isActiveName = [](const std::set<std::string>* pActiveNames, const std::string& sName) -> bool {
+        return (pActiveNames != nullptr) && (pActiveNames->find(sName) != pActiveNames->end());
+    };
+    bool bWriteAllModules = (pActivePageNames == nullptr);
+
     CJSONWriterArray pages(writer);
     for (auto iter : m_Pages) {
         CJSONWriterObject pageObject(writer);
 
-        iter.second->frontendWritePageStatusToJSON(writer, pageObject, pFrontendState, pStateMachineData);
+        bool bWriteModules = bWriteAllModules || isActiveName(pActivePageNames, iter.first);
+        iter.second->frontendWritePageStatusToJSON(writer, pageObject, pFrontendState, pStateMachineData, bWriteModules);
 
         pages.addObject(pageObject);
     }
@@ -1088,7 +1094,8 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth)
     for (auto iter : m_CustomPages) {
         CJSONWriterObject custompage(writer);
         custompage.addString(AMC_API_KEY_UI_COMPONENTNAME, iter.second->getComponentName());
-        iter.second->frontendWritePageStatusToJSON(writer, custompage, pFrontendState, pStateMachineData);
+        bool bWriteModules = bWriteAllModules || isActiveName(pActivePageNames, iter.first);
+        iter.second->frontendWritePageStatusToJSON(writer, custompage, pFrontendState, pStateMachineData, bWriteModules);
         custompages.addObject(custompage);
     }
     writer.addArray(AMC_API_KEY_UI_CUSTOMPAGES, custompages);
@@ -1097,7 +1104,8 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth)
     for (auto iter : m_Dialogs) {
         CJSONWriterObject dialog(writer);
         dialog.addString(AMC_API_KEY_UI_DIALOGTITLE, iter.second->getTitle());
-        iter.second->frontendWritePageStatusToJSON(writer, dialog, pFrontendState, pStateMachineData);
+        bool bWriteModules = bWriteAllModules || isActiveName(pActiveDialogNames, iter.first);
+        iter.second->frontendWritePageStatusToJSON(writer, dialog, pFrontendState, pStateMachineData, bWriteModules);
         dialogs.addObject(dialog);
     }
     writer.addArray(AMC_API_KEY_UI_DIALOGS, dialogs);
