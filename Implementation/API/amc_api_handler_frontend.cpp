@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_api_handler_frontend.hpp"
 #include "amc_api_jsonrequest.hpp"
+#include "amc_api_frontendeventstream.hpp"
+#include "amc_streamregistry.hpp"
 #include "amc_ui_handler.hpp"
 #include "amc_ui_frontendstate.hpp"
 #include "amc_ui_frontendsnapshot.hpp"
@@ -69,12 +71,13 @@ using namespace AMC;
 
 
 
-CAPIHandler_Frontend::CAPIHandler_Frontend(PSystemState pSystemState)
-	: CAPIHandler(pSystemState->getClientHash()), m_pSystemState(pSystemState)
+CAPIHandler_Frontend::CAPIHandler_Frontend(PSystemState pSystemState, PAPISessionHandler pSessionHandler)
+	: CAPIHandler(pSystemState->getClientHash()), m_pSystemState(pSystemState), m_pSessionHandler(pSessionHandler)
 {
 	if (pSystemState.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
-
+	if (pSessionHandler.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
 }
 
@@ -127,6 +130,9 @@ APIHandler_FrontendType CAPIHandler_Frontend::parseRequest(const std::string& sU
 
 		if ((sParameterString == "/metrics") || (sParameterString == "/metrics/"))
 			return APIHandler_FrontendType::ftMetrics;
+
+		if ((sParameterString == "/streamticket") || (sParameterString == "/streamticket/"))
+			return APIHandler_FrontendType::ftStreamTicket;
 
 	}
 
@@ -290,6 +296,35 @@ void CAPIHandler_Frontend::handleMetricsRequest(CJSONWriter& writer, const uint8
 	pMetricsHandler->AddFrontendMetrics(sSessionUUID, sLabel, nIntervalStart, nIntervalEnd, (LibMCData_uint32)nRequestCount, dSumDurationMS, dMinDurationMS, dMaxDurationMS, dSumSqDurationMS, nPayloadSumBytes, nPayloadMaxBytes, dServerBuildSumMS, pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970());
 
 	writer.addBoolean(AMC_API_KEY_FRONTEND_METRICS_RECORDED, true);
+}
+
+
+void CAPIHandler_Frontend::handleStreamTicketRequest(CJSONWriter& writer, PAPIAuth pAuth)
+{
+	if (pAuth.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+	if (!pAuth->userIsAuthorized())
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDAUTHORIZATION);
+
+	auto pFrontendState = pAuth->getFrontendState();
+	if (pFrontendState.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	auto pStreamRegistry = m_pSystemState->getStreamRegistryInstance();
+	pStreamRegistry->removeEndedJSONEventStreams();
+
+	auto pEventStream = pFrontendState->getOrCreateEventStream([this, pAuth, pStreamRegistry]() -> PJSONEventStreamInstance {
+		auto pNewStream = std::make_shared<CAPIFrontendEventStream>(AMCCommon::CUtils::createUUID(), pAuth, m_pSystemState, m_pSessionHandler);
+		pStreamRegistry->registerStream(pNewStream);
+		return pNewStream;
+	});
+
+	uint64_t nNow = m_pSystemState->globalChrono()->getUTCTimeStampInMicrosecondsSince1970();
+	uint64_t nLifetimeInMicroseconds = (uint64_t)AMC_API_FRONTEND_STREAMTICKET_LIFETIME_SECONDS * 1000000ULL;
+	std::string sTicket = pStreamRegistry->createStreamTicket(pEventStream->getUUID(), nNow, nLifetimeInMicroseconds);
+
+	writer.addString(AMC_API_KEY_FRONTEND_STREAMTICKET, sTicket);
+	writer.addInteger(AMC_API_KEY_FRONTEND_STREAMTICKETLIFETIME, AMC_API_FRONTEND_STREAMTICKET_LIFETIME_SECONDS);
 }
 
 

@@ -218,6 +218,16 @@ bool CUIFrontendSnapshot::equals(const CUIFrontendSnapshot& otherSnapshot) const
 	return true;
 }
 
+void CUIFrontendSnapshot::writeToJSON(CJSONWriter& writer, CJSONWriterObject& storesObject) const
+{
+	for (auto& store : m_Stores) {
+		CJSONWriterObject storeObject(writer);
+		for (auto& attribute : store.second)
+			storeObject.addRawJSON(attribute.first, attribute.second.m_sJSON);
+		storesObject.addObject(store.first, storeObject);
+	}
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CUIFrontendPatch
@@ -327,8 +337,8 @@ void CUIFrontendPatch::writeToJSON(CJSONWriter& writer, CJSONWriterObject& chang
 // CUIFrontendRevisionLog
 /////////////////////////////////////////////////////////////////////////////////////
 
-CUIFrontendRevisionLog::CUIFrontendRevisionLog(size_t nMaxPatchCount)
-	: m_nRevision(0), m_bHasSnapshot(false), m_nMaxPatchCount(nMaxPatchCount)
+CUIFrontendRevisionLog::CUIFrontendRevisionLog(size_t nMaxPatchCount, uint64_t nInitialRevision)
+	: m_nRevision(nInitialRevision), m_bHasSnapshot(false), m_nMaxPatchCount(nMaxPatchCount)
 {
 	if (m_nMaxPatchCount == 0)
 		throw ELibMCCustomException(LIBMC_ERROR_INVALIDPARAM, "revision log depth");

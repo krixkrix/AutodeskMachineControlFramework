@@ -241,6 +241,56 @@ LibMCResult libmc_streamconnection_getstreamtype(LibMC_StreamConnection pStreamC
 	}
 }
 
+LibMCResult libmc_streamconnection_setresumeeventid(LibMC_StreamConnection pStreamConnection, LibMC_uint64 nEventID)
+{
+	IBase* pIBaseClass = (IBase *)pStreamConnection;
+
+	try {
+		IStreamConnection* pIStreamConnection = dynamic_cast<IStreamConnection*>(pIBaseClass);
+		if (!pIStreamConnection)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCAST);
+		
+		pIStreamConnection->SetResumeEventID(nEventID);
+
+		return LIBMC_SUCCESS;
+	}
+	catch (ELibMCInterfaceException & Exception) {
+		return handleLibMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCResult libmc_streamconnection_isactive(LibMC_StreamConnection pStreamConnection, bool * pIsActive)
+{
+	IBase* pIBaseClass = (IBase *)pStreamConnection;
+
+	try {
+		if (pIsActive == nullptr)
+			throw ELibMCInterfaceException (LIBMC_ERROR_INVALIDPARAM);
+		IStreamConnection* pIStreamConnection = dynamic_cast<IStreamConnection*>(pIBaseClass);
+		if (!pIStreamConnection)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCAST);
+		
+		*pIsActive = pIStreamConnection->IsActive();
+
+		return LIBMC_SUCCESS;
+	}
+	catch (ELibMCInterfaceException & Exception) {
+		return handleLibMCException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for APIRequestHandler
@@ -1021,6 +1071,10 @@ LibMCResult LibMC::Impl::LibMC_GetProcAddress (const char * pProcName, void ** p
 		*ppProcAddress = (void*) &libmc_streamconnection_getidledelay;
 	if (sProcName == "libmc_streamconnection_getstreamtype") 
 		*ppProcAddress = (void*) &libmc_streamconnection_getstreamtype;
+	if (sProcName == "libmc_streamconnection_setresumeeventid") 
+		*ppProcAddress = (void*) &libmc_streamconnection_setresumeeventid;
+	if (sProcName == "libmc_streamconnection_isactive") 
+		*ppProcAddress = (void*) &libmc_streamconnection_isactive;
 	if (sProcName == "libmc_apirequesthandler_expectsrawbody") 
 		*ppProcAddress = (void*) &libmc_apirequesthandler_expectsrawbody;
 	if (sProcName == "libmc_apirequesthandler_expectsformdata") 

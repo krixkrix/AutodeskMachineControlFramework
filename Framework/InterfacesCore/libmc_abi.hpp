@@ -118,6 +118,24 @@ LIBMC_DECLSPEC LibMCResult libmc_streamconnection_getidledelay(LibMC_StreamConne
 */
 LIBMC_DECLSPEC LibMCResult libmc_streamconnection_getstreamtype(LibMC_StreamConnection pStreamConnection, LibMC::eStreamConnectionType * pStreamType);
 
+/**
+* Sets the last event ID that the client has already received, taken from the SSE Last-Event-ID header. Must be called before the first GetNewContent call. Streams that do not support resuming ignore it.
+*
+* @param[in] pStreamConnection - StreamConnection instance.
+* @param[in] nEventID - Last event ID the client has received. 0 means that no resume point is known and a full snapshot is sent.
+* @return error code or 0 (success)
+*/
+LIBMC_DECLSPEC LibMCResult libmc_streamconnection_setresumeeventid(LibMC_StreamConnection pStreamConnection, LibMC_uint64 nEventID);
+
+/**
+* Returns if the stream connection is still active. Returns false once the underlying stream has ended, for example because its session was closed. The caller should then terminate the connection.
+*
+* @param[in] pStreamConnection - StreamConnection instance.
+* @param[out] pIsActive - Flag if the stream connection is still active.
+* @return error code or 0 (success)
+*/
+LIBMC_DECLSPEC LibMCResult libmc_streamconnection_isactive(LibMC_StreamConnection pStreamConnection, bool * pIsActive);
+
 /*************************************************************************************************************************
  Class definition for APIRequestHandler
 **************************************************************************************************************************/

@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <memory>
 #include <map>
+#include <atomic>
 
 #include "amc_server_io.hpp"
 #include "amc_server_configuration.hpp"
@@ -68,6 +69,8 @@ namespace AMC {
 			bool m_bUseHTTPS;
 			bool m_bServiceHasBeenStarted;
 			bool m_bFatalErrorOccurred;
+
+			std::atomic<uint32_t> m_nOpenEventStreams;
 
 			std::vector<std::pair<std::string, std::string>> m_ParameterOverrides;
 		

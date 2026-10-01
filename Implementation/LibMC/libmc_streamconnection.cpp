@@ -43,6 +43,8 @@ Abstract: This is a stub class definition of CStreamConnection
 #define STREAMCONNECTION_MIN_IDLE_DELAY_IN_MS 5
 #define STREAMCONNECTION_MAX_IDLE_DELAY_IN_MS 100
 #define STREAMCONNECTION_IDLE_DELAY_FRAMEDURATION_DIVISOR 2
+#define STREAMCONNECTION_JSONEVENT_HEARTBEAT_INTERVAL_IN_MS 15000
+#define STREAMCONNECTION_JSONEVENT_MIMETYPE "text/event-stream"
 
 using namespace LibMC::Impl;
 
@@ -55,11 +57,14 @@ using namespace LibMC::Impl;
 CStreamConnection::CStreamConnection(const std::string& sStreamUUID, AMC::PStreamInstance pStream)
     : m_sStreamUUID (AMCCommon::CUtils::normalizeUUIDString (sStreamUUID)),
     m_pStream (pStream),
-    m_nLastFrameVersion (0)
+    m_nLastFrameVersion (0),
+    m_LastJSONEventTime (std::chrono::steady_clock::now ())
 {
     // Cache the downcast for video streams
-    if (pStream.get() != nullptr)
+    if (pStream.get() != nullptr) {
         m_pVideoStream = std::dynamic_pointer_cast<AMC::CVideoStreamInstance>(pStream);
+        m_pJSONEventStream = std::dynamic_pointer_cast<AMC::CJSONEventStreamInstance>(pStream);
+    }
 }
 
 
@@ -69,8 +74,33 @@ CStreamConnection::~CStreamConnection()
 }
 
 
+IStreamData* CStreamConnection::getNewJSONEventContent()
+{
+    std::string sEvent = m_pJSONEventStream->waitForNextEvent(m_JSONEventCursor);
+
+    auto now = std::chrono::steady_clock::now();
+    if (sEvent.empty()) {
+        auto nIdleTimeInMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_LastJSONEventTime).count();
+        if (nIdleTimeInMs < STREAMCONNECTION_JSONEVENT_HEARTBEAT_INTERVAL_IN_MS)
+            return nullptr;
+
+        sEvent = AMC::CJSONEventStreamInstance::formatComment("keepalive");
+    }
+
+    m_LastJSONEventTime = now;
+
+    std::unique_ptr<CStreamData> pStreamData(new CStreamData(STREAMCONNECTION_JSONEVENT_MIMETYPE));
+    auto& buffer = pStreamData->getBuffer();
+    buffer.assign(sEvent.begin(), sEvent.end());
+
+    return pStreamData.release();
+}
+
 IStreamData * CStreamConnection::GetNewContent()
 {
+    if (m_pJSONEventStream.get() != nullptr)
+        return getNewJSONEventContent();
+
     if (m_pVideoStream.get() == nullptr)
         return nullptr;
 
@@ -91,6 +121,10 @@ IStreamData * CStreamConnection::GetNewContent()
 
 uint32_t CStreamConnection::GetIdleDelay()
 {
+    // JSON event streams block inside GetNewContent until there is something to send.
+    if (m_pJSONEventStream.get() != nullptr)
+        return 0;
+
     if (m_pVideoStream.get() == nullptr)
         return STREAMCONNECTION_DEFAULT_IDLE_DELAY_IN_MS;
 
@@ -116,4 +150,24 @@ LibMC::eStreamConnectionType CStreamConnection::GetStreamType()
     default:
         return LibMC::eStreamConnectionType::Unknown;
     }
+}
+
+void CStreamConnection::SetResumeEventID(const LibMC_uint64 nEventID)
+{
+    if (m_JSONEventCursor.m_bStarted)
+        throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+    m_JSONEventCursor.m_nLastEventID = nEventID;
+}
+
+bool CStreamConnection::IsActive()
+{
+    if (m_pStream.get() == nullptr)
+        return false;
+
+    if (m_pJSONEventStream.get() != nullptr)
+        return m_pJSONEventStream->isActive();
+
+    // A video stream's isActive only reports whether frames are arriving; a paused video stream keeps its connections.
+    return true;
 }

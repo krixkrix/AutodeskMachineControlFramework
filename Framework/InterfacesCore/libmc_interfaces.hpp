@@ -289,6 +289,18 @@ public:
 	*/
 	virtual LibMC::eStreamConnectionType GetStreamType() = 0;
 
+	/**
+	* IStreamConnection::SetResumeEventID - Sets the last event ID that the client has already received, taken from the SSE Last-Event-ID header. Must be called before the first GetNewContent call. Streams that do not support resuming ignore it.
+	* @param[in] nEventID - Last event ID the client has received. 0 means that no resume point is known and a full snapshot is sent.
+	*/
+	virtual void SetResumeEventID(const LibMC_uint64 nEventID) = 0;
+
+	/**
+	* IStreamConnection::IsActive - Returns if the stream connection is still active. Returns false once the underlying stream has ended, for example because its session was closed. The caller should then terminate the connection.
+	* @return Flag if the stream connection is still active.
+	*/
+	virtual bool IsActive() = 0;
+
 };
 
 typedef IBaseSharedPtr<IStreamConnection> PIStreamConnection;

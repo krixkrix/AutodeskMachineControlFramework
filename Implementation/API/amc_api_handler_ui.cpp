@@ -46,6 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_dataserieshandler.hpp"
 #include "amc_scatterplot.hpp"
 #include "amc_toolpathhandler.hpp"
+#include "amc_streamregistry.hpp"
 
 #include "libmc_interfaceexception.hpp"
 #include "libmcdata_dynamic.hpp"
@@ -447,6 +448,8 @@ void CAPIHandler_UI::handleEventRequest(CJSONWriter& writer, const uint8_t* pBod
 	auto pUIHandler = m_pSystemState->uiHandler();
 
 	auto pEventResult = pUIHandler->handleEvent(sEventName, sSenderUUID, sFormValueJSON, sEventParameterJSON, pAuth);
+
+	m_pSystemState->getStreamRegistryInstance()->notifyJSONEventStreams();
 
 	CJSONWriterArray contentUpdateNode(writer);
 

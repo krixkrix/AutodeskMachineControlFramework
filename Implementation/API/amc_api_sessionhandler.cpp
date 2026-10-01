@@ -59,6 +59,11 @@ CAPISessionHandler::CAPISessionHandler(AMCCommon::PChrono pGlobalChrono, LibMCDa
 
 CAPISessionHandler::~CAPISessionHandler()
 {
+	for (auto& iSession : m_SessionMap) {
+		auto pFrontendState = iSession.second->getFrontendState();
+		if (pFrontendState.get() != nullptr)
+			pFrontendState->endEventStream();
+	}
 }
 
 PAPIAuth CAPISessionHandler::createAuthentication(const std::string& sAuthorizationJSON, AMCCommon::PChrono pGlobalChrono)
@@ -223,11 +228,20 @@ void CAPISessionHandler::setSessionTimeout(uint64_t nAuthSeconds, uint64_t nUnau
 
 void CAPISessionHandler::deactivateSession(const std::string& sSessionUUID)
 {
+	PAPISession pSession;
 	{
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
 		auto iIterator = m_SessionMap.find(sSessionUUID);
-		if (iIterator != m_SessionMap.end())
+		if (iIterator != m_SessionMap.end()) {
+			pSession = iIterator->second;
 			m_SessionMap.erase(iIterator);
+		}
+	}
+
+	if (pSession.get() != nullptr) {
+		auto pFrontendState = pSession->getFrontendState();
+		if (pFrontendState.get() != nullptr)
+			pFrontendState->endEventStream();
 	}
 
 	if (m_pDataModel) {
@@ -250,6 +264,7 @@ void CAPISessionHandler::cleanupExpiredSessions()
 	uint64_t nUnauthTimeoutMicroseconds = m_nUnauthSessionTimeoutSeconds * 1000000ULL;
 
 	std::vector<std::string> expiredUUIDs;
+	std::vector<PAPISession> expiredSessions;
 
 	{
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
@@ -260,12 +275,19 @@ void CAPISessionHandler::cleanupExpiredSessions()
 
 			if (nLastActivity > 0 && nNow > nLastActivity && (nNow - nLastActivity) > nTimeout) {
 				expiredUUIDs.push_back(iIterator->first);
+				expiredSessions.push_back(pSession);
 				iIterator = m_SessionMap.erase(iIterator);
 			}
 			else {
 				++iIterator;
 			}
 		}
+	}
+
+	for (auto& pSession : expiredSessions) {
+		auto pFrontendState = pSession->getFrontendState();
+		if (pFrontendState.get() != nullptr)
+			pFrontendState->endEventStream();
 	}
 
 	if (m_pDataModel && !expiredUUIDs.empty()) {
@@ -278,4 +300,31 @@ void CAPISessionHandler::cleanupExpiredSessions()
 		catch (...) {
 		}
 	}
+}
+
+bool CAPISessionHandler::refreshSessionActivity(const std::string& sSessionUUID)
+{
+	uint64_t nNow = 0;
+	if (m_pGlobalChrono)
+		nNow = m_pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
+
+	{
+		std::lock_guard<std::mutex> lockGuard(m_Mutex);
+		auto iIterator = m_SessionMap.find(sSessionUUID);
+		if (iIterator == m_SessionMap.end())
+			return false;
+
+		iIterator->second->updateLastActivity(nNow);
+	}
+
+	if (m_pDataModel) {
+		try {
+			auto pLoginHandler = m_pDataModel->CreateLoginHandler();
+			pLoginHandler->UpdateLoginSessionActivity(sSessionUUID, nNow);
+		}
+		catch (...) {
+		}
+	}
+
+	return true;
 }

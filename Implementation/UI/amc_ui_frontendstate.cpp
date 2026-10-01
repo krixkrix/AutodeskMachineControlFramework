@@ -82,6 +82,33 @@ CUIFrontendRevisionLog& CUIFrontendState::getRevisionLog()
 	return m_RevisionLog;
 }
 
+PJSONEventStreamInstance CUIFrontendState::getOrCreateEventStream(const std::function<PJSONEventStreamInstance()>& createStream)
+{
+	std::lock_guard<std::mutex> lockGuard(m_EventStreamMutex);
+
+	if ((m_pEventStream.get() == nullptr) || (!m_pEventStream->isActive())) {
+		auto pEventStream = createStream();
+		if (pEventStream.get() == nullptr)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+		m_pEventStream = pEventStream;
+	}
+
+	return m_pEventStream;
+}
+
+void CUIFrontendState::endEventStream()
+{
+	PJSONEventStreamInstance pEventStream;
+	{
+		std::lock_guard<std::mutex> lockGuard(m_EventStreamMutex);
+		pEventStream = m_pEventStream;
+		m_pEventStream = nullptr;
+	}
+
+	if (pEventStream.get() != nullptr)
+		pEventStream->endStream();
+}
+
 CParameterGroup* CUIFrontendState::getSessionVariables()
 {
 	std::lock_guard<std::mutex> lockGuard(m_SessionMutex);

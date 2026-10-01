@@ -12135,9 +12135,9 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_userpreferencehandler_retrieveuserpreference;
 	if (sProcName == "libmcdata_userpreferencehandler_storeuserpreference") 
 		*ppProcAddress = (void*) &libmcdata_userpreferencehandler_storeuserpreference;
-	if (sProcName == "libmcdata_userpreferencehandler_deleteuserpreference")
+	if (sProcName == "libmcdata_userpreferencehandler_deleteuserpreference") 
 		*ppProcAddress = (void*) &libmcdata_userpreferencehandler_deleteuserpreference;
-	if (sProcName == "libmcdata_sessionmetricshandler_addfrontendmetrics")
+	if (sProcName == "libmcdata_sessionmetricshandler_addfrontendmetrics") 
 		*ppProcAddress = (void*) &libmcdata_sessionmetricshandler_addfrontendmetrics;
 	if (sProcName == "libmcdata_machineconfigurationversion_getversionuuid") 
 		*ppProcAddress = (void*) &libmcdata_machineconfigurationversion_getversionuuid;
@@ -12243,9 +12243,9 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_datamodel_createtelemetryreader;
 	if (sProcName == "libmcdata_datamodel_createpersistencyhandler") 
 		*ppProcAddress = (void*) &libmcdata_datamodel_createpersistencyhandler;
-	if (sProcName == "libmcdata_datamodel_createuserpreferencehandler")
+	if (sProcName == "libmcdata_datamodel_createuserpreferencehandler") 
 		*ppProcAddress = (void*) &libmcdata_datamodel_createuserpreferencehandler;
-	if (sProcName == "libmcdata_datamodel_createsessionmetricshandler")
+	if (sProcName == "libmcdata_datamodel_createsessionmetricshandler") 
 		*ppProcAddress = (void*) &libmcdata_datamodel_createsessionmetricshandler;
 	if (sProcName == "libmcdata_datamodel_setbasetempdirectory") 
 		*ppProcAddress = (void*) &libmcdata_datamodel_setbasetempdirectory;

@@ -45,6 +45,11 @@ using namespace AMC;
 
 #define PEMMAXLENGTH (1024 * 1024)
 
+#define AMC_SERVER_THREADPOOLSIZE 64
+#define AMC_SERVER_MAXEVENTSTREAMS 32
+#define AMC_SERVER_EVENTSTREAM_RETRY_MS 3000
+#define AMC_SERVER_EVENTSTREAM_MAXEVENTIDLENGTH 18
+
 // httplib's defaults (SO_REUSEADDR on Windows, SO_REUSEPORT on Linux) let a second process bind an already used port without an error.
 static void setExclusiveServerSocketOptions(socket_t sock)
 {
@@ -173,7 +178,7 @@ public:
 #endif // _WIN32
 
 CServer::CServer(PServerIO pServerIO)
-	: m_pServerIO (pServerIO), m_pListeningServerInstance (nullptr), m_nPort (0), m_bUseHTTPS (false), m_bServiceHasBeenStarted (false), m_bFatalErrorOccurred (false)
+	: m_pServerIO (pServerIO), m_pListeningServerInstance (nullptr), m_nPort (0), m_bUseHTTPS (false), m_bServiceHasBeenStarted (false), m_bFatalErrorOccurred (false), m_nOpenEventStreams (0)
 {
 	if (pServerIO.get() == nullptr)
 		throw LibMC::ELibMCException(LIBMC_ERROR_INVALIDPARAM, "invalid parameter");
@@ -317,7 +322,14 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 
 						//std::cout << req.path << std::endl;
 
-						std::string sStreamUUID = AMCCommon::CUtils::normalizeUUIDString(sPath.substr(8));
+						std::string sStreamIdentifier = sPath.substr(8);
+						if (!AMCCommon::CUtils::stringIsUUIDString(sStreamIdentifier)) {
+							res.status = 404;
+							res.set_content("Stream not found", "text/plain");
+							return;
+						}
+
+						std::string sStreamUUID = AMCCommon::CUtils::normalizeUUIDString(sStreamIdentifier);
 
 						std::string sBoundary = AMCCommon::CUtils::calculateRandomSHA256String(4) + "_" + sStreamUUID;
 
@@ -337,7 +349,9 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 								break;
 
 							default:
-								throw std::runtime_error("invalid stream connection type.");
+								res.status = 404;
+								res.set_content("Stream not found", "text/plain");
+								return;
 						}
 							
 						// Handle CORS preflight requests
@@ -357,6 +371,38 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 						res.set_header("Connection", "keep-alive");
 						res.set_header("Cache-Control", "no-cache");
 
+						httplib::ContentProviderResourceReleaser resourceReleaser = nullptr;
+
+						if (streamType == LibMC::eStreamConnectionType::JSONEventStream) {
+
+							// Native EventSource reconnects send Last-Event-ID; clients that open a new ticket pass lastEventId instead.
+							std::string sLastEventID = req.get_header_value("Last-Event-ID");
+							if (sLastEventID.empty() && req.has_param("lastEventId"))
+								sLastEventID = req.get_param_value("lastEventId");
+
+							uint64_t nResumeEventID = 0;
+							if ((!sLastEventID.empty()) && (sLastEventID.length() <= AMC_SERVER_EVENTSTREAM_MAXEVENTIDLENGTH) && (sLastEventID.find_first_not_of("0123456789") == std::string::npos))
+								nResumeEventID = std::stoull(sLastEventID);
+							pStreamConnection->SetResumeEventID(nResumeEventID);
+
+							// Every open event stream occupies one worker thread of the HTTP server.
+							if (m_nOpenEventStreams.fetch_add(1) >= AMC_SERVER_MAXEVENTSTREAMS) {
+								m_nOpenEventStreams.fetch_sub(1);
+								res.status = 503;
+								res.set_header("Retry-After", "5");
+								res.set_content("Too many open event streams", "text/plain");
+								return;
+							}
+
+							auto pReleased = std::make_shared<std::atomic<bool>>(false);
+							resourceReleaser = [this, pReleased](bool) {
+								if (!pReleased->exchange(true))
+									m_nOpenEventStreams.fetch_sub(1);
+							};
+
+							res.set_header("X-Accel-Buffering", "no");
+						}
+
 						res.set_content_provider(
 							sContentType.c_str (),
 							[pStreamConnection, this, streamType, sBoundary](size_t offset, httplib::DataSink& sink) -> bool {
@@ -364,14 +410,22 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 									if (!sink.is_writable())
 										return false;
 
-									// Send initial SSE comment only on first invocation (offset == 0)
-									if (offset == 0 && streamType == LibMC::eStreamConnectionType::JSONEventStream) {
-										std::string sInitial = ": connected\n\n"; // SSE comment
-										sink.os.write(sInitial.c_str(), sInitial.length());
-										sink.os.flush();
+									if (streamType == LibMC::eStreamConnectionType::JSONEventStream) {
+										if (offset == 0) {
+											std::string sInitial = "retry: " + std::to_string(AMC_SERVER_EVENTSTREAM_RETRY_MS) + "\n: connected\n\n";
+											sink.os.write(sInitial.c_str(), sInitial.length());
+											sink.os.flush();
+										}
+
+										if (!pStreamConnection->IsActive()) {
+											sink.done();
+											return true;
+										}
 									}
 
-									std::this_thread::sleep_for(std::chrono::milliseconds(pStreamConnection->GetIdleDelay()));
+									uint32_t nIdleDelay = pStreamConnection->GetIdleDelay();
+									if (nIdleDelay > 0)
+										std::this_thread::sleep_for(std::chrono::milliseconds(nIdleDelay));
 
 									auto pContent = pStreamConnection->GetNewContent();
 									if (pContent.get() != nullptr) {
@@ -383,11 +437,8 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 
 											switch (streamType) {
 												case LibMC::eStreamConnectionType::JSONEventStream: {
-													std::string sPayload(reinterpret_cast<char*>(dataBuffer.data()), dataBuffer.size());
-
-													// SSE format: event + data + double newline
-													std::string sData = "data: " + sPayload + "\n\n";
-													sink.os.write(sData.c_str(), sData.length());
+													// The stream delivers fully framed SSE events.
+													sink.os.write(reinterpret_cast<char*>(dataBuffer.data()), dataBuffer.size());
 													sink.os.flush(); // Force immediate sending
 
 													break;
@@ -419,7 +470,8 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 								}
 
 								return true;
-							}
+							},
+							resourceReleaser
 						);
  
 
@@ -568,6 +620,7 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 
 					httplib::SSLServer sslsvr(serverCertificate.getCertificate(), privateKey.getPrivateKey());
 
+					sslsvr.new_task_queue = [] { return new httplib::ThreadPool(AMC_SERVER_THREADPOOLSIZE); };
 					sslsvr.Get("^/stream/.*", streamHandler);
 					sslsvr.Get("(.*?)", requestHandler);
 					sslsvr.Post("(.*?)", requestHandler);
@@ -606,6 +659,7 @@ void CServer::executeBlocking(const std::string& sConfigurationFileName)
 				try {
 
 					httplib::Server svr;
+					svr.new_task_queue = [] { return new httplib::ThreadPool(AMC_SERVER_THREADPOOLSIZE); };
 					svr.Get("^/stream/.*", streamHandler);
 					svr.Get("(.*?)", requestHandler);
 					svr.Post("(.*?)", requestHandler);

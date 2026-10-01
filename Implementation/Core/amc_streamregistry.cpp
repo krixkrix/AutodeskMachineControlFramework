@@ -34,6 +34,8 @@ Abstract: This is the class definition of CStreamRegistry.
 #include "common_utils.hpp"
 #include "libmc_exceptiontypes.hpp"
 
+#include <vector>
+
 using namespace AMC;
 
 CStreamRegistry::CStreamRegistry()
@@ -118,4 +120,95 @@ bool CStreamRegistry::hasStream(const std::string& sUUID) const
 
 	std::lock_guard<std::mutex> lock(m_Mutex);
 	return m_StreamMap.find(sNormalizedUUID) != m_StreamMap.end();
+}
+
+void CStreamRegistry::removeExpiredStreamTicketsNoLock(uint64_t nTimestampInMicroseconds)
+{
+	for (auto iter = m_StreamTickets.begin(); iter != m_StreamTickets.end(); ) {
+		if (iter->second.m_nExpiryTimestampInMicroseconds <= nTimestampInMicroseconds)
+			iter = m_StreamTickets.erase(iter);
+		else
+			++iter;
+	}
+}
+
+std::string CStreamRegistry::createStreamTicket(const std::string& sStreamUUID, uint64_t nTimestampInMicroseconds, uint64_t nLifetimeInMicroseconds)
+{
+	std::string sNormalizedStreamUUID = AMCCommon::CUtils::normalizeUUIDString(sStreamUUID);
+
+	std::lock_guard<std::mutex> lock(m_Mutex);
+
+	if (m_StreamMap.find(sNormalizedStreamUUID) == m_StreamMap.end())
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDPARAM, "Stream with UUID " + sNormalizedStreamUUID + " is not registered.");
+
+	removeExpiredStreamTicketsNoLock(nTimestampInMicroseconds);
+	if (m_StreamTickets.size() >= AMC_STREAMREGISTRY_MAXSTREAMTICKETS)
+		throw ELibMCCustomException(LIBMC_ERROR_INVALIDPARAM, "Too many open stream tickets.");
+
+	std::string sTicket = AMCCommon::CUtils::createUUID();
+
+	sStreamTicket ticket;
+	ticket.m_sStreamUUID = sNormalizedStreamUUID;
+	ticket.m_nExpiryTimestampInMicroseconds = nTimestampInMicroseconds + nLifetimeInMicroseconds;
+	m_StreamTickets.insert(std::make_pair(sTicket, ticket));
+
+	return sTicket;
+}
+
+PStreamInstance CStreamRegistry::redeemStreamTicket(const std::string& sTicket, uint64_t nTimestampInMicroseconds)
+{
+	if (!AMCCommon::CUtils::stringIsUUIDString(sTicket))
+		return nullptr;
+
+	std::string sNormalizedTicket = AMCCommon::CUtils::normalizeUUIDString(sTicket);
+
+	std::lock_guard<std::mutex> lock(m_Mutex);
+
+	auto iTicketIter = m_StreamTickets.find(sNormalizedTicket);
+	if (iTicketIter == m_StreamTickets.end())
+		return nullptr;
+
+	sStreamTicket ticket = iTicketIter->second;
+	m_StreamTickets.erase(iTicketIter);
+
+	if (ticket.m_nExpiryTimestampInMicroseconds <= nTimestampInMicroseconds)
+		return nullptr;
+
+	auto iStreamIter = m_StreamMap.find(ticket.m_sStreamUUID);
+	if (iStreamIter == m_StreamMap.end())
+		return nullptr;
+
+	if (!iStreamIter->second->isActive())
+		return nullptr;
+
+	return iStreamIter->second;
+}
+
+void CStreamRegistry::notifyJSONEventStreams()
+{
+	std::vector<PJSONEventStreamInstance> jsonEventStreams;
+	{
+		std::lock_guard<std::mutex> lock(m_Mutex);
+		for (auto& iter : m_StreamMap) {
+			if (iter.second->getStreamType() == eStreamType::JSONEventStream) {
+				auto pJSONEventStream = std::dynamic_pointer_cast<CJSONEventStreamInstance>(iter.second);
+				if (pJSONEventStream.get() != nullptr)
+					jsonEventStreams.push_back(pJSONEventStream);
+			}
+		}
+	}
+
+	for (auto& pJSONEventStream : jsonEventStreams)
+		pJSONEventStream->notifyChange();
+}
+
+void CStreamRegistry::removeEndedJSONEventStreams()
+{
+	std::lock_guard<std::mutex> lock(m_Mutex);
+	for (auto iter = m_StreamMap.begin(); iter != m_StreamMap.end(); ) {
+		if ((iter->second->getStreamType() == eStreamType::JSONEventStream) && (!iter->second->isActive()))
+			iter = m_StreamMap.erase(iter);
+		else
+			++iter;
+	}
 }

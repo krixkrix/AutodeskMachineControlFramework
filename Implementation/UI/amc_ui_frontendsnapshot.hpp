@@ -86,6 +86,8 @@ namespace AMC {
 
 		bool equals(const CUIFrontendSnapshot& otherSnapshot) const;
 
+		void writeToJSON(CJSONWriter& writer, CJSONWriterObject& storesObject) const;
+
 	};
 
 
@@ -155,7 +157,8 @@ namespace AMC {
 
 	public:
 
-		CUIFrontendRevisionLog(size_t nMaxPatchCount = AMC_UI_FRONTEND_REVISIONLOG_DEPTH);
+		// The first published snapshot gets revision nInitialRevision + 1.
+		CUIFrontendRevisionLog(size_t nMaxPatchCount = AMC_UI_FRONTEND_REVISIONLOG_DEPTH, uint64_t nInitialRevision = 0);
 
 		// Records the snapshot and, if nBaseRevision is non-zero and still reachable, returns the merged
 		// patch from nBaseRevision to the resulting revision. Otherwise the caller has to send the snapshot.

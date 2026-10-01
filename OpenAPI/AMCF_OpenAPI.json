@@ -1645,6 +1645,37 @@
         }
       }
     },
+    "/frontend/streamticket": {
+      "post": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Issue a ticket for the session's server-sent event stream.",
+        "description": "The ticket is single-use, expires after 'lifetime' seconds and is bound to the calling session. Open the stream with GET /stream/{ticket} (outside of /api, text/event-stream). The stream sends 'snapshot' events ({revision, stores}: store UUID -> attribute -> value) and 'patch' events ({revision, base, changed}, removed attributes are null), each with the revision as event id, plus ': keepalive' comments. To resume after a disconnect, request a new ticket and pass the last received event id as Last-Event-ID header or lastEventId query parameter; the server replies with a patch if the revision is still buffered and with a snapshot otherwise. The stream ends when the session is closed or expires. Unknown, used or expired tickets yield 404, too many open streams yield 503.",
+        "operationId": "frontendStreamTicket",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ticket": { "type": "string", "format": "uuid" },
+                    "lifetime": { "type": "integer", "description": "Seconds until the ticket expires." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/frontend/event": {
       "post": {
         "tags": [

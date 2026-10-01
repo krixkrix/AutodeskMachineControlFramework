@@ -38,7 +38,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_systemstate.hpp"
 
+#define AMC_API_FRONTEND_STREAMTICKET_LIFETIME_SECONDS 30
+
 namespace AMC {
+
+	class CAPISessionHandler;
+	typedef std::shared_ptr<CAPISessionHandler> PAPISessionHandler;
 
 	enum class APIHandler_FrontendType {
 		ftUnknown = 0,
@@ -54,12 +59,14 @@ namespace AMC {
 		ftMetrics = 9,
 		ftParameterListDefinition = 10,
 		ftParameterListValues = 11,
+		ftStreamTicket = 12,
 	};
 
 	class CAPIHandler_Frontend : public CAPIHandler {
 	private:
 		
 		PSystemState m_pSystemState;
+		PAPISessionHandler m_pSessionHandler;
 
 		APIHandler_FrontendType parseRequest(const std::string& sURI, const eAPIRequestType requestType, std::string & sParameterUUID, std::string & sAdditionalParameter);
 
@@ -75,9 +82,12 @@ namespace AMC {
 		// The session UUID is stamped server-side from the authenticated session, never trusted from the body.
 		void handleMetricsRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth);
 
+		// Issues a short-lived single-use ticket for the session's event stream, to be opened as /stream/{ticket}.
+		void handleStreamTicketRequest(CJSONWriter& writer, PAPIAuth pAuth);
+
 	public:
 
-		CAPIHandler_Frontend(PSystemState pSystemState);
+		CAPIHandler_Frontend(PSystemState pSystemState, PAPISessionHandler pSessionHandler);
 
 		virtual ~CAPIHandler_Frontend();
 				

@@ -43,13 +43,25 @@ Supports multiple stream types (video, JSON events, etc.).
 
 #include "amc_streaminstance.hpp"
 #include "amc_videostreaminstance.hpp"
+#include "amc_jsoneventstreaminstance.hpp"
+
+#define AMC_STREAMREGISTRY_MAXSTREAMTICKETS 1024
 
 namespace AMC {
 
 	class CStreamRegistry {
 	private:
+
+		struct sStreamTicket {
+			std::string m_sStreamUUID;
+			uint64_t m_nExpiryTimestampInMicroseconds;
+		};
+
 		std::map<std::string, PStreamInstance> m_StreamMap;
+		std::map<std::string, sStreamTicket> m_StreamTickets;
 		mutable std::mutex m_Mutex;
+
+		void removeExpiredStreamTicketsNoLock(uint64_t nTimestampInMicroseconds);
 
 	public:
 		CStreamRegistry();
@@ -78,6 +90,18 @@ namespace AMC {
 
 		// Returns true if a stream with the given UUID exists.
 		bool hasStream(const std::string& sUUID) const;
+
+		// Creates a single-use ticket (a UUID) that grants access to a registered stream until it expires.
+		std::string createStreamTicket(const std::string& sStreamUUID, uint64_t nTimestampInMicroseconds, uint64_t nLifetimeInMicroseconds);
+
+		// Consumes a ticket. Returns nullptr if the ticket is unknown or expired, or its stream is gone or inactive.
+		PStreamInstance redeemStreamTicket(const std::string& sTicket, uint64_t nTimestampInMicroseconds);
+
+		// Wakes all connections of all JSON event streams.
+		void notifyJSONEventStreams();
+
+		// Unregisters JSON event streams that have ended.
+		void removeEndedJSONEventStreams();
 	};
 
 	typedef std::shared_ptr<CStreamRegistry> PStreamRegistry;

@@ -93,6 +93,10 @@ namespace AMC {
 
 		void cleanupExpiredSessions();
 
+		// Marks the session as active without a request, e.g. while it has an open event stream.
+		// Returns false if the session does not exist anymore.
+		bool refreshSessionActivity(const std::string& sSessionUUID);
+
 	};
 
 	

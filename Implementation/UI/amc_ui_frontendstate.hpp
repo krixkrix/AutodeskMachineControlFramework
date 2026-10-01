@@ -35,9 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_parameterhandler.hpp"
 #include "amc_ui_frontenddefinition.hpp"
 #include "amc_ui_frontendsnapshot.hpp"
+#include "amc_jsoneventstreaminstance.hpp"
 
 #include "common_chrono.hpp"
 
+#include <functional>
 #include <mutex>
 
 namespace AMC {
@@ -65,6 +67,9 @@ namespace AMC {
 
 		CUIFrontendRevisionLog m_RevisionLog;
 
+		std::mutex m_EventStreamMutex;
+		PJSONEventStreamInstance m_pEventStream;
+
 		// Returns the session variable group after applying broadcasts that arrived since the last access.
 		CParameterGroup* getSessionVariables();
 
@@ -83,6 +88,13 @@ namespace AMC {
 		void setSessionIdentity(const std::string& sSessionUUID, PUserInformation pUserInformation, PAccessControl pAccessControl);
 
 		CUIFrontendRevisionLog& getRevisionLog();
+
+		// Returns the session's event stream. Calls createStream if there is none or the previous one has ended.
+		PJSONEventStreamInstance getOrCreateEventStream(const std::function<PJSONEventStreamInstance()>& createStream);
+
+		// Ends and releases the session's event stream, if any. Must be called when the session closes,
+		// since the stream keeps a reference to the session's authentication.
+		void endEventStream();
 
 		bool hasSessionVariable(const std::string& sName);
 

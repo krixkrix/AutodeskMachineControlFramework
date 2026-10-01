@@ -1230,6 +1230,13 @@ IStreamConnection* CMCContext::CreateStreamConnection(const std::string& sStream
     auto pRegistry = m_pSystemState->getStreamRegistryInstance();
     if (pRegistry.get() != nullptr) {
         pStream = pRegistry->findStream(sNormalizedStreamUUID);
+
+        // JSON event streams carry session data and are only reachable through a stream ticket.
+        if ((pStream.get() != nullptr) && (pStream->getStreamType() == AMC::eStreamType::JSONEventStream))
+            pStream = nullptr;
+
+        if (pStream.get() == nullptr)
+            pStream = pRegistry->redeemStreamTicket(sNormalizedStreamUUID, m_pSystemState->globalChrono()->getUTCTimeStampInMicrosecondsSince1970());
     }
 
     return new CStreamConnection(sNormalizedStreamUUID, pStream);

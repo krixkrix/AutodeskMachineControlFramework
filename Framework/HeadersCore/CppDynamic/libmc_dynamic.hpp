@@ -1672,6 +1672,8 @@ public:
 	inline PStreamData GetNewContent();
 	inline LibMC_uint32 GetIdleDelay();
 	inline eStreamConnectionType GetStreamType();
+	inline void SetResumeEventID(const LibMC_uint64 nEventID);
+	inline bool IsActive();
 };
 	
 /*************************************************************************************************************************
@@ -1842,6 +1844,8 @@ public:
 		pWrapperTable->m_StreamConnection_GetNewContent = nullptr;
 		pWrapperTable->m_StreamConnection_GetIdleDelay = nullptr;
 		pWrapperTable->m_StreamConnection_GetStreamType = nullptr;
+		pWrapperTable->m_StreamConnection_SetResumeEventID = nullptr;
+		pWrapperTable->m_StreamConnection_IsActive = nullptr;
 		pWrapperTable->m_APIRequestHandler_ExpectsRawBody = nullptr;
 		pWrapperTable->m_APIRequestHandler_ExpectsFormData = nullptr;
 		pWrapperTable->m_APIRequestHandler_GetFormDataDetails = nullptr;
@@ -1965,6 +1969,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_StreamConnection_GetStreamType == nullptr)
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StreamConnection_SetResumeEventID = (PLibMCStreamConnection_SetResumeEventIDPtr) GetProcAddress(hLibrary, "libmc_streamconnection_setresumeeventid");
+		#else // _WIN32
+		pWrapperTable->m_StreamConnection_SetResumeEventID = (PLibMCStreamConnection_SetResumeEventIDPtr) dlsym(hLibrary, "libmc_streamconnection_setresumeeventid");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StreamConnection_SetResumeEventID == nullptr)
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_StreamConnection_IsActive = (PLibMCStreamConnection_IsActivePtr) GetProcAddress(hLibrary, "libmc_streamconnection_isactive");
+		#else // _WIN32
+		pWrapperTable->m_StreamConnection_IsActive = (PLibMCStreamConnection_IsActivePtr) dlsym(hLibrary, "libmc_streamconnection_isactive");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_StreamConnection_IsActive == nullptr)
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -2273,6 +2295,14 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_GetStreamType == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmc_streamconnection_setresumeeventid", (void**)&(pWrapperTable->m_StreamConnection_SetResumeEventID));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_SetResumeEventID == nullptr) )
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmc_streamconnection_isactive", (void**)&(pWrapperTable->m_StreamConnection_IsActive));
+		if ( (eLookupError != 0) || (pWrapperTable->m_StreamConnection_IsActive == nullptr) )
+			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmc_apirequesthandler_expectsrawbody", (void**)&(pWrapperTable->m_APIRequestHandler_ExpectsRawBody));
 		if ( (eLookupError != 0) || (pWrapperTable->m_APIRequestHandler_ExpectsRawBody == nullptr) )
 			return LIBMC_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -2476,6 +2506,27 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_GetStreamType(m_pHandle, &resultStreamType));
 		
 		return resultStreamType;
+	}
+	
+	/**
+	* CStreamConnection::SetResumeEventID - Sets the last event ID that the client has already received, taken from the SSE Last-Event-ID header. Must be called before the first GetNewContent call. Streams that do not support resuming ignore it.
+	* @param[in] nEventID - Last event ID the client has received. 0 means that no resume point is known and a full snapshot is sent.
+	*/
+	void CStreamConnection::SetResumeEventID(const LibMC_uint64 nEventID)
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_SetResumeEventID(m_pHandle, nEventID));
+	}
+	
+	/**
+	* CStreamConnection::IsActive - Returns if the stream connection is still active. Returns false once the underlying stream has ended, for example because its session was closed. The caller should then terminate the connection.
+	* @return Flag if the stream connection is still active.
+	*/
+	bool CStreamConnection::IsActive()
+	{
+		bool resultIsActive = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_StreamConnection_IsActive(m_pHandle, &resultIsActive));
+		
+		return resultIsActive;
 	}
 	
 	/**
