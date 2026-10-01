@@ -1454,222 +1454,6 @@
       }
     },
 
-    "/module/{moduleUUID}": {
-      "get": {
-        "tags": [
-          "frontend"
-        ],
-        "summary": "Retrieve legacy module payload",
-        "operationId": "getModuleByUuid",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "moduleUUID",
-            "in": "path",
-            "description": "Module UUID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-
-    "/module/{moduleUUID}/{stateID}": {
-      "get": {
-        "tags": [
-          "frontend"
-        ],
-        "summary": "Retrieve legacy module payload at specific state ID",
-        "operationId": "getModuleByUuidAndState",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "moduleUUID",
-            "in": "path",
-            "description": "Module UUID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "stateID",
-            "in": "path",
-            "description": "Legacy state ID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-
-    "/contentitem/{itemUUID}": {
-      "get": {
-        "tags": [
-          "frontend"
-        ],
-        "summary": "Retrieve legacy content item payload",
-        "operationId": "getContentItemByUuid",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "itemUUID",
-            "in": "path",
-            "description": "Content item UUID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-
-    "/contentitem/{itemUUID}/{stateID}": {
-      "get": {
-        "tags": [
-          "frontend"
-        ],
-        "summary": "Retrieve legacy content item payload at specific state ID",
-        "operationId": "getContentItemByUuidAndState",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "itemUUID",
-            "in": "path",
-            "description": "Content item UUID",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "stateID",
-            "in": "path",
-            "description": "Legacy state ID",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "minimum": 0
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful operation",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-
     "/frontend": {
       "get": {
         "tags": [
@@ -1680,6 +1464,26 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pages",
+            "in": "query",
+            "description": "Comma-separated names of the active pages and custom pages. If given, only these pages and the dialogs listed in 'dialogs' contain modules; all other pages and dialogs only contain their header and visibility.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dialogs",
+            "in": "query",
+            "description": "Comma-separated names of the open dialogs. Only evaluated together with 'pages'.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1707,6 +1511,129 @@
       }
     },
 
+    "/frontend/parameterlist/{itemUUID}": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Query the row definitions and current values of a parameter list.",
+        "description": "Returns the static row definitions (entries) together with the current values of all rows (values, same order) and a definition hash. The item must be placed on a page, custom page or dialog that is visible to the session.",
+        "operationId": "frontendParameterListDefinition",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "itemUUID",
+            "in": "path",
+            "description": "UUID of the parameter list module",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "definitionhash": { "type": "string" },
+                    "entries": { "type": "array", "items": { "type": "object" } },
+                    "values": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown parameter list or not visible to the session"
+          }
+        }
+      }
+    },
+    "/frontend/parameterlist/{itemUUID}/values": {
+      "get": {
+        "tags": [
+          "frontend"
+        ],
+        "summary": "Query the current values of a subset of parameter list rows.",
+        "description": "If definitionhash is outdated, only definitionchanged=true is returned and the definition needs to be queried again. If valueshash matches the current values of the requested rows, unchanged=true is returned without values.",
+        "operationId": "frontendParameterListValues",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "itemUUID",
+            "in": "path",
+            "description": "UUID of the parameter list module",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "definitionhash",
+            "in": "query",
+            "description": "Definition hash of the client-side row definitions.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "Comma separated row indices and index ranges, e.g. '0-24,30'. All rows if omitted. Values are returned in request order.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "valueshash",
+            "in": "query",
+            "description": "Values hash of the last response for the same row selection.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "definitionhash": { "type": "string" },
+                    "definitionchanged": { "type": "boolean" },
+                    "valueshash": { "type": "string" },
+                    "unchanged": { "type": "boolean" },
+                    "values": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown parameter list, not visible to the session or invalid row selection"
+          }
+        }
+      }
+    },
     "/frontend/event": {
       "post": {
         "tags": [
