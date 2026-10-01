@@ -87,6 +87,9 @@ const MAX_CONSECUTIVE_FAILURES = 5;
 // (see SSE reactivity plan, Phase 0) and push a single summary to the backend.
 const FRONTEND_METRICS_WINDOW_MS = 5000;
 
+// Attribute names of frontend patches are written onto plain objects and must not reach their prototype.
+const FRONTEND_PATCH_FORBIDDEN_NAMES = new Set (["__proto__", "constructor", "prototype"]);
+
 export default class AMCApplication extends Common.AMCObject {
 	
 
@@ -104,6 +107,9 @@ export default class AMCApplication extends Common.AMCObject {
 			unsuccessfulFrontendCounter: 0,
 			frontendState: null,
 			frontendLookup: {},
+			frontendTargets: new Map (),
+			frontendRevision: 0,
+			frontendScope: "",
 			frontendRequestSerial: 0,
 			frontendAppliedSerial: 0,
 			navigationRequestSerial: 0,
@@ -899,42 +905,44 @@ export default class AMCApplication extends Common.AMCObject {
 			.filter (dialog => dialog.isActive ())
 			.map (dialog => dialog.name);
 
-		return this.axiosGetRequest("/frontend", {
-			params: { pages: activePageNames.join (","), dialogs: activeDialogNames.join (",") }
-		})
+		let requestParams = { pages: activePageNames.join (","), dialogs: activeDialogNames.join (",") };
+		let requestScope = requestParams.pages + "|" + requestParams.dialogs;
+
+		// Patches are only meaningful against a local state of the same pages and dialogs.
+		if (this.API.frontendState && (this.API.frontendRevision > 0) && (this.API.frontendScope === requestScope))
+			requestParams.since = this.API.frontendRevision;
+
+		return this.axiosGetRequest("/frontend", { params: requestParams })
 		.then(resultJSON => {
 			this._recordFrontendMetric (requestStartMS, resultJSON);
 
 			// Polls and navigation refreshes overlap; never let an older response replace a newer one.
 			if (requestSerial < this.API.frontendAppliedSerial)
 				return;
-			this.API.frontendAppliedSerial = requestSerial;
 
-			this.API.frontendState = resultJSON.data;
+			let data = resultJSON.data;
+			if (!data)
+				return;
+
+			if (data.changed) {
+				if (!this._applyFrontendPatch (data, requestScope))
+					return;
+			}
+			else {
+				this.API.frontendState = data;
+				this.API.frontendScope = requestScope;
+				this.API.frontendRevision = Number.isSafeInteger (data.revision) ? data.revision : 0;
+				this._indexFrontendState (data);
+			}
+
+			this.API.frontendAppliedSerial = requestSerial;
 			this.API.unsuccessfulFrontendCounter = 0;
 
-			this._applyFrontendVisibility(resultJSON.data);
+			this._applyFrontendVisibility(this.API.frontendState);
 			// A response to a request issued before the latest navigation may carry stale
 			// visibility, so it must not redirect away from a page or dialog that was just opened.
 			if (requestSerial > this.API.navigationRequestSerial)
 				this._enforceFrontendVisibility();
-
-			// Build a flat uuid -> { moduletype, attributes, submodules } map
-			this.API.frontendLookup = {};
-			if (resultJSON.data) {
-				let pageLists = [resultJSON.data.pages, resultJSON.data.custompages, resultJSON.data.dialogs];
-				for (let pageList of pageLists) {
-					if (!pageList)
-						continue;
-					for (let page of pageList) {
-						if (page.modules) {
-							for (let mod of page.modules) {
-								this._indexFrontendModule(mod);
-							}
-						}
-					}
-				}
-			}
 		})
 		.catch(err => {
 			this.API.unsuccessfulFrontendCounter = (this.API.unsuccessfulFrontendCounter || 0) + 1;
@@ -1140,18 +1148,89 @@ export default class AMCApplication extends Common.AMCObject {
 		return true;
 	}
 
-	// Recursively index a v2 module (and its submodules) into frontendLookup by UUID.
+	// Rebuilds frontendLookup (module uuid -> module JSON) and frontendTargets (store uuid -> object that
+	// receives patched attributes: the item or page JSON itself, or the attributes of a module).
+	_indexFrontendState(data) {
+		this.API.frontendLookup = {};
+		this.API.frontendTargets = new Map ();
+
+		for (let itemList of [data.menuitems, data.toolbaritems]) {
+			if (!itemList)
+				continue;
+			for (let item of itemList) {
+				if (item && item.uuid)
+					this.API.frontendTargets.set (item.uuid, item);
+			}
+		}
+
+		for (let pageList of [data.pages, data.custompages, data.dialogs]) {
+			if (!pageList)
+				continue;
+			for (let page of pageList) {
+				if (!page)
+					continue;
+				if (page.uuid)
+					this.API.frontendTargets.set (page.uuid, page);
+				if (page.modules) {
+					for (let mod of page.modules) {
+						this._indexFrontendModule(mod);
+					}
+				}
+			}
+		}
+	}
+
+	// Recursively index a v2 module (and its submodules) by UUID.
 	_indexFrontendModule(mod) {
 		if (!mod || !mod.uuid)
 			return;
 
+		if (!mod.attributes)
+			mod.attributes = {};
+
 		this.API.frontendLookup[mod.uuid] = mod;
+		this.API.frontendTargets.set (mod.uuid, mod.attributes);
 
 		if (mod.submodules) {
 			for (let sub of mod.submodules) {
 				this._indexFrontendModule(sub);
 			}
 		}
+	}
+
+	// Applies a {revision, base, changed} response onto the local frontend state; null removes an attribute.
+	// Patch values are absolute, so a patch also applies to any local revision between base and revision.
+	_applyFrontendPatch(data, requestScope) {
+		if (!this.API.frontendState || (requestScope !== this.API.frontendScope))
+			return false;
+		if (!Number.isSafeInteger (data.revision) || !Number.isSafeInteger (data.base) || (typeof data.changed !== "object"))
+			return false;
+
+		let localRevision = this.API.frontendRevision;
+		if (data.revision < localRevision)
+			return false;
+		if (data.base > localRevision) {
+			// The local state misses changes; the next poll fetches the full state.
+			this.API.frontendRevision = 0;
+			return false;
+		}
+
+		for (let [uuid, attributes] of Object.entries (data.changed)) {
+			let target = this.API.frontendTargets.get (uuid);
+			if (!target || !attributes || (typeof attributes !== "object"))
+				continue;
+			for (let [name, value] of Object.entries (attributes)) {
+				if (FRONTEND_PATCH_FORBIDDEN_NAMES.has (name))
+					continue;
+				if (value === null)
+					delete target[name];
+				else
+					target[name] = value;
+			}
+		}
+
+		this.API.frontendRevision = data.revision;
+		return true;
 	}
 
 	// Look up a UUID in the v2 frontend map. Returns the entry or null.
