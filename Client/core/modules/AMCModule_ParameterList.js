@@ -83,6 +83,19 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 
 		this.PREFERENCE_DOMAIN = "parameterlist";
 
+		// Rows and values come from /frontend/parameterlist/{uuid}: the static row definitions
+		// are fetched once (definitionHash), afterwards only the values are polled (valuesHash).
+		this.definitionHash = "";
+		this.valuesHash = "";
+		this.parameterFetchInFlight = false;
+		this.onEntriesChanged = null;
+
+		// A frontend that reports its display state (setDisplayed) only gets values while the
+		// list is actually shown, e.g. not while it sits in an inactive tab. Frontends that never
+		// report it are treated as always displaying the list while its page is active.
+		this.displayTracked = false;
+		this.displayed = false;
+
 		this.updateFromJSON (moduleJSON);
 	}
 
@@ -197,14 +210,175 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 		if (attrs.visible !== undefined)
 			this.visible = (attrs.visible === "1" || attrs.visible === true || attrs.visible === "true");
 
-		const incoming = Array.isArray(attrs.entries) ? attrs.entries : [];
-		while (this.entries.length > 0) this.entries.pop();
-		for (let entry of incoming) this.entries.push(entry);
-
 		// The stable key and the authentication token both arrive asynchronously
 		// with the polled frontend state, so drive the one-time preference restore
 		// from here. maybeLoadPreferences() is guarded and only fires once ready.
 		this.maybeLoadPreferences ();
+
+		// Called once per frontend poll while the page is active.
+		this.refreshParameters ();
+	}
+
+
+	// -----------------------------------------------------------------------
+	// Parameter data (definition + values) via the parameter list endpoint
+	// -----------------------------------------------------------------------
+
+	setDisplayed (flag)
+	{
+		this.displayTracked = true;
+		this.displayed = !!flag;
+		if (this.displayed)
+			this.refreshParameters ();
+	}
+
+	isDisplayed ()
+	{
+		return (!this.displayTracked) || this.displayed;
+	}
+
+	// Comma separated row indices/ranges of the rows that pass the active filters, or ""
+	// if no filter is active (= all rows). Returns null if no row passes the filters.
+	requestedRows ()
+	{
+		if (!this.hasActiveFilters ())
+			return "";
+
+		const ranges = [];
+		let rangeStart = -1;
+		let rangeEnd = -1;
+		this.entries.forEach ((row, index) => {
+			if (!this.rowPassesFilters (row))
+				return;
+			if (rangeStart >= 0 && index === rangeEnd + 1) {
+				rangeEnd = index;
+				return;
+			}
+			if (rangeStart >= 0)
+				ranges.push ((rangeStart === rangeEnd) ? `${rangeStart}` : `${rangeStart}-${rangeEnd}`);
+			rangeStart = index;
+			rangeEnd = index;
+		});
+		if (rangeStart >= 0)
+			ranges.push ((rangeStart === rangeEnd) ? `${rangeStart}` : `${rangeStart}-${rangeEnd}`);
+
+		return (ranges.length > 0) ? ranges.join (",") : null;
+	}
+
+	refreshParameters ()
+	{
+		if (this.parameterFetchInFlight || !this.isActive () || !this.isDisplayed ())
+			return;
+
+		if (!this.definitionHash) {
+			this.fetchDefinition ();
+			return;
+		}
+
+		const rows = this.requestedRows ();
+		if (rows === null)
+			return;
+
+		this.fetchValues (rows, this.valuesHash);
+	}
+
+	fetchDefinition ()
+	{
+		const app = this.getApplication ();
+		if (!app)
+			return Promise.resolve ();
+
+		this.parameterFetchInFlight = true;
+		return app.axiosGetRequest ("/frontend/parameterlist/" + this.uuid)
+		.then (resultJSON => {
+			this.parameterFetchInFlight = false;
+			const data = resultJSON.data || {};
+			const definitions = Array.isArray (data.entries) ? data.entries : [];
+			const values = Array.isArray (data.values) ? data.values : [];
+
+			const newEntries = definitions.map ((definition, index) =>
+				Object.assign ({}, definition, { paramValue: (index < values.length) ? values[index] : "" }));
+			this.entries.splice (0, this.entries.length, ...newEntries);
+
+			this.definitionHash = data.definitionhash || "";
+			this.valuesHash = "";
+			this.notifyEntriesChanged ();
+		})
+		.catch (() => {
+			this.parameterFetchInFlight = false;
+		});
+	}
+
+	fetchValues (rows, knownValuesHash)
+	{
+		const app = this.getApplication ();
+		if (!app)
+			return Promise.resolve ();
+
+		const params = { definitionhash: this.definitionHash };
+		if (rows)
+			params.rows = rows;
+		if (knownValuesHash)
+			params.valueshash = knownValuesHash;
+
+		this.parameterFetchInFlight = true;
+		return app.axiosGetRequest ("/frontend/parameterlist/" + this.uuid + "/values", { params: params })
+		.then (resultJSON => {
+			this.parameterFetchInFlight = false;
+			const data = resultJSON.data || {};
+
+			if (data.definitionchanged) {
+				this.definitionHash = "";
+				return this.fetchDefinition ();
+			}
+
+			this.valuesHash = data.valueshash || "";
+			if (data.unchanged || !Array.isArray (data.values))
+				return;
+
+			const indices = rows ? this.expandRows (rows) : this.entries.map ((row, index) => index);
+			let changed = false;
+			indices.forEach ((entryIndex, valueIndex) => {
+				const row = this.entries[entryIndex];
+				const value = data.values[valueIndex];
+				if (row && value !== undefined && row.paramValue !== value) {
+					// Replace instead of mutating so frontends that compare row identity re-render the row.
+					this.entries[entryIndex] = Object.assign ({}, row, { paramValue: value });
+					changed = true;
+				}
+			});
+			if (changed)
+				this.notifyEntriesChanged ();
+		})
+		.catch (() => {
+			this.parameterFetchInFlight = false;
+		});
+	}
+
+	// Refreshes the values of all rows regardless of filters, e.g. before an export.
+	loadAllValues ()
+	{
+		if (!this.definitionHash)
+			return this.fetchDefinition ();
+		return this.fetchValues ("", "");
+	}
+
+	expandRows (rows)
+	{
+		const indices = [];
+		for (let token of rows.split (",")) {
+			const bounds = token.split ("-").map ((part) => parseInt (part, 10));
+			const last = (bounds.length > 1) ? bounds[1] : bounds[0];
+			for (let index = bounds[0]; index <= last; index++)
+				indices.push (index);
+		}
+		return indices;
+	}
+
+	notifyEntriesChanged ()
+	{
+		if (typeof this.onEntriesChanged === "function")
+			this.onEntriesChanged ();
 	}
 
 
@@ -318,21 +492,31 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 	// Applies favorites-first ordering, category filters, favorite-only visibility
 	// and column sorting to a raw entries array, returning a new array. The input
 	// is never mutated.
+	hasActiveFilters ()
+	{
+		return ((this.filters.groups || []).length > 0) || ((this.filters.systems || []).length > 0) || this.showOnlyFavorites;
+	}
+
+	// Category filters (AND across facets, OR within a facet) and favorites-only visibility.
+	rowPassesFilters (row)
+	{
+		const groupFilter = this.filters.groups || [];
+		const systemFilter = this.filters.systems || [];
+		if (groupFilter.length > 0 && groupFilter.indexOf (row.paramGroup) < 0)
+			return false;
+		if (systemFilter.length > 0 && systemFilter.indexOf (row.paramSystem) < 0)
+			return false;
+		if (this.showOnlyFavorites && !this.isFavorite (row))
+			return false;
+		return true;
+	}
+
 	applyView (rows)
 	{
 		let result = Array.isArray (rows) ? rows.slice () : [];
 
-		// Category filters (AND across facets, OR within a facet).
-		const groupFilter = this.filters.groups || [];
-		const systemFilter = this.filters.systems || [];
-		if (groupFilter.length > 0)
-			result = result.filter ((row) => groupFilter.indexOf (row.paramGroup) >= 0);
-		if (systemFilter.length > 0)
-			result = result.filter ((row) => systemFilter.indexOf (row.paramSystem) >= 0);
-
-		// Favorites-only visibility.
-		if (this.showOnlyFavorites)
-			result = result.filter ((row) => this.isFavorite (row));
+		if (this.hasActiveFilters ())
+			result = result.filter ((row) => this.rowPassesFilters (row));
 
 		// Sorting. A stable sort keeps insertion order for equal keys. Favorites
 		// are always floated to the top regardless of the active column sort.
@@ -554,6 +738,9 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 		if (typeof this.onPreferencesChanged === "function")
 			this.onPreferencesChanged ();
 		this.schedulePersist ();
+
+		// Rows that just became visible through a filter change may carry outdated values.
+		this.refreshParameters ();
 	}
 
 	schedulePersist (delayMs)

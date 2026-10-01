@@ -15,9 +15,11 @@
 	import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down';
 
 	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useDisplayed } from '$lib/amcf/display';
 
 	let { module, app }: { module: any; app: any } = $props();
 	const poll = usePollTick();
+	const isDisplayed = useDisplayed();
 
 	// Bumped whenever the client-side view state (favorites/sort/filters/presets)
 	// changes, so derived values recompute even though `module` is a plain JS
@@ -27,10 +29,24 @@
 
 	$effect(() => {
 		module.onPreferencesChanged = () => { stateTick++; };
+		// Values are fetched asynchronously after the poll tick, so re-render when they arrive.
+		module.onEntriesChanged = () => { stateTick++; };
 		// The restore is driven from the core module's polled update once the stable
 		// key and auth token are available; this is just a best-effort early nudge.
 		if (typeof module.maybeLoadPreferences === 'function') module.maybeLoadPreferences();
-		return () => { module.onPreferencesChanged = null; };
+		return () => {
+			module.onPreferencesChanged = null;
+			module.onEntriesChanged = null;
+		};
+	});
+
+	// The core module only polls values while the list is shown (e.g. not in an inactive tab).
+	$effect(() => {
+		const displayed = isDisplayed();
+		if (typeof module.setDisplayed === 'function') module.setDisplayed(displayed);
+		return () => {
+			if (typeof module.setDisplayed === 'function') module.setDisplayed(false);
+		};
 	});
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
@@ -52,8 +68,8 @@
 
 	let sortState = $derived.by(() => { poll.v; stateTick; return module.sort || { column: '', direction: 'asc' }; });
 	let showOnlyFavorites = $derived.by(() => { poll.v; stateTick; return !!module.showOnlyFavorites; });
-	let groupOptions = $derived.by(() => { poll.v; return (typeof module.distinctGroups === 'function') ? module.distinctGroups() : []; });
-	let systemOptions = $derived.by(() => { poll.v; return (typeof module.distinctSystems === 'function') ? module.distinctSystems() : []; });
+	let groupOptions = $derived.by(() => { poll.v; stateTick; return (typeof module.distinctGroups === 'function') ? module.distinctGroups() : []; });
+	let systemOptions = $derived.by(() => { poll.v; stateTick; return (typeof module.distinctSystems === 'function') ? module.distinctSystems() : []; });
 	let activeGroups = $derived.by(() => { poll.v; stateTick; return (module.filters && module.filters.groups) ? module.filters.groups : []; });
 	let activeSystems = $derived.by(() => { poll.v; stateTick; return (module.filters && module.filters.systems) ? module.filters.systems : []; });
 	let presetNames = $derived.by(() => { poll.v; stateTick; return (typeof module.listPresets === 'function') ? module.listPresets() : []; });
@@ -149,7 +165,9 @@
 
 	// Exports the full, unfiltered parameter set (description, value, state machine,
 	// group) as a CSV download, regardless of the active view filters.
-	function downloadCsv() {
+	async function downloadCsv() {
+		// Filtered-out rows are not polled, so refresh all values before exporting.
+		if (typeof module.loadAllValues === 'function') await module.loadAllValues();
 		const header = ['Parameter', 'Value', 'State Machine', 'Group'];
 		const rows = (module.entries || []).map((e: any) =>
 			[e.paramDescription, e.paramValue, e.paramSystem, e.paramGroup].map(csvEscape).join(','));

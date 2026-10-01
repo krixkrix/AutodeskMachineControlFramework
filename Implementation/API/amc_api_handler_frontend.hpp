@@ -52,6 +52,8 @@ namespace AMC {
 		ftSubscriptionReset = 8,
 		ftTriggerEvent = 2,
 		ftMetrics = 9,
+		ftParameterListDefinition = 10,
+		ftParameterListValues = 11,
 	};
 
 	class CAPIHandler_Frontend : public CAPIHandler {
@@ -63,6 +65,9 @@ namespace AMC {
 
 		// Clients that pass the "pages" query parameter only receive modules for the listed pages and the dialogs in "dialogs".
 		void handleStatusRequest(CJSONWriter& writer, CAPIFormFields& pFormFields, PAPIAuth pAuth);
+
+		// Optional query parameters: "definitionhash" and "valueshash" (last known hashes) and "rows" (row indices/ranges, e.g. "0-24,30").
+		void handleParameterListRequest(CJSONWriter& writer, const std::string& sItemUUID, bool bValuesOnly, CAPIFormFields& pFormFields, PAPIAuth pAuth);
 
 		// Records an aggregated frontend reactivity metrics window pushed by the client.
 		// The session UUID is stamped server-side from the authenticated session, never trusted from the body.

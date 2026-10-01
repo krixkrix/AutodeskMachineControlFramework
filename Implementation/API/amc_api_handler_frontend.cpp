@@ -98,6 +98,26 @@ APIHandler_FrontendType CAPIHandler_Frontend::parseRequest(const std::string& sU
 		if (sParameterString.empty () || (sParameterString == "/"))
 			return APIHandler_FrontendType::ftStatus;
 
+		// /parameterlist/{uuid} and /parameterlist/{uuid}/values
+		std::string sParameterListPrefix = "/parameterlist/";
+		if (sParameterString.rfind(sParameterListPrefix, 0) == 0) {
+			std::string sRemainder = sParameterString.substr(sParameterListPrefix.length());
+			if ((!sRemainder.empty()) && (sRemainder.back() == '/'))
+				sRemainder.pop_back();
+
+			bool bValuesOnly = false;
+			std::string sValuesSuffix = "/values";
+			if ((sRemainder.length() > sValuesSuffix.length()) && (sRemainder.compare(sRemainder.length() - sValuesSuffix.length(), sValuesSuffix.length(), sValuesSuffix) == 0)) {
+				sRemainder = sRemainder.substr(0, sRemainder.length() - sValuesSuffix.length());
+				bValuesOnly = true;
+			}
+
+			if (AMCCommon::CUtils::stringIsUUIDString(sRemainder)) {
+				sParameterUUID = AMCCommon::CUtils::normalizeUUIDString(sRemainder);
+				return bValuesOnly ? APIHandler_FrontendType::ftParameterListValues : APIHandler_FrontendType::ftParameterListDefinition;
+			}
+		}
+
 	}
 
 
@@ -165,6 +185,19 @@ void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, CAPIFormFiel
 }
 
 
+void CAPIHandler_Frontend::handleParameterListRequest(CJSONWriter& writer, const std::string& sItemUUID, bool bValuesOnly, CAPIFormFields& pFormFields, PAPIAuth pAuth)
+{
+	if (pAuth.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	std::string sKnownDefinitionHash = pFormFields.getRequestParameter(AMC_API_KEY_UI_PARAMETERLIST_DEFINITIONHASH, false);
+	std::string sKnownValuesHash = pFormFields.getRequestParameter(AMC_API_KEY_UI_PARAMETERLIST_VALUESHASH, false);
+	std::string sRowIndices = pFormFields.getRequestParameter(AMC_API_KEY_UI_PARAMETERLIST_ROWS, false);
+
+	m_pSystemState->uiHandler()->frontendWriteParameterListToJSON(writer, pAuth.get(), sItemUUID, bValuesOnly, sKnownDefinitionHash, sKnownValuesHash, sRowIndices);
+}
+
+
 void CAPIHandler_Frontend::handleMetricsRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
 {
 	if (pAuth.get() == nullptr)
@@ -225,6 +258,11 @@ PAPIResponse CAPIHandler_Frontend::handleRequest(const std::string& sURI, const 
 
 	case APIHandler_FrontendType::ftMetrics:
 		handleMetricsRequest(writer, pBodyData, nBodyDataSize, pAuth);
+		break;
+
+	case APIHandler_FrontendType::ftParameterListDefinition:
+	case APIHandler_FrontendType::ftParameterListValues:
+		handleParameterListRequest(writer, sParameterUUID, uiType == APIHandler_FrontendType::ftParameterListValues, pFormFields, pAuth);
 		break;
 
 	default:

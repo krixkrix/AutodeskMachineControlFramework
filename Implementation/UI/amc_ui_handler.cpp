@@ -44,6 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_ui_dialog.hpp"
 #include "amc_ui_module.hpp"
 #include "amc_ui_module_contentitem_form.hpp"
+#include "amc_ui_module_contentitem_parameterlist.hpp"
 #include "amc_ui_module_custom.hpp"
 #include "amc_parameterhandler.hpp"
 #include "amc_ui_expression.hpp"
@@ -1110,6 +1111,32 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth,
     }
     writer.addArray(AMC_API_KEY_UI_DIALOGS, dialogs);
 
+}
+
+void CUIHandler::frontendWriteParameterListToJSON(CJSONWriter& writer, CAPIAuth* pAuth, const std::string& sItemUUID, bool bValuesOnly, const std::string& sKnownDefinitionHash, const std::string& sKnownValuesHash, const std::string& sRowIndices)
+{
+    LibMCAssertNotNull(pAuth);
+
+    auto pFrontendState = pAuth->getFrontendState().get();
+    LibMCAssertNotNull(pFrontendState);
+
+    pFrontendState->setSessionIdentity(pAuth->getSessionUUID(), pAuth->getUserInformation(), m_pUISystemState->getAccessControl());
+
+    auto pStateMachineData = m_pUISystemState->getStateMachineData().get();
+
+    // Unknown items, other item types and items on hidden pages are reported identically.
+    auto pPage = findPageOfModuleItem(sItemUUID);
+    if ((pPage.get() == nullptr) || (!pPage->isVisible(pFrontendState, pStateMachineData)))
+        throw ELibMCCustomException(LIBMC_ERROR_MODULEITEMNOTFOUND, sItemUUID);
+
+    auto pParameterList = std::dynamic_pointer_cast<CUIModule_ContentParameterList>(pPage->findModuleItemByUUID(sItemUUID));
+    if (pParameterList.get() == nullptr)
+        throw ELibMCCustomException(LIBMC_ERROR_MODULEITEMNOTFOUND, sItemUUID);
+
+    if (bValuesOnly)
+        pParameterList->writeValuesToJSON(writer, sKnownDefinitionHash, sKnownValuesHash, sRowIndices);
+    else
+        pParameterList->writeDefinitionToJSON(writer);
 }
 
 PUIFrontendDefinition CUIHandler::getFrontendDefinition()

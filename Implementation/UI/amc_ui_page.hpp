@@ -121,6 +121,8 @@ namespace AMC {
 
 		void setVisibleExpression(const CUIExpression& visibleExpression);
 
+		bool isVisible(CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData);
+
 		// Collects the session references of the page level expressions (icon, caption, description, visible).
 		void collectSessionReferences(std::vector<std::string>& references);
 										

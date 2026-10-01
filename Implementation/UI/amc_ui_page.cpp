@@ -226,6 +226,11 @@ void CUIPage::setVisibleExpression(const CUIExpression& visibleExpression)
 	m_Visible = visibleExpression;
 }
 
+bool CUIPage::isVisible(CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+{
+	return m_Visible.evaluateBoolValue(pStateMachineData, pFrontendState);
+}
+
 void CUIPage::collectSessionReferences(std::vector<std::string>& references)
 {
 	for (auto pExpression : { &m_Icon, &m_Caption, &m_Description, &m_Visible }) {

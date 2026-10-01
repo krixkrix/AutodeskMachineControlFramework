@@ -46,6 +46,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "libmcdata_dynamic.hpp"
 #include "libmc_exceptiontypes.hpp"
 
+#include <sstream>
+#include <vector>
+
 using namespace AMC;
 
 
@@ -178,72 +181,174 @@ CUIModule_ContentParameterList::~CUIModule_ContentParameterList()
 
 
 
-void CUIModule_ContentParameterList::addParameterGroupToJSON(CJSONWriter& writer, PParameterGroup pParameterGroup, CJSONWriterArray& entryArray, bool fullGroup, const std::string& sParameterName, const std::string& sInstanceName, const std::string& sParameterHandlerDescription, CUIModule_ContentParameterListEntry* pEntry)
+void CUIModule_ContentParameterList::collectRows(std::vector<sParameterListRow>& rows, std::string& sDefinitionSignature)
 {
-	std::string sGroupDescription = pParameterGroup->getDescription();
-	std::string sGroupName = pParameterGroup->getName();
+	for (auto entry : m_List) {
+		auto pParameterHandler = m_pStateMachineData->getParameterHandler(entry->getInstance());
+		std::string sSystemDescription = pParameterHandler->getDescription();
 
-	bool bEditable = (pEntry != nullptr) && pEntry->isEditable() && (!m_sEditEvent.empty());
-	std::string sMin = (pEntry != nullptr) ? pEntry->getMin() : "";
-	std::string sMax = (pEntry != nullptr) ? pEntry->getMax() : "";
-	std::string sStep = (pEntry != nullptr) ? pEntry->getStep() : "";
+		std::vector<PParameterGroup> groups;
+		if (entry->isFullInstance()) {
+			uint32_t nGroupCount = pParameterHandler->getGroupCount();
+			for (uint32_t nGroupIndex = 0; nGroupIndex < nGroupCount; nGroupIndex++)
+				groups.push_back(pParameterHandler->getGroup(nGroupIndex));
+		}
+		else {
+			groups.push_back(pParameterHandler->findGroup(entry->getParameterGroup(), true));
+		}
 
-	if (fullGroup) {
+		for (auto pGroup : groups) {
+			sDefinitionSignature += entry->getInstance() + "/" + pGroup->getName();
 
-		uint32_t nCount = pParameterGroup->getParameterCount();
-		for (uint32_t nIndex = 0; nIndex < nCount; nIndex++) {
-
-			std::string sCurrentName;
-			std::string sDescription;
-			std::string sDefaultValue;
-
-			pParameterGroup->getParameterInfo(nIndex, sCurrentName, sDescription, sDefaultValue);
-			std::string sValue = pParameterGroup->getParameterValueByIndex(nIndex);
-			std::string sType = parameterDataTypeToString(pParameterGroup->getParameterDataTypeByIndex(nIndex));
-
-			CJSONWriterObject entryObject(writer);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERDESCRIPTION, sDescription);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERVALUE, sValue);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERGROUP, sGroupDescription);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERSYSTEM, sParameterHandlerDescription);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERNAME, sCurrentName);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERINSTANCE, sInstanceName);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERGROUPNAME, sGroupName);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERTYPE, sType);
-			entryObject.addBool(AMC_API_KEY_UI_ITEMPARAMETEREDITABLE, bEditable);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERMIN, sMin);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERMAX, sMax);
-			entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERSTEP, sStep);
-			entryArray.addObject(entryObject);
-
+			if (entry->isFullInstance() || entry->isFullGroup()) {
+				uint32_t nCount = pGroup->getParameterCount();
+				sDefinitionSignature += ":" + std::to_string(nCount) + ";";
+				for (uint32_t nIndex = 0; nIndex < nCount; nIndex++)
+					rows.push_back(sParameterListRow{ pGroup, nIndex, "", entry->getInstance(), sSystemDescription, entry.get() });
+			}
+			else {
+				sDefinitionSignature += "." + entry->getParameter() + ";";
+				rows.push_back(sParameterListRow{ pGroup, 0, entry->getParameter(), entry->getInstance(), sSystemDescription, entry.get() });
+			}
 		}
 	}
+}
+
+std::string CUIModule_ContentParameterList::readRowValue(const sParameterListRow& row)
+{
+	if (row.m_sParameterName.empty())
+		return row.m_pGroup->getParameterValueByIndex(row.m_nParameterIndex);
+
+	return row.m_pGroup->getParameterValueByName(row.m_sParameterName);
+}
+
+void CUIModule_ContentParameterList::writeRowDefinitionToJSON(CJSONWriter& writer, CJSONWriterArray& entryArray, const sParameterListRow& row)
+{
+	std::string sParameterName = row.m_sParameterName;
+	std::string sDescription;
+	std::string sDefaultValue;
+	std::string sType;
+
+	if (sParameterName.empty()) {
+		row.m_pGroup->getParameterInfo(row.m_nParameterIndex, sParameterName, sDescription, sDefaultValue);
+		sType = parameterDataTypeToString(row.m_pGroup->getParameterDataTypeByIndex(row.m_nParameterIndex));
+	}
 	else {
-		std::string sDescription;
-		std::string sDefaultValue;
-		std::string sValue;
-
-		pParameterGroup->getParameterInfoByName(sParameterName, sDescription, sDefaultValue);
-		sValue = pParameterGroup->getParameterValueByName(sParameterName);
-		std::string sType = parameterDataTypeToString(pParameterGroup->getParameterDataTypeByName(sParameterName));
-
-		CJSONWriterObject entryObject(writer);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERDESCRIPTION, sDescription);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERVALUE, sValue);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERGROUP, sGroupDescription);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERSYSTEM, sParameterHandlerDescription);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERNAME, sParameterName);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERINSTANCE, sInstanceName);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERGROUPNAME, sGroupName);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERTYPE, sType);
-		entryObject.addBool(AMC_API_KEY_UI_ITEMPARAMETEREDITABLE, bEditable);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERMIN, sMin);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERMAX, sMax);
-		entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERSTEP, sStep);
-		entryArray.addObject(entryObject);
-
+		row.m_pGroup->getParameterInfoByName(sParameterName, sDescription, sDefaultValue);
+		sType = parameterDataTypeToString(row.m_pGroup->getParameterDataTypeByName(sParameterName));
 	}
 
+	auto pEntry = row.m_pEntry;
+	bool bEditable = (pEntry != nullptr) && pEntry->isEditable() && (!m_sEditEvent.empty());
+
+	CJSONWriterObject entryObject(writer);
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERDESCRIPTION, sDescription);
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERGROUP, row.m_pGroup->getDescription());
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERSYSTEM, row.m_sSystemDescription);
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERNAME, sParameterName);
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERINSTANCE, row.m_sInstanceName);
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERGROUPNAME, row.m_pGroup->getName());
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERTYPE, sType);
+	entryObject.addBool(AMC_API_KEY_UI_ITEMPARAMETEREDITABLE, bEditable);
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERMIN, (pEntry != nullptr) ? pEntry->getMin() : "");
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERMAX, (pEntry != nullptr) ? pEntry->getMax() : "");
+	entryObject.addString(AMC_API_KEY_UI_ITEMPARAMETERSTEP, (pEntry != nullptr) ? pEntry->getStep() : "");
+	entryArray.addObject(entryObject);
+}
+
+std::vector<uint32_t> CUIModule_ContentParameterList::parseRowIndices(const std::string& sRowIndices, size_t nRowCount)
+{
+	auto parseIndex = [nRowCount](const std::string& sValue) -> uint32_t {
+		if (sValue.empty() || (sValue.find_first_not_of("0123456789") != std::string::npos) || (sValue.length() > 9))
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+		uint32_t nIndex = (uint32_t)std::stoul(sValue);
+		if (nIndex >= nRowCount)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDINDEX);
+		return nIndex;
+	};
+
+	std::vector<uint32_t> indices;
+	std::stringstream stream(sRowIndices);
+	std::string sToken;
+	while (std::getline(stream, sToken, ',')) {
+		auto nDashPosition = sToken.find('-');
+		uint32_t nFirst = parseIndex(sToken.substr(0, nDashPosition));
+		uint32_t nLast = (nDashPosition == std::string::npos) ? nFirst : parseIndex(sToken.substr(nDashPosition + 1));
+		if (nLast < nFirst)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+		for (uint32_t nIndex = nFirst; nIndex <= nLast; nIndex++) {
+			if (indices.size() >= nRowCount)
+				throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+			indices.push_back(nIndex);
+		}
+	}
+
+	return indices;
+}
+
+void CUIModule_ContentParameterList::writeDefinitionToJSON(CJSONWriter& writer)
+{
+	std::vector<sParameterListRow> rows;
+	std::string sDefinitionSignature;
+	collectRows(rows, sDefinitionSignature);
+
+	CJSONWriterArray entryArray(writer);
+	CJSONWriterArray valueArray(writer);
+	for (auto& row : rows) {
+		writeRowDefinitionToJSON(writer, entryArray, row);
+		valueArray.addString(readRowValue(row));
+	}
+
+	writer.addString(AMC_API_KEY_UI_PARAMETERLIST_DEFINITIONHASH, AMCCommon::CUtils::calculateSHA256FromString(sDefinitionSignature));
+	writer.addArray(AMC_API_KEY_UI_ITEMENTRIES, entryArray);
+	writer.addArray(AMC_API_KEY_UI_PARAMETERLIST_VALUES, valueArray);
+}
+
+void CUIModule_ContentParameterList::writeValuesToJSON(CJSONWriter& writer, const std::string& sKnownDefinitionHash, const std::string& sKnownValuesHash, const std::string& sRowIndices)
+{
+	std::vector<sParameterListRow> rows;
+	std::string sDefinitionSignature;
+	collectRows(rows, sDefinitionSignature);
+
+	std::string sDefinitionHash = AMCCommon::CUtils::calculateSHA256FromString(sDefinitionSignature);
+	writer.addString(AMC_API_KEY_UI_PARAMETERLIST_DEFINITIONHASH, sDefinitionHash);
+	if (sDefinitionHash != sKnownDefinitionHash) {
+		writer.addBoolean(AMC_API_KEY_UI_PARAMETERLIST_DEFINITIONCHANGED, true);
+		return;
+	}
+
+	std::vector<std::string> values;
+	if (sRowIndices.empty()) {
+		values.reserve(rows.size());
+		for (auto& row : rows)
+			values.push_back(readRowValue(row));
+	}
+	else {
+		auto indices = parseRowIndices(sRowIndices, rows.size());
+		values.reserve(indices.size());
+		for (auto nIndex : indices)
+			values.push_back(readRowValue(rows.at(nIndex)));
+	}
+
+	// The requested row set is part of the hash, so a changed selection never reports stale values as unchanged.
+	std::string sValuesSignature = sRowIndices;
+	for (auto& sValue : values) {
+		sValuesSignature += '\x1f';
+		sValuesSignature += sValue;
+	}
+	std::string sValuesHash = AMCCommon::CUtils::calculateSHA256FromString(sValuesSignature);
+	writer.addString(AMC_API_KEY_UI_PARAMETERLIST_VALUESHASH, sValuesHash);
+
+	if (sValuesHash == sKnownValuesHash) {
+		writer.addBoolean(AMC_API_KEY_UI_PARAMETERLIST_UNCHANGED, true);
+		return;
+	}
+
+	CJSONWriterArray valueArray(writer);
+	for (auto& sValue : values)
+		valueArray.addString(sValue);
+	writer.addArray(AMC_API_KEY_UI_PARAMETERLIST_VALUES, valueArray);
 }
 
 
@@ -407,30 +512,6 @@ void CUIModule_ContentParameterList::registerFrontendAttributes()
 	registerItemProviderAttribute(AMC_API_KEY_UI_ITEMCOLUMNS, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
 		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
 			writeColumnsToJSON(writer, object);
-		});
-
-	registerItemProviderAttribute(AMC_API_KEY_UI_ITEMENTRIES, eUIFrontendDefinitionAttributeType::atArray, eUIFrontendDefinitionAttributeScope::asGlobal,
-		[this](CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) {
-			CJSONWriterArray entryArray(writer);
-
-			for (auto entry : m_List) {
-				auto pParameterHandler = m_pStateMachineData->getParameterHandler(entry->getInstance());
-				auto sParameterHandlerDescription = pParameterHandler->getDescription();
-
-				if (entry->isFullInstance()) {
-					uint32_t nGroupCount = pParameterHandler->getGroupCount();
-					for (uint32_t nGroupIndex = 0; nGroupIndex < nGroupCount; nGroupIndex++) {
-						auto pParameterGroup = pParameterHandler->getGroup(nGroupIndex);
-						addParameterGroupToJSON(writer, pParameterGroup, entryArray, true, "", entry->getInstance(), sParameterHandlerDescription, entry.get());
-					}
-				}
-				else {
-					auto pParameterGroup = pParameterHandler->findGroup(entry->getParameterGroup(), true);
-					addParameterGroupToJSON(writer, pParameterGroup, entryArray, entry->isFullGroup(), entry->getParameter(), entry->getInstance(), sParameterHandlerDescription, entry.get());
-				}
-			}
-
-			object.addArray(sName, entryArray);
 		});
 }
 

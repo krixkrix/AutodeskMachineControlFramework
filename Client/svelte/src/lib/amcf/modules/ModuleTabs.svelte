@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ModuleFactory from '../ModuleFactory.svelte';
+	import DisplayScope from '../DisplayScope.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { usePollTick } from '$lib/amcf/poll.svelte';
@@ -39,7 +40,10 @@
 		</Tabs.List>
 		{#each tabs as tab (tab.uuid)}
 			<Tabs.Content value={tab.uuid} class="flex-1 min-h-0 overflow-auto flex flex-col pt-2">
-				<ModuleFactory module={tab} {app} />
+				<!-- Inactive tab content stays mounted (only hidden), so tell nested modules whether they are shown. -->
+				<DisplayScope active={activeTab === tab.uuid}>
+					<ModuleFactory module={tab} {app} />
+				</DisplayScope>
 			</Tabs.Content>
 		{/each}
 	</Tabs.Root>

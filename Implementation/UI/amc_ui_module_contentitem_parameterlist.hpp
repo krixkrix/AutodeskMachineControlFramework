@@ -124,7 +124,25 @@ namespace AMC {
 
 		PStateMachineData m_pStateMachineData;
 
-		void addParameterGroupToJSON(CJSONWriter& writer, AMC::PParameterGroup pParameterGroup, CJSONWriterArray& entryArray, bool fullGroup, const std::string & sParameterName, const std::string & sInstanceName, const std::string & sParameterHandlerDescription, CUIModule_ContentParameterListEntry* pEntry);
+		// One displayed row. Rows of full groups are addressed by index, single parameter rows by name.
+		struct sParameterListRow {
+			PParameterGroup m_pGroup;
+			uint32_t m_nParameterIndex;
+			std::string m_sParameterName;
+			std::string m_sInstanceName;
+			std::string m_sSystemDescription;
+			CUIModule_ContentParameterListEntry* m_pEntry;
+		};
+
+		// Resolves the configured entries into rows. The signature changes whenever the row layout changes.
+		void collectRows(std::vector<sParameterListRow>& rows, std::string& sDefinitionSignature);
+
+		std::string readRowValue(const sParameterListRow& row);
+
+		void writeRowDefinitionToJSON(CJSONWriter& writer, CJSONWriterArray& entryArray, const sParameterListRow& row);
+
+		// Parses a comma separated list of row indices and index ranges (e.g. "0-24,30").
+		static std::vector<uint32_t> parseRowIndices(const std::string& sRowIndices, size_t nRowCount);
 
 		// Emits the ordered per-column configuration array (identifier, frontend
 		// value key, caption, visible, width, sizeable) consumed by both clients.
@@ -149,6 +167,13 @@ namespace AMC {
 		// New UI Frontend System
 		virtual std::string getItemType() override;
 		virtual void registerFrontendAttributes() override;
+
+		// Writes the static row definitions and the current values of all rows.
+		void writeDefinitionToJSON(CJSONWriter& writer);
+
+		// Writes the current values of the requested rows (all rows if sRowIndices is empty), in request order.
+		// Only signals a changed definition if sKnownDefinitionHash is outdated, and omits the values if sKnownValuesHash is still current.
+		void writeValuesToJSON(CJSONWriter& writer, const std::string& sKnownDefinitionHash, const std::string& sKnownValuesHash, const std::string& sRowIndices);
 	};
 
 
