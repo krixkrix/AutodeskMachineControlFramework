@@ -1484,6 +1484,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Revision of the frontend status the client already holds, requested with the same 'pages' and 'dialogs'. If the session still buffers the changes since that revision, the response only contains 'base' and 'changed'; otherwise it contains the full status.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
           }
         ],
         "responses": {
@@ -2984,6 +2995,37 @@
             "items": {
               "$ref": "#/components/schemas/FrontendPage"
             }
+          },
+          "revision": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Revision of the returned status within the session. Pass it as 'since' in the next request with the same pages and dialogs.",
+            "example": 42
+          },
+          "base": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Only present in a patch response: the revision the changes are relative to (the requested 'since').",
+            "example": 40
+          },
+          "changed": {
+            "type": "object",
+            "description": "Only present in a patch response, which then carries no menu items, pages or dialogs. Maps the UUID of a menu item, toolbar item, page, custom page, dialog or module to its changed attributes. For items and pages these are their own members, for modules the members of 'attributes'. A null value removes the attribute. Values are absolute, so a patch also applies to any revision between 'base' and 'revision'.",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "example": {
+              "b7800e04-9200-4015-bd35-fd4cf9e00393": {
+                "caption": "Layer 12 of 300",
+                "progress": 4.0
+              }
+            }
+          },
+          "servertime": {
+            "type": "number",
+            "description": "Time in milliseconds the server needed to build the response.",
+            "example": 1.25
           }
         }
       },
