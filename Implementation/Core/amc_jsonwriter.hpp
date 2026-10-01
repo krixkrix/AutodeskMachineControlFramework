@@ -68,6 +68,11 @@ namespace AMC {
 
 		void addArray(const std::string& sName, CJSONWriterArray & array);
 
+		// Adds an already serialized JSON value. Throws if sJSON is not valid JSON.
+		void addRawJSON(const std::string& sName, const std::string& sJSON);
+
+		void addNull(const std::string& sName);
+
 		void copyFromObject(const rapidjson::Value & objectValue);
 
 		bool isEmpty();
@@ -133,6 +138,8 @@ namespace AMC {
 		void addArray(const std::string& sName, CJSONWriterArray& array);
 
 		void copyFromDocument(const rapidjson::Document & document);
+
+		const rapidjson::Document& getDocument() const;
 
 	};
 

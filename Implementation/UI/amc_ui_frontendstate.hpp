@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_parameterhandler.hpp"
 #include "amc_ui_frontenddefinition.hpp"
+#include "amc_ui_frontendsnapshot.hpp"
 
 #include "common_chrono.hpp"
 
@@ -62,6 +63,8 @@ namespace AMC {
 		PUserInformation m_pUserInformation;
 		PAccessControl m_pAccessControl;
 
+		CUIFrontendRevisionLog m_RevisionLog;
+
 		// Returns the session variable group after applying broadcasts that arrived since the last access.
 		CParameterGroup* getSessionVariables();
 
@@ -78,6 +81,8 @@ namespace AMC {
 		PParameterHandler getLegacyParameterHandler ();
 
 		void setSessionIdentity(const std::string& sSessionUUID, PUserInformation pUserInformation, PAccessControl pAccessControl);
+
+		CUIFrontendRevisionLog& getRevisionLog();
 
 		bool hasSessionVariable(const std::string& sName);
 

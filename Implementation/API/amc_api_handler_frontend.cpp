@@ -31,6 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_api_handler_frontend.hpp"
 #include "amc_api_jsonrequest.hpp"
 #include "amc_ui_handler.hpp"
+#include "amc_ui_frontendstate.hpp"
+#include "amc_ui_frontendsnapshot.hpp"
 #include "amc_ui_module_item.hpp"
 
 #define __AMCIMPL_UI_DIALOG
@@ -149,9 +151,13 @@ bool CAPIHandler_Frontend::expectsRawBody(const std::string& sURI, const eAPIReq
 
 }
 
-void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, CAPIFormFields& pFormFields, PAPIAuth pAuth)
+std::string CAPIHandler_Frontend::handleStatusRequest(CAPIFormFields& pFormFields, PAPIAuth pAuth)
 {
 	if (pAuth.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	auto pFrontendState = pAuth->getFrontendState();
+	if (pFrontendState.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
 	// Measure how long the server takes to build the status payload so the client can
@@ -170,18 +176,63 @@ void CAPIHandler_Frontend::handleStatusRequest(CJSONWriter& writer, CAPIFormFiel
 		return names;
 	};
 
+	auto joinNames = [](const std::set<std::string>& names) -> std::string {
+		std::string sJoined;
+		for (auto& sName : names) {
+			if (!sJoined.empty())
+				sJoined += ",";
+			sJoined += sName;
+		}
+		return sJoined;
+	};
+
+	// Unknown or malformed revisions are treated as absent, which yields the full status.
+	uint64_t nBaseRevision = 0;
+	std::string sSince = pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_SINCE, false);
+	if ((!sSince.empty()) && (sSince.length() <= 18) && (sSince.find_first_not_of("0123456789") == std::string::npos))
+		nBaseRevision = std::stoull(sSince);
+
+	CJSONWriter statusWriter;
+	writeJSONHeader(statusWriter, AMC_API_PROTOCOL_FRONTEND);
+
+	std::string sScope;
 	if (pFormFields.hasRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES)) {
 		auto activePageNames = splitNames(pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES, false));
 		auto activeDialogNames = splitNames(pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEDIALOGS, false));
-		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(writer, pAuth.get(), &activePageNames, &activeDialogNames);
+		sScope = joinNames(activePageNames) + "|" + joinNames(activeDialogNames);
+		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), &activePageNames, &activeDialogNames);
 	}
 	else {
-		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(writer, pAuth.get(), nullptr, nullptr);
+		sScope = "*";
+		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), nullptr, nullptr);
 	}
 
-	uint64_t nBuildEnd = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
-	double dBuildTimeMS = (double)(nBuildEnd - nBuildStart) / 1000.0;
-	writer.addDouble(AMC_API_KEY_FRONTEND_SERVERTIME, dBuildTimeMS);
+	CUIFrontendSnapshot snapshot;
+	snapshot.readFromFrontendJSON(statusWriter.getDocument());
+	auto publishResult = pFrontendState->getRevisionLog().publish(snapshot, sScope, nBaseRevision);
+
+	auto addTimingAndRevision = [&](CJSONWriter& writer) {
+		writer.addInteger(AMC_API_KEY_FRONTEND_REVISION, (int64_t)publishResult.m_nRevision);
+		uint64_t nBuildEnd = pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970();
+		double dBuildTimeMS = (double)(nBuildEnd - nBuildStart) / 1000.0;
+		writer.addDouble(AMC_API_KEY_FRONTEND_SERVERTIME, dBuildTimeMS);
+	};
+
+	if (publishResult.m_bPatchAvailable) {
+		CJSONWriter patchWriter;
+		writeJSONHeader(patchWriter, AMC_API_PROTOCOL_FRONTEND);
+		patchWriter.addInteger(AMC_API_KEY_FRONTEND_BASE, (int64_t)nBaseRevision);
+
+		CJSONWriterObject changedObject(patchWriter);
+		publishResult.m_Patch.writeToJSON(patchWriter, changedObject);
+		patchWriter.addObject(AMC_API_KEY_FRONTEND_CHANGED, changedObject);
+
+		addTimingAndRevision(patchWriter);
+		return patchWriter.saveToString();
+	}
+
+	addTimingAndRevision(statusWriter);
+	return statusWriter.saveToString();
 }
 
 
@@ -248,13 +299,13 @@ PAPIResponse CAPIHandler_Frontend::handleRequest(const std::string& sURI, const 
 	std::string sAdditionalParameter;
 	auto uiType = parseRequest(sURI, requestType, sParameterUUID, sAdditionalParameter);
 
+	if (uiType == APIHandler_FrontendType::ftStatus)
+		return std::make_shared<CAPIStringResponse>(AMC_API_HTTP_SUCCESS, AMC_API_CONTENTTYPE, handleStatusRequest(pFormFields, pAuth));
+
 	CJSONWriter writer;
 	writeJSONHeader(writer, AMC_API_PROTOCOL_FRONTEND);
 
 	switch (uiType) {
-	case APIHandler_FrontendType::ftStatus:
-		handleStatusRequest(writer, pFormFields, pAuth);
-		break;
 
 	case APIHandler_FrontendType::ftMetrics:
 		handleMetricsRequest(writer, pBodyData, nBodyDataSize, pAuth);

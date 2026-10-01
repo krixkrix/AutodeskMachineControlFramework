@@ -64,7 +64,9 @@ namespace AMC {
 		APIHandler_FrontendType parseRequest(const std::string& sURI, const eAPIRequestType requestType, std::string & sParameterUUID, std::string & sAdditionalParameter);
 
 		// Clients that pass the "pages" query parameter only receive modules for the listed pages and the dialogs in "dialogs".
-		void handleStatusRequest(CJSONWriter& writer, CAPIFormFields& pFormFields, PAPIAuth pAuth);
+		// Clients that pass "since" (a revision of the same pages and dialogs) receive only the changed attributes
+		// if that revision is still in the session's revision log, and the full status otherwise.
+		std::string handleStatusRequest(CAPIFormFields& pFormFields, PAPIAuth pAuth);
 
 		// Optional query parameters: "definitionhash" and "valueshash" (last known hashes) and "rows" (row indices/ranges, e.g. "0-24,30").
 		void handleParameterListRequest(CJSONWriter& writer, const std::string& sItemUUID, bool bValuesOnly, CAPIFormFields& pFormFields, PAPIAuth pAuth);

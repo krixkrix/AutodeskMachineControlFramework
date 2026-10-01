@@ -77,6 +77,11 @@ void CUIFrontendState::setSessionIdentity(const std::string& sSessionUUID, PUser
 	m_pAccessControl = pAccessControl;
 }
 
+CUIFrontendRevisionLog& CUIFrontendState::getRevisionLog()
+{
+	return m_RevisionLog;
+}
+
 CParameterGroup* CUIFrontendState::getSessionVariables()
 {
 	std::lock_guard<std::mutex> lockGuard(m_SessionMutex);

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "amc_jsonwriter.hpp"
+#include "libmc_exceptiontypes.hpp"
 
 using namespace AMC;
 
@@ -105,6 +106,29 @@ void CJSONWriterObject::addArray(const std::string& sName, CJSONWriterArray& arr
 void CJSONWriterObject::copyFromObject(const rapidjson::Value& objectValue)
 {
 	m_Value.CopyFrom(objectValue, m_allocator);
+}
+
+void CJSONWriterObject::addRawJSON(const std::string& sName, const std::string& sJSON)
+{
+	rapidjson::Document parsedDocument;
+	parsedDocument.Parse(sJSON.c_str());
+	if (parsedDocument.HasParseError())
+		throw ELibMCCustomException(LIBMC_ERROR_COULDNOTPARSEJSON, sName);
+
+	rapidjson::Value nameValue;
+	nameValue.SetString(sName.c_str(), m_allocator);
+	rapidjson::Value copiedValue(parsedDocument, m_allocator);
+
+	m_Value.AddMember(nameValue, copiedValue, m_allocator);
+}
+
+void CJSONWriterObject::addNull(const std::string& sName)
+{
+	rapidjson::Value nameValue;
+	nameValue.SetString(sName.c_str(), m_allocator);
+	rapidjson::Value nullValue(rapidjson::kNullType);
+
+	m_Value.AddMember(nameValue, nullValue, m_allocator);
 }
 
 
@@ -234,6 +258,11 @@ void CJSONWriter::addArray(const std::string& sName, CJSONWriterArray& array)
 void CJSONWriter::copyFromDocument(const rapidjson::Document& document)
 {
 	m_document.CopyFrom(document, m_document.GetAllocator());
+}
+
+const rapidjson::Document& CJSONWriter::getDocument() const
+{
+	return m_document;
 }
 
 
