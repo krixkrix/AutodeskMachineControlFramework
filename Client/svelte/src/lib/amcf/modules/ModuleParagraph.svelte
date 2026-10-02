@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module }: { module: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 	let text = $derived.by(() => { poll.v; return module.text || ''; });

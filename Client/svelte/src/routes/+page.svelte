@@ -22,26 +22,27 @@
 	// @ts-ignore — core JS has no type declarations yet
 	import AMCApplication from '@core/common/AMCApplication.js';
 	import { applyTokens, restoreHighContrastPreference, toggleDarkMode, restoreDarkModePreference, isDarkMode } from '@core/theme/themeLoader.js';
-	import { initPollTick, type PollTick } from '$lib/amcf/poll.svelte';
+	import { initPollTick, initModuleChanges, type PollTick } from '$lib/amcf/poll.svelte';
 
-	const POLL_INTERVAL_MS = 600;
 	const INITIAL_TICK_DELAY_MS = 1200;
 	const POST_LOGIN_TICK_DELAY_MS = 800;
 
 	let app: any = $state(null);
-	let timer: ReturnType<typeof setInterval> | null = null;
 	let drawerOpen = $state(false);
 	let sidebarVisible = $state(true);
 	let isLargeScreen = $state(false);
 	let darkMode = $state(false);
 
 	const poll: PollTick = initPollTick();
+	const moduleChanges = initModuleChanges();
 
 	/*
 	 * AMCApplication is a plain JS class — Svelte 5 cannot track deep
 	 * property mutations on it.  Every derived value must reference poll.v
-	 * so it re-evaluates whenever the polling cycle bumps the counter.
-	 * Child components access this via usePollTick() context instead of props.
+	 * so it re-evaluates whenever the application reports a change.
+	 * Child components access this via usePollTick() context instead of props;
+	 * module components use useModuleTick(), which also re-evaluates when the
+	 * core reports a change of that module only.
 	 */
 	let status      = $derived.by(() => { poll.v; return app?.AppState?.currentStatus || 'initial'; });
 	let menuItems   = $derived.by(() => { poll.v; return (app?.AppContent?.MenuItems || []).filter((item: any) => app.navigationItemIsVisible(item)); });
@@ -175,6 +176,8 @@
 
 	function handleToggleDarkMode () {
 		darkMode = toggleDarkMode();
+		// Modules that render theme colours (e.g. the layer view) re-read the theme on a tick.
+		bumpTick();
 	}
 
 	onMount(() => {
@@ -195,30 +198,21 @@
 		}
 
 		app = new AMCApplication(baseURL, bumpTick);
+		// The core pushes frontend updates after login (event stream, or polling as fallback).
+		app.setFrontendChangeListener((moduleUUIDs: string[] | null) => {
+			if (moduleUUIDs === null) bumpTick();
+			else moduleChanges.notify(moduleUUIDs);
+		});
 		app.retrieveConfiguration(null);
 
 		setTimeout(bumpTick, INITIAL_TICK_DELAY_MS);
-
-		startPolling();
 	});
 
-	function startPolling () {
-		if (timer) return;
-		timer = setInterval(() => {
-			if (app && app.AppState.currentStatus === 'ready') {
-				app.retrieveFrontendState()
-					.finally(() => {
-						app.updateModules();
-						poll.v++;
-					});
-			} else if (app) {
-				poll.v++;
-			}
-		}, POLL_INTERVAL_MS);
-	}
-
 	onDestroy(() => {
-		if (timer) clearInterval(timer);
+		if (app) {
+			app.setFrontendChangeListener(null);
+			app.stopFrontendUpdates();
+		}
 		if (mql) mql.removeEventListener('change', handleScreenChange);
 		if (smMql) smMql.removeEventListener('change', handleSmallScreenChange);
 	});

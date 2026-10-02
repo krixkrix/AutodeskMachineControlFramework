@@ -4,10 +4,10 @@
 	import FileUp from '@lucide/svelte/icons/file-up';
 	import X from '@lucide/svelte/icons/x';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 	let dragOver = $state(false);

@@ -8,10 +8,10 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let entities = $derived.by(() => { poll.v; return [...(module.entities || [])]; });
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });

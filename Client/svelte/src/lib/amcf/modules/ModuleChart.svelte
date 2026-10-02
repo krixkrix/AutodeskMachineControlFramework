@@ -1,9 +1,9 @@
 <script lang="ts">
 	import UPlotChart, { type ChartTrace } from '$lib/components/UPlotChart.svelte';
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 

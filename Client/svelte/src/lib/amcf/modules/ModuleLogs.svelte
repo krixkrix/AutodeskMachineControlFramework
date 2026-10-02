@@ -5,10 +5,10 @@
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import Download from '@lucide/svelte/icons/download';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let scrollContainer: HTMLDivElement | undefined = $state(undefined);
 	let autoScroll = $state(true);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, untrack } from 'svelte';
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import Square from '@lucide/svelte/icons/square';
 	import Shapes from '@lucide/svelte/icons/shapes';
@@ -20,7 +20,7 @@
 	const NULL_UUID = '00000000-0000-0000-0000-000000000000';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 	let cardstyle = $derived.by(() => { poll.v; return module.cardstyle || 'none'; });

@@ -5,11 +5,13 @@
 	import UPlotChart, { type ChartTrace } from '$lib/components/UPlotChart.svelte';
 	import VariableSelector from '$lib/components/VariableSelector.svelte';
 	import TimeRangeSelector, { type RangeMode } from '$lib/components/TimeRangeSelector.svelte';
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 	import { getVariables, getJournalInfo, getEnvelope, type JournalVariable } from '$lib/amcf/journalApi';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
+
+	const LIVE_REFRESH_INTERVAL_MS = 1000;
 
 	const PALETTE = [
 		'#6366f1', '#ef4444', '#10b981', '#f59e0b',
@@ -156,14 +158,22 @@
 		}
 	}
 
-	// React to polling, selection, and range mode changes. Window/data writes happen
-	// untracked so they never feed back into this effect.
+	// React to selection and range mode changes. Window/data writes happen
+	// untracked so they never feed back into this effect. The module tick must not
+	// be read here: the refresh requests themselves bump it.
 	$effect(() => {
-		poll.v;
 		selected.join(',');
 		mode;
 		liveWindowSeconds;
 		untrack(() => { scheduleRefresh(); });
+	});
+
+	// Ranges that end at the current journal time follow it on their own interval, as
+	// frontend updates are pushed instead of polled.
+	$effect(() => {
+		if (mode === 'custom') return;
+		const timer = setInterval(() => { scheduleRefresh(); }, LIVE_REFRESH_INTERVAL_MS);
+		return () => clearInterval(timer);
 	});
 
 	// Preselect configured variables once they arrive (attributes are delivered via

@@ -6,10 +6,10 @@
 	import Info from '@lucide/svelte/icons/info';
 	import Archive from '@lucide/svelte/icons/archive';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module }: { module: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 	let severity = $derived.by(() => { poll.v; return (module.severity || 'ok').toLowerCase(); });

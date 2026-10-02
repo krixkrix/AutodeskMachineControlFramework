@@ -6,10 +6,10 @@
 	import Ban from '@lucide/svelte/icons/ban';
 	import Image from '@lucide/svelte/icons/image';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	const nullUUID = '00000000-0000-0000-0000-000000000000';
 

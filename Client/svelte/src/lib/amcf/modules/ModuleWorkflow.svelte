@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 	import WorkflowEditor from './workflow/WorkflowEditor.svelte';
 	import type { Workflow, StepCatalogEntry } from './workflow/workflowTypes';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => {
 		poll.v;

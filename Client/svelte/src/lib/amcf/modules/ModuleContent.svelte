@@ -1,10 +1,10 @@
 <script lang="ts">
 	import ModuleFactory from '../ModuleFactory.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let isCard = $derived.by(() => {
 		poll.v;

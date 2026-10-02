@@ -215,7 +215,7 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 		// from here. maybeLoadPreferences() is guarded and only fires once ready.
 		this.maybeLoadPreferences ();
 
-		// Called once per frontend poll while the page is active.
+		// Called once per frontend poll while the page is active, and on every pushed change.
 		this.refreshParameters ();
 	}
 
@@ -235,6 +235,14 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 	isDisplayed ()
 	{
 		return (!this.displayTracked) || this.displayed;
+	}
+
+	// The values are not part of the frontend status, so the application calls this periodically
+	// while the status is pushed instead of polled.
+	refreshLiveData ()
+	{
+		this.maybeLoadPreferences ();
+		this.refreshParameters ();
 	}
 
 	// Comma separated row indices/ranges of the rows that pass the active filters, or ""
@@ -694,8 +702,8 @@ export default class AMCApplicationModule_ParameterList extends Common.AMCApplic
 	}
 
 	// Triggers the one-time preference restore as soon as the prerequisites are
-	// met. Called repeatedly from updateFromV2Attributes (once per poll) so it
-	// naturally waits for the stable key and authentication to become available.
+	// met. Called repeatedly from updateFromV2Attributes (once per poll) and
+	// refreshLiveData so it waits for the stable key and authentication to become available.
 	maybeLoadPreferences ()
 	{
 		if (this._loadTriggered)

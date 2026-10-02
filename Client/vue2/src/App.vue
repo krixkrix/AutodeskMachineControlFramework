@@ -178,8 +178,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	export default {
 
 		created() {
-			this.GlobalTimer = setInterval(this.uiOnTimer, 600);
-			
 			var baseURL = "/api";
 			if (process.env.NODE_ENV === "development") {
 				baseURL = "http://localhost:8869/api";
@@ -197,8 +195,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 				
 
 		beforeDestroy() {
-			if (this.GlobalTimer) {
-				clearInterval(this.GlobalTimer);
+			if (this.Application) {
+				this.Application.stopFrontendUpdates();
 			}
 		},
 
@@ -330,16 +328,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 			},
 								
 				
-			uiOnTimer() {
-				if (this.Application) {
-					// Refresh v2 frontend state first, then update local widgets.
-					this.Application.retrieveFrontendState ()
-					.finally (() => {
-					this.Application.updateModules ();
-					});
-				}													
-			},
-			
 			uiUpdateAppSizeDeferred() {
 				setTimeout(() => {
 					this.uiUpdateAppSize ();			
@@ -375,7 +363,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		data: () => ({
 		
 			Application: null,
-			GlobalTimer: null,
 			ShowDrawer: true,
 								
 		})

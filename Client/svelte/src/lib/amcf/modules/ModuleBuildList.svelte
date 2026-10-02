@@ -5,10 +5,10 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import Image from '@lucide/svelte/icons/image';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 	let entries = $derived.by(() => { poll.v; return [...(module.entries || [])]; });

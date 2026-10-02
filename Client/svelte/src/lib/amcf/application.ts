@@ -10,7 +10,6 @@
 import AMCApplication from '@core/common/AMCApplication.js';
 
 let _app = $state<any>(null);
-let _timer: ReturnType<typeof setInterval> | null = null;
 let _tick = $state(0);
 
 export function getApp () { return _app; }
@@ -24,27 +23,19 @@ export function initApp () {
 		baseURL = 'http://localhost:8869/api';
 	}
 
-	_app = new AMCApplication(baseURL, () => {});
+	_app = new AMCApplication(baseURL, () => { _tick++; });
+	// The core pushes frontend updates after login (event stream, or polling as fallback).
+	_app.setFrontendChangeListener(() => { _tick++; });
 
 	_app.retrieveConfiguration(null);
-
-	_timer = setInterval(() => {
-		if (_app) {
-			_app.retrieveFrontendState()
-				.finally(() => {
-					_app.updateModules();
-					_tick++;
-				});
-		}
-	}, 600);
 
 	return _app;
 }
 
 export function destroyApp () {
-	if (_timer) {
-		clearInterval(_timer);
-		_timer = null;
+	if (_app) {
+		_app.setFrontendChangeListener(null);
+		_app.stopFrontendUpdates();
 	}
 	_app = null;
 }

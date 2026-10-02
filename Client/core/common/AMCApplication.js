@@ -90,6 +90,16 @@ const FRONTEND_METRICS_WINDOW_MS = 5000;
 // Attribute names of frontend patches are written onto plain objects and must not reach their prototype.
 const FRONTEND_PATCH_FORBIDDEN_NAMES = new Set (["__proto__", "constructor", "prototype"]);
 
+// Live frontend updates: one SSE stream per tab, with the "since" polling endpoint as fallback.
+const FRONTEND_POLL_INTERVAL_MS = 600;
+const FRONTEND_STREAM_MAX_CONNECT_FAILURES = 3;
+const FRONTEND_STREAM_RETRY_BASE_MS = 1000;
+const FRONTEND_STREAM_RETRY_MAX_MS = 15000;
+const FRONTEND_STREAM_RECOVERY_INTERVAL_MS = 30000;
+// Data that is not part of the frontend status (parameter list values) is refreshed by its module.
+const FRONTEND_MODULE_REFRESH_INTERVAL_MS = 600;
+const FRONTEND_UNTRACKED_REQUEST_PREFIXES = ["/frontend", "/journal"];
+
 export default class AMCApplication extends Common.AMCObject {
 	
 
@@ -108,6 +118,7 @@ export default class AMCApplication extends Common.AMCObject {
 			frontendState: null,
 			frontendLookup: {},
 			frontendTargets: new Map (),
+			frontendStoreOwners: new Map (),
 			frontendRevision: 0,
 			frontendScope: "",
 			frontendRequestSerial: 0,
@@ -164,12 +175,29 @@ export default class AMCApplication extends Common.AMCObject {
             FormEntityMap: new Map()
         }
 		
-		this.SnackBar = {
+        this.SnackBar = {
 			Visible: false,
 			Timeout: -1,
 			Text: "",
 			Color: "secondary",
 			FontColor: "white"			
+		}
+
+		// mode is one of "off" / "connecting" / "stream" / "polling".
+		this.FrontendUpdates = {
+			enabled: false,
+			mode: "off",
+			generation: 0,
+			source: null,
+			connectionHasEvents: false,
+			connectFailures: 0,
+			revision: 0,
+			pendingEvents: null,
+			reconnectTimer: null,
+			pollTimer: null,
+			moduleRefreshTimer: null,
+			changeListener: null,
+			changeNotificationPending: false
 		}
 
     }
@@ -205,13 +233,13 @@ export default class AMCApplication extends Common.AMCObject {
         if (authToken != Common.nullToken ())
             headers.Authorization = "Bearer " + authToken;
 
-        return axios({
+        return this._trackRequest(subURL, axios({
             method: "GET",
             "headers": headers,
             url: this.API.baseURL + subURL,
             timeout: DEFAULT_REQUEST_TIMEOUT_MS,
             ...config
-        });
+        }));
     }
 
     axiosGetArrayBufferRequest(subURL) {
@@ -221,12 +249,12 @@ export default class AMCApplication extends Common.AMCObject {
         if (authToken != Common.nullToken ())
             headers.Authorization = "Bearer " + authToken;
 
-        return axios({
+        return this._trackRequest(subURL, axios({
             method: "GET",
             "headers": headers,
 			"responseType": "arraybuffer",
             url: this.API.baseURL + subURL
-        });
+        }));
     }
 
 
@@ -237,14 +265,14 @@ export default class AMCApplication extends Common.AMCObject {
         if (authToken != Common.nullToken ())
             headers.Authorization = "Bearer " + authToken;
 
-        return axios({
+        return this._trackRequest(subURL, axios({
             "method": "POST",
             "url": this.API.baseURL + subURL,
             "headers": headers,
             "data": data,
             timeout: DEFAULT_REQUEST_TIMEOUT_MS,
             ...config
-        });
+        }));
     }
 
     axiosPostFormData(subURL, formData, config) {
@@ -256,13 +284,26 @@ export default class AMCApplication extends Common.AMCObject {
         if (authToken != Common.nullToken ())
             headers.Authorization = "Bearer " + authToken;
 
-        return axios({
+        return this._trackRequest(subURL, axios({
             "method": "POST",
             "url": this.API.baseURL + subURL,
             "headers": headers,
             "data": formData,
             ...config
-        });
+        }));
+    }
+
+    // Responses of other requests update state asynchronously (e.g. list rows loaded after a head id
+    // change), which frontends without deep reactivity only see through a change notification.
+    // Frontend status, stream and parameter list requests report their changes themselves, and
+    // journal queries only feed the state of the component that issued them.
+    _trackRequest(subURL, request) {
+        let path = String(subURL);
+        if (!FRONTEND_UNTRACKED_REQUEST_PREFIXES.some(prefix => path.startsWith(prefix))) {
+            let notify = () => this._scheduleFrontendChangeNotification();
+            request.then(notify, notify);
+        }
+        return request;
     }
 
     // Retrieves a generic per-user preference stored under (domain, key).
@@ -362,6 +403,7 @@ export default class AMCApplication extends Common.AMCObject {
     }
 
     performLogout() {
+		this.stopFrontendUpdates ();
         this.API.authToken = Common.nullToken ();
         this.API.unsuccessfulUpdateCounter = 0;
 		this.API.userUUID = Common.nullUUID ();
@@ -873,6 +915,12 @@ export default class AMCApplication extends Common.AMCObject {
 				
             }
 
+			// The unfiltered response holds the modules of all pages and dialogs, which is the
+			// structure the event stream delivers values for.
+			this._setFrontendState (resultJSON.data, "*");
+			this._applyFrontendUpdate (null);
+			this.startFrontendUpdates ();
+
         })
         .catch(err => {
             this.setStatusToError(this.extractErrorMessage(err));
@@ -888,7 +936,7 @@ export default class AMCApplication extends Common.AMCObject {
 	// ====================================================================
 
 	retrieveFrontendState() {
-		if (!this.userIsLoggedIn())
+		if (!this.userIsLoggedIn() || this._frontendUpdatesUseStream ())
 			return Promise.resolve();
 
 		this.API.frontendRequestSerial++;
@@ -917,7 +965,7 @@ export default class AMCApplication extends Common.AMCObject {
 			this._recordFrontendMetric (requestStartMS, resultJSON);
 
 			// Polls and navigation refreshes overlap; never let an older response replace a newer one.
-			if (requestSerial < this.API.frontendAppliedSerial)
+			if ((requestSerial < this.API.frontendAppliedSerial) || this._frontendUpdatesUseStream ())
 				return;
 
 			let data = resultJSON.data;
@@ -929,10 +977,7 @@ export default class AMCApplication extends Common.AMCObject {
 					return;
 			}
 			else {
-				this.API.frontendState = data;
-				this.API.frontendScope = requestScope;
-				this.API.frontendRevision = Number.isSafeInteger (data.revision) ? data.revision : 0;
-				this._indexFrontendState (data);
+				this._setFrontendState (data, requestScope);
 			}
 
 			this.API.frontendAppliedSerial = requestSerial;
@@ -1148,11 +1193,20 @@ export default class AMCApplication extends Common.AMCObject {
 		return true;
 	}
 
-	// Rebuilds frontendLookup (module uuid -> module JSON) and frontendTargets (store uuid -> object that
-	// receives patched attributes: the item or page JSON itself, or the attributes of a module).
+	_setFrontendState(data, scope) {
+		this.API.frontendState = data;
+		this.API.frontendScope = scope;
+		this.API.frontendRevision = Number.isSafeInteger (data.revision) ? data.revision : 0;
+		this._indexFrontendState (data);
+	}
+
+	// Rebuilds frontendLookup (module uuid -> module JSON), frontendTargets (store uuid -> object that
+	// receives patched attributes: the item or page JSON itself, or the attributes of a module) and
+	// frontendStoreOwners (module store uuid -> uuids of the module and its containers, which render it).
 	_indexFrontendState(data) {
 		this.API.frontendLookup = {};
 		this.API.frontendTargets = new Map ();
+		this.API.frontendStoreOwners = new Map ();
 
 		for (let itemList of [data.menuitems, data.toolbaritems]) {
 			if (!itemList)
@@ -1173,7 +1227,7 @@ export default class AMCApplication extends Common.AMCObject {
 					this.API.frontendTargets.set (page.uuid, page);
 				if (page.modules) {
 					for (let mod of page.modules) {
-						this._indexFrontendModule(mod);
+						this._indexFrontendModule(mod, []);
 					}
 				}
 			}
@@ -1181,7 +1235,7 @@ export default class AMCApplication extends Common.AMCObject {
 	}
 
 	// Recursively index a v2 module (and its submodules) by UUID.
-	_indexFrontendModule(mod) {
+	_indexFrontendModule(mod, containerUUIDs) {
 		if (!mod || !mod.uuid)
 			return;
 
@@ -1191,9 +1245,12 @@ export default class AMCApplication extends Common.AMCObject {
 		this.API.frontendLookup[mod.uuid] = mod;
 		this.API.frontendTargets.set (mod.uuid, mod.attributes);
 
+		let ownerUUIDs = containerUUIDs.concat ([mod.uuid]);
+		this.API.frontendStoreOwners.set (mod.uuid, ownerUUIDs);
+
 		if (mod.submodules) {
 			for (let sub of mod.submodules) {
-				this._indexFrontendModule(sub);
+				this._indexFrontendModule(sub, ownerUUIDs);
 			}
 		}
 	}
@@ -1203,7 +1260,7 @@ export default class AMCApplication extends Common.AMCObject {
 	_applyFrontendPatch(data, requestScope) {
 		if (!this.API.frontendState || (requestScope !== this.API.frontendScope))
 			return false;
-		if (!Number.isSafeInteger (data.revision) || !Number.isSafeInteger (data.base) || (typeof data.changed !== "object"))
+		if (!Number.isSafeInteger (data.revision) || !Number.isSafeInteger (data.base) || !data.changed || (typeof data.changed !== "object"))
 			return false;
 
 		let localRevision = this.API.frontendRevision;
@@ -1215,10 +1272,41 @@ export default class AMCApplication extends Common.AMCObject {
 			return false;
 		}
 
-		for (let [uuid, attributes] of Object.entries (data.changed)) {
+		this._writeFrontendChanges (data.changed, false);
+
+		this.API.frontendRevision = data.revision;
+		return true;
+	}
+
+	// Writes store attributes onto the indexed frontend state. With replaceModuleAttributes, the listed
+	// stores carry the complete attribute set of a module, so attributes that are not listed are removed.
+	// Returns the uuids of the modules that render a changed store, or null if a menu item, toolbar item,
+	// page or dialog changed, which affects the application as a whole.
+	_writeFrontendChanges(changedStores, replaceModuleAttributes) {
+		let changedModuleUUIDs = new Set ();
+		let applicationChanged = false;
+
+		for (let [uuid, attributes] of Object.entries (changedStores)) {
 			let target = this.API.frontendTargets.get (uuid);
 			if (!target || !attributes || (typeof attributes !== "object"))
 				continue;
+
+			let ownerUUIDs = this.API.frontendStoreOwners.get (uuid);
+			if (ownerUUIDs) {
+				for (let ownerUUID of ownerUUIDs)
+					changedModuleUUIDs.add (ownerUUID);
+
+				if (replaceModuleAttributes) {
+					for (let name of Object.keys (target)) {
+						if (!Object.prototype.hasOwnProperty.call (attributes, name))
+							delete target[name];
+					}
+				}
+			}
+			else {
+				applicationChanged = true;
+			}
+
 			for (let [name, value] of Object.entries (attributes)) {
 				if (FRONTEND_PATCH_FORBIDDEN_NAMES.has (name))
 					continue;
@@ -1229,8 +1317,341 @@ export default class AMCApplication extends Common.AMCObject {
 			}
 		}
 
-		this.API.frontendRevision = data.revision;
-		return true;
+		return applicationChanged ? null : Array.from (changedModuleUUIDs);
+	}
+
+	// Pushes changed frontend state into the module and item objects and notifies the frontend.
+	// moduleUUIDs limits the update to the given modules; null updates everything.
+	_applyFrontendUpdate(moduleUUIDs) {
+		if (moduleUUIDs === null) {
+			this.updateModules ();
+			this.updateContentItems ();
+			this._applyFrontendVisibility (this.API.frontendState);
+			this._enforceFrontendVisibility ();
+		}
+		else {
+			for (let uuid of moduleUUIDs) {
+				this.updateModule (this.AppContent.ModuleMap.get (uuid));
+				this.updateContentItem (this.AppContent.ItemMap.get (uuid));
+			}
+		}
+
+		this._notifyFrontendChange (moduleUUIDs);
+	}
+
+
+	// ====================================================================
+	// Phase 4: Live frontend updates. After login, one SSE stream per tab
+	// (/stream/<ticket>) pushes snapshot and patch events for the module
+	// stores of all pages and dialogs. If the stream cannot be opened, the
+	// client polls GET /api/frontend?since=<rev> instead and retries the
+	// stream periodically.
+	// ====================================================================
+
+	// The listener is called with the uuids of the modules whose state changed, or with null if
+	// the application as a whole may have changed (navigation, visibility, asynchronous loads).
+	setFrontendChangeListener(listener) {
+		this.FrontendUpdates.changeListener = (typeof listener === "function") ? listener : null;
+	}
+
+	_notifyFrontendChange(moduleUUIDs) {
+		let listener = this.FrontendUpdates.changeListener;
+		if (!listener)
+			return;
+		try {
+			listener (moduleUUIDs);
+		}
+		catch (err) {
+			console.warn ("[frontend updates] change listener failed:", err);
+		}
+	}
+
+	// Coalesces notifications so that the handlers of a completed request run first.
+	_scheduleFrontendChangeNotification() {
+		if (this.FrontendUpdates.changeNotificationPending)
+			return;
+		this.FrontendUpdates.changeNotificationPending = true;
+		setTimeout (() => {
+			this.FrontendUpdates.changeNotificationPending = false;
+			this._notifyFrontendChange (null);
+		}, 0);
+	}
+
+	// While the event stream is used, the indexed state holds all pages and dialogs and must not be
+	// replaced by the scoped responses of the polling endpoint.
+	_frontendUpdatesUseStream() {
+		let mode = this.FrontendUpdates.mode;
+		return (mode === "stream") || (mode === "connecting");
+	}
+
+	startFrontendUpdates() {
+		this.stopFrontendUpdates ();
+		if (!this.userIsLoggedIn ())
+			return;
+
+		let updates = this.FrontendUpdates;
+		updates.enabled = true;
+		updates.connectFailures = 0;
+		updates.revision = 0;
+
+		if (typeof EventSource === "undefined") {
+			this._startFrontendPolling ();
+			return;
+		}
+
+		updates.mode = "connecting";
+		this._connectFrontendStream ();
+	}
+
+	stopFrontendUpdates() {
+		let updates = this.FrontendUpdates;
+		updates.enabled = false;
+		updates.mode = "off";
+		updates.revision = 0;
+		updates.pendingEvents = null;
+		this._closeFrontendStream ();
+		this._clearFrontendReconnectTimer ();
+		this._stopFrontendPolling ();
+		this._stopFrontendModuleRefresh ();
+	}
+
+	_closeFrontendStream() {
+		let updates = this.FrontendUpdates;
+		updates.generation++;
+		if (updates.source) {
+			updates.source.close ();
+			updates.source = null;
+		}
+	}
+
+	_clearFrontendReconnectTimer() {
+		if (this.FrontendUpdates.reconnectTimer) {
+			clearTimeout (this.FrontendUpdates.reconnectTimer);
+			this.FrontendUpdates.reconnectTimer = null;
+		}
+	}
+
+	_connectFrontendStream() {
+		let updates = this.FrontendUpdates;
+		if (!updates.enabled || !this.userIsLoggedIn ())
+			return;
+
+		this._closeFrontendStream ();
+		let generation = updates.generation;
+		updates.connectionHasEvents = false;
+		updates.pendingEvents = null;
+
+		this.axiosPostRequest ("/frontend/streamticket", {})
+		.then (resultJSON => {
+			if ((generation !== updates.generation) || !updates.enabled)
+				return;
+
+			let ticket = Assert.UUIDValue (resultJSON.data.ticket);
+			let streamURL = this.getStreamURL (ticket);
+			// A new ticket means a new EventSource, so the resume point is passed explicitly.
+			if (updates.revision > 0)
+				streamURL += "?lastEventId=" + encodeURIComponent (String (updates.revision));
+
+			let source = new EventSource (streamURL);
+			updates.source = source;
+			source.addEventListener ("snapshot", event => this._onFrontendStreamEvent (generation, "snapshot", event));
+			source.addEventListener ("patch", event => this._onFrontendStreamEvent (generation, "patch", event));
+			source.onerror = () => this._onFrontendStreamError (generation);
+		})
+		.catch (err => {
+			if (generation !== updates.generation)
+				return;
+			console.warn ("[frontend updates] stream ticket request failed:", this.extractErrorMessage (err));
+			this._onFrontendStreamError (generation);
+		});
+	}
+
+	// The browser reconnects an EventSource on its own, but with the consumed ticket. The stream is
+	// therefore always closed on error and reopened with a new ticket.
+	_onFrontendStreamError(generation) {
+		let updates = this.FrontendUpdates;
+		if ((generation !== updates.generation) || !updates.enabled)
+			return;
+
+		this._closeFrontendStream ();
+		updates.pendingEvents = null;
+
+		if (!updates.connectionHasEvents)
+			updates.connectFailures++;
+		else
+			updates.connectFailures = 1;
+
+		let delayMS;
+		if (updates.mode === "polling") {
+			delayMS = FRONTEND_STREAM_RECOVERY_INTERVAL_MS;
+		}
+		else if (updates.connectFailures >= FRONTEND_STREAM_MAX_CONNECT_FAILURES) {
+			console.warn ("[frontend updates] event stream unavailable, falling back to polling");
+			this._startFrontendPolling ();
+			delayMS = FRONTEND_STREAM_RECOVERY_INTERVAL_MS;
+		}
+		else {
+			let backoffMS = Math.min (FRONTEND_STREAM_RETRY_MAX_MS, FRONTEND_STREAM_RETRY_BASE_MS * Math.pow (2, updates.connectFailures - 1));
+			// Jitter spreads the reconnects of many clients after a server restart.
+			delayMS = backoffMS * (0.5 + Math.random () * 0.5);
+		}
+
+		this._clearFrontendReconnectTimer ();
+		updates.reconnectTimer = setTimeout (() => {
+			updates.reconnectTimer = null;
+			this._connectFrontendStream ();
+		}, delayMS);
+	}
+
+	_onFrontendStreamEvent(generation, eventType, event) {
+		let updates = this.FrontendUpdates;
+		if ((generation !== updates.generation) || !updates.enabled)
+			return;
+
+		let data;
+		try {
+			data = JSON.parse (event.data);
+		}
+		catch (err) {
+			data = null;
+		}
+		if (!data || (typeof data !== "object")) {
+			this._restartFrontendStream ();
+			return;
+		}
+
+		if (!updates.connectionHasEvents) {
+			updates.connectionHasEvents = true;
+			updates.connectFailures = 0;
+			this._enterFrontendStreamMode ();
+		}
+
+		if (updates.pendingEvents) {
+			updates.pendingEvents.push ({ eventType: eventType, data: data });
+			return;
+		}
+
+		this._applyFrontendStreamEvent (eventType, data);
+	}
+
+	// Coming back from polling, the indexed state only holds the active pages and dialogs. The stream
+	// events are held back until the full structure is loaded again.
+	_enterFrontendStreamMode() {
+		let updates = this.FrontendUpdates;
+		let wasPolling = (updates.mode === "polling");
+		updates.mode = "stream";
+		this._stopFrontendPolling ();
+		this._startFrontendModuleRefresh ();
+
+		if (!wasPolling && (this.API.frontendScope === "*"))
+			return;
+
+		let generation = updates.generation;
+		updates.pendingEvents = [];
+		this.axiosGetRequest ("/frontend")
+		.then (resultJSON => {
+			if ((generation !== updates.generation) || !resultJSON.data)
+				return;
+
+			this._setFrontendState (resultJSON.data, "*");
+			let pendingEvents = updates.pendingEvents || [];
+			updates.pendingEvents = null;
+			this._applyFrontendUpdate (null);
+			for (let pendingEvent of pendingEvents)
+				this._applyFrontendStreamEvent (pendingEvent.eventType, pendingEvent.data);
+		})
+		.catch (err => {
+			if (generation !== updates.generation)
+				return;
+			console.warn ("[frontend updates] loading the frontend structure failed:", this.extractErrorMessage (err));
+			this._onFrontendStreamError (generation);
+		});
+	}
+
+	_applyFrontendStreamEvent(eventType, data) {
+		let updates = this.FrontendUpdates;
+		if (!Number.isSafeInteger (data.revision)) {
+			this._restartFrontendStream ();
+			return;
+		}
+
+		if (eventType === "snapshot") {
+			if (!data.stores || (typeof data.stores !== "object")) {
+				this._restartFrontendStream ();
+				return;
+			}
+			this._writeFrontendChanges (data.stores, true);
+			updates.revision = data.revision;
+			this._applyFrontendUpdate (null);
+			return;
+		}
+
+		if (!Number.isSafeInteger (data.base) || !data.changed || (typeof data.changed !== "object")) {
+			this._restartFrontendStream ();
+			return;
+		}
+
+		// A patch only applies to the revision it was computed from; anything else forces a snapshot.
+		if (data.base !== updates.revision) {
+			updates.revision = 0;
+			this._restartFrontendStream ();
+			return;
+		}
+
+		let changedModuleUUIDs = this._writeFrontendChanges (data.changed, false);
+		updates.revision = data.revision;
+		this._applyFrontendUpdate (changedModuleUUIDs);
+	}
+
+	_restartFrontendStream() {
+		this.FrontendUpdates.revision = 0;
+		this.FrontendUpdates.pendingEvents = null;
+		this._connectFrontendStream ();
+	}
+
+	_startFrontendPolling() {
+		let updates = this.FrontendUpdates;
+		updates.mode = "polling";
+		updates.revision = 0;
+		this._stopFrontendModuleRefresh ();
+		if (updates.pollTimer)
+			return;
+
+		updates.pollTimer = setInterval (() => {
+			this.retrieveFrontendState ()
+			.finally (() => {
+				this.updateModules ();
+				this._notifyFrontendChange (null);
+			});
+		}, FRONTEND_POLL_INTERVAL_MS);
+	}
+
+	_stopFrontendPolling() {
+		if (this.FrontendUpdates.pollTimer) {
+			clearInterval (this.FrontendUpdates.pollTimer);
+			this.FrontendUpdates.pollTimer = null;
+		}
+	}
+
+	// Polling calls updateModules on every cycle, which refreshes such data already.
+	_startFrontendModuleRefresh() {
+		let updates = this.FrontendUpdates;
+		if (updates.moduleRefreshTimer)
+			return;
+
+		updates.moduleRefreshTimer = setInterval (() => {
+			for (let module of this.AppContent.ModuleMap.values ()) {
+				if ((typeof module.refreshLiveData === "function") && module.isActive ())
+					module.refreshLiveData ();
+			}
+		}, FRONTEND_MODULE_REFRESH_INTERVAL_MS);
+	}
+
+	_stopFrontendModuleRefresh() {
+		if (this.FrontendUpdates.moduleRefreshTimer) {
+			clearInterval (this.FrontendUpdates.moduleRefreshTimer);
+			this.FrontendUpdates.moduleRefreshTimer = null;
+		}
 	}
 
 	// Look up a UUID in the v2 frontend map. Returns the entry or null.
@@ -1599,13 +2020,16 @@ export default class AMCApplication extends Common.AMCObject {
 
 	// Modules of pages and dialogs that were not active during the last poll have
 	// not received data yet, so fetch it immediately instead of waiting for the next poll.
+	// The event stream keeps all pages and dialogs current, so it only needs a local update.
 	_refreshFrontendStateAfterNavigation () {
-		this.retrieveFrontendState ()
+		let frontendStateRequest = this._frontendUpdatesUseStream () ? Promise.resolve () : this.retrieveFrontendState ();
+		frontendStateRequest
 		.then (() => {
 			this.updateModules ();
 			this.updateContentItems ();
 			if (this.AppState.appResizeEvent)
 				this.AppState.appResizeEvent ();
+			this._notifyFrontendChange (null);
 		});
 	}
 

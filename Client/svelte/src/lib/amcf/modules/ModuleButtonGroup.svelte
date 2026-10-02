@@ -2,10 +2,10 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import MdiIcon from '$lib/amcf/MdiIcon.svelte';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 
 	let visible = $derived.by(() => { poll.v; return module.visible !== false; });
 	let cssstyle = $derived.by(() => { poll.v; return module.cssstyle || ''; });

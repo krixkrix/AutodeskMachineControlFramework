@@ -14,11 +14,11 @@
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down';
 
-	import { usePollTick } from '$lib/amcf/poll.svelte';
+	import { useModuleTick } from '$lib/amcf/poll.svelte';
 	import { useDisplayed } from '$lib/amcf/display';
 
 	let { module, app }: { module: any; app: any } = $props();
-	const poll = usePollTick();
+	const poll = useModuleTick(() => module);
 	const isDisplayed = useDisplayed();
 
 	// Bumped whenever the client-side view state (favorites/sort/filters/presets)
