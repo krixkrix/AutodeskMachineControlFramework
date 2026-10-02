@@ -108,6 +108,23 @@ void CJSONWriterObject::copyFromObject(const rapidjson::Value& objectValue)
 	m_Value.CopyFrom(objectValue, m_allocator);
 }
 
+void CJSONWriterObject::addMembersFrom(const rapidjson::Value& objectValue)
+{
+	if (!objectValue.IsObject())
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	for (auto iMember = objectValue.MemberBegin(); iMember != objectValue.MemberEnd(); iMember++) {
+		rapidjson::Value nameValue(iMember->name, m_allocator);
+		rapidjson::Value memberValue(iMember->value, m_allocator);
+		m_Value.AddMember(nameValue, memberValue, m_allocator);
+	}
+}
+
+const rapidjson::Value& CJSONWriterObject::getValue() const
+{
+	return m_Value;
+}
+
 void CJSONWriterObject::addRawJSON(const std::string& sName, const std::string& sJSON)
 {
 	rapidjson::Document parsedDocument;

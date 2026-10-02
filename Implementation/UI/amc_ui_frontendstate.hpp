@@ -118,11 +118,11 @@ namespace AMC {
 		// Throws if a session reference is malformed, refers to an undeclared session variable or an unknown permission.
 		static void validateSessionReference(const std::string& sReference, CUIFrontendDefinition* pFrontendDefinition, CAccessControl* pAccessControl);
 
-		void writeModuleAttributesToJSON(CJSONWriter& writer, CJSONWriterObject &attributesObject, CUIFrontendDefinitionModuleStore * pModuleStore, CStateMachineData* pStateMachineData);
+		void writeModuleAttributesToJSON(CJSONWriter& writer, CJSONWriterObject &attributesObject, CUIFrontendDefinitionModuleStore * pModuleStore, CStateMachineData* pStateMachineData, const sUIFrontendBuildEpoch& epoch);
 
 		// Recursive serialization: writes moduletype, uuid, attributes, and submodules (if children exist).
 		// The definition tree owns the hierarchy; the stores hold flat attribute values.
-		void writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendDefinitionModuleStore* pModuleStore, CStateMachineData* pStateMachineData);
+		void writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendDefinitionModuleStore* pModuleStore, CStateMachineData* pStateMachineData, const sUIFrontendBuildEpoch& epoch);
 
 	};
 

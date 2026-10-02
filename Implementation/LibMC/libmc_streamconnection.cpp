@@ -54,12 +54,14 @@ using namespace LibMC::Impl;
  Class definition of CStreamConnection 
 **************************************************************************************************************************/
 
-CStreamConnection::CStreamConnection(const std::string& sStreamUUID, AMC::PStreamInstance pStream)
+CStreamConnection::CStreamConnection(const std::string& sStreamUUID, AMC::PStreamInstance pStream, const std::string& sClientID)
     : m_sStreamUUID (AMCCommon::CUtils::normalizeUUIDString (sStreamUUID)),
     m_pStream (pStream),
     m_nLastFrameVersion (0),
     m_LastJSONEventTime (std::chrono::steady_clock::now ())
 {
+    m_JSONEventCursor.m_sClientID = sClientID;
+
     // Cache the downcast for video streams
     if (pStream.get() != nullptr) {
         m_pVideoStream = std::dynamic_pointer_cast<AMC::CVideoStreamInstance>(pStream);

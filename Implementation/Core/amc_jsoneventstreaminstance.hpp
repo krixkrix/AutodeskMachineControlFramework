@@ -39,6 +39,7 @@ pulls fully framed SSE events; a change signal wakes waiting connections early.
 #include "amc_streaminstance.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstdint>
 #include <memory>
@@ -54,6 +55,11 @@ namespace AMC {
 		// Change counter the consumer has already reacted to.
 		uint64_t m_nChangeCounter;
 		bool m_bStarted;
+		// The client behind the connection, as passed with its stream ticket, or empty.
+		std::string m_sClientID;
+		// Data change counter the last event was built from, and when it was built.
+		uint64_t m_nDataChangeCounter;
+		std::chrono::steady_clock::time_point m_LastBuildTime;
 
 		sJSONEventStreamCursor();
 	};

@@ -150,27 +150,32 @@ namespace AMCUnitTest {
 			uint64_t nNow = 1000000000;
 			uint64_t nLifetime = 30000000;
 
-			std::string sTicket = registry.createStreamTicket(pStream->getUUID(), nNow, nLifetime);
+			std::string sClientID = AMCCommon::CUtils::createUUID();
+			std::string sRedeemedClientID;
+
+			std::string sTicket = registry.createStreamTicket(pStream->getUUID(), sClientID, nNow, nLifetime);
 			assertTrue(AMCCommon::CUtils::stringIsUUIDString(sTicket));
 			assertTrue(sTicket != pStream->getUUID());
 
-			auto pRedeemed = registry.redeemStreamTicket(sTicket, nNow + 1);
+			auto pRedeemed = registry.redeemStreamTicket(sTicket, nNow + 1, sRedeemedClientID);
 			assertTrue(pRedeemed.get() == pStream.get());
-			assertTrue(registry.redeemStreamTicket(sTicket, nNow + 2).get() == nullptr);
+			assertTrue(sRedeemedClientID == sClientID);
+			assertTrue(registry.redeemStreamTicket(sTicket, nNow + 2, sRedeemedClientID).get() == nullptr);
+			assertTrue(sRedeemedClientID.empty());
 
-			std::string sExpiredTicket = registry.createStreamTicket(pStream->getUUID(), nNow, nLifetime);
-			assertTrue(registry.redeemStreamTicket(sExpiredTicket, nNow + nLifetime).get() == nullptr);
+			std::string sExpiredTicket = registry.createStreamTicket(pStream->getUUID(), "", nNow, nLifetime);
+			assertTrue(registry.redeemStreamTicket(sExpiredTicket, nNow + nLifetime, sRedeemedClientID).get() == nullptr);
 
-			assertTrue(registry.redeemStreamTicket("not-a-ticket", nNow).get() == nullptr);
-			assertTrue(registry.redeemStreamTicket(AMCCommon::CUtils::createUUID(), nNow).get() == nullptr);
+			assertTrue(registry.redeemStreamTicket("not-a-ticket", nNow, sRedeemedClientID).get() == nullptr);
+			assertTrue(registry.redeemStreamTicket(AMCCommon::CUtils::createUUID(), nNow, sRedeemedClientID).get() == nullptr);
 
-			std::string sEndedTicket = registry.createStreamTicket(pStream->getUUID(), nNow, nLifetime);
+			std::string sEndedTicket = registry.createStreamTicket(pStream->getUUID(), "", nNow, nLifetime);
 			pStream->endStream();
-			assertTrue(registry.redeemStreamTicket(sEndedTicket, nNow + 1).get() == nullptr);
+			assertTrue(registry.redeemStreamTicket(sEndedTicket, nNow + 1, sRedeemedClientID).get() == nullptr);
 
 			bool bThrown = false;
 			try {
-				registry.createStreamTicket(AMCCommon::CUtils::createUUID(), nNow, nLifetime);
+				registry.createStreamTicket(AMCCommon::CUtils::createUUID(), "", nNow, nLifetime);
 			}
 			catch (...) {
 				bThrown = true;

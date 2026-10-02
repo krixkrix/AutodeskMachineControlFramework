@@ -1227,6 +1227,7 @@ IStreamConnection* CMCContext::CreateStreamConnection(const std::string& sStream
 
     // Look up the stream in the registry
     AMC::PStreamInstance pStream;
+    std::string sClientID;
     auto pRegistry = m_pSystemState->getStreamRegistryInstance();
     if (pRegistry.get() != nullptr) {
         pStream = pRegistry->findStream(sNormalizedStreamUUID);
@@ -1236,8 +1237,8 @@ IStreamConnection* CMCContext::CreateStreamConnection(const std::string& sStream
             pStream = nullptr;
 
         if (pStream.get() == nullptr)
-            pStream = pRegistry->redeemStreamTicket(sNormalizedStreamUUID, m_pSystemState->globalChrono()->getUTCTimeStampInMicrosecondsSince1970());
+            pStream = pRegistry->redeemStreamTicket(sNormalizedStreamUUID, m_pSystemState->globalChrono()->getUTCTimeStampInMicrosecondsSince1970(), sClientID);
     }
 
-    return new CStreamConnection(sNormalizedStreamUUID, pStream);
+    return new CStreamConnection(sNormalizedStreamUUID, pStream, sClientID);
 }

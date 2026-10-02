@@ -54,6 +54,7 @@ namespace AMC {
 
 		struct sStreamTicket {
 			std::string m_sStreamUUID;
+			std::string m_sClientID;
 			uint64_t m_nExpiryTimestampInMicroseconds;
 		};
 
@@ -92,10 +93,12 @@ namespace AMC {
 		bool hasStream(const std::string& sUUID) const;
 
 		// Creates a single-use ticket (a UUID) that grants access to a registered stream until it expires.
-		std::string createStreamTicket(const std::string& sStreamUUID, uint64_t nTimestampInMicroseconds, uint64_t nLifetimeInMicroseconds);
+		// sClientID identifies the consumer within the stream and is handed back on redemption; it may be empty.
+		std::string createStreamTicket(const std::string& sStreamUUID, const std::string& sClientID, uint64_t nTimestampInMicroseconds, uint64_t nLifetimeInMicroseconds);
 
 		// Consumes a ticket. Returns nullptr if the ticket is unknown or expired, or its stream is gone or inactive.
-		PStreamInstance redeemStreamTicket(const std::string& sTicket, uint64_t nTimestampInMicroseconds);
+		// Otherwise sClientID receives the client ID the ticket was created for.
+		PStreamInstance redeemStreamTicket(const std::string& sTicket, uint64_t nTimestampInMicroseconds, std::string& sClientID);
 
 		// Wakes all connections of all JSON event streams.
 		void notifyJSONEventStreams();

@@ -144,7 +144,7 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 
 		// Writes the module store tree of this module.
-		void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData *pStateMachineData);
+		void frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData *pStateMachineData, const sUIFrontendBuildEpoch& epoch);
 
 		virtual bool isVersion2FrontendModule();
 

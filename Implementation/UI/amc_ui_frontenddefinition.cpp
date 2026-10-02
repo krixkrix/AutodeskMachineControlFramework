@@ -31,13 +31,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_ui_frontenddefinition.hpp"
 #include "amc_ui_frontendstate.hpp"
 #include "amc_parametergroup.hpp"
+#include "amc_frontendchangecounter.hpp"
 #include "libmc_exceptiontypes.hpp"
 #include "common_utils.hpp"
+
+#include <chrono>
 
 using namespace AMC;
 
 #define AMC_UI_SESSIONVARIABLES_GROUPNAME "session"
 
+
+sUIFrontendBuildEpoch::sUIFrontendBuildEpoch()
+	: m_nChangeCounter(0), m_nTimeSlot(0)
+{
+}
+
+sUIFrontendBuildEpoch::sUIFrontendBuildEpoch(uint64_t nChangeCounter, uint64_t nTimeSlot)
+	: m_nChangeCounter(nChangeCounter), m_nTimeSlot(nTimeSlot)
+{
+}
+
+bool sUIFrontendBuildEpoch::operator==(const sUIFrontendBuildEpoch& other) const
+{
+	return (m_nChangeCounter == other.m_nChangeCounter) && (m_nTimeSlot == other.m_nTimeSlot);
+}
+
+uint64_t sUIFrontendBuildEpoch::currentTimeSlot()
+{
+	auto nMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+	return (uint64_t)nMilliseconds / AMC_UI_FRONTEND_EPOCH_TIMESLOT_MS;
+}
+
+sUIFrontendBuildEpoch sUIFrontendBuildEpoch::current()
+{
+	return sUIFrontendBuildEpoch(CFrontendChangeCounter::get(), currentTimeSlot());
+}
 
 
 CUIFrontendDefinitionAttribute::CUIFrontendDefinitionAttribute(const std::string& sName, eUIFrontendDefinitionAttributeType attributeType)
@@ -50,6 +79,36 @@ CUIFrontendDefinitionAttribute::CUIFrontendDefinitionAttribute(const std::string
 CUIFrontendDefinitionAttribute::~CUIFrontendDefinitionAttribute()
 {
 
+}
+
+void CUIFrontendDefinitionAttribute::writeToFrontendJSONForEpoch(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState, const sUIFrontendBuildEpoch& epoch)
+{
+	if (isSessionScoped()) {
+		writeToFrontendJSON(writer, attributesObject, pStateMachineData, pFrontendState);
+		return;
+	}
+
+	{
+		std::lock_guard<std::mutex> lockGuard(m_SharedValueMutex);
+		if ((m_pSharedValue.get() != nullptr) && (m_SharedValueEpoch == epoch)) {
+			attributesObject.addMembersFrom(*m_pSharedValue);
+			return;
+		}
+	}
+
+	CJSONWriterObject valueObject(writer);
+	writeToFrontendJSON(writer, valueObject, pStateMachineData, pFrontendState);
+
+	auto pSharedValue = std::make_unique<rapidjson::Document>();
+	pSharedValue->CopyFrom(valueObject.getValue(), pSharedValue->GetAllocator());
+
+	{
+		std::lock_guard<std::mutex> lockGuard(m_SharedValueMutex);
+		m_pSharedValue = std::move(pSharedValue);
+		m_SharedValueEpoch = epoch;
+	}
+
+	attributesObject.addMembersFrom(valueObject.getValue());
 }
 
 

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "amc_statemachinedata.hpp"
+#include "amc_frontendchangecounter.hpp"
 #include "libmc_exceptiontypes.hpp"
 
 #include "common_utils.hpp"
@@ -93,11 +94,14 @@ namespace AMC {
 	{
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
 		auto iIter = m_StateMachineStates.find(sInstanceName);
-		if (iIter != m_StateMachineStates.end())
+		if (iIter != m_StateMachineStates.end()) {
+			if (iIter->second == sInstanceState)
+				return;
 			m_StateMachineStates.erase(sInstanceName);
-		
+		}
 
 		m_StateMachineStates.insert(std::make_pair (sInstanceName, sInstanceState));
+		CFrontendChangeCounter::bump();
 
 	}
 

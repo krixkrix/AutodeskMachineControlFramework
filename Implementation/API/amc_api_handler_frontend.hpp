@@ -37,8 +37,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_api_response.hpp"
 
 #include "amc_systemstate.hpp"
+#include "amc_api_frontendeventstream.hpp"
 
 #define AMC_API_FRONTEND_STREAMTICKET_LIFETIME_SECONDS 30
+// Limits for the comma separated page and dialog names of a stream scope.
+#define AMC_API_FRONTEND_STREAMSCOPE_MAXLENGTH 16384
+#define AMC_API_FRONTEND_STREAMSCOPE_MAXNAMES 256
 
 namespace AMC {
 
@@ -60,6 +64,7 @@ namespace AMC {
 		ftParameterListDefinition = 10,
 		ftParameterListValues = 11,
 		ftStreamTicket = 12,
+		ftStreamScope = 13,
 	};
 
 	class CAPIHandler_Frontend : public CAPIHandler {
@@ -82,8 +87,18 @@ namespace AMC {
 		// The session UUID is stamped server-side from the authenticated session, never trusted from the body.
 		void handleMetricsRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth);
 
+		PAPIFrontendEventStream getOrCreateEventStream(PAPIAuth pAuth);
+
+		// Reads the optional "client", "pages" and "dialogs" members of a stream request body and applies the scope
+		// to the event stream. Returns the normalized client ID, or an empty string if the body carries none.
+		std::string applyStreamScope(PAPIFrontendEventStream pEventStream, const uint8_t* pBodyData, const size_t nBodyDataSize, bool bClientIsMandatory);
+
 		// Issues a short-lived single-use ticket for the session's event stream, to be opened as /stream/{ticket}.
-		void handleStreamTicketRequest(CJSONWriter& writer, PAPIAuth pAuth);
+		// The optional body {client, pages, dialogs} identifies the browser tab and its active pages and dialogs.
+		void handleStreamTicketRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth);
+
+		// Updates the active pages and dialogs of a client of the session's event stream. Body: {client, pages, dialogs}.
+		void handleStreamScopeRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth);
 
 	public:
 

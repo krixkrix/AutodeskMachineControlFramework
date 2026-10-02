@@ -204,7 +204,8 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// If pActivePageNames is null, all pages, custom pages and dialogs are written with their modules.
 		// Otherwise only the named pages/custom pages and the dialogs named in pActiveDialogNames carry modules.
-		void frontendWriteStatusToJSON (CJSONWriter& writer, CAPIAuth * pAuth, const std::set<std::string>* pActivePageNames, const std::set<std::string>* pActiveDialogNames);
+		// Writes modules only for the active pages and dialogs, or for all of them if pActivePageNames is null.
+		void frontendWriteStatusToJSON (CJSONWriter& writer, CAPIAuth * pAuth, const std::set<std::string>* pActivePageNames, const std::set<std::string>* pActiveDialogNames, const sUIFrontendBuildEpoch& epoch);
 
 		// Writes the definition (or only the values) of a parameter list that sits on a page visible to the session.
 		void frontendWriteParameterListToJSON (CJSONWriter& writer, CAPIAuth* pAuth, const std::string& sItemUUID, bool bValuesOnly, const std::string& sKnownDefinitionHash, const std::string& sKnownValuesHash, const std::string& sRowIndices);

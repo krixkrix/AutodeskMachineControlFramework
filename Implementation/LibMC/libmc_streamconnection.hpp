@@ -76,7 +76,8 @@ private:
 
 public:
 
-    CStreamConnection(const std::string & sStreamUUID, AMC::PStreamInstance pStream);
+    // sClientID identifies the client within a JSON event stream; it is empty for other streams.
+    CStreamConnection(const std::string & sStreamUUID, AMC::PStreamInstance pStream, const std::string & sClientID);
 
     virtual ~CStreamConnection();
 

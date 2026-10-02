@@ -183,7 +183,7 @@ void CUIPage::populateClientVariables(CParameterHandler* pParameterHandler)
 // New UI Frontend System
 /////////////////////////////////////////////////////////////////////////////////////
 
-void CUIPage::frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObject& pageObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData, bool bWriteModules)
+void CUIPage::frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObject& pageObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData, bool bWriteModules, const sUIFrontendBuildEpoch& epoch)
 {
 
 	pageObject.addString("name", m_sName);
@@ -210,7 +210,7 @@ void CUIPage::frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObje
 		if (pModule->isVersion2FrontendModule()) {
 			CJSONWriterObject moduleObject(writer);
 
-			pModule->frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData);
+			pModule->frontendWriteModuleStatusToJSON(writer, moduleObject, pFrontendState, pStateMachineData, epoch);
 
 			moduleArray.addObject(moduleObject);
 		}

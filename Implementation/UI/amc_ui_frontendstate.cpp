@@ -285,17 +285,17 @@ void CUIFrontendState::validateSessionReference(const std::string& sReference, C
 	throw ELibMCCustomException(LIBMC_ERROR_INVALIDSESSIONREFERENCE, sReference);
 }
 
-void CUIFrontendState::writeModuleAttributesToJSON(CJSONWriter& writer, CJSONWriterObject & attributesObject, CUIFrontendDefinitionModuleStore * pModuleStore, CStateMachineData* pStateMachineData)
+void CUIFrontendState::writeModuleAttributesToJSON(CJSONWriter& writer, CJSONWriterObject & attributesObject, CUIFrontendDefinitionModuleStore * pModuleStore, CStateMachineData* pStateMachineData, const sUIFrontendBuildEpoch& epoch)
 {
 	auto attributes = pModuleStore->getAttributes();
 	for (auto& pAttribute : attributes) {
-		pAttribute->writeToFrontendJSON(writer, attributesObject, pStateMachineData, this);
+		pAttribute->writeToFrontendJSONForEpoch(writer, attributesObject, pStateMachineData, this, epoch);
 	}
 
 }
 
 
-void CUIFrontendState::writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendDefinitionModuleStore* pModuleStore, CStateMachineData* pStateMachineData)
+void CUIFrontendState::writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendDefinitionModuleStore* pModuleStore, CStateMachineData* pStateMachineData, const sUIFrontendBuildEpoch& epoch)
 {
 	LibMCAssertNotNull(pModuleStore);
 
@@ -306,7 +306,7 @@ void CUIFrontendState::writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterOb
 		structureProperty.second(writer, moduleObject, structureProperty.first, pStateMachineData, this);
 
 	CJSONWriterObject attributesObject(writer);
-	writeModuleAttributesToJSON(writer, attributesObject, pModuleStore, pStateMachineData);
+	writeModuleAttributesToJSON(writer, attributesObject, pModuleStore, pStateMachineData, epoch);
 	moduleObject.addObject("attributes", attributesObject);
 
 	if (pModuleStore->hasChildren() || pModuleStore->getAlwaysWriteSubmodules()) {
@@ -315,7 +315,7 @@ void CUIFrontendState::writeModuleStoreToJSON(CJSONWriter& writer, CJSONWriterOb
 		auto childStores = pModuleStore->getChildStores();
 		for (auto& pChildStore : childStores) {
 			CJSONWriterObject childObject(writer);
-			writeModuleStoreToJSON(writer, childObject, pChildStore.get(), pStateMachineData);
+			writeModuleStoreToJSON(writer, childObject, pChildStore.get(), pStateMachineData, epoch);
 			submodulesArray.addObject(childObject);
 		}
 

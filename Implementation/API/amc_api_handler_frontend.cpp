@@ -134,6 +134,9 @@ APIHandler_FrontendType CAPIHandler_Frontend::parseRequest(const std::string& sU
 		if ((sParameterString == "/streamticket") || (sParameterString == "/streamticket/"))
 			return APIHandler_FrontendType::ftStreamTicket;
 
+		if ((sParameterString == "/streamscope") || (sParameterString == "/streamscope/"))
+			return APIHandler_FrontendType::ftStreamScope;
+
 	}
 
 	return APIHandler_FrontendType::ftUnknown;
@@ -153,7 +156,8 @@ bool CAPIHandler_Frontend::expectsRawBody(const std::string& sURI, const eAPIReq
 	std::string sAdditionalParameter;
 	auto uiType = parseRequest(sURI, requestType, sParameterUUID, sAdditionalParameter);
 
-	return (uiType == APIHandler_FrontendType::ftTriggerEvent) || (uiType == APIHandler_FrontendType::ftMetrics);
+	return (uiType == APIHandler_FrontendType::ftTriggerEvent) || (uiType == APIHandler_FrontendType::ftMetrics) ||
+		(uiType == APIHandler_FrontendType::ftStreamTicket) || (uiType == APIHandler_FrontendType::ftStreamScope);
 
 }
 
@@ -201,16 +205,18 @@ std::string CAPIHandler_Frontend::handleStatusRequest(CAPIFormFields& pFormField
 	CJSONWriter statusWriter;
 	writeJSONHeader(statusWriter, AMC_API_PROTOCOL_FRONTEND);
 
+	auto epoch = sUIFrontendBuildEpoch::current();
+
 	std::string sScope;
 	if (pFormFields.hasRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES)) {
 		auto activePageNames = splitNames(pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES, false));
 		auto activeDialogNames = splitNames(pFormFields.getRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEDIALOGS, false));
 		sScope = joinNames(activePageNames) + "|" + joinNames(activeDialogNames);
-		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), &activePageNames, &activeDialogNames);
+		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), &activePageNames, &activeDialogNames, epoch);
 	}
 	else {
 		sScope = "*";
-		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), nullptr, nullptr);
+		m_pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), nullptr, nullptr, epoch);
 	}
 
 	CUIFrontendSnapshot snapshot;
@@ -299,7 +305,7 @@ void CAPIHandler_Frontend::handleMetricsRequest(CJSONWriter& writer, const uint8
 }
 
 
-void CAPIHandler_Frontend::handleStreamTicketRequest(CJSONWriter& writer, PAPIAuth pAuth)
+PAPIFrontendEventStream CAPIHandler_Frontend::getOrCreateEventStream(PAPIAuth pAuth)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -319,12 +325,77 @@ void CAPIHandler_Frontend::handleStreamTicketRequest(CJSONWriter& writer, PAPIAu
 		return pNewStream;
 	});
 
+	auto pFrontendEventStream = std::dynamic_pointer_cast<CAPIFrontendEventStream>(pEventStream);
+	if (pFrontendEventStream.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDCAST);
+
+	return pFrontendEventStream;
+}
+
+std::string CAPIHandler_Frontend::applyStreamScope(PAPIFrontendEventStream pEventStream, const uint8_t* pBodyData, const size_t nBodyDataSize, bool bClientIsMandatory)
+{
+	if (pEventStream.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	if ((pBodyData == nullptr) || (nBodyDataSize == 0)) {
+		if (bClientIsMandatory)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+		return "";
+	}
+
+	CAPIJSONRequest jsonRequest(pBodyData, nBodyDataSize);
+	if (!jsonRequest.hasValue(AMC_API_KEY_FRONTEND_STREAMCLIENT)) {
+		if (bClientIsMandatory)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+		return "";
+	}
+
+	std::string sClientID = jsonRequest.getUUID(AMC_API_KEY_FRONTEND_STREAMCLIENT, LIBMC_ERROR_INVALIDPARAM);
+
+	auto readNames = [&jsonRequest](const std::string& sKeyName) -> std::set<std::string> {
+		std::set<std::string> names;
+		if (!jsonRequest.hasValue(sKeyName))
+			return names;
+
+		std::string sValue = jsonRequest.getRawString(sKeyName, LIBMC_ERROR_INVALIDPARAM);
+		if (sValue.length() > AMC_API_FRONTEND_STREAMSCOPE_MAXLENGTH)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+		std::stringstream stream(sValue);
+		std::string sName;
+		while (std::getline(stream, sName, ',')) {
+			if (!sName.empty())
+				names.insert(sName);
+		}
+
+		if (names.size() > AMC_API_FRONTEND_STREAMSCOPE_MAXNAMES)
+			throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+		return names;
+	};
+
+	pEventStream->setClientScope(sClientID, readNames(AMC_API_KEY_FRONTEND_ACTIVEPAGES), readNames(AMC_API_KEY_FRONTEND_ACTIVEDIALOGS));
+
+	return sClientID;
+}
+
+void CAPIHandler_Frontend::handleStreamTicketRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
+{
+	auto pEventStream = getOrCreateEventStream(pAuth);
+	std::string sClientID = applyStreamScope(pEventStream, pBodyData, nBodyDataSize, false);
+
+	auto pStreamRegistry = m_pSystemState->getStreamRegistryInstance();
 	uint64_t nNow = m_pSystemState->globalChrono()->getUTCTimeStampInMicrosecondsSince1970();
 	uint64_t nLifetimeInMicroseconds = (uint64_t)AMC_API_FRONTEND_STREAMTICKET_LIFETIME_SECONDS * 1000000ULL;
-	std::string sTicket = pStreamRegistry->createStreamTicket(pEventStream->getUUID(), nNow, nLifetimeInMicroseconds);
+	std::string sTicket = pStreamRegistry->createStreamTicket(pEventStream->getUUID(), sClientID, nNow, nLifetimeInMicroseconds);
 
 	writer.addString(AMC_API_KEY_FRONTEND_STREAMTICKET, sTicket);
 	writer.addInteger(AMC_API_KEY_FRONTEND_STREAMTICKETLIFETIME, AMC_API_FRONTEND_STREAMTICKET_LIFETIME_SECONDS);
+}
+
+void CAPIHandler_Frontend::handleStreamScopeRequest(CJSONWriter& writer, const uint8_t* pBodyData, const size_t nBodyDataSize, PAPIAuth pAuth)
+{
+	auto pEventStream = getOrCreateEventStream(pAuth);
+	applyStreamScope(pEventStream, pBodyData, nBodyDataSize, true);
 }
 
 
@@ -349,6 +420,14 @@ PAPIResponse CAPIHandler_Frontend::handleRequest(const std::string& sURI, const 
 	case APIHandler_FrontendType::ftParameterListDefinition:
 	case APIHandler_FrontendType::ftParameterListValues:
 		handleParameterListRequest(writer, sParameterUUID, uiType == APIHandler_FrontendType::ftParameterListValues, pFormFields, pAuth);
+		break;
+
+	case APIHandler_FrontendType::ftStreamTicket:
+		handleStreamTicketRequest(writer, pBodyData, nBodyDataSize, pAuth);
+		break;
+
+	case APIHandler_FrontendType::ftStreamScope:
+		handleStreamScopeRequest(writer, pBodyData, nBodyDataSize, pAuth);
 		break;
 
 	default:

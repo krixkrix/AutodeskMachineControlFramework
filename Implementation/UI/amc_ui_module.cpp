@@ -180,12 +180,12 @@ bool CUIModule::isVersion2FrontendModule()
 	return false;
 }
 
-void CUIModule::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData)
+void CUIModule::frontendWriteModuleStatusToJSON(CJSONWriter& writer, CJSONWriterObject& moduleObject, CUIFrontendState* pFrontendState, CStateMachineData* pStateMachineData, const sUIFrontendBuildEpoch& epoch)
 {
 	if (pFrontendState == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-	pFrontendState->writeModuleStoreToJSON(writer, moduleObject, m_pModuleStore.get(), pStateMachineData);
+	pFrontendState->writeModuleStoreToJSON(writer, moduleObject, m_pModuleStore.get(), pStateMachineData, epoch);
 
 }
 

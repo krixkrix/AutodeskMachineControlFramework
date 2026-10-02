@@ -1035,7 +1035,7 @@ void CUIHandler::writeConfigurationToJSON(CJSONWriter& writer)
 /////////////////////////////////////////////////////////////////////////////////////
 // New UI Frontend System
 /////////////////////////////////////////////////////////////////////////////////////
-void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth, const std::set<std::string>* pActivePageNames, const std::set<std::string>* pActiveDialogNames)
+void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth, const std::set<std::string>* pActivePageNames, const std::set<std::string>* pActiveDialogNames, const sUIFrontendBuildEpoch& epoch)
 {
     LibMCAssertNotNull(pAuth);
 
@@ -1085,7 +1085,7 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth,
         CJSONWriterObject pageObject(writer);
 
         bool bWriteModules = bWriteAllModules || isActiveName(pActivePageNames, iter.first);
-        iter.second->frontendWritePageStatusToJSON(writer, pageObject, pFrontendState, pStateMachineData, bWriteModules);
+        iter.second->frontendWritePageStatusToJSON(writer, pageObject, pFrontendState, pStateMachineData, bWriteModules, epoch);
 
         pages.addObject(pageObject);
     }
@@ -1096,7 +1096,7 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth,
         CJSONWriterObject custompage(writer);
         custompage.addString(AMC_API_KEY_UI_COMPONENTNAME, iter.second->getComponentName());
         bool bWriteModules = bWriteAllModules || isActiveName(pActivePageNames, iter.first);
-        iter.second->frontendWritePageStatusToJSON(writer, custompage, pFrontendState, pStateMachineData, bWriteModules);
+        iter.second->frontendWritePageStatusToJSON(writer, custompage, pFrontendState, pStateMachineData, bWriteModules, epoch);
         custompages.addObject(custompage);
     }
     writer.addArray(AMC_API_KEY_UI_CUSTOMPAGES, custompages);
@@ -1106,7 +1106,7 @@ void CUIHandler::frontendWriteStatusToJSON(CJSONWriter& writer, CAPIAuth* pAuth,
         CJSONWriterObject dialog(writer);
         dialog.addString(AMC_API_KEY_UI_DIALOGTITLE, iter.second->getTitle());
         bool bWriteModules = bWriteAllModules || isActiveName(pActiveDialogNames, iter.first);
-        iter.second->frontendWritePageStatusToJSON(writer, dialog, pFrontendState, pStateMachineData, bWriteModules);
+        iter.second->frontendWritePageStatusToJSON(writer, dialog, pFrontendState, pStateMachineData, bWriteModules, epoch);
         dialogs.addObject(dialog);
     }
     writer.addArray(AMC_API_KEY_UI_DIALOGS, dialogs);

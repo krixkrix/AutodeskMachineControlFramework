@@ -75,6 +75,11 @@ namespace AMC {
 
 		void copyFromObject(const rapidjson::Value & objectValue);
 
+		// Adds deep copies of all members of objectValue.
+		void addMembersFrom(const rapidjson::Value& objectValue);
+
+		const rapidjson::Value& getValue() const;
+
 		bool isEmpty();
 
 	};

@@ -117,7 +117,7 @@ namespace AMC {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// New UI Frontend System
 		/////////////////////////////////////////////////////////////////////////////////////
-		void frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObject& pageObject, CUIFrontendState* pFrontendState, CStateMachineData * pStateMachineData, bool bWriteModules);
+		void frontendWritePageStatusToJSON(CJSONWriter& writer, CJSONWriterObject& pageObject, CUIFrontendState* pFrontendState, CStateMachineData * pStateMachineData, bool bWriteModules, const sUIFrontendBuildEpoch& epoch);
 
 		void setVisibleExpression(const CUIExpression& visibleExpression);
 

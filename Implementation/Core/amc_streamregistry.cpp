@@ -132,7 +132,7 @@ void CStreamRegistry::removeExpiredStreamTicketsNoLock(uint64_t nTimestampInMicr
 	}
 }
 
-std::string CStreamRegistry::createStreamTicket(const std::string& sStreamUUID, uint64_t nTimestampInMicroseconds, uint64_t nLifetimeInMicroseconds)
+std::string CStreamRegistry::createStreamTicket(const std::string& sStreamUUID, const std::string& sClientID, uint64_t nTimestampInMicroseconds, uint64_t nLifetimeInMicroseconds)
 {
 	std::string sNormalizedStreamUUID = AMCCommon::CUtils::normalizeUUIDString(sStreamUUID);
 
@@ -149,14 +149,16 @@ std::string CStreamRegistry::createStreamTicket(const std::string& sStreamUUID, 
 
 	sStreamTicket ticket;
 	ticket.m_sStreamUUID = sNormalizedStreamUUID;
+	ticket.m_sClientID = sClientID;
 	ticket.m_nExpiryTimestampInMicroseconds = nTimestampInMicroseconds + nLifetimeInMicroseconds;
 	m_StreamTickets.insert(std::make_pair(sTicket, ticket));
 
 	return sTicket;
 }
 
-PStreamInstance CStreamRegistry::redeemStreamTicket(const std::string& sTicket, uint64_t nTimestampInMicroseconds)
+PStreamInstance CStreamRegistry::redeemStreamTicket(const std::string& sTicket, uint64_t nTimestampInMicroseconds, std::string& sClientID)
 {
+	sClientID.clear();
 	if (!AMCCommon::CUtils::stringIsUUIDString(sTicket))
 		return nullptr;
 
@@ -181,6 +183,7 @@ PStreamInstance CStreamRegistry::redeemStreamTicket(const std::string& sTicket, 
 	if (!iStreamIter->second->isActive())
 		return nullptr;
 
+	sClientID = ticket.m_sClientID;
 	return iStreamIter->second;
 }
 

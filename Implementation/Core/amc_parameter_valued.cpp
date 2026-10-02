@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_parameter_valued.hpp"
 #include "amc_statejournal.hpp"
+#include "amc_frontendchangecounter.hpp"
 #include "libmc_exceptiontypes.hpp"
 
 #include "libmcdata_dynamic.hpp"
@@ -233,6 +234,7 @@ namespace AMC {
 		if (hasChanged) {
 			m_nChangeCounter++;
 			m_sValue = sValue;
+			CFrontendChangeCounter::bump();
 		}
 
 		if (hasChanged && (m_pPersistencyHandler.get () != nullptr) && (!m_sPersistentUUID.empty ())) {

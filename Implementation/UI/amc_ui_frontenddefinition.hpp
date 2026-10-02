@@ -67,6 +67,27 @@ namespace AMC {
 		asSession = 1
 	};
 
+	// Values of global attributes are re-read at least once per slot, since values from outside the
+	// core (database heads, logs, data series) do not bump the frontend change counter.
+	#define AMC_UI_FRONTEND_EPOCH_TIMESLOT_MS 1000
+
+	// Identifies the state a status build reads: the frontend change counter, read before the build,
+	// and a time slot. Builds of the same epoch share the values of global attributes.
+	struct sUIFrontendBuildEpoch {
+		uint64_t m_nChangeCounter;
+		uint64_t m_nTimeSlot;
+
+		sUIFrontendBuildEpoch();
+		sUIFrontendBuildEpoch(uint64_t nChangeCounter, uint64_t nTimeSlot);
+
+		bool operator==(const sUIFrontendBuildEpoch& other) const;
+
+		static uint64_t currentTimeSlot();
+
+		// The current change counter and time slot.
+		static sUIFrontendBuildEpoch current();
+	};
+
 	// Writes the value sName into object. Providers must only write under sName (or nothing).
 	typedef std::function<void(CJSONWriter& writer, CJSONWriterObject& object, const std::string& sName, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState)> UIFrontendDefinitionProvider;
 
@@ -75,6 +96,11 @@ namespace AMC {
 
 		std::string m_sName;
 		eUIFrontendDefinitionAttributeType m_AttributeType;
+
+		std::mutex m_SharedValueMutex;
+		sUIFrontendBuildEpoch m_SharedValueEpoch;
+		// The members written by the last evaluation (none or one); replaced as a whole, since the document allocator never frees.
+		std::unique_ptr<rapidjson::Document> m_pSharedValue;
 
 	public:
 
@@ -87,6 +113,10 @@ namespace AMC {
 		eUIFrontendDefinitionAttributeType getAttributeType();
 
 		virtual void writeToFrontendJSON(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState) = 0;
+
+		// Like writeToFrontendJSON, but global attributes are evaluated only once per epoch and the
+		// result is shared by all sessions.
+		void writeToFrontendJSONForEpoch(CJSONWriter& writer, CJSONWriterObject& attributesObject, CStateMachineData* pStateMachineData, CUIFrontendState* pFrontendState, const sUIFrontendBuildEpoch& epoch);
 
 		// Returns the session reference of the attribute value, or an empty string.
 		virtual std::string getSessionReference();

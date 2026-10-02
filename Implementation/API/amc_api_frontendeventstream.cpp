@@ -37,11 +37,37 @@ Abstract: This is the class definition of CAPIFrontendEventStream.
 #include "amc_api_constants.hpp"
 #include "amc_systemstate.hpp"
 #include "amc_ui_handler.hpp"
+#include "amc_frontendchangecounter.hpp"
 
 #include "libmc_interfaceexception.hpp"
+#include "libmcdata_dynamic.hpp"
 #include "common_utils.hpp"
+#include "common_chrono.hpp"
+
+#include <iostream>
 
 using namespace AMC;
+
+_sFrontendEventStreamMetrics::_sFrontendEventStreamMetrics()
+	: m_WindowStart(std::chrono::steady_clock::now()),
+	m_nWindowStartMicros(0),
+	m_nEventCount(0),
+	m_dEventSumMS(0.0),
+	m_dEventMinMS(0.0),
+	m_dEventMaxMS(0.0),
+	m_dEventSumSqMS(0.0),
+	m_nPayloadSumBytes(0),
+	m_nPayloadMaxBytes(0),
+	m_dBuildSumMS(0.0)
+{
+}
+
+_sFrontendEventStreamClient::_sFrontendEventStreamClient()
+	: m_bScoped(false),
+	m_sScope("*"),
+	m_LastUseTime(std::chrono::steady_clock::now())
+{
+}
 
 CAPIFrontendEventStream::CAPIFrontendEventStream(const std::string& sUUID, PAPIAuth pAuth, std::shared_ptr<CSystemState> pSystemState, std::shared_ptr<CAPISessionHandler> pSessionHandler)
 	: CJSONEventStreamInstance(sUUID),
@@ -49,7 +75,7 @@ CAPIFrontendEventStream::CAPIFrontendEventStream(const std::string& sUUID, PAPIA
 	m_pSystemState(pSystemState),
 	m_pSessionHandler(pSessionHandler),
 	m_LastSessionRefresh(std::chrono::steady_clock::now()),
-	m_RevisionLog(AMC_UI_FRONTEND_REVISIONLOG_DEPTH, createInitialRevision())
+	m_bMetricsWindowStarted(false)
 {
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -72,10 +98,79 @@ uint64_t CAPIFrontendEventStream::createInitialRevision()
 	return nEpoch << 32;
 }
 
+std::string CAPIFrontendEventStream::joinNames(const std::set<std::string>& names)
+{
+	std::string sJoined;
+	for (auto& sName : names) {
+		if (!sJoined.empty())
+			sJoined += ",";
+		sJoined += sName;
+	}
+	return sJoined;
+}
+
 PAPIAuth CAPIFrontendEventStream::getAuth()
 {
 	std::lock_guard<std::mutex> lockGuard(m_Mutex);
 	return m_pAuth;
+}
+
+void CAPIFrontendEventStream::removeExpiredClientsNoLock(std::chrono::steady_clock::time_point now)
+{
+	for (auto iter = m_Clients.begin(); iter != m_Clients.end(); ) {
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - iter->second.m_LastUseTime).count() >= AMC_API_FRONTENDEVENTSTREAM_CLIENTEXPIRY_MS)
+			iter = m_Clients.erase(iter);
+		else
+			++iter;
+	}
+}
+
+sFrontendEventStreamClient& CAPIFrontendEventStream::findOrCreateClientNoLock(const std::string& sClientID, std::chrono::steady_clock::time_point now)
+{
+	auto iIter = m_Clients.find(sClientID);
+	if (iIter != m_Clients.end()) {
+		iIter->second.m_LastUseTime = now;
+		return iIter->second;
+	}
+
+	removeExpiredClientsNoLock(now);
+	while (m_Clients.size() >= AMC_API_FRONTENDEVENTSTREAM_MAXCLIENTS) {
+		auto iOldest = m_Clients.begin();
+		for (auto iter = m_Clients.begin(); iter != m_Clients.end(); iter++) {
+			if (iter->second.m_LastUseTime < iOldest->second.m_LastUseTime)
+				iOldest = iter;
+		}
+		m_Clients.erase(iOldest);
+	}
+
+	sFrontendEventStreamClient client;
+	client.m_pRevisionLog = std::make_shared<CUIFrontendRevisionLog>(AMC_UI_FRONTEND_REVISIONLOG_DEPTH, createInitialRevision());
+	client.m_LastUseTime = now;
+
+	return m_Clients.insert(std::make_pair(sClientID, client)).first->second;
+}
+
+sFrontendEventStreamClient CAPIFrontendEventStream::useClient(const std::string& sClientID)
+{
+	std::lock_guard<std::mutex> lockGuard(m_Mutex);
+	return findOrCreateClientNoLock(sClientID, std::chrono::steady_clock::now());
+}
+
+void CAPIFrontendEventStream::setClientScope(const std::string& sClientID, const std::set<std::string>& activePageNames, const std::set<std::string>& activeDialogNames)
+{
+	if (!AMCCommon::CUtils::stringIsUUIDString(sClientID))
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+
+	{
+		std::lock_guard<std::mutex> lockGuard(m_Mutex);
+		auto& client = findOrCreateClientNoLock(sClientID, std::chrono::steady_clock::now());
+		client.m_bScoped = true;
+		client.m_ActivePageNames = activePageNames;
+		client.m_ActiveDialogNames = activeDialogNames;
+		client.m_sScope = joinNames(activePageNames) + "|" + joinNames(activeDialogNames);
+	}
+
+	notifyChange();
 }
 
 bool CAPIFrontendEventStream::refreshSessionIfDue(const std::string& sSessionUUID)
@@ -107,8 +202,11 @@ void CAPIFrontendEventStream::endStream()
 
 std::string CAPIFrontendEventStream::waitForNextEvent(sJSONEventStreamCursor& cursor)
 {
+	bool bNotified = true;
 	if (cursor.m_bStarted) {
-		cursor.m_nChangeCounter = waitForChange(cursor.m_nChangeCounter, AMC_API_FRONTENDEVENTSTREAM_BUILDINTERVAL_MS);
+		uint64_t nChangeCounter = waitForChange(cursor.m_nChangeCounter, AMC_API_FRONTENDEVENTSTREAM_BUILDINTERVAL_MS);
+		bNotified = (nChangeCounter != cursor.m_nChangeCounter);
+		cursor.m_nChangeCounter = nChangeCounter;
 	}
 	else {
 		cursor.m_nChangeCounter = getChangeCounter();
@@ -125,19 +223,104 @@ std::string CAPIFrontendEventStream::waitForNextEvent(sJSONEventStreamCursor& cu
 		return "";
 	}
 
-	if (!refreshSessionIfDue(pAuth->getSessionUUID())) {
+	std::string sSessionUUID = pAuth->getSessionUUID();
+	if (!refreshSessionIfDue(sSessionUUID)) {
 		endStream();
 		return "";
 	}
 
+	// The counter is read before the build, so that a change during the build triggers another one.
+	auto buildStart = std::chrono::steady_clock::now();
+	uint64_t nDataChangeCounter = CFrontendChangeCounter::get();
+	bool bBuildDue = std::chrono::duration_cast<std::chrono::milliseconds>(buildStart - cursor.m_LastBuildTime).count() >= AMC_API_FRONTENDEVENTSTREAM_MAXBUILDINTERVAL_MS;
+	if (!bNotified && !bBuildDue && (nDataChangeCounter == cursor.m_nDataChangeCounter))
+		return "";
+
+	cursor.m_nDataChangeCounter = nDataChangeCounter;
+	cursor.m_LastBuildTime = buildStart;
+	sUIFrontendBuildEpoch epoch(nDataChangeCounter, sUIFrontendBuildEpoch::currentTimeSlot());
+
+	std::string sEvent = buildNextEvent(cursor, pAuth, pSystemState, epoch);
+	double dBuildMS = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - buildStart).count();
+
+	recordMetrics(dBuildMS, sEvent.length(), sSessionUUID, pSystemState);
+
+	return sEvent;
+}
+
+void CAPIFrontendEventStream::recordMetrics(double dBuildMS, size_t nEventBytes, const std::string& sSessionUUID, std::shared_ptr<CSystemState> pSystemState)
+{
+	auto now = std::chrono::steady_clock::now();
+	sFrontendEventStreamMetrics completedWindow;
+	bool bWindowCompleted = false;
+
+	{
+		std::lock_guard<std::mutex> lockGuard(m_Mutex);
+
+		if (!m_bMetricsWindowStarted) {
+			m_Metrics = sFrontendEventStreamMetrics();
+			m_Metrics.m_WindowStart = now;
+			m_Metrics.m_nWindowStartMicros = pSystemState->globalChrono()->getUTCTimeStampInMicrosecondsSince1970();
+			m_bMetricsWindowStarted = true;
+		}
+
+		m_Metrics.m_dBuildSumMS += dBuildMS;
+
+		if (nEventBytes > 0) {
+			if ((m_Metrics.m_nEventCount == 0) || (dBuildMS < m_Metrics.m_dEventMinMS))
+				m_Metrics.m_dEventMinMS = dBuildMS;
+			if ((m_Metrics.m_nEventCount == 0) || (dBuildMS > m_Metrics.m_dEventMaxMS))
+				m_Metrics.m_dEventMaxMS = dBuildMS;
+
+			m_Metrics.m_nEventCount++;
+			m_Metrics.m_dEventSumMS += dBuildMS;
+			m_Metrics.m_dEventSumSqMS += dBuildMS * dBuildMS;
+			m_Metrics.m_nPayloadSumBytes += nEventBytes;
+			if (nEventBytes > m_Metrics.m_nPayloadMaxBytes)
+				m_Metrics.m_nPayloadMaxBytes = nEventBytes;
+		}
+
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - m_Metrics.m_WindowStart).count() >= AMC_API_FRONTENDEVENTSTREAM_METRICSWINDOW_MS) {
+			completedWindow = m_Metrics;
+			m_bMetricsWindowStarted = false;
+			bWindowCompleted = true;
+		}
+	}
+
+	if (!bWindowCompleted)
+		return;
+
+	// Metrics are best effort and must never end the stream.
+	try {
+		auto pChrono = pSystemState->globalChrono();
+		uint64_t nNowMicros = pChrono->getUTCTimeStampInMicrosecondsSince1970();
+
+		auto pMetricsHandler = pSystemState->getDataModelInstance()->CreateSessionMetricsHandler();
+		pMetricsHandler->AddFrontendMetrics(sSessionUUID, AMC_API_FRONTENDEVENTSTREAM_METRICSLABEL, completedWindow.m_nWindowStartMicros, nNowMicros,
+			completedWindow.m_nEventCount, completedWindow.m_dEventSumMS, completedWindow.m_dEventMinMS, completedWindow.m_dEventMaxMS, completedWindow.m_dEventSumSqMS,
+			completedWindow.m_nPayloadSumBytes, completedWindow.m_nPayloadMaxBytes, completedWindow.m_dBuildSumMS, nNowMicros);
+	}
+	catch (std::exception& E) {
+		std::cout << "frontend event stream: could not record session metrics: " << E.what() << std::endl;
+	}
+}
+
+std::string CAPIFrontendEventStream::buildNextEvent(sJSONEventStreamCursor& cursor, PAPIAuth pAuth, std::shared_ptr<CSystemState> pSystemState, const sUIFrontendBuildEpoch& epoch)
+{
+	auto client = useClient(cursor.m_sClientID);
+
 	CJSONWriter statusWriter;
-	pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), nullptr, nullptr);
+	if (client.m_bScoped)
+		pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), &client.m_ActivePageNames, &client.m_ActiveDialogNames, epoch);
+	else
+		pSystemState->uiHandler()->frontendWriteStatusToJSON(statusWriter, pAuth.get(), nullptr, nullptr, epoch);
 
 	CUIFrontendSnapshot snapshot;
 	snapshot.readFromFrontendJSON(statusWriter.getDocument());
 
+	// A changed scope starts a new lineage in the log, so the client receives a snapshot.
 	uint64_t nBaseRevision = cursor.m_nLastEventID;
-	auto publishResult = m_RevisionLog.publish(snapshot, "*", nBaseRevision);
+	auto publishResult = client.m_pRevisionLog->publish(snapshot, client.m_sScope, nBaseRevision);
 
 	if (publishResult.m_bPatchAvailable) {
 		if (publishResult.m_nRevision == nBaseRevision)
