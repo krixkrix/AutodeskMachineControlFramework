@@ -78,6 +78,9 @@ namespace AMC {
 	class CStreamRegistry;
 	typedef std::shared_ptr<CStreamRegistry> PStreamRegistry;
 
+	class CFrontendChangeCounter;
+	typedef std::shared_ptr<CFrontendChangeCounter> PFrontendChangeCounter;
+
 	class CDriverHandler {
 	private:
 
@@ -91,6 +94,9 @@ namespace AMC {
 		PStateJournal m_pStateJournal;
 		AMC::PTelemetryHandler m_pTelemetryHandler;
 		AMC::PStreamRegistry m_pStreamRegistry;
+
+		// Driver parameters reach the frontend through derived parameters of the state machines.
+		PFrontendChangeCounter m_pFrontendChangeCounter;
 
 		// List and Map of registered drivers
 		std::list<PDriver> m_DriverList;
@@ -106,7 +112,7 @@ namespace AMC {
 
 	public:
 
-		CDriverHandler(LibMCEnv::PWrapper pEnvironmentWrapper, PToolpathHandler pToolpathHandler, PMeshHandler pMeshHandler, PLogger pLogger, LibMCData::PDataModel pDataModel, AMCCommon::PChrono pGlobalChrono, PStateJournal pStateJournal, AMC::PTelemetryHandler pTelemetryHandler, AMC::PStreamRegistry pStreamRegistry);
+		CDriverHandler(LibMCEnv::PWrapper pEnvironmentWrapper, PToolpathHandler pToolpathHandler, PMeshHandler pMeshHandler, PLogger pLogger, LibMCData::PDataModel pDataModel, AMCCommon::PChrono pGlobalChrono, PStateJournal pStateJournal, AMC::PTelemetryHandler pTelemetryHandler, AMC::PStreamRegistry pStreamRegistry, PFrontendChangeCounter pFrontendChangeCounter);
 
 		virtual ~CDriverHandler();
 

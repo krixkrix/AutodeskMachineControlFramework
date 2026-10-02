@@ -62,6 +62,9 @@ namespace AMC {
 	class CStateJournal;
 	typedef std::shared_ptr<CStateJournal> PStateJournal;
 
+	class CFrontendChangeCounter;
+	typedef std::shared_ptr<CFrontendChangeCounter> PFrontendChangeCounter;
+
 	class CParameterGroup {
 	private:
 		
@@ -75,9 +78,14 @@ namespace AMC {
 
 		AMCCommon::PChrono m_pGlobalChrono;
 
+		// Bumped when a value of the group changes; null for groups the frontend does not display.
+		PFrontendChangeCounter m_pFrontendChangeCounter;
+
 		std::mutex m_GroupMutex;
 
 		void addParameterInternal(PParameter pParameter);
+
+		void notifyFrontendIfChanged(CParameter* pParameter, uint64_t nChangeCounterBefore);
 
 	public:
 
@@ -147,6 +155,8 @@ namespace AMC {
 		void addDuplicatesFromGroup(CParameterGroup * pParameterGroup);
 
 		void setJournal(PStateJournal pStateJournal, const std::string & sInstanceName);
+
+		void setFrontendChangeCounter(PFrontendChangeCounter pFrontendChangeCounter);
 
 		void setParameterPersistentUUID (const std::string& sParameterName, const std::string& sPersistentUUID);
 		void updateParameterPersistencyHandler (LibMCData::PPersistencyHandler pPersistencyHandler, uint64_t nAbsoluteTimeStamp);

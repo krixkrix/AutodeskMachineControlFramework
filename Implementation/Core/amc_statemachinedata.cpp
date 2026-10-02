@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "amc_statemachinedata.hpp"
-#include "amc_frontendchangecounter.hpp"
 #include "libmc_exceptiontypes.hpp"
 
 #include "common_utils.hpp"
@@ -39,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace AMC {
 
 	CStateMachineData::CStateMachineData()
+		: m_pFrontendChangeCounter(std::make_shared<CFrontendChangeCounter>())
 	{
 
 	}
@@ -46,6 +46,11 @@ namespace AMC {
 	CStateMachineData::~CStateMachineData()
 	{
 
+	}
+
+	PFrontendChangeCounter CStateMachineData::getFrontendChangeCounter()
+	{
+		return m_pFrontendChangeCounter;
 	}
 
 
@@ -59,7 +64,9 @@ namespace AMC {
 		std::lock_guard<std::mutex> lockGuard(m_Mutex);
 
 		m_StateMachineParameters.insert(std::make_pair(sInstanceName, pParameterHandler));
-		m_StateMachineDataStores.insert(std::make_pair(sInstanceName, std::make_shared<CParameterGroup> ("", "", pGlobalChrono)));
+		auto pDataStore = std::make_shared<CParameterGroup>("", "", pGlobalChrono);
+		pDataStore->setFrontendChangeCounter(m_pFrontendChangeCounter);
+		m_StateMachineDataStores.insert(std::make_pair(sInstanceName, pDataStore));
 		m_StateMachineStates.insert(std::make_pair(sInstanceName, ""));
 	}
 
@@ -101,7 +108,7 @@ namespace AMC {
 		}
 
 		m_StateMachineStates.insert(std::make_pair (sInstanceName, sInstanceState));
-		CFrontendChangeCounter::bump();
+		m_pFrontendChangeCounter->bump();
 
 	}
 

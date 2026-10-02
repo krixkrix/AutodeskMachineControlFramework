@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_scatterplot.hpp"
 #include "amc_toolpathhandler.hpp"
 #include "amc_streamregistry.hpp"
-#include "amc_frontendchangecounter.hpp"
+#include "amc_statemachinedata.hpp"
 
 #include "libmc_interfaceexception.hpp"
 #include "libmcdata_dynamic.hpp"
@@ -451,7 +451,7 @@ void CAPIHandler_UI::handleEventRequest(CJSONWriter& writer, const uint8_t* pBod
 	auto pEventResult = pUIHandler->handleEvent(sEventName, sSenderUUID, sFormValueJSON, sEventParameterJSON, pAuth);
 
 	// Event handlers may change data outside the core (builds, alerts), which the counter does not track.
-	CFrontendChangeCounter::bump();
+	m_pSystemState->stateMachineData()->getFrontendChangeCounter()->bump();
 	m_pSystemState->getStreamRegistryInstance()->notifyJSONEventStreams();
 
 	CJSONWriterArray contentUpdateNode(writer);

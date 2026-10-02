@@ -55,7 +55,7 @@ namespace AMC {
 		LibMCAssertNotNull(pStateJournal.get());
 
 
-		m_ParameterHandler = std::make_shared<CParameterHandler>(sDescription, m_pSystemState->getGlobalChronoInstance ());
+		m_ParameterHandler = std::make_shared<CParameterHandler>(sDescription, m_pSystemState->getGlobalChronoInstance (), m_pSystemState->stateMachineData()->getFrontendChangeCounter());
 		m_pSystemState->stateMachineData()->registerParameterHandler (sName, m_ParameterHandler, m_pSystemState->getGlobalChronoInstance ());
 
 	}

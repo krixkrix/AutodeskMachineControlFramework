@@ -122,7 +122,7 @@ CUIHandler::CUIHandler(LibMCEnv::PWrapper pEnvironmentWrapper, PUISystemState pU
     if (pUISystemState.get() == nullptr)
         throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-    m_pFrontendDefinition = std::make_shared<CUIFrontendDefinition>(m_pUISystemState->getGlobalChronoInstance ());
+    m_pFrontendDefinition = std::make_shared<CUIFrontendDefinition>(m_pUISystemState->getGlobalChronoInstance (), m_pUISystemState->getStateMachineData()->getFrontendChangeCounter());
 }
 
 CUIHandler::~CUIHandler()

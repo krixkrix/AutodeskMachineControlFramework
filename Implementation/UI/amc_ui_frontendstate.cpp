@@ -48,7 +48,7 @@ CUIFrontendState::CUIFrontendState(PUIFrontendDefinition pFrontendDefinition)
 	if (pFrontendDefinition.get () == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
-	m_pLegacyParameterHandler = std::make_shared<CParameterHandler>("", pFrontendDefinition->getGlobalChrono ());
+	m_pLegacyParameterHandler = std::make_shared<CParameterHandler>("", pFrontendDefinition->getGlobalChrono (), pFrontendDefinition->getFrontendChangeCounter());
 
 	// Values broadcast before this session existed are ignored; the session starts with the declared defaults.
 	m_nAppliedBroadcastCounter = pFrontendDefinition->getSessionVariableBroadcastCounter();
@@ -56,6 +56,7 @@ CUIFrontendState::CUIFrontendState(PUIFrontendDefinition pFrontendDefinition)
 	auto pDeclarations = pFrontendDefinition->getSessionVariableDeclarations();
 	m_pSessionVariables = std::make_shared<CParameterGroup>(pDeclarations->getName (), pDeclarations->getDescription (), pFrontendDefinition->getGlobalChrono());
 	m_pSessionVariables->addDuplicatesFromGroup(pDeclarations.get());
+	m_pSessionVariables->setFrontendChangeCounter(pFrontendDefinition->getFrontendChangeCounter());
 
 }
 

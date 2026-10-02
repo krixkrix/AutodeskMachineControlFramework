@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "amc_ui_expression.hpp"
 #include "amc_jsonwriter.hpp"
+#include "amc_frontendchangecounter.hpp"
 
 #include <memory>
 #include <map>
@@ -83,9 +84,6 @@ namespace AMC {
 		bool operator==(const sUIFrontendBuildEpoch& other) const;
 
 		static uint64_t currentTimeSlot();
-
-		// The current change counter and time slot.
-		static sUIFrontendBuildEpoch current();
 	};
 
 	// Writes the value sName into object. Providers must only write under sName (or nothing).
@@ -235,6 +233,7 @@ namespace AMC {
 		std::vector<PUIFrontendDefinitionModuleStore> m_ModuleStores;
 		std::map<std::string, PUIFrontendDefinitionModuleStore> m_ModuleStoreUUIDMap;
 		AMCCommon::PChrono m_pGlobalChrono;
+		PFrontendChangeCounter m_pFrontendChangeCounter;
 
 		// Declared session variables with their default values. Every client session gets a copy.
 		PParameterGroup m_pSessionVariableDeclarations;
@@ -247,7 +246,7 @@ namespace AMC {
 
 	public:
 
-		CUIFrontendDefinition (AMCCommon::PChrono pGlobalChrono);
+		CUIFrontendDefinition (AMCCommon::PChrono pGlobalChrono, PFrontendChangeCounter pFrontendChangeCounter);
 
 		virtual ~CUIFrontendDefinition ();
 
@@ -256,6 +255,8 @@ namespace AMC {
 		PUIFrontendDefinitionModuleStore findModuleStore(const std::string& sModuleUUID, bool bMustExist);
 
 		AMCCommon::PChrono getGlobalChrono();	
+
+		PFrontendChangeCounter getFrontendChangeCounter();
 
 		void addSessionVariable(const std::string& sName, const std::string& sType, const std::string& sDescription, const std::string& sDefaultValue);
 

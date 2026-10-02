@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_unittests.hpp"
 #include "amc_parameterhandler.hpp"
 #include "amc_parametergroup.hpp"
+#include "amc_frontendchangecounter.hpp"
 #include "common_utils.hpp"
 
 
@@ -213,7 +214,8 @@ namespace AMCUnitTest {
 		void testParameterHandlerBasics()
 		{
 			auto chrono = std::make_shared<AMCCommon::CChrono>();
-			AMC::CParameterHandler handler("handler", chrono);
+			auto pChangeCounter = std::make_shared<AMC::CFrontendChangeCounter>();
+			AMC::CParameterHandler handler("handler", chrono, pChangeCounter);
 
 			assertFalse(handler.hasGroup("group"));
 			bool thrown = false;
@@ -251,6 +253,21 @@ namespace AMCUnitTest {
 			assertTrue(dupGroup->getParameterValueByName("name") == "value");
 
 			duplicate->loadPersistentParameters(nullptr, 0);
+
+			uint64_t nCounter = pChangeCounter->get();
+			pGroup->setParameterValueByName("name", "changed");
+			assertTrue(pChangeCounter->get() == nCounter, "an unchanged value must not bump the frontend change counter");
+			pGroup->setParameterValueByName("name", "changed again");
+			assertTrue(pChangeCounter->get() == nCounter + 1, "a changed value must bump the frontend change counter");
+			dupGroup->setParameterValueByName("name", "duplicate");
+			assertTrue(pChangeCounter->get() == nCounter + 2, "groups of a duplicated handler must bump the frontend change counter");
+
+			auto pOwnGroup = std::make_shared<AMC::CParameterGroup>("own", "desc", chrono);
+			pOwnGroup->setJournal(nullptr, "instance");
+			pOwnGroup->addNewIntParameter("value", "Value", 0);
+			handler.addGroup(pOwnGroup);
+			pOwnGroup->setIntParameterValueByName("value", 1);
+			assertTrue(pChangeCounter->get() == nCounter + 2, "a group added by pointer must keep its own frontend change counter");
 		}
 
 		void testParameterGroupEnumeration()

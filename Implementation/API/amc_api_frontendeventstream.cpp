@@ -37,7 +37,7 @@ Abstract: This is the class definition of CAPIFrontendEventStream.
 #include "amc_api_constants.hpp"
 #include "amc_systemstate.hpp"
 #include "amc_ui_handler.hpp"
-#include "amc_frontendchangecounter.hpp"
+#include "amc_statemachinedata.hpp"
 
 #include "libmc_interfaceexception.hpp"
 #include "libmcdata_dynamic.hpp"
@@ -231,7 +231,7 @@ std::string CAPIFrontendEventStream::waitForNextEvent(sJSONEventStreamCursor& cu
 
 	// The counter is read before the build, so that a change during the build triggers another one.
 	auto buildStart = std::chrono::steady_clock::now();
-	uint64_t nDataChangeCounter = CFrontendChangeCounter::get();
+	uint64_t nDataChangeCounter = pSystemState->stateMachineData()->getFrontendChangeCounter()->get();
 	bool bBuildDue = std::chrono::duration_cast<std::chrono::milliseconds>(buildStart - cursor.m_LastBuildTime).count() >= AMC_API_FRONTENDEVENTSTREAM_MAXBUILDINTERVAL_MS;
 	if (!bNotified && !bBuildDue && (nDataChangeCounter == cursor.m_nDataChangeCounter))
 		return "";

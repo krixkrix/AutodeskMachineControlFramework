@@ -69,7 +69,7 @@ namespace AMCUnitTest {
 
 		AMC::PUIFrontendDefinition createDefinition()
 		{
-			auto pDefinition = std::make_shared<AMC::CUIFrontendDefinition>(std::make_shared<AMCCommon::CChrono>());
+			auto pDefinition = std::make_shared<AMC::CUIFrontendDefinition>(std::make_shared<AMCCommon::CChrono>(), std::make_shared<AMC::CFrontendChangeCounter>());
 			pDefinition->addSessionVariable("flag", "bool", "Flag", "0");
 			pDefinition->addSessionVariable("selecteduuid", "uuid", "Selected UUID", AMCCommon::CUtils::createEmptyUUID());
 			pDefinition->addSessionVariable("counter", "int", "Counter", "5");
@@ -191,15 +191,23 @@ namespace AMCUnitTest {
 			AMC::CUIFrontendState sessionC(pDefinition);
 			assertFalse(sessionC.getSessionVariableAsBool("flag"), "sessions created after a broadcast start with the declared default");
 
+			auto pChangeCounter = pDefinition->getFrontendChangeCounter();
+			uint64_t nCounterBeforeWrite = pChangeCounter->get();
 			sessionA.setSessionVariableAsBool("flag", false);
 			assertFalse(sessionA.getSessionVariableAsBool("flag"), "a local write after a broadcast must win");
 			assertTrue(sessionB.getSessionVariableAsBool("flag"));
+			assertTrue(pChangeCounter->get() > nCounterBeforeWrite, "a changed session variable must bump the frontend change counter");
 
 			pDefinition->broadcastSessionVariableAsInteger("counter", 99);
 			assertFalse(sessionA.getSessionVariableAsBool("flag"), "an older broadcast must not be applied again");
 			assertTrue(sessionA.getSessionVariableAsInteger("counter") == 99);
 			assertTrue(sessionC.getSessionVariableAsInteger("counter") == 99);
 			assertFalse(sessionC.getSessionVariableAsBool("flag"));
+
+			uint64_t nCounterBeforeRebroadcast = pChangeCounter->get();
+			pDefinition->broadcastSessionVariableAsBool("flag", true);
+			assertTrue(pChangeCounter->get() > nCounterBeforeRebroadcast, "a broadcast of an unchanged value must still bump the frontend change counter");
+			assertTrue(sessionA.getSessionVariableAsBool("flag"), "a repeated broadcast must reach sessions that changed the value locally");
 		}
 
 		void testBuiltinReferences()

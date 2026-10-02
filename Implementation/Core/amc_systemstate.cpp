@@ -99,9 +99,9 @@ namespace AMC {
 		m_pMeshHandler = std::make_shared<CMeshHandler>();
 		m_pToolpathHandler = std::make_shared<CToolpathHandler>(m_pDataModel);
 		m_pStreamRegistry = std::make_shared<CStreamRegistry>();
-		m_pDriverHandler = std::make_shared<CDriverHandler>(pEnvWrapper, m_pToolpathHandler, m_pMeshHandler, m_pLogger, m_pDataModel, m_pGlobalChrono, m_pStateJournal, m_pTelemetryHandler, m_pStreamRegistry);
-		m_pSignalHandler = std::make_shared<CStateSignalHandler>(m_pTelemetryHandler);
 		m_pStateMachineData = std::make_shared<CStateMachineData>();
+		m_pDriverHandler = std::make_shared<CDriverHandler>(pEnvWrapper, m_pToolpathHandler, m_pMeshHandler, m_pLogger, m_pDataModel, m_pGlobalChrono, m_pStateJournal, m_pTelemetryHandler, m_pStreamRegistry, m_pStateMachineData->getFrontendChangeCounter());
+		m_pSignalHandler = std::make_shared<CStateSignalHandler>(m_pTelemetryHandler);
 		m_pLanguageHandler = std::make_shared<CLanguageHandler>();
 		m_pDataSeriesHandler = std::make_shared<CDataSeriesHandler>();
 		m_pAlertHandler = std::make_shared<CAlertHandler>();
@@ -109,7 +109,7 @@ namespace AMC {
 		auto pUISystemState = std::make_shared<CUISystemState>(m_pStateMachineData, m_pToolpathHandler, m_pSignalHandler, m_pLogger, m_pStateJournal, getTestEnvironmentPath(), m_pAccessControl, m_pLanguageHandler, m_pMeshHandler, m_pDataSeriesHandler, m_pGlobalChrono, m_pAlertHandler, m_pDataModel, m_pStreamRegistry);
 		m_pUIHandler = std::make_shared<CUIHandler>(pEnvWrapper, pUISystemState);
 
-		m_pSystemParameterHandler = std::make_shared<CParameterHandler>("System", m_pGlobalChrono);
+		m_pSystemParameterHandler = std::make_shared<CParameterHandler>("System", m_pGlobalChrono, m_pStateMachineData->getFrontendChangeCounter());
 		auto pSystemInformationGroup = std::make_shared<CParameterGroup>("information", "Information", m_pGlobalChrono);
 		pSystemInformationGroup->addNewStringParameter("githash", "Git Hash", getGitHash ());
 		pSystemInformationGroup->addNewStringParameter("clienthash", "Client Hash", getClientHash());
@@ -119,6 +119,7 @@ namespace AMC {
 		pSystemInformationGroup->addNewStringParameter("installation_uuid", "Installation", getInstallationUUID ());
 		m_pSystemParameterHandler->addGroup(pSystemInformationGroup);
 
+		// Memory usage changes continuously, so it does not wake the frontend; it arrives with the status heartbeat.
 		m_pSystemMemoryGroup = std::make_shared<CParameterGroup>("memory", "Memory usage", m_pGlobalChrono);
 		m_pSystemParameterHandler->addGroup(m_pSystemMemoryGroup);
 

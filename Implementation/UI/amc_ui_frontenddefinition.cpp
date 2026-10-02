@@ -31,7 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_ui_frontenddefinition.hpp"
 #include "amc_ui_frontendstate.hpp"
 #include "amc_parametergroup.hpp"
-#include "amc_frontendchangecounter.hpp"
 #include "libmc_exceptiontypes.hpp"
 #include "common_utils.hpp"
 
@@ -61,11 +60,6 @@ uint64_t sUIFrontendBuildEpoch::currentTimeSlot()
 {
 	auto nMilliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 	return (uint64_t)nMilliseconds / AMC_UI_FRONTEND_EPOCH_TIMESLOT_MS;
-}
-
-sUIFrontendBuildEpoch sUIFrontendBuildEpoch::current()
-{
-	return sUIFrontendBuildEpoch(CFrontendChangeCounter::get(), currentTimeSlot());
 }
 
 
@@ -350,10 +344,12 @@ void CUIFrontendDefinitionModuleStore::collectSessionReferences(std::vector<std:
 }
 
 
-CUIFrontendDefinition::CUIFrontendDefinition(AMCCommon::PChrono pGlobalChrono)
-	: m_pGlobalChrono (pGlobalChrono), m_nSessionVariableBroadcastCounter (0)
+CUIFrontendDefinition::CUIFrontendDefinition(AMCCommon::PChrono pGlobalChrono, PFrontendChangeCounter pFrontendChangeCounter)
+	: m_pGlobalChrono (pGlobalChrono), m_pFrontendChangeCounter (pFrontendChangeCounter), m_nSessionVariableBroadcastCounter (0)
 {
 	if (pGlobalChrono.get() == nullptr)
+		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
+	if (pFrontendChangeCounter.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
 
 	m_pSessionVariableDeclarations = std::make_shared<CParameterGroup>(AMC_UI_SESSIONVARIABLES_GROUPNAME, "Session variables", pGlobalChrono);
@@ -398,6 +394,11 @@ AMCCommon::PChrono CUIFrontendDefinition::getGlobalChrono()
 	return m_pGlobalChrono;
 }
 
+PFrontendChangeCounter CUIFrontendDefinition::getFrontendChangeCounter()
+{
+	return m_pFrontendChangeCounter;
+}
+
 void CUIFrontendDefinition::addSessionVariable(const std::string& sName, const std::string& sType, const std::string& sDescription, const std::string& sDefaultValue)
 {
 	if (!AMCCommon::CUtils::stringIsValidAlphanumericNameString(sName))
@@ -431,6 +432,7 @@ void CUIFrontendDefinition::broadcastSessionVariable(const std::string& sName, c
 	m_pSessionVariableBroadcasts->setParameterValueByName(sName, sValue);
 	m_nSessionVariableBroadcastCounter++;
 	m_SessionVariableBroadcastCounters[sName] = m_nSessionVariableBroadcastCounter;
+	m_pFrontendChangeCounter->bump();
 }
 
 void CUIFrontendDefinition::broadcastSessionVariableAsDouble(const std::string& sName, double dValue)
@@ -442,6 +444,7 @@ void CUIFrontendDefinition::broadcastSessionVariableAsDouble(const std::string& 
 	m_pSessionVariableBroadcasts->setDoubleParameterValueByName(sName, dValue);
 	m_nSessionVariableBroadcastCounter++;
 	m_SessionVariableBroadcastCounters[sName] = m_nSessionVariableBroadcastCounter;
+	m_pFrontendChangeCounter->bump();
 }
 
 void CUIFrontendDefinition::broadcastSessionVariableAsInteger(const std::string& sName, int64_t nValue)
@@ -453,6 +456,7 @@ void CUIFrontendDefinition::broadcastSessionVariableAsInteger(const std::string&
 	m_pSessionVariableBroadcasts->setIntParameterValueByName(sName, nValue);
 	m_nSessionVariableBroadcastCounter++;
 	m_SessionVariableBroadcastCounters[sName] = m_nSessionVariableBroadcastCounter;
+	m_pFrontendChangeCounter->bump();
 }
 
 void CUIFrontendDefinition::broadcastSessionVariableAsBool(const std::string& sName, bool bValue)
@@ -464,6 +468,7 @@ void CUIFrontendDefinition::broadcastSessionVariableAsBool(const std::string& sN
 	m_pSessionVariableBroadcasts->setBoolParameterValueByName(sName, bValue);
 	m_nSessionVariableBroadcastCounter++;
 	m_SessionVariableBroadcastCounters[sName] = m_nSessionVariableBroadcastCounter;
+	m_pFrontendChangeCounter->bump();
 }
 
 uint64_t CUIFrontendDefinition::getSessionVariableBroadcastCounter()

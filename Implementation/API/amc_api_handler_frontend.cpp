@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_api_jsonrequest.hpp"
 #include "amc_api_frontendeventstream.hpp"
 #include "amc_streamregistry.hpp"
+#include "amc_statemachinedata.hpp"
 #include "amc_ui_handler.hpp"
 #include "amc_ui_frontendstate.hpp"
 #include "amc_ui_frontendsnapshot.hpp"
@@ -205,7 +206,7 @@ std::string CAPIHandler_Frontend::handleStatusRequest(CAPIFormFields& pFormField
 	CJSONWriter statusWriter;
 	writeJSONHeader(statusWriter, AMC_API_PROTOCOL_FRONTEND);
 
-	auto epoch = sUIFrontendBuildEpoch::current();
+	sUIFrontendBuildEpoch epoch(m_pSystemState->stateMachineData()->getFrontendChangeCounter()->get(), sUIFrontendBuildEpoch::currentTimeSlot());
 
 	std::string sScope;
 	if (pFormFields.hasRequestParameter(AMC_API_KEY_FRONTEND_ACTIVEPAGES)) {

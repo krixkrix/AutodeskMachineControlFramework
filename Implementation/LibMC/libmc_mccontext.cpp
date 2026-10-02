@@ -463,8 +463,10 @@ AMC::PStateMachineInstance CMCContext::addMachineInstance(const pugi::xml_node& 
     m_pSystemState->logger()->logMessage("Creating state machine \"" + sName + "\"", LOG_SUBSYSTEM_SYSTEM, AMC::eLogLevel::Message);
     pInstance = std::make_shared<CStateMachineInstance> (sName, sDescription, m_pEnvironmentWrapper, m_pSystemState, m_pStateJournal);
 
+    // Signal statistics change with every signal, so they do not wake the frontend; they arrive with the status heartbeat.
     auto pSystemParameterHandler = m_pSystemState->stateMachineData()->getParameterHandler("system");
-    auto pSignalInformationGroup = pSystemParameterHandler->addGroup("signals_" + sName, sName + " Signals");
+    auto pSignalInformationGroup = std::make_shared<CParameterGroup>("signals_" + sName, sName + " Signals", m_pSystemState->getGlobalChronoInstance());
+    pSystemParameterHandler->addGroup(pSignalInformationGroup);
 
     auto pStateSignalHandler = m_pSystemState->stateSignalHandler();
 	auto pStateSignalInstance = pStateSignalHandler->registerInstance(sName);

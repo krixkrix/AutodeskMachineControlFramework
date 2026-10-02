@@ -27,10 +27,10 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Abstract: This is the class declaration of CFrontendChangeCounter.
-A process-wide counter that is bumped whenever a value the frontend status is built from
-may have changed (parameter values, state machine states, handled UI events). Values that
-live outside the core (database heads, logs, data series) do not bump it; status builders
-pick those up with a heartbeat.
+A counter that is bumped whenever a value the frontend status is built from may have
+changed (parameter values of frontend-visible groups, state machine states, handled UI
+events). It is owned by CStateMachineData. Values that live outside the core (database
+heads, logs, data series) do not bump it; status builders pick those up with a heartbeat.
 
 */
 
@@ -40,28 +40,36 @@ pick those up with a heartbeat.
 
 #include <atomic>
 #include <cstdint>
+#include <memory>
 
 namespace AMC {
+
+	class CFrontendChangeCounter;
+	typedef std::shared_ptr<CFrontendChangeCounter> PFrontendChangeCounter;
 
 	class CFrontendChangeCounter {
 	private:
 
-		static std::atomic<uint64_t>& counter()
-		{
-			static std::atomic<uint64_t> s_nCounter(1);
-			return s_nCounter;
-		}
+		std::atomic<uint64_t> m_nCounter;
 
 	public:
 
-		static void bump()
+		CFrontendChangeCounter()
+			: m_nCounter(1)
 		{
-			counter().fetch_add(1, std::memory_order_release);
 		}
 
-		static uint64_t get()
+		CFrontendChangeCounter(const CFrontendChangeCounter&) = delete;
+		CFrontendChangeCounter& operator=(const CFrontendChangeCounter&) = delete;
+
+		void bump()
 		{
-			return counter().load(std::memory_order_acquire);
+			m_nCounter.fetch_add(1, std::memory_order_release);
+		}
+
+		uint64_t get() const
+		{
+			return m_nCounter.load(std::memory_order_acquire);
 		}
 
 	};
