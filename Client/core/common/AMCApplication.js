@@ -185,6 +185,8 @@ export default class AMCApplication extends Common.AMCObject {
 
 		// mode is one of "off" / "connecting" / "stream" / "polling".
 		this.FrontendUpdates = {
+			// Identifies this tab within the session's event stream, which serves each tab its active pages and dialogs.
+			clientID: this._createFrontendClientID (),
 			enabled: false,
 			mode: "off",
 			generation: 0,
@@ -935,6 +937,19 @@ export default class AMCApplication extends Common.AMCObject {
 	// attributes directly from /api/frontend instead of legacy polling.
 	// ====================================================================
 
+	// The server only writes modules for these pages and dialogs; all other pages and dialogs
+	// carry just their header and visibility.
+	_frontendActiveScope() {
+		let activePageNames = this.AppContent.Pages.concat (this.AppContent.CustomPages)
+			.filter (page => this.pageIsActive (page))
+			.map (page => page.name);
+		let activeDialogNames = this.AppContent.Dialogs
+			.filter (dialog => dialog.isActive ())
+			.map (dialog => dialog.name);
+
+		return { pages: activePageNames.join (","), dialogs: activeDialogNames.join (",") };
+	}
+
 	retrieveFrontendState() {
 		if (!this.userIsLoggedIn() || this._frontendUpdatesUseStream ())
 			return Promise.resolve();
@@ -944,16 +959,7 @@ export default class AMCApplication extends Common.AMCObject {
 
 		let requestStartMS = this._nowMS ();
 
-		// The server only writes modules for the listed pages and dialogs; all other
-		// pages and dialogs carry just their header and visibility.
-		let activePageNames = this.AppContent.Pages.concat (this.AppContent.CustomPages)
-			.filter (page => this.pageIsActive (page))
-			.map (page => page.name);
-		let activeDialogNames = this.AppContent.Dialogs
-			.filter (dialog => dialog.isActive ())
-			.map (dialog => dialog.name);
-
-		let requestParams = { pages: activePageNames.join (","), dialogs: activeDialogNames.join (",") };
+		let requestParams = this._frontendActiveScope ();
 		let requestScope = requestParams.pages + "|" + requestParams.dialogs;
 
 		// Patches are only meaningful against a local state of the same pages and dialogs.
@@ -1384,6 +1390,40 @@ export default class AMCApplication extends Common.AMCObject {
 		return (mode === "stream") || (mode === "connecting");
 	}
 
+	// "off", "connecting", "stream" or "polling".
+	getFrontendUpdateMode() {
+		return this.FrontendUpdates.mode;
+	}
+
+	// crypto.randomUUID only exists in secure contexts, and machines are often served over plain HTTP.
+	_createFrontendClientID() {
+		let bytes = new Uint8Array (16);
+		if ((typeof crypto !== "undefined") && crypto && (typeof crypto.getRandomValues === "function")) {
+			crypto.getRandomValues (bytes);
+		}
+		else {
+			for (let index = 0; index < bytes.length; index++)
+				bytes[index] = Math.floor (Math.random () * 256);
+		}
+
+		bytes[6] = (bytes[6] & 0x0f) | 0x40;
+		bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+		let hex = Array.from (bytes, value => value.toString (16).padStart (2, "0")).join ("");
+		return hex.substring (0, 8) + "-" + hex.substring (8, 12) + "-" + hex.substring (12, 16) + "-" + hex.substring (16, 20) + "-" + hex.substring (20);
+	}
+
+	// The stream only carries the modules of the active pages and dialogs; after a change of scope
+	// it sends a snapshot with the newly active modules.
+	_reportFrontendStreamScope() {
+		let updates = this.FrontendUpdates;
+		let scope = this._frontendActiveScope ();
+		return this.axiosPostRequest ("/frontend/streamscope", { client: updates.clientID, pages: scope.pages, dialogs: scope.dialogs })
+		.catch (err => {
+			console.warn ("[frontend updates] stream scope update failed:", this.extractErrorMessage (err));
+		});
+	}
+
 	startFrontendUpdates() {
 		this.stopFrontendUpdates ();
 		if (!this.userIsLoggedIn ())
@@ -1441,10 +1481,16 @@ export default class AMCApplication extends Common.AMCObject {
 		updates.connectionHasEvents = false;
 		updates.pendingEvents = null;
 
-		this.axiosPostRequest ("/frontend/streamticket", {})
+		let scope = this._frontendActiveScope ();
+		this.axiosPostRequest ("/frontend/streamticket", { client: updates.clientID, pages: scope.pages, dialogs: scope.dialogs })
 		.then (resultJSON => {
 			if ((generation !== updates.generation) || !updates.enabled)
 				return;
+
+			// A scope report sent meanwhile may have been handled before the ticket request.
+			let currentScope = this._frontendActiveScope ();
+			if ((currentScope.pages !== scope.pages) || (currentScope.dialogs !== scope.dialogs))
+				this._reportFrontendStreamScope ();
 
 			let ticket = Assert.UUIDValue (resultJSON.data.ticket);
 			let streamURL = this.getStreamURL (ticket);
@@ -1539,6 +1585,8 @@ export default class AMCApplication extends Common.AMCObject {
 	_enterFrontendStreamMode() {
 		let updates = this.FrontendUpdates;
 		let wasPolling = (updates.mode === "polling");
+		if (updates.mode !== "stream")
+			console.info ("[frontend updates] receiving live updates through the event stream");
 		updates.mode = "stream";
 		this._stopFrontendPolling ();
 		this._startFrontendModuleRefresh ();
@@ -2020,9 +2068,16 @@ export default class AMCApplication extends Common.AMCObject {
 
 	// Modules of pages and dialogs that were not active during the last poll have
 	// not received data yet, so fetch it immediately instead of waiting for the next poll.
-	// The event stream keeps all pages and dialogs current, so it only needs a local update.
+	// The event stream delivers them after the new scope is reported.
 	_refreshFrontendStateAfterNavigation () {
-		let frontendStateRequest = this._frontendUpdatesUseStream () ? Promise.resolve () : this.retrieveFrontendState ();
+		let frontendStateRequest;
+		if (this._frontendUpdatesUseStream ()) {
+			this._reportFrontendStreamScope ();
+			frontendStateRequest = Promise.resolve ();
+		}
+		else {
+			frontendStateRequest = this.retrieveFrontendState ();
+		}
 		frontendStateRequest
 		.then (() => {
 			this.updateModules ();
