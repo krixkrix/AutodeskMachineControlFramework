@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import * as Assert from "../common/AMCAsserts.js";
 import * as Common from "../common/AMCCommon.js"
+import AMCListDeltaSync, { compareEntriesBy } from "../common/AMCListDeltaSync.js";
 
 
 export default class AMCApplicationModule_BuildList extends Common.AMCApplicationModule {
@@ -77,10 +78,10 @@ export default class AMCApplicationModule_BuildList extends Common.AMCApplicatio
 		this.thumbnailheight        = "150pt";
 		this.thumbnailwidth         = "";
 		this.entriesperpage         = 25;
-		this.lastKnownHeadID        = -1;
 		this.loaded                 = false;
-		this.buildFetchInFlight     = false;
 		this.defaultThumbnailUUID   = Common.nullUUID ();
+		this.listSync               = new AMCListDeltaSync (this.entries, "buildUUID", compareEntriesBy ("buildTimestamp", true),
+			(sinceHeadID) => this.requestBuilds (sinceHeadID));
 
 		this.updateFromJSON (moduleJSON);
 	}
@@ -135,52 +136,47 @@ export default class AMCApplicationModule_BuildList extends Common.AMCApplicatio
 		if (attrs.buttonvalueuuid !== undefined)
 			this.buttonvalueuuid = attrs.buttonvalueuuid;
 
-		if (attrs.buildlistheadid === undefined)
-			return true;
-
-		let headID = parseInt(attrs.buildlistheadid);
-		if (headID <= this.lastKnownHeadID)
-			return true;
-
-		this.lastKnownHeadID = headID;
-
-		if (this.buildFetchInFlight)
-			return true;
-
-		this.buildFetchInFlight = true;
-
-		let app = this.page.application;
-
-		app.axiosGetRequest("/build?status=validated")
-		.then(resultJSON => {
-			this.buildFetchInFlight = false;
-			this.loaded = true;
-
-			if (resultJSON.data && resultJSON.data.buildjobs) {
-				let newEntries = [];
-				for (let job of resultJSON.data.buildjobs) {
-					newEntries.push({
-						buildUUID:           job.uuid           || "",
-						buildName:           job.name           || "",
-						buildLayers:         job.layercount     || 0,
-						buildTimestamp:      job.timestamp      || "",
-						buildUser:           job.user           || "",
-						buildExecutionCount: job.executioncount || 0,
-						buildThumbnail:      job.thumbnail      || this.defaultThumbnailUUID || "00000000-0000-0000-0000-000000000000",
-					});
-				}
-
-				let oldCount = this.entries.length;
-				for (let i = 0; i < oldCount; i++) this.entries.pop();
-				for (let entry of newEntries) this.entries.push(entry);
-			}
-		})
-		.catch(() => {
-			this.buildFetchInFlight = false;
-			this.loaded = true;
-		});
+		if (attrs.buildlistheadid !== undefined)
+			this.listSync.notifyHeadID (parseInt(attrs.buildlistheadid));
 
 		return true;
+	}
+
+
+	requestBuilds (sinceHeadID)
+	{
+		let url = "/build?status=validated";
+		if (sinceHeadID !== null)
+			url += "&since=" + sinceHeadID;
+
+		return this.page.application.axiosGetRequest(url)
+		.then(resultJSON => {
+			this.loaded = true;
+
+			let data = resultJSON.data;
+			if (!data || !Array.isArray(data.buildjobs))
+				throw "invalid build list response";
+
+			let rows = [];
+			for (let job of data.buildjobs) {
+				rows.push({
+					buildUUID:           job.uuid           || "",
+					buildName:           job.name           || "",
+					buildLayers:         job.layercount     || 0,
+					buildTimestamp:      job.timestamp      || "",
+					buildUser:           job.user           || "",
+					buildExecutionCount: job.executioncount || 0,
+					buildThumbnail:      job.thumbnail      || this.defaultThumbnailUUID || "00000000-0000-0000-0000-000000000000",
+				});
+			}
+
+			let removedKeys = Array.isArray(data.removed) ? data.removed : [];
+
+			return { headID: parseInt(data.buildlistheadid), delta: (data.delta === true), rows: rows, removedKeys: removedKeys };
+		}, error => {
+			this.loaded = true;
+			throw error;
+		});
 	}
 
 }

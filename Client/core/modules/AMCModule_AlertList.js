@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import * as Assert from "../common/AMCAsserts.js";
 import * as Common from "../common/AMCCommon.js"
+import AMCListDeltaSync, { compareEntriesBy } from "../common/AMCListDeltaSync.js";
 
 
 export default class AMCApplicationModule_AlertList extends Common.AMCApplicationModule {
@@ -59,8 +60,8 @@ export default class AMCApplicationModule_AlertList extends Common.AMCApplicatio
 		this.selectevent          = "";
 		this.selectionvalueuuid   = Common.nullUUID ();
 		this.entriesperpage       = 25;
-		this.lastKnownHeadID      = 0;
-		this.alertFetchInFlight   = false;
+		this.listSync             = new AMCListDeltaSync (this.entries, "alertuuid", compareEntriesBy ("alerttimestamp", false),
+			(sinceHeadID) => this.requestAlerts (sinceHeadID));
 
 		this.updateFromJSON (moduleJSON);
 	}
@@ -108,52 +109,42 @@ export default class AMCApplicationModule_AlertList extends Common.AMCApplicatio
 		if (attrs.visible !== undefined)
 			this.visible = (attrs.visible === "1" || attrs.visible === true || attrs.visible === "true");
 
-		if (attrs.alertlistheadid === undefined)
-			return true;
-
-		let headID = parseInt(attrs.alertlistheadid);
-		if (headID <= this.lastKnownHeadID)
-			return true;
-
-		this.lastKnownHeadID = headID;
-
-		if (this.alertFetchInFlight)
-			return true;
-
-		this.alertFetchInFlight = true;
-
-		let app = this.page.application;
-
-		app.axiosGetRequest("/alerts")
-		.then(resultJSON => {
-			this.alertFetchInFlight = false;
-
-			if (resultJSON.data && resultJSON.data.alerts) {
-				let newEntries = [];
-				for (let alert of resultJSON.data.alerts) {
-					newEntries.push({
-						alertuuid:             alert.alertuuid             || "",
-						alertidentifier:       alert.alertidentifier       || "",
-						alerttimestamp:        alert.alerttimestamp        || "",
-						alertcaption:          alert.alertcaption          || "",
-						alertcontext:          alert.alertcontext          || "",
-						alertlevel:            alert.alertlevel            || "",
-						severity:              alert.alertlevel            || "",
-						alertactive:           alert.alertactive           || false,
-						alertneedsacknowledge: alert.alertneedsacknowledge || false,
-					});
-				}
-
-				let oldCount = this.entries.length;
-				for (let i = 0; i < oldCount; i++) this.entries.pop();
-				for (let entry of newEntries) this.entries.push(entry);
-			}
-		})
-		.catch(() => {
-			this.alertFetchInFlight = false;
-		});
+		if (attrs.alertlistheadid !== undefined)
+			this.listSync.notifyHeadID (parseInt(attrs.alertlistheadid));
 
 		return true;
+	}
+
+
+	requestAlerts (sinceHeadID)
+	{
+		let url = "/alerts";
+		if (sinceHeadID !== null)
+			url += "?since=" + sinceHeadID;
+
+		return this.page.application.axiosGetRequest(url)
+		.then(resultJSON => {
+			let data = resultJSON.data;
+			if (!data || !Array.isArray(data.alerts))
+				throw "invalid alert list response";
+
+			let rows = [];
+			for (let alert of data.alerts) {
+				rows.push({
+					alertuuid:             alert.alertuuid             || "",
+					alertidentifier:       alert.alertidentifier       || "",
+					alerttimestamp:        alert.alerttimestamp        || "",
+					alertcaption:          alert.alertcaption          || "",
+					alertcontext:          alert.alertcontext          || "",
+					alertlevel:            alert.alertlevel            || "",
+					severity:              alert.alertlevel            || "",
+					alertactive:           alert.alertactive           || false,
+					alertneedsacknowledge: alert.alertneedsacknowledge || false,
+				});
+			}
+
+			return { headID: parseInt(data.alertlistheadid), delta: (data.delta === true), rows: rows, removedKeys: [] };
+		});
 	}
 
 }

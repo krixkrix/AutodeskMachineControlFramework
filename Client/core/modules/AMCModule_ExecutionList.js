@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import * as Assert from "../common/AMCAsserts.js";
 import * as Common from "../common/AMCCommon.js"
+import AMCListDeltaSync, { compareEntriesBy } from "../common/AMCListDeltaSync.js";
 
 
 export default class AMCApplicationModule_ExecutionList extends Common.AMCApplicationModule {
@@ -84,9 +85,9 @@ export default class AMCApplicationModule_ExecutionList extends Common.AMCApplic
 		this.thumbnailheight        = "150pt";
 		this.thumbnailwidth         = "";
 		this.entriesperpage         = 25;
-		this.lastKnownHeadID        = -1;
 		this.loaded                 = false;
-		this.executionFetchInFlight = false;
+		this.listSync               = new AMCListDeltaSync (this.entries, "executionUUID", compareEntriesBy ("executionStartTimestamp", true),
+			(sinceHeadID) => this.requestExecutions (sinceHeadID));
 
 		this.updateFromJSON (moduleJSON);
 	}
@@ -136,56 +137,49 @@ export default class AMCApplicationModule_ExecutionList extends Common.AMCApplic
 		if (attrs.visible !== undefined)
 			this.visible = (attrs.visible === "1" || attrs.visible === true || attrs.visible === "true");
 
-		if (attrs.executionlistheadid === undefined)
-			return true;
-
-		let headID = parseInt(attrs.executionlistheadid);
-		if (headID <= this.lastKnownHeadID)
-			return true;
-
-		this.lastKnownHeadID = headID;
-
-		if (this.executionFetchInFlight)
-			return true;
-
-		this.executionFetchInFlight = true;
-
-		let app = this.page.application;
-
-		app.axiosGetRequest("/executions")
-		.then(resultJSON => {
-			this.executionFetchInFlight = false;
-			this.loaded = true;
-
-			if (resultJSON.data && resultJSON.data.executions) {
-				let newEntries = [];
-				for (let exec of resultJSON.data.executions) {
-					newEntries.push({
-						executionUUID:           exec.executionuuid           || "",
-						executionName:           exec.executionname           || "",
-						executionDescription:    exec.executiondescription    || "",
-						executionStartTimestamp: exec.executionstarttimestamp || "",
-						executionEndTimestamp:   exec.executionendtimestamp   || "",
-						executionDuration:       exec.executionduration       || 0,
-						executionStatus:         exec.executionstatus         || "",
-						executionBuildStatus:    exec.executionbuildstatus    || "",
-						executionLayerCount:     exec.executionlayercount     || 0,
-						executionJobUUID:        exec.jobuuid                 || "",
-						executionThumbnail:      exec.executionthumbnail      || "00000000-0000-0000-0000-000000000000",
-					});
-				}
-
-				let oldCount = this.entries.length;
-				for (let i = 0; i < oldCount; i++) this.entries.pop();
-				for (let entry of newEntries) this.entries.push(entry);
-			}
-		})
-		.catch(() => {
-			this.executionFetchInFlight = false;
-			this.loaded = true;
-		});
+		if (attrs.executionlistheadid !== undefined)
+			this.listSync.notifyHeadID (parseInt(attrs.executionlistheadid));
 
 		return true;
+	}
+
+
+	requestExecutions (sinceHeadID)
+	{
+		let url = "/executions";
+		if (sinceHeadID !== null)
+			url += "?since=" + sinceHeadID;
+
+		return this.page.application.axiosGetRequest(url)
+		.then(resultJSON => {
+			this.loaded = true;
+
+			let data = resultJSON.data;
+			if (!data || !Array.isArray(data.executions))
+				throw "invalid execution list response";
+
+			let rows = [];
+			for (let exec of data.executions) {
+				rows.push({
+					executionUUID:           exec.executionuuid           || "",
+					executionName:           exec.executionname           || "",
+					executionDescription:    exec.executiondescription    || "",
+					executionStartTimestamp: exec.executionstarttimestamp || "",
+					executionEndTimestamp:   exec.executionendtimestamp   || "",
+					executionDuration:       exec.executionduration       || 0,
+					executionStatus:         exec.executionstatus         || "",
+					executionBuildStatus:    exec.executionbuildstatus    || "",
+					executionLayerCount:     exec.executionlayercount     || 0,
+					executionJobUUID:        exec.jobuuid                 || "",
+					executionThumbnail:      exec.executionthumbnail      || "00000000-0000-0000-0000-000000000000",
+				});
+			}
+
+			return { headID: parseInt(data.executionlistheadid), delta: (data.delta === true), rows: rows, removedKeys: [] };
+		}, error => {
+			this.loaded = true;
+			throw error;
+		});
 	}
 
 }
