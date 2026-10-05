@@ -138,14 +138,11 @@ bool CBuildJobHandler::JobExists(const std::string& sJobUUID)
     return (pStatement->nextRow());
 }
 
-IBuildJobIterator* CBuildJobHandler::ListJobsByStatus(const LibMCData::eBuildJobStatus eStatus)
+// Columns must match the reading loop in addJobsFromStatement.
+static const std::string sBuildJobListSelect = "SELECT buildjobs.uuid, buildjobs.name, buildjobs.status, buildjobs.timestamp, buildjobs.storagestreamuuid, buildjobs.layercount, buildjobs.useruuid, users.login, (SELECT count(buildjobexecutions.uuid) FROM buildjobexecutions WHERE buildjobexecutions.jobuuid=buildjobs.uuid), buildjobs.thumbnailuuid, storage_streams.size, buildjobs.incremental_id FROM buildjobs LEFT JOIN users On users.uuid=buildjobs.useruuid LEFT JOIN storage_streams ON storage_streams.uuid=buildjobs.storagestreamuuid";
+
+static void addJobsFromStatement(AMCData::PSQLStatement pStatement, CBuildJobIterator* pJobIterator, AMCData::PSQLHandler pSQLHandler, AMCData::PStorageState pStorageState)
 {
-
-    std::unique_ptr<CBuildJobIterator> pJobIterator(new CBuildJobIterator());
-
-    std::string sQuery = "SELECT buildjobs.uuid, buildjobs.name, buildjobs.status, buildjobs.timestamp, buildjobs.storagestreamuuid, buildjobs.layercount, buildjobs.useruuid, users.login, (SELECT count(buildjobexecutions.uuid) FROM buildjobexecutions WHERE buildjobexecutions.jobuuid=buildjobs.uuid), buildjobs.thumbnailuuid, storage_streams.size, buildjobs.incremental_id FROM buildjobs LEFT JOIN users On users.uuid=buildjobs.useruuid LEFT JOIN storage_streams ON storage_streams.uuid=buildjobs.storagestreamuuid WHERE buildjobs.status=? ORDER BY buildjobs.timestamp DESC";
-    auto pStatement = m_pSQLHandler->prepareStatement(sQuery);
-    pStatement->setString(1, CBuildJob::convertBuildJobStatusToString(eStatus));
     while (pStatement->nextRow()) {
 
         auto sUUID = pStatement->getColumnString(1);
@@ -170,8 +167,30 @@ IBuildJobIterator* CBuildJobHandler::ListJobsByStatus(const LibMCData::eBuildJob
 		uint64_t nStorageStreamSize = pStatement->getColumnInt64(11);
         uint64_t nIncrementalID = (uint64_t) pStatement->getColumnInt64(12);
 
-        pJobIterator->AddJob (CBuildJob::makeShared (sUUID, sName, eJobStatus, sTimeStamp, sStorageStreamUUID, nStorageStreamSize, sUserUUID, sUserName, nLayerCount, (uint32_t) nExecutionCount, sThumbnailUUID, nIncrementalID, m_pSQLHandler, m_pStorageState));
+        pJobIterator->AddJob (CBuildJob::makeShared (sUUID, sName, eJobStatus, sTimeStamp, sStorageStreamUUID, nStorageStreamSize, sUserUUID, sUserName, nLayerCount, (uint32_t) nExecutionCount, sThumbnailUUID, nIncrementalID, pSQLHandler, pStorageState));
     }
+}
+
+IBuildJobIterator* CBuildJobHandler::ListJobsByStatus(const LibMCData::eBuildJobStatus eStatus)
+{
+    std::unique_ptr<CBuildJobIterator> pJobIterator(new CBuildJobIterator());
+
+    std::string sQuery = sBuildJobListSelect + " WHERE buildjobs.status=? ORDER BY buildjobs.timestamp DESC";
+    auto pStatement = m_pSQLHandler->prepareStatement(sQuery);
+    pStatement->setString(1, CBuildJob::convertBuildJobStatusToString(eStatus));
+    addJobsFromStatement(pStatement, pJobIterator.get(), m_pSQLHandler, m_pStorageState);
+
+    return pJobIterator.release();
+}
+
+IBuildJobIterator* CBuildJobHandler::ListJobsChangedSince(const LibMCData_uint64 nIncrementalID)
+{
+    std::unique_ptr<CBuildJobIterator> pJobIterator(new CBuildJobIterator());
+
+    std::string sQuery = sBuildJobListSelect + " WHERE buildjobs.incremental_id>? ORDER BY buildjobs.timestamp DESC";
+    auto pStatement = m_pSQLHandler->prepareStatement(sQuery);
+    pStatement->setInt64(1, (int64_t) nIncrementalID);
+    addJobsFromStatement(pStatement, pJobIterator.get(), m_pSQLHandler, m_pStorageState);
 
     return pJobIterator.release();
 }
@@ -258,6 +277,23 @@ IBuildJobExecutionIterator* CBuildJobHandler::ListJobExecutions(const std::strin
         // Column 7: Job Status
         // Column 8: Job Layer Count
 
+        buildJobIterator->AddJobExecution(CBuildJobExecution::makeSharedFromStatement(m_pSQLHandler, pStatement, m_pStorageState));
+    }
+
+    return buildJobIterator.release();
+}
+
+IBuildJobExecutionIterator* CBuildJobHandler::ListJobExecutionsChangedSince(const LibMCData_uint64 nIncrementalID)
+{
+    // Column order must stay in sync with CBuildJobExecution::makeSharedFromStatement, see ListJobExecutions.
+    std::string sQuery = "SELECT buildjobexecutions.uuid, buildjobexecutions.jobuuid, buildjobexecutions.journaluuid, buildjobexecutions.useruuid, buildjobexecutions.startjournaltimestamp, buildjobs.name, buildjobs.status, buildjobs.layercount FROM buildjobexecutions LEFT JOIN buildjobs ON buildjobs.uuid=buildjobexecutions.jobuuid WHERE buildjobexecutions.active=? AND buildjobexecutions.incremental_id>? ORDER BY buildjobexecutions.startjournaltimestamp DESC";
+
+    auto pStatement = m_pSQLHandler->prepareStatement(sQuery);
+    pStatement->setInt(1, 1);
+    pStatement->setInt64(2, (int64_t) nIncrementalID);
+
+    std::unique_ptr<CBuildJobExecutionIterator> buildJobIterator(new CBuildJobExecutionIterator());
+    while (pStatement->nextRow()) {
         buildJobIterator->AddJobExecution(CBuildJobExecution::makeSharedFromStatement(m_pSQLHandler, pStatement, m_pStorageState));
     }
 

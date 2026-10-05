@@ -149,6 +149,8 @@ namespace AMCData {
 		void getAcknowledgementInformation(const std::string& sUUID, std::string& sUserUUID, std::string& sUserComment, std::string& sTimestampUTC);
 
 		void retrieveAlerts(std::vector<std::string> & alertUUIDs);
+
+		void retrieveAlertsChangedSince(std::vector<std::string>& alertUUIDs, uint64_t nIncrementalID);
 		void retrieveActiveAlerts(std::vector<std::string>& alertUUIDs);
 		void retrieveAlertsByType(std::vector<std::string>& alertUUIDs, const std::string& sTypeIdentifier);
 		void retrieveActiveAlertsByType(std::vector<std::string>& alertUUIDs, const std::string& sTypeIdentifier);

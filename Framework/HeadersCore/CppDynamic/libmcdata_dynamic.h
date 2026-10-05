@@ -443,6 +443,16 @@ typedef LibMCDataResult (*PLibMCDataAlertSession_RetrieveAlertsByTypePtr) (LibMC
 */
 typedef LibMCDataResult (*PLibMCDataAlertSession_GetAlertHeadIDPtr) (LibMCData_AlertSession pAlertSession, LibMCData_uint64 * pHeadID);
 
+/**
+* Retrieves all alerts whose incremental ID is larger than the given one, ordered by timestamp. Used by the frontend to fetch only the changed rows of the alert list.
+*
+* @param[in] pAlertSession - AlertSession instance.
+* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetAlertHeadID.
+* @param[out] pIteratorInstance - AlertIterator Instance. List may be empty.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataAlertSession_RetrieveAlertsChangedSincePtr) (LibMCData_AlertSession pAlertSession, LibMCData_uint64 nIncrementalID, LibMCData_AlertIterator * pIteratorInstance);
+
 /*************************************************************************************************************************
  Class definition for TelemetrySession
 **************************************************************************************************************************/
@@ -2347,6 +2357,26 @@ typedef LibMCDataResult (*PLibMCDataBuildJobHandler_GetBuildListHeadIDPtr) (LibM
 */
 typedef LibMCDataResult (*PLibMCDataBuildJobHandler_GetExecutionListHeadIDPtr) (LibMCData_BuildJobHandler pBuildJobHandler, LibMCData_uint64 * pHeadID);
 
+/**
+* Retrieves all build jobs of any status whose incremental ID is larger than the given one, ordered by timestamp descending. Used by the frontend to fetch only the changed rows of the build list.
+*
+* @param[in] pBuildJobHandler - BuildJobHandler instance.
+* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetBuildListHeadID.
+* @param[out] pIteratorInstance - Build Job Iterator Instance. List may be empty.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataBuildJobHandler_ListJobsChangedSincePtr) (LibMCData_BuildJobHandler pBuildJobHandler, LibMCData_uint64 nIncrementalID, LibMCData_BuildJobIterator * pIteratorInstance);
+
+/**
+* Retrieves all active build executions whose incremental ID is larger than the given one, ordered by start timestamp descending. Used by the frontend to fetch only the changed rows of the execution list.
+*
+* @param[in] pBuildJobHandler - BuildJobHandler instance.
+* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetExecutionListHeadID.
+* @param[out] pIteratorInstance - Returns the list of execution instances that changed. List may be empty.
+* @return error code or 0 (success)
+*/
+typedef LibMCDataResult (*PLibMCDataBuildJobHandler_ListJobExecutionsChangedSincePtr) (LibMCData_BuildJobHandler pBuildJobHandler, LibMCData_uint64 nIncrementalID, LibMCData_BuildJobExecutionIterator * pIteratorInstance);
+
 /*************************************************************************************************************************
  Class definition for UserList
 **************************************************************************************************************************/
@@ -3729,6 +3759,7 @@ typedef struct {
 	PLibMCDataAlertSession_RetrieveAlertsPtr m_AlertSession_RetrieveAlerts;
 	PLibMCDataAlertSession_RetrieveAlertsByTypePtr m_AlertSession_RetrieveAlertsByType;
 	PLibMCDataAlertSession_GetAlertHeadIDPtr m_AlertSession_GetAlertHeadID;
+	PLibMCDataAlertSession_RetrieveAlertsChangedSincePtr m_AlertSession_RetrieveAlertsChangedSince;
 	PLibMCDataTelemetrySession_GetSessionUUIDPtr m_TelemetrySession_GetSessionUUID;
 	PLibMCDataTelemetrySession_CreateChannelInDBPtr m_TelemetrySession_CreateChannelInDB;
 	PLibMCDataTelemetrySession_WriteTelemetryChunkPtr m_TelemetrySession_WriteTelemetryChunk;
@@ -3901,6 +3932,8 @@ typedef struct {
 	PLibMCDataBuildJobHandler_ListJobExecutionsPtr m_BuildJobHandler_ListJobExecutions;
 	PLibMCDataBuildJobHandler_GetBuildListHeadIDPtr m_BuildJobHandler_GetBuildListHeadID;
 	PLibMCDataBuildJobHandler_GetExecutionListHeadIDPtr m_BuildJobHandler_GetExecutionListHeadID;
+	PLibMCDataBuildJobHandler_ListJobsChangedSincePtr m_BuildJobHandler_ListJobsChangedSince;
+	PLibMCDataBuildJobHandler_ListJobExecutionsChangedSincePtr m_BuildJobHandler_ListJobExecutionsChangedSince;
 	PLibMCDataUserList_CountPtr m_UserList_Count;
 	PLibMCDataUserList_GetUserPropertiesPtr m_UserList_GetUserProperties;
 	PLibMCDataLoginHandler_UserExistsPtr m_LoginHandler_UserExists;

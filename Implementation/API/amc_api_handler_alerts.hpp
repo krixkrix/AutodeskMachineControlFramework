@@ -42,7 +42,7 @@ namespace AMC {
 	private:
 		PSystemState m_pSystemState;
 
-		void handleListAlertsRequest(CJSONWriter& writer);
+		void handleListAlertsRequest(CJSONWriter& writer, CAPIFormFields& pFormFields);
 
 	public:
 

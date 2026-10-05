@@ -868,6 +868,17 @@ namespace AMCData {
 			alertUUIDs.push_back(pStatement->getColumnString(1));
 	}
 
+	void CJournal::retrieveAlertsChangedSince(std::vector<std::string>& alertUUIDs, uint64_t nIncrementalID)
+	{
+		auto pTransaction = m_pSQLHandler->beginTransaction();
+		auto sQuery = "SELECT uuid FROM alerts WHERE incremental_id>? ORDER BY timestamp";
+		auto pStatement = pTransaction->prepareStatement(sQuery);
+		pStatement->setInt64(1, (int64_t)nIncrementalID);
+
+		while (pStatement->nextRow())
+			alertUUIDs.push_back(pStatement->getColumnString(1));
+	}
+
 	void CJournal::retrieveActiveAlerts(std::vector<std::string>& alertUUIDs)
 	{
 		auto pTransaction = m_pSQLHandler->beginTransaction();

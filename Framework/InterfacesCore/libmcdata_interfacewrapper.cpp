@@ -1362,6 +1362,34 @@ LibMCDataResult libmcdata_alertsession_getalertheadid(LibMCData_AlertSession pAl
 	}
 }
 
+LibMCDataResult libmcdata_alertsession_retrievealertschangedsince(LibMCData_AlertSession pAlertSession, LibMCData_uint64 nIncrementalID, LibMCData_AlertIterator * pIteratorInstance)
+{
+	IBase* pIBaseClass = (IBase *)pAlertSession;
+
+	try {
+		if (pIteratorInstance == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		IBase* pBaseIteratorInstance(nullptr);
+		IAlertSession* pIAlertSession = dynamic_cast<IAlertSession*>(pIBaseClass);
+		if (!pIAlertSession)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		pBaseIteratorInstance = pIAlertSession->RetrieveAlertsChangedSince(nIncrementalID);
+
+		*pIteratorInstance = (IBase*)(pBaseIteratorInstance);
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for TelemetrySession
@@ -7350,6 +7378,62 @@ LibMCDataResult libmcdata_buildjobhandler_getexecutionlistheadid(LibMCData_Build
 	}
 }
 
+LibMCDataResult libmcdata_buildjobhandler_listjobschangedsince(LibMCData_BuildJobHandler pBuildJobHandler, LibMCData_uint64 nIncrementalID, LibMCData_BuildJobIterator * pIteratorInstance)
+{
+	IBase* pIBaseClass = (IBase *)pBuildJobHandler;
+
+	try {
+		if (pIteratorInstance == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		IBase* pBaseIteratorInstance(nullptr);
+		IBuildJobHandler* pIBuildJobHandler = dynamic_cast<IBuildJobHandler*>(pIBaseClass);
+		if (!pIBuildJobHandler)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		pBaseIteratorInstance = pIBuildJobHandler->ListJobsChangedSince(nIncrementalID);
+
+		*pIteratorInstance = (IBase*)(pBaseIteratorInstance);
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCDataResult libmcdata_buildjobhandler_listjobexecutionschangedsince(LibMCData_BuildJobHandler pBuildJobHandler, LibMCData_uint64 nIncrementalID, LibMCData_BuildJobExecutionIterator * pIteratorInstance)
+{
+	IBase* pIBaseClass = (IBase *)pBuildJobHandler;
+
+	try {
+		if (pIteratorInstance == nullptr)
+			throw ELibMCDataInterfaceException (LIBMCDATA_ERROR_INVALIDPARAM);
+		IBase* pBaseIteratorInstance(nullptr);
+		IBuildJobHandler* pIBuildJobHandler = dynamic_cast<IBuildJobHandler*>(pIBaseClass);
+		if (!pIBuildJobHandler)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		pBaseIteratorInstance = pIBuildJobHandler->ListJobExecutionsChangedSince(nIncrementalID);
+
+		*pIteratorInstance = (IBase*)(pBaseIteratorInstance);
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for UserList
@@ -11699,6 +11783,8 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_alertsession_retrievealertsbytype;
 	if (sProcName == "libmcdata_alertsession_getalertheadid") 
 		*ppProcAddress = (void*) &libmcdata_alertsession_getalertheadid;
+	if (sProcName == "libmcdata_alertsession_retrievealertschangedsince") 
+		*ppProcAddress = (void*) &libmcdata_alertsession_retrievealertschangedsince;
 	if (sProcName == "libmcdata_telemetrysession_getsessionuuid") 
 		*ppProcAddress = (void*) &libmcdata_telemetrysession_getsessionuuid;
 	if (sProcName == "libmcdata_telemetrysession_createchannelindb") 
@@ -12043,6 +12129,10 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_buildjobhandler_getbuildlistheadid;
 	if (sProcName == "libmcdata_buildjobhandler_getexecutionlistheadid") 
 		*ppProcAddress = (void*) &libmcdata_buildjobhandler_getexecutionlistheadid;
+	if (sProcName == "libmcdata_buildjobhandler_listjobschangedsince") 
+		*ppProcAddress = (void*) &libmcdata_buildjobhandler_listjobschangedsince;
+	if (sProcName == "libmcdata_buildjobhandler_listjobexecutionschangedsince") 
+		*ppProcAddress = (void*) &libmcdata_buildjobhandler_listjobexecutionschangedsince;
 	if (sProcName == "libmcdata_userlist_count") 
 		*ppProcAddress = (void*) &libmcdata_userlist_count;
 	if (sProcName == "libmcdata_userlist_getuserproperties") 

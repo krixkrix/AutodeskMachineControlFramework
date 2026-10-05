@@ -54,14 +54,23 @@ std::string CAPIHandler_Alerts::getBaseURI()
 	return "api/alerts";
 }
 
-void CAPIHandler_Alerts::handleListAlertsRequest(CJSONWriter& writer)
+void CAPIHandler_Alerts::handleListAlertsRequest(CJSONWriter& writer, CAPIFormFields& pFormFields)
 {
 	auto pDataModel = m_pSystemState->getDataModelInstance();
 	auto pAlertSession = pDataModel->CreateAlertSession();
 
+	// The head must be read before the rows, so that a change in between is fetched again by the next delta.
 	writer.addInteger(AMC_API_KEY_ALERTS_HEADID, (int64_t) pAlertSession->GetAlertHeadID());
 
-	auto pAlertIterator = pAlertSession->RetrieveAlerts(false);
+	uint64_t nSinceHeadID = 0;
+	LibMCData::PAlertIterator pAlertIterator;
+	if (pFormFields.getOptionalUint64RequestParameter(AMC_API_KEY_LIST_SINCE, nSinceHeadID)) {
+		writer.addBoolean(AMC_API_KEY_LIST_DELTA, true);
+		pAlertIterator = pAlertSession->RetrieveAlertsChangedSince(nSinceHeadID);
+	}
+	else {
+		pAlertIterator = pAlertSession->RetrieveAlerts(false);
+	}
 
 	CJSONWriterArray alertArray(writer);
 
@@ -96,7 +105,7 @@ PAPIResponse CAPIHandler_Alerts::handleRequest(const std::string& sURI, const eA
 	if (requestType == eAPIRequestType::rtGet) {
 		CJSONWriter writer;
 		writeJSONHeader(writer, AMC_API_PROTOCOL_STATUS);
-		handleListAlertsRequest(writer);
+		handleListAlertsRequest(writer, pFormFields);
 		return std::make_shared<CAPIStringResponse>(AMC_API_HTTP_SUCCESS, AMC_API_CONTENTTYPE, writer.saveToString());
 	}
 

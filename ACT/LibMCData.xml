@@ -775,6 +775,11 @@
 		<method name="GetAlertHeadID" description="Returns the current maximum incremental ID across all alerts. Used by the frontend to detect when the alert list has changed.">
 			<param name="HeadID" type="uint64" pass="return" description="Maximum incremental ID, or 0 if no alerts exist." />
 		</method>
+
+		<method name="RetrieveAlertsChangedSince" description="Retrieves all alerts whose incremental ID is larger than the given one, ordered by timestamp. Used by the frontend to fetch only the changed rows of the alert list.">
+			<param name="IncrementalID" type="uint64" pass="in" description="Incremental ID to compare against, usually a head ID returned by GetAlertHeadID." />
+			<param name="IteratorInstance" type="class" class="AlertIterator" pass="return" description="AlertIterator Instance. List may be empty." />
+		</method>
 		
 	</class>
 
@@ -1712,6 +1717,16 @@
 
 		<method name="GetExecutionListHeadID" description="Returns the current maximum incremental ID across all build job executions. Used by the frontend to detect when the execution list has changed.">
 			<param name="HeadID" type="uint64" pass="return" description="Maximum incremental ID, or 0 if no executions exist." />
+		</method>
+
+		<method name="ListJobsChangedSince" description="Retrieves all build jobs of any status whose incremental ID is larger than the given one, ordered by timestamp descending. Used by the frontend to fetch only the changed rows of the build list.">
+			<param name="IncrementalID" type="uint64" pass="in" description="Incremental ID to compare against, usually a head ID returned by GetBuildListHeadID." />
+			<param name="IteratorInstance" type="class" class="BuildJobIterator" pass="return" description="Build Job Iterator Instance. List may be empty." />
+		</method>
+
+		<method name="ListJobExecutionsChangedSince" description="Retrieves all active build executions whose incremental ID is larger than the given one, ordered by start timestamp descending. Used by the frontend to fetch only the changed rows of the execution list.">
+			<param name="IncrementalID" type="uint64" pass="in" description="Incremental ID to compare against, usually a head ID returned by GetExecutionListHeadID." />
+			<param name="IteratorInstance" type="class" class="BuildJobExecutionIterator" pass="return" description="Returns the list of execution instances that changed. List may be empty." />
 		</method>
 			
 	</class>

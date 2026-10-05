@@ -278,11 +278,20 @@ std::string CBuildJobExecution::GetDescription()
 
 void CBuildJobExecution::SetDescription(const std::string & sNewDescription)
 {
+	auto pTransaction = m_pSQLHandler->beginTransaction();
+
 	std::string sUpdateQuery = "UPDATE buildjobexecutions SET description=? WHERE uuid=? AND active=1";
-	auto pUpdateStatement = m_pSQLHandler->prepareStatement(sUpdateQuery);
+	auto pUpdateStatement = pTransaction->prepareStatement(sUpdateQuery);
 	pUpdateStatement->setString(1, sNewDescription);
 	pUpdateStatement->setString(2, m_sExecutionUUID);
 	pUpdateStatement->execute();
+
+	std::string sBumpQuery = "UPDATE buildjobexecutions SET incremental_id = (SELECT COALESCE(MAX(incremental_id), 0) + 1 FROM buildjobexecutions) WHERE uuid=?";
+	auto pBumpStatement = pTransaction->prepareStatement(sBumpQuery);
+	pBumpStatement->setString(1, m_sExecutionUUID);
+	pBumpStatement->execute();
+
+	pTransaction->commit();
 }
 
 std::string CBuildJobExecution::GetJournalUUID()

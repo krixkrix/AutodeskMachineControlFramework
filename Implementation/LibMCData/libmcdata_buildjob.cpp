@@ -677,8 +677,10 @@ IBuildJobExecution* CBuildJob::CreateBuildJobExecution(const std::string& sDescr
     else
         sNormalizedUserUUID = AMCCommon::CUtils::createEmptyUUID();
 
+    auto pTransaction = m_pSQLHandler->beginTransaction();
+
     std::string sInsertQuery = "INSERT INTO buildjobexecutions (uuid, jobuuid, journaluuid, startjournaltimestamp, endjournaltimestamp, useruuid, status, description, active, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    auto pInsertStatement = m_pSQLHandler->prepareStatement(sInsertQuery);
+    auto pInsertStatement = pTransaction->prepareStatement(sInsertQuery);
     pInsertStatement->setString(1, sExecutionUUID);
     pInsertStatement->setString(2, m_sUUID);
     pInsertStatement->setString(3, sJournalUUID);
@@ -692,7 +694,16 @@ IBuildJobExecution* CBuildJob::CreateBuildJobExecution(const std::string& sDescr
     pInsertStatement->execute();
     pInsertStatement = nullptr;
 
-    CBuildJobExecution::bumpIncrementalID(m_pSQLHandler, sExecutionUUID);
+    std::string sBumpExecutionQuery = "UPDATE buildjobexecutions SET incremental_id = (SELECT COALESCE(MAX(incremental_id), 0) + 1 FROM buildjobexecutions) WHERE uuid=?";
+    auto pBumpExecutionStatement = pTransaction->prepareStatement(sBumpExecutionQuery);
+    pBumpExecutionStatement->setString(1, sExecutionUUID);
+    pBumpExecutionStatement->execute();
+    pBumpExecutionStatement = nullptr;
+
+    // The build list shows the execution count of each job.
+    bumpIncrementalID(pTransaction.get(), m_sUUID);
+
+    pTransaction->commit();
 
     return new CBuildJobExecution(m_pSQLHandler, sExecutionUUID, m_sUUID, sJournalUUID, sUserUUID, nAbsoluteStartTimeStampInMicrosecondsSince1970, m_sName, m_eJobStatus, m_nLayerCount, m_pStorageState);
 

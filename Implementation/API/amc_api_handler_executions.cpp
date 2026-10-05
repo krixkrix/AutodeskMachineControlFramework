@@ -58,15 +58,24 @@ std::string CAPIHandler_Executions::getBaseURI()
 	return "api/executions";
 }
 
-void CAPIHandler_Executions::handleListExecutionsRequest(CJSONWriter& writer)
+void CAPIHandler_Executions::handleListExecutionsRequest(CJSONWriter& writer, CAPIFormFields& pFormFields)
 {
 	auto pDataModel = m_pSystemState->getDataModelInstance();
 	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
 	auto pGlobalChrono = m_pSystemState->globalChrono();
 
+	// The head must be read before the rows, so that a change in between is fetched again by the next delta.
 	writer.addInteger(AMC_API_KEY_EXECUTIONS_HEADID, (int64_t) pBuildJobHandler->GetExecutionListHeadID());
 
-	auto pExecutionIterator = pBuildJobHandler->ListJobExecutions("", "", "");
+	uint64_t nSinceHeadID = 0;
+	LibMCData::PBuildJobExecutionIterator pExecutionIterator;
+	if (pFormFields.getOptionalUint64RequestParameter(AMC_API_KEY_LIST_SINCE, nSinceHeadID)) {
+		writer.addBoolean(AMC_API_KEY_LIST_DELTA, true);
+		pExecutionIterator = pBuildJobHandler->ListJobExecutionsChangedSince(nSinceHeadID);
+	}
+	else {
+		pExecutionIterator = pBuildJobHandler->ListJobExecutions("", "", "");
+	}
 
 	CJSONWriterArray executionArray(writer);
 
@@ -121,7 +130,7 @@ PAPIResponse CAPIHandler_Executions::handleRequest(const std::string& sURI, cons
 	if (requestType == eAPIRequestType::rtGet) {
 		CJSONWriter writer;
 		writeJSONHeader(writer, AMC_API_PROTOCOL_BUILD);
-		handleListExecutionsRequest(writer);
+		handleListExecutionsRequest(writer, pFormFields);
 		return std::make_shared<CAPIStringResponse>(AMC_API_HTTP_SUCCESS, AMC_API_CONTENTTYPE, writer.saveToString());
 	}
 

@@ -1423,6 +1423,7 @@ public:
 	inline PAlertIterator RetrieveAlerts(const bool bOnlyActive);
 	inline PAlertIterator RetrieveAlertsByType(const std::string & sIdentifier, const bool bOnlyActive);
 	inline LibMCData_uint64 GetAlertHeadID();
+	inline PAlertIterator RetrieveAlertsChangedSince(const LibMCData_uint64 nIncrementalID);
 };
 	
 /*************************************************************************************************************************
@@ -1899,6 +1900,8 @@ public:
 	inline PBuildJobExecutionIterator ListJobExecutions(const std::string & sMinTimestamp, const std::string & sMaxTimestamp, const std::string & sJournalUUIDFilter);
 	inline LibMCData_uint64 GetBuildListHeadID();
 	inline LibMCData_uint64 GetExecutionListHeadID();
+	inline PBuildJobIterator ListJobsChangedSince(const LibMCData_uint64 nIncrementalID);
+	inline PBuildJobExecutionIterator ListJobExecutionsChangedSince(const LibMCData_uint64 nIncrementalID);
 };
 	
 /*************************************************************************************************************************
@@ -2351,6 +2354,7 @@ public:
 		pWrapperTable->m_AlertSession_RetrieveAlerts = nullptr;
 		pWrapperTable->m_AlertSession_RetrieveAlertsByType = nullptr;
 		pWrapperTable->m_AlertSession_GetAlertHeadID = nullptr;
+		pWrapperTable->m_AlertSession_RetrieveAlertsChangedSince = nullptr;
 		pWrapperTable->m_TelemetrySession_GetSessionUUID = nullptr;
 		pWrapperTable->m_TelemetrySession_CreateChannelInDB = nullptr;
 		pWrapperTable->m_TelemetrySession_WriteTelemetryChunk = nullptr;
@@ -2523,6 +2527,8 @@ public:
 		pWrapperTable->m_BuildJobHandler_ListJobExecutions = nullptr;
 		pWrapperTable->m_BuildJobHandler_GetBuildListHeadID = nullptr;
 		pWrapperTable->m_BuildJobHandler_GetExecutionListHeadID = nullptr;
+		pWrapperTable->m_BuildJobHandler_ListJobsChangedSince = nullptr;
+		pWrapperTable->m_BuildJobHandler_ListJobExecutionsChangedSince = nullptr;
 		pWrapperTable->m_UserList_Count = nullptr;
 		pWrapperTable->m_UserList_GetUserProperties = nullptr;
 		pWrapperTable->m_LoginHandler_UserExists = nullptr;
@@ -2995,6 +3001,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_AlertSession_GetAlertHeadID == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_AlertSession_RetrieveAlertsChangedSince = (PLibMCDataAlertSession_RetrieveAlertsChangedSincePtr) GetProcAddress(hLibrary, "libmcdata_alertsession_retrievealertschangedsince");
+		#else // _WIN32
+		pWrapperTable->m_AlertSession_RetrieveAlertsChangedSince = (PLibMCDataAlertSession_RetrieveAlertsChangedSincePtr) dlsym(hLibrary, "libmcdata_alertsession_retrievealertschangedsince");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_AlertSession_RetrieveAlertsChangedSince == nullptr)
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -4546,6 +4561,24 @@ public:
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
+		pWrapperTable->m_BuildJobHandler_ListJobsChangedSince = (PLibMCDataBuildJobHandler_ListJobsChangedSincePtr) GetProcAddress(hLibrary, "libmcdata_buildjobhandler_listjobschangedsince");
+		#else // _WIN32
+		pWrapperTable->m_BuildJobHandler_ListJobsChangedSince = (PLibMCDataBuildJobHandler_ListJobsChangedSincePtr) dlsym(hLibrary, "libmcdata_buildjobhandler_listjobschangedsince");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BuildJobHandler_ListJobsChangedSince == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BuildJobHandler_ListJobExecutionsChangedSince = (PLibMCDataBuildJobHandler_ListJobExecutionsChangedSincePtr) GetProcAddress(hLibrary, "libmcdata_buildjobhandler_listjobexecutionschangedsince");
+		#else // _WIN32
+		pWrapperTable->m_BuildJobHandler_ListJobExecutionsChangedSince = (PLibMCDataBuildJobHandler_ListJobExecutionsChangedSincePtr) dlsym(hLibrary, "libmcdata_buildjobhandler_listjobexecutionschangedsince");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BuildJobHandler_ListJobExecutionsChangedSince == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
 		pWrapperTable->m_UserList_Count = (PLibMCDataUserList_CountPtr) GetProcAddress(hLibrary, "libmcdata_userlist_count");
 		#else // _WIN32
 		pWrapperTable->m_UserList_Count = (PLibMCDataUserList_CountPtr) dlsym(hLibrary, "libmcdata_userlist_count");
@@ -5759,6 +5792,10 @@ public:
 		if ( (eLookupError != 0) || (pWrapperTable->m_AlertSession_GetAlertHeadID == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
+		eLookupError = (*pLookup)("libmcdata_alertsession_retrievealertschangedsince", (void**)&(pWrapperTable->m_AlertSession_RetrieveAlertsChangedSince));
+		if ( (eLookupError != 0) || (pWrapperTable->m_AlertSession_RetrieveAlertsChangedSince == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
 		eLookupError = (*pLookup)("libmcdata_telemetrysession_getsessionuuid", (void**)&(pWrapperTable->m_TelemetrySession_GetSessionUUID));
 		if ( (eLookupError != 0) || (pWrapperTable->m_TelemetrySession_GetSessionUUID == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
@@ -6445,6 +6482,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_buildjobhandler_getexecutionlistheadid", (void**)&(pWrapperTable->m_BuildJobHandler_GetExecutionListHeadID));
 		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJobHandler_GetExecutionListHeadID == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_buildjobhandler_listjobschangedsince", (void**)&(pWrapperTable->m_BuildJobHandler_ListJobsChangedSince));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJobHandler_ListJobsChangedSince == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_buildjobhandler_listjobexecutionschangedsince", (void**)&(pWrapperTable->m_BuildJobHandler_ListJobExecutionsChangedSince));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJobHandler_ListJobExecutionsChangedSince == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_userlist_count", (void**)&(pWrapperTable->m_UserList_Count));
@@ -7459,6 +7504,22 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_AlertSession_GetAlertHeadID(m_pHandle, &resultHeadID));
 		
 		return resultHeadID;
+	}
+	
+	/**
+	* CAlertSession::RetrieveAlertsChangedSince - Retrieves all alerts whose incremental ID is larger than the given one, ordered by timestamp. Used by the frontend to fetch only the changed rows of the alert list.
+	* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetAlertHeadID.
+	* @return AlertIterator Instance. List may be empty.
+	*/
+	PAlertIterator CAlertSession::RetrieveAlertsChangedSince(const LibMCData_uint64 nIncrementalID)
+	{
+		LibMCDataHandle hIteratorInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_AlertSession_RetrieveAlertsChangedSince(m_pHandle, nIncrementalID, &hIteratorInstance));
+		
+		if (!hIteratorInstance) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CAlertIterator>(m_pWrapper, hIteratorInstance);
 	}
 	
 	/**
@@ -9908,6 +9969,38 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_BuildJobHandler_GetExecutionListHeadID(m_pHandle, &resultHeadID));
 		
 		return resultHeadID;
+	}
+	
+	/**
+	* CBuildJobHandler::ListJobsChangedSince - Retrieves all build jobs of any status whose incremental ID is larger than the given one, ordered by timestamp descending. Used by the frontend to fetch only the changed rows of the build list.
+	* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetBuildListHeadID.
+	* @return Build Job Iterator Instance. List may be empty.
+	*/
+	PBuildJobIterator CBuildJobHandler::ListJobsChangedSince(const LibMCData_uint64 nIncrementalID)
+	{
+		LibMCDataHandle hIteratorInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJobHandler_ListJobsChangedSince(m_pHandle, nIncrementalID, &hIteratorInstance));
+		
+		if (!hIteratorInstance) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CBuildJobIterator>(m_pWrapper, hIteratorInstance);
+	}
+	
+	/**
+	* CBuildJobHandler::ListJobExecutionsChangedSince - Retrieves all active build executions whose incremental ID is larger than the given one, ordered by start timestamp descending. Used by the frontend to fetch only the changed rows of the execution list.
+	* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetExecutionListHeadID.
+	* @return Returns the list of execution instances that changed. List may be empty.
+	*/
+	PBuildJobExecutionIterator CBuildJobHandler::ListJobExecutionsChangedSince(const LibMCData_uint64 nIncrementalID)
+	{
+		LibMCDataHandle hIteratorInstance = nullptr;
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJobHandler_ListJobExecutionsChangedSince(m_pHandle, nIncrementalID, &hIteratorInstance));
+		
+		if (!hIteratorInstance) {
+			CheckError(LIBMCDATA_ERROR_INVALIDPARAM);
+		}
+		return std::make_shared<CBuildJobExecutionIterator>(m_pWrapper, hIteratorInstance);
 	}
 	
 	/**

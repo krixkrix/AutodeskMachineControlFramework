@@ -639,6 +639,13 @@ public:
 	*/
 	virtual LibMCData_uint64 GetAlertHeadID() = 0;
 
+	/**
+	* IAlertSession::RetrieveAlertsChangedSince - Retrieves all alerts whose incremental ID is larger than the given one, ordered by timestamp. Used by the frontend to fetch only the changed rows of the alert list.
+	* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetAlertHeadID.
+	* @return AlertIterator Instance. List may be empty.
+	*/
+	virtual IAlertIterator * RetrieveAlertsChangedSince(const LibMCData_uint64 nIncrementalID) = 0;
+
 };
 
 typedef IBaseSharedPtr<IAlertSession> PIAlertSession;
@@ -2051,6 +2058,20 @@ public:
 	* @return Maximum incremental ID, or 0 if no executions exist.
 	*/
 	virtual LibMCData_uint64 GetExecutionListHeadID() = 0;
+
+	/**
+	* IBuildJobHandler::ListJobsChangedSince - Retrieves all build jobs of any status whose incremental ID is larger than the given one, ordered by timestamp descending. Used by the frontend to fetch only the changed rows of the build list.
+	* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetBuildListHeadID.
+	* @return Build Job Iterator Instance. List may be empty.
+	*/
+	virtual IBuildJobIterator * ListJobsChangedSince(const LibMCData_uint64 nIncrementalID) = 0;
+
+	/**
+	* IBuildJobHandler::ListJobExecutionsChangedSince - Retrieves all active build executions whose incremental ID is larger than the given one, ordered by start timestamp descending. Used by the frontend to fetch only the changed rows of the execution list.
+	* @param[in] nIncrementalID - Incremental ID to compare against, usually a head ID returned by GetExecutionListHeadID.
+	* @return Returns the list of execution instances that changed. List may be empty.
+	*/
+	virtual IBuildJobExecutionIterator * ListJobExecutionsChangedSince(const LibMCData_uint64 nIncrementalID) = 0;
 
 };
 

@@ -260,7 +260,7 @@ void CAPIHandler_Build::handleToolpathRequest(CJSONWriter& writer, const uint8_t
 }
 
 
-void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& sStatusToQuery)
+void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& sStatusToQuery, CAPIFormFields& pFormFields)
 {	
 	if (pAuth.get() == nullptr)
 		throw ELibMCInterfaceException(LIBMC_ERROR_INVALIDPARAM);
@@ -277,16 +277,31 @@ void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAut
 	auto pDataModel = m_pSystemState->getDataModelInstance();
 	auto pBuildJobHandler = pDataModel->CreateBuildJobHandler();
 
+	// The head must be read before the rows, so that a change in between is fetched again by the next delta.
 	writer.addInteger(AMC_API_KEY_UPLOAD_BUILDJOBBUILDLISTHEADID, pBuildJobHandler->GetBuildListHeadID());
 
-	auto pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(buildStatus);
+	uint64_t nSinceHeadID = 0;
+	bool bIsDelta = pFormFields.getOptionalUint64RequestParameter(AMC_API_KEY_LIST_SINCE, nSinceHeadID);
+
+	LibMCData::PBuildJobIterator pBuildJobIterator;
+	if (bIsDelta) {
+		writer.addBoolean(AMC_API_KEY_LIST_DELTA, true);
+		pBuildJobIterator = pBuildJobHandler->ListJobsChangedSince(nSinceHeadID);
+	}
+	else {
+		pBuildJobIterator = pBuildJobHandler->ListJobsByStatus(buildStatus);
+	}
 
 	CJSONWriterArray jobJSONArray(writer);
+	CJSONWriterArray removedJSONArray(writer);
 
 	while (pBuildJobIterator->MoveNext()) {
 		auto pBuildJob = pBuildJobIterator->GetCurrentJob();
 
-		LibMCData::eBuildJobStatus buildStatus = pBuildJob->GetStatus();
+		if (bIsDelta && (pBuildJob->GetStatus() != buildStatus)) {
+			removedJSONArray.addString(pBuildJob->GetUUID());
+			continue;
+		}
 
 		CJSONWriterObject jobJSON(writer);
 		jobJSON.addString(AMC_API_KEY_UPLOAD_BUILDJOBUUID, pBuildJob->GetUUID());
@@ -308,6 +323,8 @@ void CAPIHandler_Build::handleListJobsRequest(CJSONWriter& writer, PAPIAuth pAut
 	}
 
 	writer.addArray(AMC_API_KEY_UPLOAD_BUILDJOBARRAY, jobJSONArray);
+	if (bIsDelta)
+		writer.addArray(AMC_API_KEY_LIST_REMOVED, removedJSONArray);
 }
 
 void CAPIHandler_Build::handleListBuildDataRequest(CJSONWriter& writer, PAPIAuth pAuth, const std::string& buildUUID)
@@ -522,7 +539,7 @@ PAPIResponse CAPIHandler_Build::handleRequest(const std::string& sURI, const eAP
 	switch (buildType) {
 	case APIHandler_BuildType::btListJobs: {
 		std::string sStatus = pFormFields.getRequestParameter (AMC_API_KEY_UPLOAD_BUILDJOBSTATUS, false);
-		handleListJobsRequest(writer, pAuth, sStatus);
+		handleListJobsRequest(writer, pAuth, sStatus, pFormFields);
 		break;
 	}
 	case APIHandler_BuildType::btToolpath:
