@@ -416,6 +416,16 @@
               "default": "validated"
             },
             "description": "can be archived or validated"
+          },
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,18}$"
+            },
+            "description": "Head id of a previous response. If given, only jobs whose incremental id is larger are returned, the response has delta=true, and jobs that no longer have the requested status are listed in removed. Invalid values are ignored and yield the full list."
           }
         ],
         "summary": "Retrieve build list of the system",
@@ -686,6 +696,18 @@
         "summary": "Retrieve job execution list",
         "description": "Returns all build job executions with their status, timestamps, and duration.",
         "operationId": "getExecutionList",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,18}$"
+            },
+            "description": "Head id of a previous response. If given, only executions whose incremental id is larger are returned and the response has delta=true. Invalid values are ignored and yield the full list."
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -723,6 +745,18 @@
         "summary": "Retrieve alert list",
         "description": "Returns all alerts including their level, context, and acknowledgement status.",
         "operationId": "getAlertList",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,18}$"
+            },
+            "description": "Head id of a previous response. If given, only alerts whose incremental id is larger are returned and the response has delta=true. Invalid values are ignored and yield the full list."
+          }
+        ],
         "security": [
           {
             "bearerAuth": []
@@ -3285,10 +3319,27 @@
             "description": "Version of the protocol.",
             "example": "2.0.0"
           },
+          "buildlistheadid": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Head id of the build list, read before the rows were queried. Pass it as since to fetch the next delta."
+          },
+          "delta": {
+            "type": "boolean",
+            "description": "True if the request had a valid since parameter and buildjobs only holds the changed jobs."
+          },
           "buildjobs": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/BuildJobInstance"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "description": "Only in delta responses: UUIDs of jobs changed since the given head that no longer have the requested status.",
+            "items": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         }
@@ -3440,6 +3491,15 @@
             "description": "Version of the protocol.",
             "example": "2.0.0"
           },
+          "executionlistheadid": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Head id of the execution list, read before the rows were queried. Pass it as since to fetch the next delta."
+          },
+          "delta": {
+            "type": "boolean",
+            "description": "True if the request had a valid since parameter and executions only holds the changed executions."
+          },
           "executions": {
             "type": "array",
             "items": {
@@ -3516,6 +3576,15 @@
             "type": "string",
             "description": "Version of the protocol.",
             "example": "2.0.0"
+          },
+          "alertlistheadid": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Head id of the alert list, read before the rows were queried. Pass it as since to fetch the next delta."
+          },
+          "delta": {
+            "type": "boolean",
+            "description": "True if the request had a valid since parameter and alerts only holds the changed alerts."
           },
           "alerts": {
             "type": "array",
