@@ -46,8 +46,10 @@
 </script>
 
 {#if visible}
-	<div class="w-full flex-1 min-h-0 border rounded-md overflow-hidden">
-		<ScrollArea class="h-full max-h-[400px]">
+	<!-- Fills the space its container gives it (a grid cell) and scrolls inside; in a
+	     stacked page it takes its natural height, at most one screen. -->
+	<div class="w-full flex-1 min-h-0 max-h-screen flex flex-col border rounded-md overflow-hidden">
+		<ScrollArea class="flex-1 min-h-0">
 			<Table.Root>
 				<Table.Header class="sticky top-0 bg-muted z-10">
 					<Table.Row>
