@@ -48,9 +48,10 @@
 		return `${s}s`;
 	}
 
-	function statusVariant (status: string): 'default' | 'destructive' | 'secondary' | 'outline' {
+	function statusVariant (status: string): 'success' | 'info' | 'destructive' | 'secondary' {
 		const s = (status || '').toLowerCase();
-		if (s === 'running' || s === 'inprocess') return 'default';
+		if (s === 'finished') return 'success';
+		if (s === 'running' || s === 'inprocess') return 'info';
 		if (s === 'failed' || s === 'error') return 'destructive';
 		return 'secondary';
 	}
