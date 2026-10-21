@@ -2864,7 +2864,14 @@
 			<param name="Key" type="string" pass="in" description="Unique key of value. Fails if Key already exists." />
 			<param name="Value" type="string" pass="return" description="Return value." />
 		</method>
-		
+
+		<method name="DeleteJobWithStorage" description="Marks the build job as deleted and removes its build file, unless another build job that is not deleted uses that file. Executions, metadata and thumbnail are kept. Build job MUST be of state validated or archived to succeed.">
+		</method>
+
+		<method name="IsDeleted" description="Checks if the build job has been deleted.">
+			<param name="IsDeleted" type="bool" pass="return" description="Returns true if the build job is deleted." />
+		</method>
+
 	</class>
 	
 	

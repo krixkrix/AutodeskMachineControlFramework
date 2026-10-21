@@ -157,6 +157,10 @@ public:
 
 	std::string GetMetaDataString(const std::string& sKey) override;
 
+	void DeleteJobWithStorage() override;
+
+	bool IsDeleted() override;
+
 };
 
 } // namespace Impl

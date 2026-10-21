@@ -698,3 +698,19 @@ std::string CBuild::GetMetaDataString(const std::string& sKey)
 
 }
 
+void CBuild::DeleteJobWithStorage()
+{
+	auto pBuildJobHandler = m_pDataModel->CreateBuildJobHandler();
+	auto pBuildJob = pBuildJobHandler->RetrieveJob(m_sBuildJobUUID);
+
+	pBuildJob->DeleteJobWithStorage();
+}
+
+bool CBuild::IsDeleted()
+{
+	auto pBuildJobHandler = m_pDataModel->CreateBuildJobHandler();
+	auto pBuildJob = pBuildJobHandler->RetrieveJob(m_sBuildJobUUID);
+
+	return pBuildJob->GetStatus() == LibMCData::eBuildJobStatus::Deleted;
+}
+

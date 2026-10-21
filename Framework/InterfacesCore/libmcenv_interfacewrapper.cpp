@@ -13824,6 +13824,56 @@ LibMCEnvResult libmcenv_build_getmetadatastring(LibMCEnv_Build pBuild, const cha
 	}
 }
 
+LibMCEnvResult libmcenv_build_deletejobwithstorage(LibMCEnv_Build pBuild)
+{
+	IBase* pIBaseClass = (IBase *)pBuild;
+
+	try {
+		IBuild* pIBuild = dynamic_cast<IBuild*>(pIBaseClass);
+		if (!pIBuild)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		pIBuild->DeleteJobWithStorage();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
+LibMCEnvResult libmcenv_build_isdeleted(LibMCEnv_Build pBuild, bool * pIsDeleted)
+{
+	IBase* pIBaseClass = (IBase *)pBuild;
+
+	try {
+		if (pIsDeleted == nullptr)
+			throw ELibMCEnvInterfaceException (LIBMCENV_ERROR_INVALIDPARAM);
+		IBuild* pIBuild = dynamic_cast<IBuild*>(pIBaseClass);
+		if (!pIBuild)
+			throw ELibMCEnvInterfaceException(LIBMCENV_ERROR_INVALIDCAST);
+		
+		*pIsDeleted = pIBuild->IsDeleted();
+
+		return LIBMCENV_SUCCESS;
+	}
+	catch (ELibMCEnvInterfaceException & Exception) {
+		return handleLibMCEnvException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 
 /*************************************************************************************************************************
  Class implementation for WorkingFileProcess
@@ -38114,6 +38164,10 @@ LibMCEnvResult LibMCEnv::Impl::LibMCEnv_GetProcAddress (const char * pProcName, 
 		*ppProcAddress = (void*) &libmcenv_build_hasmetadatastring;
 	if (sProcName == "libmcenv_build_getmetadatastring") 
 		*ppProcAddress = (void*) &libmcenv_build_getmetadatastring;
+	if (sProcName == "libmcenv_build_deletejobwithstorage") 
+		*ppProcAddress = (void*) &libmcenv_build_deletejobwithstorage;
+	if (sProcName == "libmcenv_build_isdeleted") 
+		*ppProcAddress = (void*) &libmcenv_build_isdeleted;
 	if (sProcName == "libmcenv_workingfileprocess_getstatus") 
 		*ppProcAddress = (void*) &libmcenv_workingfileprocess_getstatus;
 	if (sProcName == "libmcenv_workingfileprocess_getruntime") 

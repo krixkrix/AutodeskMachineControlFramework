@@ -94,9 +94,27 @@ void CAPIHandler_Executions::handleListExecutionsRequest(CJSONWriter& writer, CA
 
 		int64_t nDurationInSeconds = pExecution->ComputeElapsedTimeInMicroseconds(pGlobalChrono->getUTCTimeStampInMicrosecondsSince1970(), false) / 1000000LL;
 
+		std::string sJobUUID = pExecution->GetJobUUID();
+
+		// Executions keep referencing their job after it has been deleted, so mark them in the list.
+		// The thumbnail of a deleted job is deliberately kept for the build history.
+		std::string sJobName = pExecution->GetJobName();
+		std::string sThumbnailUUID;
+		try {
+			auto pBuildJob = pBuildJobHandler->RetrieveJob(sJobUUID);
+			if (pBuildJob->GetStatus() == LibMCData::eBuildJobStatus::Deleted)
+				sJobName += " (deleted)";
+			if (pBuildJob->HasThumbnailStream())
+				sThumbnailUUID = pBuildJob->GetThumbnailStreamUUID();
+		}
+		catch (...) {
+			// Job record is gone; omit the thumbnail so that the client falls back to its default.
+			sJobName += " (deleted)";
+		}
+
 		CJSONWriterObject entryObject(writer);
 		entryObject.addString("executionuuid", pExecution->GetExecutionUUID());
-		entryObject.addString("executionname", pExecution->GetJobName());
+		entryObject.addString("executionname", sJobName);
 		entryObject.addString("executiondescription", pExecution->GetDescription());
 		entryObject.addString("executionstarttimestamp", AMCCommon::CChrono::convertToISO8601TimeUTC(nStartTimeStamp));
 		entryObject.addString("executionendtimestamp", AMCCommon::CChrono::convertToISO8601TimeUTC(nEndTimeStamp));
@@ -105,17 +123,10 @@ void CAPIHandler_Executions::handleListExecutionsRequest(CJSONWriter& writer, CA
 		entryObject.addString("executionbuildstatus", pExecution->GetJobStatusString());
 		entryObject.addInteger("executionlayercount", pExecution->GetJobLayerCount());
 
-		std::string sJobUUID = pExecution->GetJobUUID();
 		entryObject.addString("jobuuid", sJobUUID);
 
-		try {
-			auto pBuildJob = pBuildJobHandler->RetrieveJob(sJobUUID);
-			if (pBuildJob->HasThumbnailStream())
-				entryObject.addString("executionthumbnail", pBuildJob->GetThumbnailStreamUUID());
-		}
-		catch (...) {
-			// Job may have been deleted; skip thumbnail
-		}
+		if (!sThumbnailUUID.empty())
+			entryObject.addString("executionthumbnail", sThumbnailUUID);
 
 		executionArray.addObject(entryObject);
 	}

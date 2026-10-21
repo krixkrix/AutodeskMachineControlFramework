@@ -2369,6 +2369,8 @@ public:
 	inline void StoreMetaDataString(const std::string & sKey, const std::string & sValue);
 	inline bool HasMetaDataString(const std::string & sKey);
 	inline std::string GetMetaDataString(const std::string & sKey);
+	inline void DeleteJobWithStorage();
+	inline bool IsDeleted();
 };
 	
 /*************************************************************************************************************************
@@ -4379,6 +4381,8 @@ public:
 		pWrapperTable->m_Build_StoreMetaDataString = nullptr;
 		pWrapperTable->m_Build_HasMetaDataString = nullptr;
 		pWrapperTable->m_Build_GetMetaDataString = nullptr;
+		pWrapperTable->m_Build_DeleteJobWithStorage = nullptr;
+		pWrapperTable->m_Build_IsDeleted = nullptr;
 		pWrapperTable->m_WorkingFileProcess_GetStatus = nullptr;
 		pWrapperTable->m_WorkingFileProcess_GetRunTime = nullptr;
 		pWrapperTable->m_WorkingFileProcess_GetRunTimeInMilliseconds = nullptr;
@@ -9071,6 +9075,24 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_Build_GetMetaDataString == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Build_DeleteJobWithStorage = (PLibMCEnvBuild_DeleteJobWithStoragePtr) GetProcAddress(hLibrary, "libmcenv_build_deletejobwithstorage");
+		#else // _WIN32
+		pWrapperTable->m_Build_DeleteJobWithStorage = (PLibMCEnvBuild_DeleteJobWithStoragePtr) dlsym(hLibrary, "libmcenv_build_deletejobwithstorage");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Build_DeleteJobWithStorage == nullptr)
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_Build_IsDeleted = (PLibMCEnvBuild_IsDeletedPtr) GetProcAddress(hLibrary, "libmcenv_build_isdeleted");
+		#else // _WIN32
+		pWrapperTable->m_Build_IsDeleted = (PLibMCEnvBuild_IsDeletedPtr) dlsym(hLibrary, "libmcenv_build_isdeleted");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_Build_IsDeleted == nullptr)
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -17234,6 +17256,14 @@ public:
 		
 		eLookupError = (*pLookup)("libmcenv_build_getmetadatastring", (void**)&(pWrapperTable->m_Build_GetMetaDataString));
 		if ( (eLookupError != 0) || (pWrapperTable->m_Build_GetMetaDataString == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_build_deletejobwithstorage", (void**)&(pWrapperTable->m_Build_DeleteJobWithStorage));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Build_DeleteJobWithStorage == nullptr) )
+			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcenv_build_isdeleted", (void**)&(pWrapperTable->m_Build_IsDeleted));
+		if ( (eLookupError != 0) || (pWrapperTable->m_Build_IsDeleted == nullptr) )
 			return LIBMCENV_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcenv_workingfileprocess_getstatus", (void**)&(pWrapperTable->m_WorkingFileProcess_GetStatus));
@@ -26018,6 +26048,26 @@ public:
 		CheckError(m_pWrapper->m_WrapperTable.m_Build_GetMetaDataString(m_pHandle, sKey.c_str(), bytesNeededValue, &bytesWrittenValue, &bufferValue[0]));
 		
 		return std::string(&bufferValue[0]);
+	}
+	
+	/**
+	* CBuild::DeleteJobWithStorage - Marks the build job as deleted and removes its build file, unless another build job that is not deleted uses that file. Executions, metadata and thumbnail are kept. Build job MUST be of state validated or archived to succeed.
+	*/
+	void CBuild::DeleteJobWithStorage()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_Build_DeleteJobWithStorage(m_pHandle));
+	}
+	
+	/**
+	* CBuild::IsDeleted - Checks if the build job has been deleted.
+	* @return Returns true if the build job is deleted.
+	*/
+	bool CBuild::IsDeleted()
+	{
+		bool resultIsDeleted = 0;
+		CheckError(m_pWrapper->m_WrapperTable.m_Build_IsDeleted(m_pHandle, &resultIsDeleted));
+		
+		return resultIsDeleted;
 	}
 	
 	/**

@@ -1840,6 +1840,7 @@ public:
 	inline void UnArchiveJob();
 	inline void ChangeName(const std::string & sName);
 	inline void DeleteJob();
+	inline void DeleteJobWithStorage();
 	inline bool JobCanBeArchived();
 	inline std::string AddJobData(const std::string & sIdentifier, const std::string & sName, classParam<CStorageStream> pStream, const eCustomDataType eDataType, const std::string & sUserUUID, const LibMCData_uint64 nAbsoluteTimeStamp);
 	inline PBuildJobDataIterator ListJobDataByType(const eCustomDataType eDataType);
@@ -2499,6 +2500,7 @@ public:
 		pWrapperTable->m_BuildJob_UnArchiveJob = nullptr;
 		pWrapperTable->m_BuildJob_ChangeName = nullptr;
 		pWrapperTable->m_BuildJob_DeleteJob = nullptr;
+		pWrapperTable->m_BuildJob_DeleteJobWithStorage = nullptr;
 		pWrapperTable->m_BuildJob_JobCanBeArchived = nullptr;
 		pWrapperTable->m_BuildJob_AddJobData = nullptr;
 		pWrapperTable->m_BuildJob_ListJobDataByType = nullptr;
@@ -4306,6 +4308,15 @@ public:
 		dlerror();
 		#endif // _WIN32
 		if (pWrapperTable->m_BuildJob_DeleteJob == nullptr)
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		#ifdef _WIN32
+		pWrapperTable->m_BuildJob_DeleteJobWithStorage = (PLibMCDataBuildJob_DeleteJobWithStoragePtr) GetProcAddress(hLibrary, "libmcdata_buildjob_deletejobwithstorage");
+		#else // _WIN32
+		pWrapperTable->m_BuildJob_DeleteJobWithStorage = (PLibMCDataBuildJob_DeleteJobWithStoragePtr) dlsym(hLibrary, "libmcdata_buildjob_deletejobwithstorage");
+		dlerror();
+		#endif // _WIN32
+		if (pWrapperTable->m_BuildJob_DeleteJobWithStorage == nullptr)
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		#ifdef _WIN32
@@ -6370,6 +6381,10 @@ public:
 		
 		eLookupError = (*pLookup)("libmcdata_buildjob_deletejob", (void**)&(pWrapperTable->m_BuildJob_DeleteJob));
 		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_DeleteJob == nullptr) )
+			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
+		
+		eLookupError = (*pLookup)("libmcdata_buildjob_deletejobwithstorage", (void**)&(pWrapperTable->m_BuildJob_DeleteJobWithStorage));
+		if ( (eLookupError != 0) || (pWrapperTable->m_BuildJob_DeleteJobWithStorage == nullptr) )
 			return LIBMCDATA_ERROR_COULDNOTFINDLIBRARYEXPORT;
 		
 		eLookupError = (*pLookup)("libmcdata_buildjob_jobcanbearchived", (void**)&(pWrapperTable->m_BuildJob_JobCanBeArchived));
@@ -9529,11 +9544,19 @@ public:
 	}
 	
 	/**
-	* CBuildJob::DeleteJob - Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.
+	* CBuildJob::DeleteJob - Marks a Job as deleted. The job, its storage stream and all referencing data objects are kept. Job MUST be of state validated or archived to succeed.
 	*/
 	void CBuildJob::DeleteJob()
 	{
 		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_DeleteJob(m_pHandle));
+	}
+	
+	/**
+	* CBuildJob::DeleteJobWithStorage - Marks a Job as deleted and removes its storage stream, unless another job that is not deleted uses that stream. Executions, metadata and thumbnail are kept. Job MUST be of state validated or archived to succeed.
+	*/
+	void CBuildJob::DeleteJobWithStorage()
+	{
+		CheckError(m_pWrapper->m_WrapperTable.m_BuildJob_DeleteJobWithStorage(m_pHandle));
 	}
 	
 	/**

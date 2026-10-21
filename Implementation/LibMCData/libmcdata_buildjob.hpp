@@ -83,6 +83,7 @@ private:
     AMCData::PSQLHandler m_pSQLHandler;
 
     void ensureUpdate (const std::string sUpdateUUID, uint32_t nErrorCode);
+    void markAsDeletedInTransaction (AMCData::CSQLTransaction* pTransaction);
 
     CBuildJobData * makeJobDataEx(AMCData::CSQLStatement* pStatement);
     IBuildJobDataIterator* listJobDataEx(AMCData::CSQLStatement * pStatement);
@@ -143,6 +144,8 @@ public:
     void UnArchiveJob() override;
 
     void DeleteJob() override;
+
+    void DeleteJobWithStorage() override;
 
     void ChangeName(const std::string& sName) override;
     

@@ -2060,12 +2060,20 @@ LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_unarchivejob(LibMCData_Bui
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_changename(LibMCData_BuildJob pBuildJob, const char * pName);
 
 /**
-* Deletes a Job permanently including all referencing data objects. Job MUST be of state archived to succeed.
+* Marks a Job as deleted. The job, its storage stream and all referencing data objects are kept. Job MUST be of state validated or archived to succeed.
 *
 * @param[in] pBuildJob - BuildJob instance.
 * @return error code or 0 (success)
 */
 LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_deletejob(LibMCData_BuildJob pBuildJob);
+
+/**
+* Marks a Job as deleted and removes its storage stream, unless another job that is not deleted uses that stream. Executions, metadata and thumbnail are kept. Job MUST be of state validated or archived to succeed.
+*
+* @param[in] pBuildJob - BuildJob instance.
+* @return error code or 0 (success)
+*/
+LIBMCDATA_DECLSPEC LibMCDataResult libmcdata_buildjob_deletejobwithstorage(LibMCData_BuildJob pBuildJob);
 
 /**
 * Returns if a job is opened.

@@ -6459,6 +6459,30 @@ LibMCDataResult libmcdata_buildjob_deletejob(LibMCData_BuildJob pBuildJob)
 	}
 }
 
+LibMCDataResult libmcdata_buildjob_deletejobwithstorage(LibMCData_BuildJob pBuildJob)
+{
+	IBase* pIBaseClass = (IBase *)pBuildJob;
+
+	try {
+		IBuildJob* pIBuildJob = dynamic_cast<IBuildJob*>(pIBaseClass);
+		if (!pIBuildJob)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDCAST);
+		
+		pIBuildJob->DeleteJobWithStorage();
+
+		return LIBMCDATA_SUCCESS;
+	}
+	catch (ELibMCDataInterfaceException & Exception) {
+		return handleLibMCDataException(pIBaseClass, Exception);
+	}
+	catch (std::exception & StdException) {
+		return handleStdException(pIBaseClass, StdException);
+	}
+	catch (...) {
+		return handleUnhandledException(pIBaseClass);
+	}
+}
+
 LibMCDataResult libmcdata_buildjob_jobcanbearchived(LibMCData_BuildJob pBuildJob, bool * pCanBeArchived)
 {
 	IBase* pIBaseClass = (IBase *)pBuildJob;
@@ -12073,6 +12097,8 @@ LibMCDataResult LibMCData::Impl::LibMCData_GetProcAddress (const char * pProcNam
 		*ppProcAddress = (void*) &libmcdata_buildjob_changename;
 	if (sProcName == "libmcdata_buildjob_deletejob") 
 		*ppProcAddress = (void*) &libmcdata_buildjob_deletejob;
+	if (sProcName == "libmcdata_buildjob_deletejobwithstorage") 
+		*ppProcAddress = (void*) &libmcdata_buildjob_deletejobwithstorage;
 	if (sProcName == "libmcdata_buildjob_jobcanbearchived") 
 		*ppProcAddress = (void*) &libmcdata_buildjob_jobcanbearchived;
 	if (sProcName == "libmcdata_buildjob_addjobdata") 
