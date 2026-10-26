@@ -39,6 +39,12 @@
   /* Destructive */
   --destructive: oklch(0.48 0.195 22);       /* #C8102E */
 
+  /* Status (not overridden by config.xml <colors>) */
+  --success: oklch(0.55 0.15 145);           /* green */
+  --success-foreground: oklch(1.0 0 0);
+  --info: oklch(0.55 0.17 255);              /* blue */
+  --info-foreground: oklch(1.0 0 0);
+
   /* Borders / inputs */
   --border: oklch(0.90 0.004 250);           /* ~#DDDFE3 */
   --input: oklch(0.90 0.004 250);
@@ -82,6 +88,10 @@
   --accent: oklch(0.26 0.01 250);
   --accent-foreground: oklch(0.93 0.005 250);
   --destructive: oklch(0.58 0.195 22);
+  --success: oklch(0.62 0.17 145);
+  --success-foreground: oklch(1.0 0 0);
+  --info: oklch(0.62 0.17 255);
+  --info-foreground: oklch(1.0 0 0);
   --border: oklch(0.32 0.01 250);
   --input: oklch(0.32 0.01 250);
   --ring: oklch(0.58 0.195 22);
@@ -123,6 +133,10 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
