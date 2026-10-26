@@ -70,7 +70,7 @@
 </script>
 
 {#if visible}
-	<div class="flex flex-col gap-3 w-full min-h-0">
+	<div class="flex flex-col gap-3 w-full flex-1 min-h-0">
 		{#if loading && !details}
 			<p class="text-sm text-muted-foreground">{loadingtext}</p>
 		{:else if errorMessage}
@@ -80,7 +80,7 @@
 		{:else}
 			{#if showdetails}
 			<!-- Build detail header -->
-			<div class="flex gap-3">
+			<div class="flex gap-3 shrink-0">
 				{#if thumbnailURL(details.thumbnail)}
 					<img
 						src={thumbnailURL(details.thumbnail)}
@@ -106,11 +106,13 @@
 			{/if}
 
 			<!-- Part list -->
-			<div class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+			<div class="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 				Parts ({parts.length})
 			</div>
-			<div class="w-full border rounded-md overflow-hidden">
-				<ScrollArea class="max-h-[360px]">
+			<!-- The part table takes the space left below the build details and scrolls inside;
+			     in a stacked page it takes its natural height, at most one screen. -->
+			<div class="w-full flex-1 min-h-0 max-h-screen flex flex-col border rounded-md overflow-hidden">
+				<ScrollArea class="flex-1 min-h-0">
 					<Table.Root>
 						<Table.Header class="sticky top-0 bg-muted z-10">
 							<Table.Row>
