@@ -43,6 +43,10 @@ namespace AMCData {
 	class CDatabaseMigrationClass {
 	public:
 		virtual void increaseSchemaVersion (PSQLTransaction pTransaction, uint32_t nCurrentVersionIndex) = 0;
+
+		// Runs on every start after the schema migration. Must be idempotent (e.g. CREATE INDEX IF NOT EXISTS),
+		// so indices reach existing databases without a schema version step.
+		virtual void ensureIndices (PSQLTransaction pTransaction) {}
 	};
 
 	typedef std::shared_ptr<CDatabaseMigrationClass> PDatabaseMigrationClass;

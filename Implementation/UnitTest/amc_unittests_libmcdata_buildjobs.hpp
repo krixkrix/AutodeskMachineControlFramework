@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "amc_unittests_libmcdata.hpp"
 #include "common_utils.hpp"
 #include "libmcdata_dynamic.hpp"
+#include "amcdata_sqlhandler_sqlite.hpp"
 
 #include <cstdint>
 #include <string>
@@ -117,6 +118,10 @@ namespace AMCUnitTest {
 			registerTest("JobIteratorGetCurrent", "Job iterator GetCurrent", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobIteratorGetCurrent, this));
 			registerTest("JobLongName", "Job with long name", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testJobLongName, this));
 			registerTest("ExecMultipleMetaData", "Execution multiple metadata", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testExecMultipleMetaData, this));
+
+			// Metadata lookups must not scan the whole metadata table
+			registerTest("MetaDataLookupsUseIndex", "Job and execution metadata lookups are planned via an index", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testMetaDataLookupsUseIndex, this));
+			registerTest("MetaDataIndicesAddedOnStart", "A database from before the metadata indices gets them on the next start", eUnitTestCategory::utMandatoryPass, std::bind(&CUnitTestGroup_LibMCData_BuildJobs::testMetaDataIndicesAddedOnStart, this));
 		}
 
 		void initializeTests() override {
@@ -1212,6 +1217,78 @@ namespace AMCUnitTest {
 				assertTrue(pExec->HasMetaDataString(sKey), "Should have metadata key " + sKey);
 				assertTrue(pExec->GetMetaDataString(sKey) == sExpectedValue, "Metadata value should match for " + sKey);
 			}
+		}
+
+		// ============= Metadata lookup indices =============
+
+		// The metadata reads and duplicate checks in libmcdata_buildjob.cpp / libmcdata_buildjobexecution.cpp
+		std::string metaDataLookupQuery(const std::string& sTableName, const std::string& sOwnerColumn)
+		{
+			return "SELECT metadatavalue FROM " + sTableName + " WHERE " + sOwnerColumn + "=? AND metadatakey=? AND active=?";
+		}
+
+		std::string queryPlan(const std::string& sDatabaseFile, const std::string& sQuery)
+		{
+			AMCData::CSQLHandler_SQLite sqlHandler(sDatabaseFile);
+			auto pStatement = sqlHandler.prepareStatement("EXPLAIN QUERY PLAN " + sQuery);
+			std::string sPlan;
+			while (pStatement->nextRow())
+				sPlan += pStatement->getColumnString(4) + "\n";
+			return sPlan;
+		}
+
+		void assertLookupUsesIndex(const std::string& sDatabaseFile, const std::string& sTableName, const std::string& sOwnerColumn)
+		{
+			std::string sPlan = queryPlan(sDatabaseFile, metaDataLookupQuery(sTableName, sOwnerColumn));
+			assertTrue(sPlan.find("SCAN") == std::string::npos, sTableName + " lookup does not scan the table: " + sPlan);
+			assertTrue(sPlan.find("USING INDEX idx_" + sTableName + "_") != std::string::npos, sTableName + " lookup uses its metadata index: " + sPlan);
+		}
+
+		void assertMetaDataLookupsUseIndex(const std::string& sDatabaseFile)
+		{
+			assertLookupUsesIndex(sDatabaseFile, "buildjobexecutionmetadata", "executionuuid");
+			assertLookupUsesIndex(sDatabaseFile, "buildjobmetadata", "jobuuid");
+		}
+
+		void testMetaDataLookupsUseIndex()
+		{
+			auto fixture = createFixture("metadata_index");
+			assertMetaDataLookupsUseIndex(fixture.m_sBasePath + "/buildjobs.db");
+		}
+
+		void testMetaDataIndicesAddedOnStart()
+		{
+			auto fixture = createFixture("metadata_indices_start");
+			std::string sDatabaseFile = fixture.m_sBasePath + "/buildjobs.db";
+
+			auto pJob = createValidatedJob(fixture, "Job From Older Build");
+			pJob->StoreMetaDataString("jobkey", "jobvalue", getCurrentTimestamp());
+			auto pExec = pJob->CreateBuildJobExecution("Execution from older build", fixture.m_sUserUUID, getCurrentTimestamp());
+			pExec->StoreMetaDataString("execkey", "execvalue", getCurrentTimestamp());
+			std::string sJobUUID = pJob->GetUUID();
+			std::string sExecUUID = pExec->GetExecutionUUID();
+
+			// A database written by a build without the indices: same schema version, no indices.
+			{
+				AMCData::CSQLHandler_SQLite sqlHandler(sDatabaseFile);
+				sqlHandler.prepareStatement("DROP INDEX idx_buildjobexecutionmetadata_exec_key")->execute();
+				sqlHandler.prepareStatement("DROP INDEX idx_buildjobmetadata_job_key")->execute();
+			}
+			assertTrue(queryPlan(sDatabaseFile, metaDataLookupQuery("buildjobexecutionmetadata", "executionuuid")).find("SCAN") != std::string::npos, "execution metadata index is gone before the restart");
+			assertTrue(queryPlan(sDatabaseFile, metaDataLookupQuery("buildjobmetadata", "jobuuid")).find("SCAN") != std::string::npos, "job metadata index is gone before the restart");
+
+			// Next server start. Its own data directory, because journal files are named by the second
+			// and a restart within the same second would collide with the first journal.
+			std::string sRestartDirectory = fixture.m_sBasePath + "/restart";
+			AMCCommon::CUtils::createDirectoryOnDisk(sRestartDirectory);
+			auto pRestartedModel = fixture.m_pDataWrapper->CreateDataModelInstance();
+			pRestartedModel->InitialiseDatabase(sRestartDirectory, LibMCData::eDataBaseType::SqLite, sDatabaseFile);
+
+			assertMetaDataLookupsUseIndex(sDatabaseFile);
+
+			auto pRestartedHandler = pRestartedModel->CreateBuildJobHandler();
+			assertTrue(pRestartedHandler->RetrieveJob(sJobUUID)->GetMetaDataString("jobkey") == "jobvalue", "job metadata still readable");
+			assertTrue(pRestartedHandler->RetrieveJobExecution(sExecUUID)->GetMetaDataString("execkey") == "execvalue", "execution metadata still readable");
 		}
 	};
 

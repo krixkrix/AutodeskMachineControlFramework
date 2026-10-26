@@ -170,7 +170,21 @@ namespace AMCData {
 		
 	}
 
+	void CDatabaseMigrationClass_BuildJobs::ensureIndices(PSQLTransaction pTransaction)
+	{
+		if (pTransaction.get() == nullptr)
+			throw ELibMCDataInterfaceException(LIBMCDATA_ERROR_INVALIDPARAM);
 
+		// Every metadata read and duplicate check filters on these three columns. Without an index
+		// each one scans the whole table, which grows with every execution.
+		std::string sExecutionMetaDataIndexQuery = "CREATE INDEX IF NOT EXISTS `idx_buildjobexecutionmetadata_exec_key` ";
+		sExecutionMetaDataIndexQuery += "ON `buildjobexecutionmetadata` (`executionuuid`, `metadatakey`, `active`)";
+		pTransaction->executeStatement(sExecutionMetaDataIndexQuery);
+
+		std::string sJobMetaDataIndexQuery = "CREATE INDEX IF NOT EXISTS `idx_buildjobmetadata_job_key` ";
+		sJobMetaDataIndexQuery += "ON `buildjobmetadata` (`jobuuid`, `metadatakey`, `active`)";
+		pTransaction->executeStatement(sJobMetaDataIndexQuery);
+	}
 
 }
 
