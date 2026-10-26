@@ -39,6 +39,7 @@ namespace AMCData {
 	class CDatabaseMigrationClass_BuildJobs : public CDatabaseMigrationClass {
 	public:
 		void increaseSchemaVersion (PSQLTransaction pTransaction, uint32_t nCurrentVersionIndex) override;
+		void ensureIndices (PSQLTransaction pTransaction) override;
 	};
 	
 }

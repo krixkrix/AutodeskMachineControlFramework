@@ -122,6 +122,9 @@ namespace AMCData {
 			pStatement4->execute();
 		}
 
+		for (auto pMigrator : m_MigrationClasses)
+			pMigrator->ensureIndices(pTransaction);
+
 		pTransaction->commit();			
 		pTransaction = nullptr;
 	}
