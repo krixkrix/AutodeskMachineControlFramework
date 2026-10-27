@@ -93,13 +93,15 @@ CUIModule_Content::CUIModule_Content(pugi::xml_node& xmlNode, const std::string&
 
 	auto children = xmlNode.children();
 	for (auto childNode : children) {
-		std::string sChildName = childNode.name();
-		if (sChildName.empty())
+		// Only element children define submodules; comments, text and processing instructions are skipped.
+		if (childNode.type() != pugi::node_element)
 			continue;
 
-		if (!CUIModule_ContentLeaf::isSupportedModuleType(sChildName) &&
-			!CUIModuleFactory::moduleTypeIsRegistered(sChildName))
-			continue;
+		// An unknown element is a configuration error. Skipping it silently leaves the client with a
+		// module it cannot render, which surfaces only as an obscure client-side crash after login.
+		std::string sChildName = childNode.name();
+		if (!CUIModuleFactory::moduleTypeIsRegistered(sChildName))
+			throw ELibMCCustomException(LIBMC_ERROR_INVALIDMODULETYPE, sChildName);
 
 		auto sSubModuleName = readSubModuleNameFromXML(childNode, sChildName);
 		auto nameAttrib = childNode.attribute("name");
